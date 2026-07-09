@@ -10,6 +10,9 @@ import { Note } from "@/models/entities/note.js";
 import type { DriveFile } from "@/models/entities/drive-file.js";
 import type { User } from "@/models/entities/user.js";
 import type { Channel } from "@/models/entities/channel.js";
+import type { UserProfile } from "@/models/entities/user-profile.js";
+import type { UserMemo } from "@/models/entities/user-memo.js";
+import type { UserRelation } from "./user.js";
 import {
 	Users,
 	PollVotes,
@@ -103,6 +106,13 @@ type NoteReactionHint = Map<
         NoteReaction | NoteReaction[] | null
 >;
 
+/**
+ * pack / packMany 間で共有するヒント。
+ *
+ * @remarks
+ * NOTE: packMany 冒頭で relation / memo / profile 等を一括取得し、各 pack 内の per-note クエリを避ける。
+ * @internal
+ */
 type NotePackHint = {
         myReactions?: NoteReactionHint;
         favorites?: Set<Note["id"]>;
@@ -120,7 +130,46 @@ type NotePackHint = {
 	packedFileMap?: Map<DriveFile["id"], Packed<"DriveFile">>;
 	/** packMany 用: リモート投稿の閲覧者可視参照件数 */
 	visibleReferencesCountMap?: Map<Note["id"], number>;
+	/** packMany 用: 閲覧者と各投稿者の関係を一括取得した Map。あるときは packNoteUser 内の getRelation をスキップ */
+	relationsMap?: Map<User["id"], UserRelation>;
+	/** packMany 用: 閲覧者のユーザメモを一括取得した Map。キー無しはメモ無し */
+	memoMap?: Map<User["id"], UserMemo | null>;
+	/** packMany 用: 投稿者プロフィールを一括取得した Map。followedMessage / canWarnedViewerReact 用 */
+	profileMap?: Map<User["id"], UserProfile>;
+	/** packMany 用: 投稿者が閲覧者をフォローしているユーザ ID（警告ユーザー向け canWarnedViewerReact） */
+	authorFollowsViewerSet?: Set<User["id"]>;
 };
+
+/** packNoteUser に渡すヒントの部分型 */
+type PackNoteUserHint = Pick<
+	NotePackHint,
+	"relationsMap" | "memoMap" | "profileMap" | "userMap"
+>;
+
+/**
+ * pack 対象ノート群から、ユーザープロフィール pack に必要なユーザ ID を収集する。
+ *
+ * @param notes - 入力ノート配列
+ * @param noteMap - reply/renote 用に一括取得済みのノート Map
+ * @returns 重複除去済みのユーザ ID 集合
+ * @internal
+ */
+function collectPackUserIds(
+	notes: Note[],
+	noteMap: Map<Note["id"], Note>,
+): Set<User["id"]> {
+	const ids = new Set<User["id"]>();
+	const addFromNote = (n: Note) => {
+		if (n.userId) ids.add(n.userId);
+		if (n.renoteUserId) ids.add(n.renoteUserId);
+		if (n.replyUserId) ids.add(n.replyUserId);
+		if (n.renote?.userId) ids.add(n.renote.userId);
+		if (n.reply?.userId) ids.add(n.reply.userId);
+	};
+	for (const n of notes) addFromNote(n);
+	for (const n of noteMap.values()) addFromNote(n);
+	return ids;
+}
 
 const NOTE_PACK_CACHE_TTL_MS = 30 * 1000;
 const NOTE_PACK_USER_PROFILE_CACHE_TTL_SEC = 60;
@@ -237,9 +286,21 @@ async function getFixedPackedUserForNote(
 	return fixed;
 }
 
+/**
+ * ノート表示用にユーザーを pack する（固定プロフィール + 閲覧者向け可変情報）。
+ *
+ * @param src - ノート上の user（User もしくは userId）
+ * @param me - 閲覧者
+ * @param hint - packMany から渡される一括取得結果。無いときは従来どおり個別クエリ
+ * @returns Packed User
+ * @remarks
+ * NOTE: hint.relationsMap / memoMap / profileMap があるときは per-note の DB 取得をスキップする。
+ * @internal
+ */
 async function packNoteUser(
 	src: Note["user"] | User["id"],
 	me?: { id: User["id"] } | null,
+	hint?: PackNoteUserHint,
 ): Promise<Packed<"User">> {
 	const fixed = await getFixedPackedUserForNote(src);
 	const meId = me?.id ?? null;
@@ -247,14 +308,26 @@ async function packNoteUser(
 		return fixed;
 	}
 
-	const user = typeof src === "object" ? src : await Users.findOneByOrFail({ id: src });
-	const memo = await UserMemos.findOneBy({
-		userId: meId,
-		targetUserId: user.id,
-	});
+	const userId = typeof src === "object" ? src.id : src;
+	const user =
+		typeof src === "object"
+			? src
+			: (hint?.userMap?.get(userId) ??
+				(await Users.findOneByOrFail({ id: userId })));
+
+	const memo =
+		hint?.memoMap != null
+			? (hint.memoMap.get(user.id) ?? null)
+			: await UserMemos.findOneBy({
+					userId: meId,
+					targetUserId: user.id,
+			  });
 
 	const relation =
-		meId !== user.id ? await Users.getRelation(meId, user.id, user) : null;
+		meId !== user.id
+			? (hint?.relationsMap?.get(user.id) ??
+				(await Users.getRelation(meId, user.id, user)))
+			: null;
 	const onlineStatus = await Users.getOnlineStatus(user, meId, relation ?? undefined);
 
 	const packed: Packed<"User"> = {
@@ -282,7 +355,9 @@ async function packNoteUser(
 	};
 
 	if (relation?.isFollowing) {
-		const profile = await UserProfiles.findOneBy({ userId: user.id });
+		const profile =
+			hint?.profileMap?.get(user.id) ??
+			(await UserProfiles.findOneBy({ userId: user.id }));
 		packed.followedMessage = profile?.followedMessage || undefined;
 	}
 
@@ -555,11 +630,13 @@ export const NoteRepository = db.getRepository(Note).extend({
 			await Users.findOneByOrFail({ id: note.userId });
 
 		if (opts.blockCheck && meId) {
-                        const relation = await Users.getRelation(
-                                meId,
-                                note.userId,
-                                noteUser,
-                        );
+                        const relation =
+                                hint.relationsMap?.get(note.userId) ??
+                                (await Users.getRelation(
+                                        meId,
+                                        note.userId,
+                                        noteUser,
+                                ));
 			if (relation.isMuted || relation.isBlocked) {
 				throw new IdentifiableError(
 					"281827eb-bd11-3625-ac9d-336a0d80fac2",
@@ -687,18 +764,23 @@ export const NoteRepository = db.getRepository(Note).extend({
 			meUser?.isModerationWarning === true &&
 			note.userId !== meId
 		) {
-			const authorFollowsViewer = await Followings.exist({
-				where: { followerId: note.userId, followeeId: meId },
-			});
+			const authorFollowsViewer =
+				hint.authorFollowsViewerSet != null
+					? hint.authorFollowsViewerSet.has(note.userId)
+					: await Followings.exist({
+							where: { followerId: note.userId, followeeId: meId },
+					  });
 			if (authorFollowsViewer) {
 				canWarnedViewerReact = true;
 			} else {
 				const remoteAuthor = noteUser.host != null;
 				let acceptFromWarned = false;
 				if (!remoteAuthor) {
-					const ap = await UserProfiles.findOneBy({
-						userId: note.userId,
-					});
+					const ap =
+						hint.profileMap?.get(note.userId) ??
+						(await UserProfiles.findOneBy({
+							userId: note.userId,
+						}));
 					acceptFromWarned =
 						ap?.receiveReactionsFromNonFollowedWarnedUsers === true;
 				}
@@ -712,7 +794,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 			id: note.id,
 			createdAt: note.createdAt.toISOString(),
 			userId: note.userId,
-			user: packNoteUser(noteUser, me),
+			user: packNoteUser(noteUser, me, hint),
 			text: isVisible ? text : null,
 			cw: isVisible ? note.cw : undefined,
 			visibility: note.visibility,
@@ -901,11 +983,12 @@ export const NoteRepository = db.getRepository(Note).extend({
 	},
 
 	/**
-	 * 複数ノートを pack する。hint で userMap / noteMap 等を渡すと N+1 を削減できる。
+	 * 複数ノートを pack する。hint で userMap / noteMap / relationsMap 等を渡すと N+1 を削減できる。
 	 *
 	 * @remarks
 	 * 各ノートの pack は Promise.allSettled で並列実行し、fulfilled の結果のみを返す。
 	 * いずれかのノートで pack が失敗（rejected）した場合、そのノートは戻り値に含まれず、件数が減った配列になる。
+	 * NOTE: ログイン閲覧時は冒頭で getRelationsBulk / UserMemos / UserProfiles を一括取得し packNoteUser の per-note クエリを避ける。
 	 */
         async packMany(
                 notes: Note[],
@@ -1132,6 +1215,110 @@ export const NoteRepository = db.getRepository(Note).extend({
                 const visibleReferencesCountMap =
                         await countVisibleReferencesBatch(notes, me);
 
+                // relation / memo / profile を一括取得し packNoteUser の N+1 を避ける
+                let relationsMap = new Map<User["id"], UserRelation>(
+                        initialHint?.relationsMap ?? [],
+                );
+                let memoMap: Map<User["id"], UserMemo | null> | undefined =
+                        initialHint?.memoMap;
+                let profileMap = new Map<User["id"], UserProfile>(
+                        initialHint?.profileMap ?? [],
+                );
+                let authorFollowsViewerSet = initialHint?.authorFollowsViewerSet;
+
+                if (meId) {
+                        const allPackUserIds = collectPackUserIds(notes, noteMap);
+                        const relationTargetIds = [...allPackUserIds].filter(
+                                (id) => id !== meId,
+                        );
+
+                        if (relationTargetIds.length > 0) {
+                                const missingRelationIds = relationTargetIds.filter(
+                                        (id) => !relationsMap.has(id),
+                                );
+                                const targetUsers = missingRelationIds
+                                        .map((id) => userMap.get(id))
+                                        .filter((u): u is User => u != null);
+
+                                const needMemos = memoMap == null;
+                                const needProfiles = initialHint?.profileMap == null;
+
+                                const [bulkRelations, memoRows, profiles] =
+                                        await Promise.all([
+                                                missingRelationIds.length > 0
+                                                        ? Users.getRelationsBulk(
+                                                                  meId,
+                                                                  missingRelationIds,
+                                                                  targetUsers,
+                                                          )
+                                                        : Promise.resolve(
+                                                                  new Map<
+                                                                          User["id"],
+                                                                          UserRelation
+                                                                  >(),
+                                                          ),
+                                                needMemos
+                                                        ? UserMemos.findBy({
+                                                                  userId: meId,
+                                                                  targetUserId: In(
+                                                                          relationTargetIds,
+                                                                  ),
+                                                          })
+                                                        : Promise.resolve([]),
+                                                needProfiles
+                                                        ? UserProfiles.findBy({
+                                                                  userId: In(
+                                                                          relationTargetIds,
+                                                                  ),
+                                                          })
+                                                        : Promise.resolve([]),
+                                        ]);
+
+                                for (const [id, relation] of bulkRelations) {
+                                        relationsMap.set(id, relation);
+                                }
+
+                                if (needMemos) {
+                                        memoMap = new Map(
+                                                memoRows.map((row) => [
+                                                        row.targetUserId,
+                                                        row,
+                                                ]),
+                                        );
+                                }
+
+                                if (needProfiles) {
+                                        profileMap = new Map(
+                                                profiles.map((p) => [p.userId, p]),
+                                        );
+                                }
+                        }
+
+                        if (
+                                meUser?.isModerationWarning === true &&
+                                authorFollowsViewerSet == null
+                        ) {
+                                const authorIds = [
+                                        ...new Set(
+                                                notes
+                                                        .map((n) => n.userId)
+                                                        .filter((id) => id !== meId),
+                                        ),
+                                ];
+                                if (authorIds.length > 0) {
+                                        const authorFollowRows = await Followings.findBy({
+                                                followerId: In(authorIds),
+                                                followeeId: meId,
+                                        });
+                                        authorFollowsViewerSet = new Set(
+                                                authorFollowRows.map((r) => r.followerId),
+                                        );
+                                } else {
+                                        authorFollowsViewerSet = new Set();
+                                }
+                        }
+                }
+
                 const hint: NotePackHint = {
                         myReactions: myReactionsMap,
                         favorites: favoritedNoteIds,
@@ -1142,6 +1329,11 @@ export const NoteRepository = db.getRepository(Note).extend({
                         noteMap,
 			packedFileMap,
                         visibleReferencesCountMap,
+                        relationsMap:
+                                relationsMap.size > 0 ? relationsMap : undefined,
+                        memoMap,
+                        profileMap: profileMap.size > 0 ? profileMap : undefined,
+                        authorFollowsViewerSet,
                 };
 
                 const promises = await Promise.allSettled(

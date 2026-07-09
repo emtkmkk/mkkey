@@ -14,6 +14,7 @@ import { Users, Followings } from "@/models/index.js";
 import type { ILocalUser, IRemoteUser, User } from "@/models/entities/user.js";
 import { deliver } from "@/queue/index.js";
 import { skippedInstances } from "@/misc/skipped-instances.js";
+import { apLogger } from "./logger.js";
 
 //#region 型定義
 interface IRecipe {
@@ -139,10 +140,10 @@ export default class DeliverManager {
 					} else if (typeof f === "string") {
 						unionFollowerIds.add(f);
 					} else {
-						console.log(`error f : ${JSON.stringify(f, undefined, "\t")}`);
+						apLogger.warn("unexpected follower entry shape in union resolution", { f });
 					}
 				});
-				console.log(`a ${this.actor.id} u ${u.id} : ${unionFollowerIds.size}`);
+				apLogger.debug(`a ${this.actor.id} u ${u.id} : ${unionFollowerIds.size}`);
 			}
 
 			if (!union.length || unionFollowerIds.size !== 0) {
@@ -171,7 +172,7 @@ export default class DeliverManager {
 					inboxes.set(inbox, following.followerSharedInbox !== null);
 				}
 			} else {
-				console.log(
+				apLogger.debug(
 					`skip : no remote follower (${union.map((u) => u?.id).join(", ")})`,
 				);
 			}
@@ -191,7 +192,7 @@ export default class DeliverManager {
 			)
 			.forEach((recipe) => inboxes.set(recipe.to.inbox!, false));
 
-		console.log(
+		apLogger.debug(
 			`deliver : ${inboxSize}${
 				inboxes.size - inboxSize ? ` + ${inboxes.size - inboxSize}` : ""
 			}`,
@@ -260,8 +261,7 @@ export async function deliverToInboxes(
 				host: new URL(inbox[0]).host,
 			});
 		} catch (error) {
-			console.error(error);
-			console.error(`Invalid Inbox ${inbox}`);
+			apLogger.error(`Invalid Inbox ${inbox}`, { e: error });
 		}
 	}
 

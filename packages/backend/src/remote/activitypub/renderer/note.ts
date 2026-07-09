@@ -18,6 +18,7 @@ import type { Emoji } from "@/models/entities/emoji.js";
 import type { Poll } from "@/models/entities/poll.js";
 import toHtml from "../misc/get-note-html.js";
 import renderEmoji from "./emoji.js";
+import { apLogger } from "../logger.js";
 import renderMention from "./mention.js";
 import renderHashtag from "./hashtag.js";
 import renderDocument from "./document.js";
@@ -84,7 +85,7 @@ export default async function renderNote(
 			JSON.parse(note.mentionedRemoteUsers) as IMentionedRemoteUsers
 		)?.map((x) => x.uri);
 	} catch(e) {
-		console.log(e);
+		apLogger.warn("failed to parse mentionedRemoteUsers", { e });
 	}
 
 	let to: string[] = [];

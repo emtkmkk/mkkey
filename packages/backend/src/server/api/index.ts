@@ -43,6 +43,7 @@ import {
 } from "../../../native-utils/built/index.js";
 import { convertAttachment } from "./mastodon/converters.js";
 import { v4 as uuid } from "uuid";
+import { apiLogger } from "./logger.js";
 
 // re-export native rust id conversion (function and enum)
 export { IdType, convertId };
@@ -110,7 +111,7 @@ mastoFileRouter.post("/v1/media", upload.single("file"), async (ctx) => {
 		const data = await client.uploadMedia(multipartData);
 		ctx.body = convertAttachment(data.data as Entity.Attachment);
 	} catch (e: any) {
-		console.error(e);
+		apiLogger.error("media upload failed", { e, response: e.response?.data });
 		ctx.status = 401;
 		ctx.body = e.response.data;
 	}
@@ -130,7 +131,7 @@ mastoFileRouter.post("/v2/media", upload.single("file"), async (ctx) => {
 		const data = await client.uploadMedia(multipartData);
 		ctx.body = convertAttachment(data.data as Entity.Attachment);
 	} catch (e: any) {
-		console.error(e);
+		apiLogger.error("media upload failed", { e, response: e.response?.data });
 		ctx.status = 401;
 		ctx.body = e.response.data;
 	}
@@ -166,10 +167,10 @@ const uploadFile = async (ctx, next) => {
 	});
 
 	if (ctx.files && ctx.files.length === 1) {
-		console.log(`${ctx.files.length} Files Found.`);
+		apiLogger.debug(`${ctx.files.length} Files Found.`);
 		ctx.file = ctx.files[0];
 	} else {
-		console.log(`${ctx.files?.length ?? 0} Files Found.`);
+		apiLogger.debug(`${ctx.files?.length ?? 0} Files Found.`);
 	}
 
 	await next();

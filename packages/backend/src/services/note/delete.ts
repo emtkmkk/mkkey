@@ -33,6 +33,7 @@ import {
 import { countSameRenotes } from "@/misc/count-same-renotes.js";
 import { registerOrFetchInstanceDoc } from "../register-or-fetch-instance-doc.js";
 import { deliverToRelays } from "../relay.js";
+import { noteLogger } from "./logger.js";
 
 /**
  * 投稿を削除します。
@@ -79,7 +80,7 @@ export default async function (
 
 	const deletedAt = new Date();
 
-	console.log(`deleteNote : ${note.id}`);
+	noteLogger.debug(`deleteNote : ${note.id}`);
 
 	// この投稿を除く指定したユーザーによる指定したノートのリノートが存在しないとき
 	if (
@@ -116,7 +117,7 @@ export default async function (
 				(note) => !note.localOnly,
 			); // filter out local-only notes
 			for (const cascadingNote of cascadingNotes) {
-				console.log(
+				noteLogger.debug(
 					`cascadeDeleteNote(${cascadingNotes.length}) : ${cascadingNote.id}`,
 				);
 				if (!cascadingNote.user) continue;
@@ -180,7 +181,7 @@ export default async function (
 		try {
 			await DriveFiles.adjustUsageCount(attachedFileIds, -1);
 		} catch (err) {
-			console.warn("Failed to decrement drive file usage count", err);
+			noteLogger.warn("Failed to decrement drive file usage count", { e: err });
 		}
 	}
 

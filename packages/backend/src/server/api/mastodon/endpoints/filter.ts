@@ -3,6 +3,7 @@ import Router from "@koa/router";
 import { getClient } from "../ApiMastodonCompatibleService.js";
 import { IdType, convertId } from "../../index.js";
 import { convertFilter } from "../converters.js";
+import { mastodonLogger } from "../../logger.js";
 
 export function apiFilterMastodon(router: Router): void {
 	router.get("/v1/filters", async (ctx) => {
@@ -14,7 +15,7 @@ export function apiFilterMastodon(router: Router): void {
 			const data = await client.getFilters();
 			ctx.body = data.data.map((filter) => convertFilter(filter));
 		} catch (e: any) {
-			console.error(e);
+			mastodonLogger.error("request failed", { e });
 			ctx.status = 401;
 			ctx.body = e.response.data;
 		}
@@ -31,7 +32,7 @@ export function apiFilterMastodon(router: Router): void {
 			);
 			ctx.body = convertFilter(data.data);
 		} catch (e: any) {
-			console.error(e);
+			mastodonLogger.error("request failed", { e });
 			ctx.status = 401;
 			ctx.body = e.response.data;
 		}
@@ -46,7 +47,7 @@ export function apiFilterMastodon(router: Router): void {
 			const data = await client.createFilter(body.phrase, body.context, body);
 			ctx.body = convertFilter(data.data);
 		} catch (e: any) {
-			console.error(e);
+			mastodonLogger.error("request failed", { e });
 			ctx.status = 401;
 			ctx.body = e.response.data;
 		}
@@ -65,7 +66,7 @@ export function apiFilterMastodon(router: Router): void {
 			);
 			ctx.body = convertFilter(data.data);
 		} catch (e: any) {
-			console.error(e);
+			mastodonLogger.error("request failed", { e });
 			ctx.status = 401;
 			ctx.body = e.response.data;
 		}
@@ -82,7 +83,7 @@ export function apiFilterMastodon(router: Router): void {
 			);
 			ctx.body = data.data;
 		} catch (e: any) {
-			console.error(e);
+			mastodonLogger.error("request failed", { e });
 			ctx.status = 401;
 			ctx.body = e.response.data;
 		}

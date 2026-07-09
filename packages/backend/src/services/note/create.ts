@@ -91,6 +91,7 @@ import renderTombstone from "@/remote/activitypub/renderer/tombstone.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import { StatusError } from "@/misc/fetch.js";
 import { DB_MAX_POLL_CHOICE_LENGTH } from "@/misc/hard-limits.js";
+import { noteApDeliverLogger, noteLogger } from "./logger.js";
 
 const mutedWordsCache = new Cache<
 	{ userId: UserProfile["userId"]; mutedWords: UserProfile["mutedWords"] }[]
@@ -776,7 +777,7 @@ export default async (
 			user.notesCount < 500 &&
 			mentionedUsers?.length > 2
 		) {
-			console.log(`mentionedUsers.length: ${mentionedUsers?.length}`);
+			noteLogger.debug(`mentionedUsers.length: ${mentionedUsers?.length}`);
 			if (
 				tags?.some(
 					(x) =>
@@ -879,7 +880,7 @@ export default async (
 			const localRelation = localMentioned.every(
 				(x) => !localRelationsMap.get(x.id)?.isFollowed,
 			);
-			console.log(`localRelation: ${!localRelation}`);
+			noteLogger.debug(`localRelation: ${!localRelation}`);
                         if (localRelation)
                                 return rej(
                                         new StatusError(
@@ -1027,15 +1028,17 @@ export default async (
 			try {
 				await DriveFiles.adjustUsageCount(usageTargetIds, 1);
 			} catch (err) {
-				console.warn("Failed to increment drive file usage count", err);
+				noteLogger.warn("Failed to increment drive file usage count", { e: err });
 			}
 		}
 
-		if (firstVisibility != note.visibility) console.log(`${note.id}:可視性変更 ${firstVisibility} -> ${note.visibility}`);
+		if (firstVisibility != note.visibility) {
+			noteLogger.debug(`${note.id}:可視性変更 ${firstVisibility} -> ${note.visibility}`);
+		}
 		const apiResponseMs = Date.now() - apiStartedAt;
 		if (apiResponseMs >= 1000) {
 			const endpointPreprocessMs = data.endpointPreprocessMs ?? 0;
-			console.log(
+			noteApDeliverLogger.info(
 				`[note-deliver-metric] api_response_ms=${apiResponseMs} endpoint_preprocess_ms=${endpointPreprocessMs} insert_note_ms=${insertNoteMs} note_id=${note.id} user_id=${user.id} user_host=${user.host ?? "local"} visibility=${note.visibility} is_reply=${Boolean(data.reply)} is_renote=${Boolean(data.renote)} file_count=${data.files?.length ?? 0}`,
 			);
 		}
@@ -1510,7 +1513,7 @@ async function insertNote(
 			throw err;
 		}
 
-		console.error(e);
+		noteLogger.error(String(e));
 
 		throw e;
 	}
@@ -1644,14 +1647,14 @@ function createMentionedEventsInBackground(
 		}
 
 		if (errors.length > 0) {
-			console.error("[notes/create] mention event errors", {
+			noteLogger.error("[notes/create] mention event errors", {
 				noteId: note.id,
 				errorCount: errors.length,
 				errors,
 			});
 		}
 	})().catch((err) => {
-		console.error("[notes/create] mention event background job failed", {
+		noteLogger.error("[notes/create] mention event background job failed", {
 			noteId: note.id,
 			err,
 		});

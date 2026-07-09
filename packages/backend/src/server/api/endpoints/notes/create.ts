@@ -42,6 +42,7 @@ import {
 	NO_SUCH_REFERENCE_TARGET_ERROR_ID,
 	validateReferenceIds,
 } from "@/services/note/reference-visibility.js";
+import { apiLogger } from "../../logger.js";
 
 const NOTES_CREATE_IDEMPOTENCY_TTL_SEC = 60 * 60;
 const NOTES_CREATE_IDEMPOTENCY_PENDING = "__pending__";
@@ -628,7 +629,7 @@ export default define(meta, paramDef, async (ps, user, _token, _file, _cleanup, 
 									return file;
 							}
 					} catch (e) {
-							console.log(e?.message);
+							apiLogger.warn("failed to upload file from URL", { e });
 					}
 					return null;
 			}).filter(promise => promise !== null)

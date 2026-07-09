@@ -12,7 +12,7 @@
 import { URL } from "node:url";
 import request from "@/remote/activitypub/request.js";
 import { registerOrFetchInstanceDoc } from "@/services/register-or-fetch-instance-doc.js";
-import Logger from "@/services/logger.js";
+import { deliverJobLogger } from "@/queue/logger.js";
 import { Instances } from "@/models/index.js";
 import {
 	apRequestChart,
@@ -26,7 +26,7 @@ import { shouldSkipInstance } from "@/misc/skipped-instances.js";
 import type { DeliverJobData } from "@/queue/types.js";
 import type Bull from "bull";
 
-const logger = new Logger("deliver");
+const logger = deliverJobLogger;
 
 let latest: string | null = null;
 

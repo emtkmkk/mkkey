@@ -13,6 +13,9 @@ import RE2 from "re2";
 import type { Note } from "@/models/entities/note.js";
 import type { User } from "@/models/entities/user.js";
 import config from "@/config/index.js";
+import Logger from "@/services/logger.js";
+
+const muteLogger = new Logger("mute");
 
 type NoteLike = {
 	userId: Note["userId"];
@@ -54,7 +57,7 @@ function checkWordMute(
 
 			// 入力サニタイズにより通常は発生しない
 			if (!regexp) {
-				console.warn(`Found invalid regex in word mutes: ${mutePattern}`);
+				muteLogger.warn(`Found invalid regex in word mutes: ${mutePattern}`);
 				continue;
 			}
 
@@ -211,7 +214,7 @@ export function checkReactionMute(
 
 			// 入力サニタイズにより通常は発生しない
 			if (!regexp) {
-				console.warn(`Found invalid regex in word mutes: ${mutePattern}`);
+				muteLogger.warn(`Found invalid regex in word mutes: ${mutePattern}`);
 				continue;
 			}
 

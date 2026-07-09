@@ -19,6 +19,7 @@ import { Emojis } from "@/models/index.js";
 import { toPunyNullable } from "./convert-host.js";
 import { IsNull } from "typeorm";
 import config from "@/config/index.js";
+import { apLogger } from "@/remote/activitypub/logger.js";
 
 const legacies = new Map([
 	["like", "👍"],
@@ -159,14 +160,14 @@ export async function toDbReaction(
 		// リモートユーザの場合、絵文字がローカルのみ or 何らかの理由で取得できなかった
 		// 絵文字の名前だけでも保存する
 		if (reacterHost && custom?.[2] !== config.host) {
-			console.log(
+			apLogger.debug(
 				`NotFound Emoji : :${custom?.[1]}@${custom?.[2] || reacterHost}:`,
 			);
 			return `:${custom?.[1]}@${custom?.[2] || reacterHost}:`;
 		}
 	}
 
-	console.log(`NotFound Emoji : ${reaction}`);
+	apLogger.debug(`NotFound Emoji : ${reaction}`);
 	throw new Error(`NotFound Emoji : ${reaction}`);
 }
 

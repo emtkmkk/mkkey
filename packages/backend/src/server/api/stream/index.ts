@@ -41,6 +41,7 @@ import type { StreamEventEmitter, StreamMessages } from "./types.js";
 import { Converter } from "@calckey/megalodon";
 import { getClient } from "../mastodon/ApiMastodonCompatibleService.js";
 import { toTextWithReaction } from "../mastodon/endpoints/timeline.js";
+import { apiLogger } from "../logger.js";
 
 /**
  * メインストリーム接続
@@ -199,8 +200,10 @@ export default class Connection {
 						const tl = await client.getHomeTimeline();
 						for (const t of tl.data) forSubscribe.push(t.id);
 					} catch (e: any) {
-						console.log(e);
-						console.error(e.response.data);
+						apiLogger.error("getHomeTimeline failed for stream subscribe", {
+							e,
+							response: e.response?.data,
+						});
 					}
 				} else if (simpleObj.stream === "public:local") {
 					this.currentSubscribe.push(["public:local"]);

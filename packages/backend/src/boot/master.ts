@@ -40,14 +40,8 @@ const themeColor = chalk.hex("#31748f");
 
 function greet() {
 	if (!envOption.quiet) {
-
-
-		console.log(" Cluckeyは、オープンソース分散型マイクロブログプラットフォームです。");
-
-		console.log("");
-		console.log(
-			chalkTemplate`--- ${os.hostname()} {gray (PID: ${process.pid.toString()})} ---`,
-		);
+		bootLogger.info("Cluckeyは、オープンソース分散型マイクロブログプラットフォームです。");
+		bootLogger.info(chalkTemplate`--- ${os.hostname()} {gray (PID: ${process.pid.toString()})} ---`);
 	}
 
 	bootLogger.info("Welcome to Cluckey!");

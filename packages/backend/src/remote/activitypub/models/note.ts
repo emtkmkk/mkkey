@@ -333,7 +333,7 @@ export async function createNote(
 			}
 		> => {
 			if (typeof uri !== "string" || !uri.match(/^https?:/)) {
-				console.log(`ResolveNoteErr : ${uri}`);
+				logger.warn(`ResolveNoteErr : ${uri}`);
 				return { status: "permerror" };
 			}
 			try {
@@ -344,13 +344,13 @@ export async function createNote(
 						res,
 					};
 				} else {
-					console.log("ResolveNoteErr : !res");
+					logger.warn("ResolveNoteErr : !res");
 					return {
 						status: "permerror",
 					};
 				}
 			} catch (e) {
-				console.log(`ResolveNoteErr : ${JSON.stringify(e, undefined, "\t")}`);
+				logger.warn(`ResolveNoteErr : ${JSON.stringify(e, undefined, "\t")}`);
 				return {
 					status:
 						e instanceof StatusError && !e.isRetryable
@@ -511,7 +511,7 @@ export async function createNote(
 					}
 					return null;
 				} catch (e) {
-					console.log(e);
+					logger.warn("failed to find reference link inline", { e });
 					return null
 				}
 			};

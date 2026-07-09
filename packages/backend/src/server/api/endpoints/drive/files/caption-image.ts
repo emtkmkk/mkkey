@@ -1,5 +1,6 @@
 import define from "../../../define.js";
 import { createWorker } from "tesseract.js";
+import { apiLogger } from "../../../logger.js";
 
 export const meta = {
 	tags: ["drive"],
@@ -27,7 +28,7 @@ export const paramDef = {
 
 export default define(meta, paramDef, async (ps) => {
 	const worker = createWorker({
-		logger: (m) => console.log(m),
+		logger: (m) => apiLogger.debug(String(m)),
 	});
 
 	await worker.load();

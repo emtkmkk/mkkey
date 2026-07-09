@@ -166,7 +166,7 @@ async function save(
 				// もしBlurhashがまだ生成されていない場合は、サムネイル画像を用いて再度生成する
 				file.blurhash = await getBlurhashBuffer(alts.thumbnail.data).catch(
 					(e) => {
-						console.log(`getBlurhash to thumbnail failed: ${e}`);
+						logger.warn(`getBlurhash to thumbnail failed: ${e}`);
 						return null;
 					},
 				);

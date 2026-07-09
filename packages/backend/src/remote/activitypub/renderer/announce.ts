@@ -1,5 +1,6 @@
 import config from "@/config/index.js";
 import type { Note } from "@/models/entities/note.js";
+import { apLogger } from "../logger.js";
 
 export default (object: any, note: Note) => {
 	const attributedTo = `${config.url}/users/${note.userId}`;
@@ -10,12 +11,12 @@ export default (object: any, note: Note) => {
 			JSON.parse(note.mentionedRemoteUsers) as IMentionedRemoteUsers
 		)?.map((x) => x.uri);
 	} catch(e) {
-		console.log(e);
+		apLogger.warn("failed to parse mentionedRemoteUsers", { e });
 	}
 
 	let to: string[] = [];
 	let cc: string[] = [];
-	
+
 	if (note.localOnly && ["public", "home"].includes(note.visibility)) {
 		to = [`${attributedTo}/followers`];
 	} else if (note.visibility === "public") {

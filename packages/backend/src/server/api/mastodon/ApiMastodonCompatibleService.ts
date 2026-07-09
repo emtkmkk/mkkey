@@ -10,6 +10,7 @@ import { apiSearchMastodon } from "./endpoints/search.js";
 import { getInstance } from "./endpoints/meta.js";
 import { convertAnnouncement, convertFilter } from "./converters.js";
 import { convertId, IdType } from "../index.js";
+import { mastodonLogger } from "../logger.js";
 
 export function getClient(
 	BASE_URL: string,
@@ -43,7 +44,7 @@ export function apiMastodonCompatible(router: Router): void {
 			const data = await client.getInstanceCustomEmojis();
 			ctx.body = data.data;
 		} catch (e: any) {
-			console.error(e);
+			mastodonLogger.error("request failed", { e, response: e.response?.data });
 			ctx.status = 401;
 			ctx.body = e.response.data;
 		}
@@ -58,7 +59,7 @@ export function apiMastodonCompatible(router: Router): void {
 			const data = await client.getInstance();
 			ctx.body = await getInstance(data.data);
 		} catch (e: any) {
-			console.error(e);
+			mastodonLogger.error("request failed", { e, response: e.response?.data });
 			ctx.status = 401;
 			ctx.body = e.response.data;
 		}
@@ -74,7 +75,7 @@ export function apiMastodonCompatible(router: Router): void {
 				convertAnnouncement(announcement),
 			);
 		} catch (e: any) {
-			console.error(e);
+			mastodonLogger.error("request failed", { e, response: e.response?.data });
 			ctx.status = 401;
 			ctx.body = e.response.data;
 		}
@@ -92,7 +93,7 @@ export function apiMastodonCompatible(router: Router): void {
 				);
 				ctx.body = data.data;
 			} catch (e: any) {
-				console.error(e);
+				mastodonLogger.error("request failed", { e, response: e.response?.data });
 				ctx.status = 401;
 				ctx.body = e.response.data;
 			}
@@ -108,7 +109,7 @@ export function apiMastodonCompatible(router: Router): void {
 			const data = await client.getFilters();
 			ctx.body = data.data.map((filter) => convertFilter(filter));
 		} catch (e: any) {
-			console.error(e);
+			mastodonLogger.error("request failed", { e, response: e.response?.data });
 			ctx.status = 401;
 			ctx.body = e.response.data;
 		}
@@ -123,7 +124,7 @@ export function apiMastodonCompatible(router: Router): void {
 			const data = await client.getInstanceTrends();
 			ctx.body = data.data;
 		} catch (e: any) {
-			console.error(e);
+			mastodonLogger.error("request failed", { e, response: e.response?.data });
 			ctx.status = 401;
 			ctx.body = e.response.data;
 		}
@@ -138,7 +139,7 @@ export function apiMastodonCompatible(router: Router): void {
 			const data = await client.getPreferences();
 			ctx.body = data.data;
 		} catch (e: any) {
-			console.error(e);
+			mastodonLogger.error("request failed", { e, response: e.response?.data });
 			ctx.status = 401;
 			ctx.body = e.response.data;
 		}

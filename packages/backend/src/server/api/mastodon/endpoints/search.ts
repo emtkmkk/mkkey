@@ -5,6 +5,7 @@ import axios from "axios";
 import { Converter } from "@calckey/megalodon";
 import { convertTimelinesArgsId, limitToInt } from "./timeline.js";
 import { convertAccount, convertStatus } from "../converters.js";
+import { mastodonLogger } from "../../logger.js";
 
 export function apiSearchMastodon(router: Router): void {
 	router.get("/v1/search", async (ctx) => {
@@ -18,7 +19,7 @@ export function apiSearchMastodon(router: Router): void {
 			const data = await client.search(query.q, type, query);
 			ctx.body = data.data;
 		} catch (e: any) {
-			console.error(e);
+			mastodonLogger.error("request failed", { e });
 			ctx.status = 401;
 			ctx.body = e.response.data;
 		}
@@ -46,7 +47,7 @@ export function apiSearchMastodon(router: Router): void {
 				};
 			}
 		} catch (e: any) {
-			console.error(e);
+			mastodonLogger.error("request failed", { e });
 			ctx.status = 401;
 			ctx.body = e.response.data;
 		}
@@ -62,7 +63,7 @@ export function apiSearchMastodon(router: Router): void {
 			);
 			ctx.body = data.map((status) => convertStatus(status));
 		} catch (e: any) {
-			console.error(e);
+			mastodonLogger.error("request failed", { e });
 			ctx.status = 401;
 			ctx.body = e.response.data;
 		}
@@ -85,7 +86,7 @@ export function apiSearchMastodon(router: Router): void {
 			//console.log(data);
 			ctx.body = data;
 		} catch (e: any) {
-			console.error(e);
+			mastodonLogger.error("request failed", { e });
 			ctx.status = 401;
 			ctx.body = e.response.data;
 		}
@@ -105,8 +106,7 @@ async function getHighlight(
 		const data: MisskeyEntity.Note[] = api.data;
 		return data.map((note) => Converter.note(note, domain));
 	} catch (e: any) {
-		console.log(e);
-		console.log(e.response.data);
+		mastodonLogger.error("getHighlight failed", { e, response: e.response?.data });
 		return [];
 	}
 }
@@ -135,8 +135,7 @@ async function getFeaturedUser(
 			};
 		});
 	} catch (e: any) {
-		console.log(e);
-		console.log(e.response.data);
+		mastodonLogger.error("getFeaturedUser failed", { e, response: e.response?.data });
 		return [];
 	}
 }

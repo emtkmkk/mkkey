@@ -5,6 +5,7 @@ import { convertId, IdType } from "../../index.js";
 import { getClient } from "../ApiMastodonCompatibleService.js";
 import { convertTimelinesArgsId, toTextWithReaction } from "./timeline.js";
 import { convertNotification } from "../converters.js";
+import { mastodonLogger } from "../../logger.js";
 function toLimitToInt(q: any) {
 	if (q.limit) if (typeof q.limit === "string") q.limit = parseInt(q.limit, 10);
 	return q;
@@ -36,7 +37,7 @@ export function apiNotificationsMastodon(router: Router): void {
 			});
 			ctx.body = ret;
 		} catch (e: any) {
-			console.error(e);
+			mastodonLogger.error("request failed", { e });
 			ctx.status = 401;
 			ctx.body = e.response.data;
 		}
@@ -59,7 +60,7 @@ export function apiNotificationsMastodon(router: Router): void {
 				ctx.body = data;
 			}
 		} catch (e: any) {
-			console.error(e);
+			mastodonLogger.error("request failed", { e });
 			ctx.status = 401;
 			ctx.body = e.response.data;
 		}
@@ -74,7 +75,7 @@ export function apiNotificationsMastodon(router: Router): void {
 			const data = await client.dismissNotifications();
 			ctx.body = data.data;
 		} catch (e: any) {
-			console.error(e);
+			mastodonLogger.error("request failed", { e });
 			ctx.status = 401;
 			ctx.body = e.response.data;
 		}
@@ -91,7 +92,7 @@ export function apiNotificationsMastodon(router: Router): void {
 			);
 			ctx.body = data.data;
 		} catch (e: any) {
-			console.error(e);
+			mastodonLogger.error("request failed", { e });
 			ctx.status = 401;
 			ctx.body = e.response.data;
 		}

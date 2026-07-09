@@ -12,10 +12,13 @@
 
 import { EventEmitter } from "node:events";
 import boot from "./boot/index.js";
+import Logger from "./services/logger.js";
+
+const coreLogger = new Logger("core");
 
 Error.stackTraceLimit = Infinity;
 EventEmitter.defaultMaxListeners = 128;
 
 boot().catch((err) => {
-	console.error(err);
+	coreLogger.error(err);
 });

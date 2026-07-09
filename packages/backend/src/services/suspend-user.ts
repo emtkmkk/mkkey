@@ -17,6 +17,7 @@ import type { User } from "@/models/entities/user.js";
 import { Users, Followings } from "@/models/index.js";
 import { Not, IsNull } from "typeorm";
 import { publishInternalEvent } from "@/services/stream.js";
+import { apLogger } from "@/remote/activitypub/logger.js";
 
 export async function doPostSuspend(user: {
 	id: User["id"];
@@ -47,7 +48,7 @@ export async function doPostSuspend(user: {
 			(x) => x.followerSharedInbox || x.followeeSharedInbox,
 		);
 
-		console.log("delete Activity Send: " + inboxes.length);
+		apLogger.info(`delete Activity Send: ${inboxes.length}`);
 
 		for (const inbox of inboxes) {
 			if (inbox != null && !queue.includes(inbox)) queue.push(inbox);

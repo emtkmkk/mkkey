@@ -8,6 +8,10 @@
  *
  * @internal
  */
+import Logger from "@/services/logger.js";
+
+const i18nLogger = new Logger("i18n");
+
 export class I18n<T extends Record<string, any>> {
 	public locale: T;
 
@@ -36,7 +40,7 @@ export class I18n<T extends Record<string, any>> {
 			}
 			return str;
 		} catch (e) {
-			console.warn(`missing localization '${key}'`);
+			i18nLogger.warn(`missing localization '${key}'`);
 			return key;
 		}
 	}

@@ -72,7 +72,7 @@ export default async function (
 		}
 
 		if (renote != null && !(await Notes.isVisibleForMe(renote, actor.id))) {
-			console.log("skip: invalid actor for this activity");
+			logger.debug("skip: invalid actor for this activity");
 			return;
 		}
 		logger.info(`(Re)Note を作成中: ${uri}`);

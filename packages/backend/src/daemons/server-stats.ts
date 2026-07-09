@@ -11,6 +11,9 @@
 import si from "systeminformation";
 import Xev from "xev";
 import * as osUtils from "os-utils";
+import Logger from "@/services/logger.js";
+
+const statsLogger = new Logger("stats");
 
 const ev = new Xev();
 
@@ -52,10 +55,10 @@ export default function () {
 			},
 		};
 		if (stats && stats.cpu > 0.85)
-			console.log(`WARN CPU ${Math.round(stats.cpu * 100)}%`);
+			statsLogger.warn(`CPU ${Math.round(stats.cpu * 100)}%`);
 		if (stats && stats.mem.active / stats.mem.total > 0.85)
-			console.log(
-				`WARN MEM ${Math.round((stats.mem.active / stats.mem.total) * 100)}%`,
+			statsLogger.warn(
+				`MEM ${Math.round((stats.mem.active / stats.mem.total) * 100)}%`,
 			);
 		ev.emit("serverStats", stats);
 		log.unshift(stats);

@@ -75,6 +75,9 @@ import type { Note } from "../entities/note.js";
 import type { UserNotePining } from "../entities/user-note-pining.js";
 import type { DriveFile } from "../entities/drive-file.js";
 import { resolveUser } from "@/remote/resolve-user.js";
+import { remoteLogger } from "@/remote/logger.js";
+
+const resolveUserLogger = remoteLogger.createSubLogger("resolve-user");
 import { redisClient } from "@/db/redis.js";
 
 /** /i の base キャッシュ TTL（秒）。キャッシュヒット率向上のため 20 分に設定。 */
@@ -834,7 +837,7 @@ export const UserRepository = db.getRepository(User).extend({
 
 		if (user.host && user.lastFetchedAt && Date.now() - new Date(user.lastFetchedAt).getTime() > (7 * 24 * 60 * 60 * 1000)) {
 			const ruser = await resolveUser(user.username, user.host).catch((e) => {
-				console.log(`failed to resolve remote user: ${e}`);
+				resolveUserLogger.warn(`failed to resolve remote user: ${e}`);
 			});
 			if (ruser) {
 				user = await this.findOneOrFail({

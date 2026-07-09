@@ -3,6 +3,7 @@ import Router from "@koa/router";
 import { koaBody } from "koa-body";
 import { getClient } from "../ApiMastodonCompatibleService.js";
 import bodyParser from "koa-bodyparser";
+import { mastodonLogger } from "../../logger.js";
 
 const readScope = [
 	"read:account",
@@ -73,7 +74,7 @@ export function apiAuthMastodon(router: Router): void {
 			//console.log(returns);
 			ctx.body = returns;
 		} catch (e: any) {
-			console.error(e);
+			mastodonLogger.error("request failed", { e });
 			ctx.status = 401;
 			ctx.body = e.response.data;
 		}

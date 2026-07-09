@@ -18,10 +18,11 @@ import type { ILocalUser, User } from "@/models/entities/user.js";
 import type { NoteReaction } from "@/models/entities/note-reaction.js";
 import type { Note } from "@/models/entities/note.js";
 import type { NoteApDeliverJobData } from "@/queue/types.js";
+import { noteApDeliverLogger } from "@/services/note/logger.js";
 
 export async function processNoteApDeliverJob(data: NoteApDeliverJobData) {
 	const startedAt = Date.now();
-	console.log(
+	noteApDeliverLogger.debug(
 		`[note-deliver-metric] queue_delay_ms=${startedAt - data.queuedAt} note=${data.noteId}`,
 	);
 
@@ -33,7 +34,7 @@ export async function processNoteApDeliverJob(data: NoteApDeliverJobData) {
 
 	const noteActivity = await renderNoteOrRenoteActivityFromNote(note);
 	if (!noteActivity) {
-		console.log(`[reaction-resend] skip: noteActivity is null (note=${note.id})`);
+		noteApDeliverLogger.debug(`[reaction-resend] skip: noteActivity is null (note=${note.id})`);
 		return;
 	}
 
@@ -41,7 +42,7 @@ export async function processNoteApDeliverJob(data: NoteApDeliverJobData) {
 	await addNoteActivityDeliveryRecipes(dm, note);
 
 	const noteInboxes = await dm.collectInboxes();
-	console.log(
+	noteApDeliverLogger.debug(
 		`[reaction-resend] noteInboxes collected: ${noteInboxes.size} (note=${note.id})`,
 	);
 	await deliverToInboxes(note.user, noteActivity, noteInboxes);
@@ -54,14 +55,14 @@ export async function processNoteApDeliverJob(data: NoteApDeliverJobData) {
 				note.renote.id,
 				note.id,
 			));
-		console.log(
+		noteApDeliverLogger.debug(
 			`[reaction-resend] renote detected: countSameRenotes=${sameRenoteCount} (note=${note.id}, renote=${note.renote.id})`,
 		);
 		if (sameRenoteCount === 0) {
 			await delayReactionResend();
 			await resendLocalReactionsForRenote(note.renote, noteInboxes);
 		} else {
-			console.log(
+			noteApDeliverLogger.debug(
 				`[reaction-resend] skip: countSameRenotes is not zero (note=${note.id}, renote=${note.renote.id})`,
 			);
 		}
@@ -71,7 +72,7 @@ export async function processNoteApDeliverJob(data: NoteApDeliverJobData) {
 		deliverToRelays(note.user, noteActivity);
 	}
 
-	console.log(
+	noteApDeliverLogger.debug(
 		`[note-deliver-metric] deliver_duration_ms=${Date.now() - startedAt} note=${note.id}`,
 	);
 }
@@ -154,11 +155,11 @@ async function addNoteActivityDeliveryRecipes(dm: DeliverManager, note: Note) {
 				note.reply.replyUserId !== note.userId &&
 				note.reply.replyUserHost === null
 			) {
-				console.log(`reReply deliver : ${note.reply.replyId}`);
+				noteApDeliverLogger.debug(`reReply deliver : ${note.reply.replyId}`);
 				const u = userMap.get(note.reply.replyUserId);
 				if (u) dm.addFollowersRecipe(u as ILocalUser);
 			} else {
-				console.log(`reReply deliver : ${note.reply.replyId}`);
+				noteApDeliverLogger.debug(`reReply deliver : ${note.reply.replyId}`);
 				dm.addFollowersRecipe();
 			}
 		} else if (
@@ -166,7 +167,7 @@ async function addNoteActivityDeliveryRecipes(dm: DeliverManager, note: Note) {
 			note.reply.userId !== note.userId &&
 			note.reply.userHost === null
 		) {
-			console.log(`reply deliver : ${note.reply.id}`);
+			noteApDeliverLogger.debug(`reply deliver : ${note.reply.id}`);
 			const u = userMap.get(note.reply.userId);
 			if (u) dm.addFollowersRecipe(u as ILocalUser);
 		} else {
@@ -206,7 +207,7 @@ async function resendLocalReactionsForRenote(
 	noteInboxes: Map<string, boolean>,
 ) {
 	if (noteInboxes.size === 0) {
-		console.log(
+		noteApDeliverLogger.debug(
 			`[reaction-resend] skip: noteInboxes is empty (renote=${renote.id})`,
 		);
 		return;
@@ -221,7 +222,7 @@ async function resendLocalReactionsForRenote(
 		.getMany();
 
 	if (reactions.length === 0) {
-		console.log(
+		noteApDeliverLogger.debug(
 			`[reaction-resend] skip: no local reactions (renote=${renote.id})`,
 		);
 		return;
@@ -234,7 +235,7 @@ async function resendLocalReactionsForRenote(
 	}
 
 	const latestReactions = Array.from(latestReactionsByUser.values());
-	console.log(
+	noteApDeliverLogger.debug(
 		`[reaction-resend] local reactions: ${latestReactions.length} (renote=${renote.id})`,
 	);
 
@@ -269,7 +270,7 @@ async function resendLocalReactionsForRenote(
 			{ disableUnion: true, reactee },
 		);
 		const reactionInboxes = await dm.collectInboxes();
-		console.log(
+		noteApDeliverLogger.debug(
 			`[reaction-resend] deliver reaction: reactionInboxes=${reactionInboxes.size} (renote=${renote.id}, reaction=${reaction.id})`,
 		);
 

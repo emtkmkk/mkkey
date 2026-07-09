@@ -17,6 +17,7 @@
 
 import { publishMainStream } from "@/services/stream.js";
 import { pushNotification } from "@/services/push-notification.js";
+import Logger from "@/services/logger.js";
 import {
 	Notifications,
 	NoteThreadMutings,
@@ -29,6 +30,8 @@ import type { User } from "@/models/entities/user.js";
 import type { Notification } from "@/models/entities/notification.js";
 import { shouldSilenceInstance } from "@/misc/should-block-instance.js";
 import { shouldDeliverDelayedNotification } from "@/services/should-deliver-delayed-notification.js";
+
+const notificationLogger = new Logger("notification");
 
 /**
  * 通知を作成する。
@@ -142,7 +145,7 @@ export async function createNotification(
 				await pushNotification(notifieeId, "notification", packed);
 				publishMainStream(notifieeId, "unreadNotification", packed);
 			} catch (err) {
-				console.error("delayed notification delivery failed", err);
+				notificationLogger.error("delayed notification delivery failed", { err });
 			}
 		}, 3000);
 	}

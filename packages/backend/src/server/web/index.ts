@@ -51,6 +51,9 @@ import { manifestHandler } from "./manifest.js";
 import packFeed from "./feed.js";
 import { MINUTE, DAY } from "@/const.js";
 import type { Note } from "@/models/entities/note.js";
+import Logger from "@/services/logger.js";
+
+const webLogger = new Logger("web");
 
 const _filename = fileURLToPath(import.meta.url);
 const _dirname = dirname(_filename);
@@ -664,7 +667,9 @@ router.get("/notes/:note/references", async (ctx, next) => {
 				return;
 			}
 		}
-	} catch (e) {console.log(JSON.stringify(e))}
+	} catch (e) {
+		webLogger.error("emoji middleware failed", { e });
+	}
 
 	await next();
 });

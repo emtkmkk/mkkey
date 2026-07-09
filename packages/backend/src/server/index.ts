@@ -207,8 +207,7 @@ mastoRouter.get("/oauth/authorize", async (ctx) => {
 
 mastoRouter.post("/oauth/token", async (ctx) => {
 	const body: any = ctx.request.body || ctx.request.query;
-	console.log("token-request", body);
-	console.log("token-query", ctx.request.query);
+	serverLogger.debug("token-request", { body, query: ctx.request.query });
 	if (body.grant_type === "client_credentials") {
 		const ret = {
 			access_token: uuid(),
@@ -232,7 +231,7 @@ mastoRouter.post("/oauth/token", async (ctx) => {
 		//	return;
 		//}
 		//token = `${m[1]}-${m[2]}-${m[3]}-${m[4]}-${m[5]}`
-		console.log(body.code, token);
+		serverLogger.debug("oauth token exchange", { code: body.code, token });
 		token = body.code;
 	}
 	if (client_id instanceof Array) {
@@ -252,10 +251,10 @@ mastoRouter.post("/oauth/token", async (ctx) => {
 			scope: body.scope || "read write follow push",
 			created_at: Math.floor(new Date().getTime() / 1000),
 		};
-		console.log("token-response", ret);
+		serverLogger.debug("token-response", ret);
 		ctx.body = ret;
 	} catch (err: any) {
-		console.error(err);
+		serverLogger.error("oauth token failed", { e: err, response: err.response?.data });
 		ctx.status = 401;
 		ctx.body = err.response.data;
 	}
@@ -278,7 +277,7 @@ export const startServer = () => {
 	initializeStreamingServer(server);
 
 	const port = process.env.proxy === "1" ? config.portproxy : config.port
-	console.log("listen port: " + port)
+	serverLogger.info(`listen port: ${port}`)
 	server.listen(port);
 
 	return server;
@@ -315,7 +314,7 @@ export default () =>
 			}
 		});
 		const port = process.env.proxy === "1" ? config.portproxy : config.port
-		console.log("listen port: " + port)
+		serverLogger.info(`listen port: ${port}`)
 		// @ts-ignore
 		server.listen(port, resolve);
 	});

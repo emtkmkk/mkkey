@@ -16,7 +16,7 @@ import processWebhookDeliver from "./processors/webhook-deliver.js";
 import processBackground from "./processors/background/index.js";
 import processNoteApDeliver from "./processors/note-ap-deliver.js";
 import { endedPollNotification } from "./processors/ended-poll-notification.js";
-import { queueLogger } from "./logger.js";
+import { deliverJobLogger, noteApDeliverLogger, queueLogger } from "./logger.js";
 import { getJobInfo } from "./get-job-info.js";
 import { clearDelayedRetry, markDelayedRetry } from "./delayed-retry-reason.js";
 import { adaptiveQueueWrap } from "./adaptive-queue-throttle.js";
@@ -59,12 +59,11 @@ function renderError(e: Error): any {
 }
 
 const systemLogger = queueLogger.createSubLogger("system");
-const deliverLogger = queueLogger.createSubLogger("deliver");
+const deliverLogger = deliverJobLogger;
 const webhookLogger = queueLogger.createSubLogger("webhook");
 const inboxLogger = queueLogger.createSubLogger("inbox");
 const dbLogger = queueLogger.createSubLogger("db");
 const objectStorageLogger = queueLogger.createSubLogger("objectStorage");
-const noteApDeliverLogger = queueLogger.createSubLogger("noteApDeliver");
 
 systemQueue
 	.on("waiting", (jobId) => systemLogger.debug(`waiting id=${jobId}`))

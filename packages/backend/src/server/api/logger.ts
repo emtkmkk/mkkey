@@ -12,3 +12,4 @@
 import Logger from "@/services/logger.js";
 
 export const apiLogger = new Logger("api");
+export const mastodonLogger = apiLogger.createSubLogger("mastodon");

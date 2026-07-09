@@ -13,6 +13,10 @@
 
 "use strict";
 
+import Logger from "@/services/logger.js";
+
+const shutdownLogger = new Logger("shutdown");
+
 /** シャットダウン時に受け取るシグナルまたはイベント名 */
 const SHUTDOWN_SIGNALS = ["SIGINT", "SIGTERM"];
 
@@ -44,7 +48,7 @@ const processOnce = (
  */
 const forceExitAfter = (timeout: number) => () => {
 	setTimeout(() => {
-		console.warn(
+		shutdownLogger.warn(
 			`Could not close resources gracefully after ${timeout}ms: forcing shutdown`,
 		);
 		return process.exit(1);
@@ -60,14 +64,14 @@ const forceExitAfter = (timeout: number) => () => {
 async function shutdownHandler(signalOrEvent: string) {
 	if (process.env.NODE_ENV === "test") return process.exit(0);
 
-	console.warn(`Shutting down: received [${signalOrEvent}] signal`);
+	shutdownLogger.warn(`Shutting down: received [${signalOrEvent}] signal`);
 
 	for (const listener of shutdownListeners) {
 		try {
 			await listener(signalOrEvent);
 		} catch (err) {
 			if (err instanceof Error) {
-				console.warn(
+				shutdownLogger.warn(
 					`A shutdown handler failed before completing with: ${
 						err.message || err
 					}`,

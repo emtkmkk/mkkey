@@ -3,6 +3,9 @@ import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
 import * as nsfw from "nsfwjs";
 import si from "systeminformation";
+import Logger from "@/services/logger.js";
+
+const detectSensitiveLogger = new Logger("detect-sensitive");
 
 const _filename = fileURLToPath(import.meta.url);
 const _dirname = dirname(_filename);
@@ -24,7 +27,7 @@ export async function detectSensitive(
 		}
 
 		if (!isSupportedCpu) {
-			console.error("This CPU cannot use TensorFlow.");
+			detectSensitiveLogger.error("This CPU cannot use TensorFlow.");
 			return null;
 		}
 
@@ -44,7 +47,7 @@ export async function detectSensitive(
 			image.dispose();
 		}
 	} catch (err) {
-		console.error(err);
+		detectSensitiveLogger.error(String(err));
 		return null;
 	}
 }

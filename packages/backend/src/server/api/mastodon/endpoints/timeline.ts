@@ -5,6 +5,7 @@ import { statusModel } from "./status.js";
 import Autolinker from "autolinker";
 import { ParsedUrlQuery } from "querystring";
 import { convertAccount, convertList, convertStatus } from "../converters.js";
+import { mastodonLogger } from "../../logger.js";
 import { convertId, IdType } from "../../index.js";
 
 export function limitToInt(q: ParsedUrlQuery) {
@@ -118,9 +119,8 @@ export function apiTimelineMastodon(router: Router): void {
 			let resp = data.data.map((status) => convertStatus(status));
 			ctx.body = toTextWithReaction(resp, ctx.hostname);
 		} catch (e: any) {
-			console.error(e);
-			console.error(e.response.data);
-			ctx.status = 401;
+			mastodonLogger.error("request failed", { e, response: e.response?.data });
+						ctx.status = 401;
 			ctx.body = e.response.data;
 		}
 	});
@@ -138,9 +138,8 @@ export function apiTimelineMastodon(router: Router): void {
 				let resp = data.data.map((status) => convertStatus(status));
 				ctx.body = toTextWithReaction(resp, ctx.hostname);
 			} catch (e: any) {
-				console.error(e);
-				console.error(e.response.data);
-				ctx.status = 401;
+				mastodonLogger.error("request failed", { e, response: e.response?.data });
+								ctx.status = 401;
 				ctx.body = e.response.data;
 			}
 		},
@@ -156,9 +155,8 @@ export function apiTimelineMastodon(router: Router): void {
 			let resp = data.data.map((status) => convertStatus(status));
 			ctx.body = toTextWithReaction(resp, ctx.hostname);
 		} catch (e: any) {
-			console.error(e);
-			console.error(e.response.data);
-			ctx.status = 401;
+			mastodonLogger.error("request failed", { e, response: e.response?.data });
+						ctx.status = 401;
 			ctx.body = e.response.data;
 		}
 	});
@@ -176,9 +174,8 @@ export function apiTimelineMastodon(router: Router): void {
 				let resp = data.data.map((status) => convertStatus(status));
 				ctx.body = toTextWithReaction(resp, ctx.hostname);
 			} catch (e: any) {
-				console.error(e);
-				console.error(e.response.data);
-				ctx.status = 401;
+				mastodonLogger.error("request failed", { e, response: e.response?.data });
+								ctx.status = 401;
 				ctx.body = e.response.data;
 			}
 		},
@@ -193,9 +190,8 @@ export function apiTimelineMastodon(router: Router): void {
 			);
 			ctx.body = data.data;
 		} catch (e: any) {
-			console.error(e);
-			console.error(e.response.data);
-			ctx.status = 401;
+			mastodonLogger.error("request failed", { e, response: e.response?.data });
+						ctx.status = 401;
 			ctx.body = e.response.data;
 		}
 	});
@@ -207,9 +203,8 @@ export function apiTimelineMastodon(router: Router): void {
 			const data = await client.getLists();
 			ctx.body = data.data.map((list) => convertList(list));
 		} catch (e: any) {
-			console.error(e);
-			console.error(e.response.data);
-			ctx.status = 401;
+			mastodonLogger.error("request failed", { e, response: e.response?.data });
+						ctx.status = 401;
 			ctx.body = e.response.data;
 		}
 	});
@@ -225,9 +220,8 @@ export function apiTimelineMastodon(router: Router): void {
 				);
 				ctx.body = convertList(data.data);
 			} catch (e: any) {
-				console.error(e);
-				console.error(e.response.data);
-				ctx.status = 401;
+				mastodonLogger.error("request failed", { e, response: e.response?.data });
+								ctx.status = 401;
 				ctx.body = e.response.data;
 			}
 		},
@@ -240,9 +234,8 @@ export function apiTimelineMastodon(router: Router): void {
 			const data = await client.createList((ctx.request.body as any).title);
 			ctx.body = convertList(data.data);
 		} catch (e: any) {
-			console.error(e);
-			console.error(e.response.data);
-			ctx.status = 401;
+			mastodonLogger.error("request failed", { e, response: e.response?.data });
+						ctx.status = 401;
 			ctx.body = e.response.data;
 		}
 	});
@@ -259,9 +252,8 @@ export function apiTimelineMastodon(router: Router): void {
 				);
 				ctx.body = convertList(data.data);
 			} catch (e: any) {
-				console.error(e);
-				console.error(e.response.data);
-				ctx.status = 401;
+				mastodonLogger.error("request failed", { e, response: e.response?.data });
+								ctx.status = 401;
 				ctx.body = e.response.data;
 			}
 		},
@@ -278,9 +270,8 @@ export function apiTimelineMastodon(router: Router): void {
 				);
 				ctx.body = data.data;
 			} catch (e: any) {
-				console.error(e);
-				console.error(e.response.data);
-				ctx.status = 401;
+				mastodonLogger.error("request failed", { e, response: e.response?.data });
+								ctx.status = 401;
 				ctx.body = e.response.data;
 			}
 		},
@@ -298,9 +289,8 @@ export function apiTimelineMastodon(router: Router): void {
 				);
 				ctx.body = data.data.map((account) => convertAccount(account));
 			} catch (e: any) {
-				console.error(e);
-				console.error(e.response.data);
-				ctx.status = 401;
+				mastodonLogger.error("request failed", { e, response: e.response?.data });
+								ctx.status = 401;
 				ctx.body = e.response.data;
 			}
 		},
@@ -320,9 +310,8 @@ export function apiTimelineMastodon(router: Router): void {
 				);
 				ctx.body = data.data;
 			} catch (e: any) {
-				console.error(e);
-				console.error(e.response.data);
-				ctx.status = 401;
+				mastodonLogger.error("request failed", { e, response: e.response?.data });
+								ctx.status = 401;
 				ctx.body = e.response.data;
 			}
 		},
@@ -342,9 +331,8 @@ export function apiTimelineMastodon(router: Router): void {
 				);
 				ctx.body = data.data;
 			} catch (e: any) {
-				console.error(e);
-				console.error(e.response.data);
-				ctx.status = 401;
+				mastodonLogger.error("request failed", { e, response: e.response?.data });
+								ctx.status = 401;
 				ctx.body = e.response.data;
 			}
 		},

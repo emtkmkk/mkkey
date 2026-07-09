@@ -11,6 +11,7 @@
 				:initial-text="initialText"
 				:initial-visibility="visibility"
 				:initial-files="files"
+				:initial-raw-files="rawFiles"
 				:initial-local-only="localOnly"
 				:reply="reply"
 				:renote="renote"
@@ -49,7 +50,6 @@ import { mainRouter } from "@/router";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { i18n } from "@/i18n";
 import { get, del } from "@/scripts/idb-proxy";
-import { uploadFile } from "@/scripts/upload";
 
 const urlParams = new URLSearchParams(window.location.search);
 const localOnlyQuery = urlParams.get("localOnly");
@@ -69,6 +69,7 @@ let localOnly = $ref(
 	localOnlyQuery === "0" ? false : localOnlyQuery === "1" ? true : null
 );
 let files = $ref([] as Misskey.entities.DriveFile[]);
+let rawFiles = $ref([] as File[]);
 let visibleUsers = $ref([] as Misskey.entities.User[]);
 
 async function init() {
@@ -263,29 +264,20 @@ async function init() {
 		//#endregion
 
 		//#region Shared files
+		// アップロードは MkPostForm 側のキューで行う（本文入力を妨げず、
+		// デフォルトのアップロード先フォルダ設定も適用されるため）。
 		const sharedFilesKey = urlParams.get("sharedFilesKey");
 		if (sharedFilesKey) {
 			try {
 				const sharedPayload = (await get(sharedFilesKey)) as
 					| { files?: File[] }
 					| undefined;
-				const sharedFiles = sharedPayload?.files ?? [];
-				for (const sharedFile of sharedFiles) {
-					try {
-						const uploadedFile = await uploadFile(
-							sharedFile,
-							undefined,
-							sharedFile.name,
-							true,
-							true,
-							false,
-							{ force: true }
-						);
-						files.push(uploadedFile);
-					} catch (error) {
-						console.error("Failed to upload a shared file", error);
-					}
-				}
+				rawFiles = (sharedPayload?.files ?? []).filter(
+					(sharedFile): sharedFile is File =>
+						sharedFile instanceof File && sharedFile.size > 0
+				);
+			} catch (error) {
+				console.error("Failed to load shared files", error);
 			} finally {
 				await del(sharedFilesKey);
 			}

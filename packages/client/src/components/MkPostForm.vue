@@ -534,6 +534,8 @@ const props = withDefaults(
 		initialText?: string;
 		initialVisibility?: typeof misskey.noteVisibilities;
 		initialFiles?: misskey.entities.DriveFile[];
+		/** マウント時にアップロードキューへ載せる未アップロードのファイル（共有ターゲット経由など） */
+		initialRawFiles?: File[];
 		initialLocalOnly?: boolean;
 		initialVisibleUsers?: misskey.entities.User[];
 		initialNote?: misskey.entities.Note;
@@ -3184,6 +3186,14 @@ const autocompleteInstances: Autocomplete[] = [];
 onMounted(() => {
 	mainStreamConnection = stream.useChannel("main");
 	mainStreamConnection.on("note", syncPendingPostByStream);
+
+	if (props.initialRawFiles) {
+		// 共有ターゲット等から渡された未アップロードのファイルをキューに載せる。
+		// filePromises で追跡されるため、本文入力を妨げずに投稿時は完了を待てる。
+		for (const rawFile of props.initialRawFiles) {
+			upload(rawFile, rawFile.name, { force: true });
+		}
+	}
 
         if (props.autofocus) {
                 focus();

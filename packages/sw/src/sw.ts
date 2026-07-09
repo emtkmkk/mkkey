@@ -15,7 +15,7 @@ import {
 	resolveNotificationTapDefault,
 	resolveNotificationViewAction,
 } from "@/scripts/notification-click";
-import { set } from "idb-keyval";
+import { set, del, keys } from "idb-keyval";
 import {
 	incrementAppBadgeReceivedCount,
 	applyAppBadgeCountInSw,
@@ -99,6 +99,37 @@ async function offlineContentHTML() {
 
 const SHARE_TARGET_PATHS = new Set(["/share", "/share/"]);
 const SHARE_FILES_KEY_PREFIX = "sw-share-target-files:";
+/** 共有ページが開かれずに残った共有ファイルを掃除するまでの猶予 */
+const SHARE_FILES_TTL_MS = 1000 * 60 * 60 * 24;
+
+/** クラッシュ等で消費されなかった共有ファイルの IDB エントリを削除する */
+async function cleanupStaleSharedFiles(now: number): Promise<void> {
+	try {
+		const allKeys = await keys();
+		await Promise.all(
+			allKeys
+				.filter(
+					(key): key is string =>
+						typeof key === "string" &&
+						key.startsWith(SHARE_FILES_KEY_PREFIX),
+				)
+				.filter((key) => {
+					const timestamp = Number(
+						key.slice(SHARE_FILES_KEY_PREFIX.length).split("-")[0],
+					);
+					return (
+						!Number.isFinite(timestamp) ||
+						now - timestamp > SHARE_FILES_TTL_MS
+					);
+				})
+				.map((key) => del(key)),
+		);
+	} catch (error) {
+		if (_DEV_) {
+			console.warn("failed to clean up stale shared files", error);
+		}
+	}
+}
 
 function buildShareQuery(formData: FormData): URLSearchParams {
 	const query = new URLSearchParams();
@@ -114,19 +145,35 @@ function buildShareQuery(formData: FormData): URLSearchParams {
 }
 
 async function handleShareTarget(request: Request): Promise<Response> {
-	const formData = await request.formData();
-	const query = buildShareQuery(formData);
-	const files = formData
-		.getAll("files")
-		.filter((entry): entry is File => entry instanceof File && entry.size > 0);
+	const query = new URLSearchParams();
 
-	if (files.length > 0) {
-		const sharedFilesKey = `${SHARE_FILES_KEY_PREFIX}${Date.now()}-${Math.random().toString(36).slice(2)}`;
-		await set(sharedFilesKey, {
-			createdAt: Date.now(),
-			files,
-		});
-		query.set("sharedFilesKey", sharedFilesKey);
+	try {
+		const formData = await request.formData();
+		for (const [key, value] of buildShareQuery(formData)) {
+			query.set(key, value);
+		}
+		const files = formData
+			.getAll("files")
+			.filter((entry): entry is File => entry instanceof File && entry.size > 0);
+
+		const now = Date.now();
+		await cleanupStaleSharedFiles(now);
+
+		if (files.length > 0) {
+			const sharedFilesKey = `${SHARE_FILES_KEY_PREFIX}${now}-${Math.random().toString(36).slice(2)}`;
+			try {
+				await set(sharedFilesKey, {
+					createdAt: now,
+					files,
+				});
+				query.set("sharedFilesKey", sharedFilesKey);
+			} catch (error) {
+				// IDB へ保存できなくてもテキスト部分の共有は成立させる
+				console.error("failed to persist shared files", error);
+			}
+		}
+	} catch (error) {
+		console.error("failed to handle share target", error);
 	}
 
 	const sharePath = query.toString().length > 0 ? `/share/?${query.toString()}` : "/share/";

@@ -871,15 +871,28 @@ function restoreScrollPosition(key: string): void {
 
 	getScrollContainerApi().setScrollPosition(scrollPos, "instant");
 
-	// 遷移直後はコンポーネント復元が完了していない場合があるため、非ゼロ位置のみ再試行する
+	// 遷移直後は sticky 高さ確定が遅れる場合があるため、レイアウト更新後に再試行する
 	if (scrollPos !== 0) {
-		window.setTimeout(() => {
+		const retryRestore = () => {
 			if (restoringKey !== key) return;
 			// ユーザーが復元開始後にスクロール操作した場合は中止
 			if (lastUserScrollAt > restoreStartedAt) return;
 			getScrollContainerApi().setScrollPosition(scrollPos, "instant");
 			restoringKey = null;
-		}, 100);
+		};
+
+		const onStickyUpdated = () => {
+			window.removeEventListener("mk:sticky-layout-updated", onStickyUpdated);
+			retryRestore();
+		};
+
+		window.addEventListener("mk:sticky-layout-updated", onStickyUpdated, {
+			once: true,
+		});
+		window.setTimeout(() => {
+			window.removeEventListener("mk:sticky-layout-updated", onStickyUpdated);
+			retryRestore();
+		}, 150);
 	} else {
 		restoringKey = null;
 	}

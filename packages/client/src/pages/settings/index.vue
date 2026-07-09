@@ -76,6 +76,7 @@ import {
 } from "@/scripts/page-metadata";
 import * as os from "@/os";
 import { defaultStore } from "@/store";
+import { scrollElementIntoViewWithStickyTop } from "@/scripts/scroll";
 
 const indexInfo = {
 	title: i18n.ts.settings,
@@ -480,7 +481,7 @@ function highlightSettingBlock(block: HTMLElement): void {
  * @internal
  */
 function scrollToSettingBlock(block: HTMLElement): void {
-	block.scrollIntoView({ behavior: "smooth", block: "center" });
+	scrollElementIntoViewWithStickyTop(block, { behavior: "smooth" });
 	highlightSettingBlock(block);
 }
 

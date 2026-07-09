@@ -59,6 +59,16 @@ const calc = () => {
 			parentStickyBottom.value + footerEl.value.offsetHeight;
 		footerHeight.value = footerEl.value.offsetHeight.toString();
 	}
+
+	// NOTE: router 側のスクロール復元が sticky 高さ確定後に追従できるよう通知する
+	window.dispatchEvent(
+		new CustomEvent("mk:sticky-layout-updated", {
+			detail: {
+				top: childStickyTop.value,
+				bottom: childStickyBottom.value,
+			},
+		})
+	);
 };
 
 const observer = new ResizeObserver(() => {

@@ -6,8 +6,10 @@ import test from "node:test";
 
 import {
 	getScrollContainer,
+	getStickyOffset,
 	isBottomVisible,
 	isTopVisible,
+	scrollElementIntoViewWithStickyTop,
 } from "./scroll.ts";
 
 test("isBottomVisible: コンテナ基準で最下部を判定する", () => {
@@ -102,4 +104,56 @@ test("getScrollContainer: scrollHeight <= clientHeight の auto はスキップ�
 	assert.equal(getScrollContainer(target), null);
 
 	window.getComputedStyle = originalGetComputedStyle;
+});
+
+test("getStickyOffset: data-sticky-container-header-height を親方向に合計する", () => {
+	const parent = {
+		tagName: "DIV",
+		dataset: { stickyContainerHeaderHeight: "40" },
+		parentElement: null,
+	} as unknown as HTMLElement;
+	const child = {
+		tagName: "DIV",
+		dataset: { stickyContainerHeaderHeight: "20" },
+		parentElement: parent,
+	} as unknown as HTMLElement;
+	const leaf = {
+		tagName: "SPAN",
+		dataset: {},
+		parentElement: child,
+	} as unknown as HTMLElement;
+
+	assert.equal(getStickyOffset(leaf, null), 60);
+});
+
+test("scrollElementIntoViewWithStickyTop: window スクロール時に sticky 分を差し引く", () => {
+	const target = {
+		tagName: "DIV",
+		dataset: {},
+		parentElement: null,
+		getBoundingClientRect: () => ({ top: 200 }),
+	} as unknown as HTMLElement;
+	const originalGetComputedStyle = window.getComputedStyle.bind(window);
+	const originalScroll = window.scroll.bind(window);
+	const originalScrollY = window.scrollY;
+
+	let scrolledTop = -1;
+	window.getComputedStyle = (() =>
+		({
+			getPropertyValue: () => "visible",
+		}) as CSSStyleDeclaration) as typeof window.getComputedStyle;
+	window.scroll = ((options: ScrollToOptions) => {
+		scrolledTop = Number(options.top);
+	}) as typeof window.scroll;
+	Object.defineProperty(window, "scrollY", { value: 100, configurable: true });
+
+	scrollElementIntoViewWithStickyTop(target, { behavior: "instant" });
+	assert.equal(scrolledTop, 300);
+
+	window.getComputedStyle = originalGetComputedStyle;
+	window.scroll = originalScroll;
+	Object.defineProperty(window, "scrollY", {
+		value: originalScrollY,
+		configurable: true,
+	});
 });

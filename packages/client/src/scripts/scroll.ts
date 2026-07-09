@@ -226,6 +226,21 @@ export function getStickyTop(
 }
 
 /**
+ * 要素基準で sticky ヘッダー分の上端オフセットを取得する
+ *
+ * @param el - 起点要素
+ * @param container - スクロールコンテナ
+ * @returns sticky オフセット（px）
+ * @public
+ */
+export function getStickyOffset(
+	el: HTMLElement,
+	container: HTMLElement | null = getScrollContainer(el),
+): number {
+	return getStickyTop(el, container);
+}
+
+/**
  * 要素または window を任意位置へスクロールする
  *
  * @param el - 起点要素
@@ -264,7 +279,10 @@ export function scrollToTop(
 		warnInvalidScrollTarget("scrollToTop", el);
 		return;
 	}
-	scroll(el, { top: 0, ...options });
+	const container = getScrollContainer(el);
+	const stickyOffset = getStickyOffset(el, container);
+	// NOTE: 先頭移動時は sticky ヘッダー分だけ下げた位置を先頭とみなす
+	scroll(el, { top: Math.max(0, stickyOffset), ...options });
 }
 
 /**
@@ -303,6 +321,45 @@ export function scrollToBottom(
 		} else {
 			window.scrollTo(0, topPosition);
 		}
+	}
+}
+
+/**
+ * 要素を sticky ヘッダー下端に揃えるようにスクロールする
+ *
+ * @param el - 表示対象要素
+ * @param options - behavior 等
+ * @public
+ */
+export function scrollElementIntoViewWithStickyTop(
+	el: HTMLElement | null,
+	options: { behavior?: ScrollBehavior } = {},
+): void {
+	if (!el) {
+		warnInvalidScrollTarget("scrollElementIntoViewWithStickyTop", el);
+		return;
+	}
+
+	const container = getScrollContainer(el);
+	const stickyOffset = getStickyOffset(el, container);
+	const rect = el.getBoundingClientRect();
+
+	if (container) {
+		const containerRect = container.getBoundingClientRect();
+		const top = container.scrollTop + (rect.top - containerRect.top) - stickyOffset;
+		if (smoothScrollSupported && options.behavior) {
+			container.scroll({ top, behavior: options.behavior });
+		} else {
+			container.scrollTo(0, top);
+		}
+		return;
+	}
+
+	const top = window.scrollY + rect.top - stickyOffset;
+	if (smoothScrollSupported && options.behavior) {
+		window.scroll({ top, behavior: options.behavior });
+	} else {
+		window.scrollTo(0, top);
 	}
 }
 

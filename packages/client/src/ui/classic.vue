@@ -84,7 +84,8 @@ let isDesktop = $ref(window.innerWidth >= DESKTOP_THRESHOLD);
 let pageMetadata = $ref<null | ComputedRef<PageMetadata>>();
 let widgetsShowing = $ref(false);
 let fullView = $ref(false);
-let globalHeaderHeight = $ref(0);
+// NOTE: 初回描画で stickyTop が 0 になり復元位置がずれないよう、概算値で初期化する
+let globalHeaderHeight = $ref(defaultStore.state.menuDisplay === "top" ? 60 : 0);
 const wallpapers =
 	localStorage.getItem("wallpapers") != null &&
 	JSON.parse(localStorage.getItem("wallpapers") ?? "").length;

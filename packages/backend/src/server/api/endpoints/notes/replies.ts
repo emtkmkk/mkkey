@@ -11,9 +11,8 @@
  * @internal
  */
 import { Notes } from "@/models/index.js";
-import type { User } from "@/models/entities/user.js";
-import type { Note } from "@/models/entities/note.js";
 import define from "../../define.js";
+import { fetchPackedNotesWithOverfetch } from "../../common/fetch-packed-notes-with-overfetch.js";
 import { makePaginationQuery } from "../../common/make-pagination-query.js";
 import { generateVisibilityQuery } from "../../common/generate-visibility-query.js";
 import { generateMutedUserQuery } from "../../common/generate-muted-user-query.js";
@@ -93,35 +92,10 @@ export default define(meta, paramDef, async (ps, user) => {
 	if (user) generateMutedUserQuery(query, user);
 	if (user) generateBlockedUserQuery(query, user);
 
-	// フィルタで除外されるため要求より多めに取得し、件数が不足するとページネーションを打ち切る。
-	const found = [];
-	const take = Math.floor(ps.limit * 1.5);
-	let skip = 0;
-	while (found.length < ps.limit) {
-		const notes = await query.take(take).skip(skip).getMany();
-		const userMap = new Map<User["id"], User>();
-		const noteMap = new Map<Note["id"], Note>();
-		for (const note of notes) {
-			if (note.user) userMap.set(note.user.id, note.user);
-			if (note.reply) {
-				noteMap.set(note.reply.id, note.reply);
-				if (note.reply.user) userMap.set(note.reply.user.id, note.reply.user);
-			}
-			if (note.renote) {
-				noteMap.set(note.renote.id, note.renote);
-				if (note.renote.user) userMap.set(note.renote.user.id, note.renote.user);
-			}
-		}
-		found.push(
-			...(await Notes.packMany(notes, user, { _hint_: { userMap, noteMap } })),
-		);
-		skip += take;
-		if (notes.length < take) break;
-	}
-
-	if (found.length > ps.limit) {
-		found.length = ps.limit;
-	}
-
-	return found;
+	return await fetchPackedNotesWithOverfetch({
+		query,
+		limit: ps.limit,
+		pagination: ps,
+		me: user,
+	});
 });

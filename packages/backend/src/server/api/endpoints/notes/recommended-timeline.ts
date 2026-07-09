@@ -17,7 +17,7 @@ import { activeUsersChart } from "@/services/chart/index.js";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
 import { rethrowTimelineQueryAsApiError } from "../../common/rethrow-timeline-query-error.js";
-import { buildUserAndNoteMapsFromNotes } from "../../common/build-note-pack-hint.js";
+import { fetchPackedNotesWithOverfetch } from "../../common/fetch-packed-notes-with-overfetch.js";
 import { generateMutedUserQuery } from "../../common/generate-muted-user-query.js";
 import { makePaginationQuery } from "../../common/make-pagination-query.js";
 import { generateVisibilityQuery } from "../../common/generate-visibility-query.js";
@@ -186,33 +186,16 @@ export default define(meta, paramDef, async (ps, user) => {
 		}
 	});
 
-	// フィルタで除外されるため要求より多めに取得し、件数が不足するとページネーションを打ち切る。
-	const found = [];
-	const take = Math.floor(ps.limit * 1.5);
-	let skip = 0;
-	try {
-		while (found.length < ps.limit) {
-			const notes = await query.take(take).skip(skip).getMany();
-			const { userMap, noteMap } = buildUserAndNoteMapsFromNotes(notes);
-			found.push(
-				...(await Notes.packMany(notes, user, {
-					_hint_: { userMap, noteMap },
-				})),
-			);
-			skip += take;
-			if (notes.length < take) break;
-		}
-	} catch (error) {
-		rethrowTimelineQueryAsApiError(
-			"notes/recommended-timeline",
-			meta.errors.queryError,
-			error,
-		);
-	}
-
-	if (found.length > ps.limit) {
-		found.length = ps.limit;
-	}
-
-	return found;
+	return await fetchPackedNotesWithOverfetch({
+		query,
+		limit: ps.limit,
+		pagination: ps,
+		me: user,
+		onError: (error) =>
+			rethrowTimelineQueryAsApiError(
+				"notes/recommended-timeline",
+				meta.errors.queryError,
+				error,
+			),
+	});
 });

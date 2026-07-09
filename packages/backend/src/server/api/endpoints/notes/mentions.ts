@@ -15,7 +15,7 @@ import { Brackets } from "typeorm";
 import read from "@/services/note/read.js";
 import { Notes } from "@/models/index.js";
 import define from "../../define.js";
-import { buildUserAndNoteMapsFromNotes } from "../../common/build-note-pack-hint.js";
+import { fetchPackedNotesWithOverfetch } from "../../common/fetch-packed-notes-with-overfetch.js";
 import { generateVisibilityQuery } from "../../common/generate-visibility-query.js";
 import { generateMutedUserQuery } from "../../common/generate-muted-user-query.js";
 import { makePaginationQuery } from "../../common/make-pagination-query.js";
@@ -110,25 +110,12 @@ export default define(meta, paramDef, async (ps, user) => {
                 query.setParameters(followingCondition.parameters);
         }
 
-	// フィルタで除外されるため要求より多めに取得し、件数が不足するとページネーションを打ち切る。
-	const found = [];
-	const take = Math.floor(ps.limit * 1.5);
-	let skip = 0;
-	while (found.length < ps.limit) {
-		const notes = await query.take(take).skip(skip).getMany();
-		const { userMap, noteMap } = buildUserAndNoteMapsFromNotes(notes);
-		found.push(
-			...(await Notes.packMany(notes, user, {
-				_hint_: { userMap, noteMap },
-			})),
-		);
-		skip += take;
-		if (notes.length < take) break;
-	}
-
-	if (found.length > ps.limit) {
-		found.length = ps.limit;
-	}
+	const found = await fetchPackedNotesWithOverfetch({
+		query,
+		limit: ps.limit,
+		pagination: ps,
+		me: user,
+	});
 
 	read(user.id, found);
 

@@ -7,7 +7,7 @@
  * - **API パス**: `notes/local-timeline`（GET `/api/notes/local-timeline` で呼び出し）
  * - 認証不要。ローカルのパブリックノートを時系列で取得。
  * - 純リノートのリモート先判定は {@link isRemoteRenoteTarget}（`renoteUserHost` を最優先し、無ければネスト `renote`）に依存する。
- * - **性能**: 純 RT 用の事後フィルタで件数が足りないとき、同一リクエスト内で複数回 DB に取りに行く。このとき **OFFSET の積み上げ**と **累積配列の毎回フルスキャン**が重いため、内側は **id カーソル（キーセット）** と **フィルタ状態の 1 パス更新**にしている。
+ * - **性能**: 純 RT 用の事後フィルタで件数が足りないとき、同一リクエスト内で複数回 DB に取りに行く。追い取りは {@link fetchPackedNotesWithOverfetch} の id キーセットカーソルを使用する。
  *
  * @see {@link define} エンドポイント登録
  * @internal
@@ -19,7 +19,7 @@ import { activeUsersChart } from "@/services/chart/index.js";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
 import { rethrowTimelineQueryAsApiError } from "../../common/rethrow-timeline-query-error.js";
-import { buildUserAndNoteMapsFromNotes } from "../../common/build-note-pack-hint.js";
+import { fetchPackedNotesWithOverfetch } from "../../common/fetch-packed-notes-with-overfetch.js";
 import { generateMutedUserQuery } from "../../common/generate-muted-user-query.js";
 import { makePaginationQuery } from "../../common/make-pagination-query.js";
 import { generateVisibilityQuery } from "../../common/generate-visibility-query.js";
@@ -228,26 +228,6 @@ function finalizeLocalTimelineRenoteFilter(
         );
 }
 
-/**
- * {@link makePaginationQuery} の ORDER BY と一致する「次バッチは id のどちら側か」。
- *
- * @internal
- */
-function isLocalTimelinePaginationAsc(ps: {
-        sinceId?: string;
-        untilId?: string;
-        sinceDate?: number;
-        untilDate?: number;
-}): boolean {
-        if (ps.sinceId && ps.untilId) return false;
-        if (ps.sinceId) return true;
-        if (ps.untilId) return false;
-        if (ps.sinceDate != null && ps.untilDate != null) return false;
-        if (ps.sinceDate != null) return true;
-        if (ps.untilDate != null) return false;
-        return false;
-}
-
 export default define(meta, paramDef, async (ps, user) => {
         const m = await fetchMeta();
         if (m.disableLocalTimeline) {
@@ -397,63 +377,35 @@ export default define(meta, paramDef, async (ps, user) => {
 		}
 	});
 
-	// フィルタで除外されるため要求より多めに取得し、件数が不足するとページネーションを打ち切る。
-        const filterState = createLocalTimelineRenoteFilterState();
-        const take = Math.floor(ps.limit * 1.5);
-        /** 内側の追い取り用。OFFSET は深い位置で極端に遅いため id カーソルに切り替える。 */
-        let fetchCursor: string | undefined;
-        const paginationAsc = isLocalTimelinePaginationAsc(ps);
-        try {
-                while (true) {
-                        const qb = query.clone();
-                        if (fetchCursor !== undefined) {
-                                if (paginationAsc) {
-                                        qb.andWhere("note.id > :ltlMoreCursor", {
-                                                ltlMoreCursor: fetchCursor,
-                                        });
-                                } else {
-                                        qb.andWhere("note.id < :ltlMoreCursor", {
-                                                ltlMoreCursor: fetchCursor,
-                                        });
-                                }
-                        }
-
-                        const notes = await qb.take(take).getMany();
-                        if (notes.length === 0) break;
-
-                        const { userMap, noteMap } =
-                                buildUserAndNoteMapsFromNotes(notes);
-                        const packedNotes = await Notes.packMany(notes, user, {
-                                _hint_: { userMap, noteMap },
-                        });
-
-                        fetchCursor = notes[notes.length - 1]!.id;
-
-                        const done = appendPackedNotesToLocalTimelineRenoteFilter(
-                                filterState,
-                                packedNotes,
-                                ps.limit,
-                                user?.id,
-                        );
-                        if (done) {
-                                return finalizeLocalTimelineRenoteFilter(
-                                        filterState,
-                                ).slice(0, ps.limit);
-                        }
-
-                        if (notes.length < take) {
-                                return finalizeLocalTimelineRenoteFilter(
-                                        filterState,
-                                ).slice(0, ps.limit);
-                        }
-                }
-        } catch (error) {
-                rethrowTimelineQueryAsApiError(
-                        "notes/local-timeline",
-                        meta.errors.queryError,
-                        error,
-                );
-        }
-
-        return finalizeLocalTimelineRenoteFilter(filterState).slice(0, ps.limit);
+	return await fetchPackedNotesWithOverfetch({
+		query,
+		limit: ps.limit,
+		pagination: ps,
+		me: user,
+		cursorParameterName: "ltlMoreCursor",
+		onError: (error) =>
+			rethrowTimelineQueryAsApiError(
+				"notes/local-timeline",
+				meta.errors.queryError,
+				error,
+			),
+		createState: createLocalTimelineRenoteFilterState,
+		onBatchPacked: ({ packedNotes, limit, me, state }) => {
+			const done = appendPackedNotesToLocalTimelineRenoteFilter(
+				state,
+				packedNotes,
+				limit,
+				me?.id,
+			);
+			const result = finalizeLocalTimelineRenoteFilter(state).slice(
+				0,
+				limit,
+			);
+			return {
+				done,
+				result,
+				remaining: limit - state.visibleCount,
+			};
+		},
+	});
 });

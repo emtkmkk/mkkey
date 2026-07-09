@@ -42,9 +42,7 @@
 						:touch-angle="$store.state.swipeTouchAngle"
 						:threshold="$store.state.swipeThreshold"
 						:centeredSlides="$store.state.swipeCenteredSlides"
-						:modules="[Virtual]"
 						:space-between="20"
-						:virtual="true"
 						:allow-touch-move="allowTouchMove"
 						@swiper="setSwiperRef"
 						@slide-change="onSlideChange"
@@ -52,11 +50,10 @@
 						<swiper-slide
 							v-for="index in timelines"
 							:key="index"
-							:virtual-index="index"
 							style="box-sizing: border-box"
 						>
 							<XTimeline
-								v-if="index == timelines[swiperRef.activeIndex]"
+								v-if="index === src"
 								ref="tlComponent"
 								:key="src"
 								class="tl"
@@ -85,7 +82,6 @@
 
 <script lang="ts" setup>
 import { computed, watch, ref, onMounted, onBeforeUnmount } from "vue";
-import { Virtual } from "swiper";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import XTutorial from "@/components/MkTutorialDialog.vue";
 import XTimeline from "@/components/MkTimeline.vue";
@@ -99,7 +95,6 @@ import { $i } from "@/account";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { deviceKind } from "@/scripts/device-kind";
 import "swiper/scss";
-import "swiper/scss/virtual";
 import type { MenuButton, MenuLabel } from "@/types/menu";
 
 defaultStore.loaded.then(() => {

@@ -704,15 +704,15 @@ export default async (
 							data.cw = `${isIncludeNgWordRtRet} (引用先)`;
 						} else if (
 							!(
-								data.cw?.includes(isIncludeNgWordRet?.replace("(弱)", "")) ||
+								data.cw?.includes(isIncludeNgWordRtRet?.replace("(弱)", "")) ||
 								data.cw?.includes(
-									kana_to_hira(isIncludeNgWordRet?.replace("(弱)", "")),
+									kana_to_hira(isIncludeNgWordRtRet?.replace("(弱)", "")),
 								) ||
 								data.cw?.includes("(弱)") ||
-								!isIncludeNgWordRet?.includes("(弱)")
+								!isIncludeNgWordRtRet?.includes("(弱)")
 							)
 						) {
-							data.cw += ` (${isIncludeNgWordRet} (引用先))`;
+							data.cw += ` (${isIncludeNgWordRtRet} (引用先))`;
 						}
 					} else {
 						data.visibility = "home";
@@ -913,7 +913,9 @@ export default async (
 		}
 
 		if (data.visibility === "specified") {
-			if (data.visibleUsers == null) throw new Error("invalid param");
+			if (data.visibleUsers == null) {
+				return rej(new StatusError("invalid param", 400, "invalid param"));
+			}
 
 			for (const u of data.visibleUsers) {
 				if (!mentionedUsers.some((x) => x.id === u.id)) {
@@ -950,7 +952,7 @@ export default async (
 				);
 			}
 
-			if (user.isSilenced && (!relation?.every((x) => x) ?? true)) {
+			if (user.isSilenced && !relation?.every((x) => x)) {
                                 return rej(
                                         new StatusError(
                                                 "サイレンス中はフォロワーでも管理人でもないユーザにダイレクトは送信できません。",
@@ -1103,6 +1105,14 @@ export default async (
 		}
 
 		// ワードミュート
+		const noteForWordMute = {
+			id: note.id,
+			userId: user.id,
+			text: data.text,
+			cw: data.cw,
+			reply: data.reply ?? undefined,
+			renote: data.renote ?? undefined,
+		};
 		mutedWordsCache
 			.fetch(null, () =>
 				UserProfiles.find({
@@ -1114,7 +1124,7 @@ export default async (
 			)
 			.then((us) => {
 				for (const u of us) {
-					getWordHardMute(data, { id: u.userId }, u.mutedWords).then(
+					getWordHardMute(noteForWordMute, { id: u.userId }, u.mutedWords).then(
 						(shouldMute) => {
 							if (shouldMute) {
 								MutedNotes.insert({
@@ -1204,8 +1214,8 @@ export default async (
 				);
 			}
 			if (data.visibility === "specified") {
-				if (data.visibleUsers == null) throw new Error("invalid param");
-				for (const u of data.visibleUsers) {
+				// NOTE: 事前バリデーション済みだが、非同期後段なので安全側でガードする。
+				for (const u of data.visibleUsers ?? []) {
 					if (!Users.isLocalUser(u)) continue;
 					unreadCandidates.push({
 						userId: u.id,

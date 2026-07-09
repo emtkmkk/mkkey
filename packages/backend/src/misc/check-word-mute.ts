@@ -18,9 +18,12 @@ import Logger from "@/services/logger.js";
 const muteLogger = new Logger("mute");
 
 type NoteLike = {
+	id?: Note["id"];
 	userId: Note["userId"];
 	text: Note["text"];
 	cw?: Note["cw"];
+	reply?: NoteLike;
+	renote?: NoteLike;
 };
 
 type UserLike = {
@@ -42,7 +45,7 @@ function checkWordMute(
 			// 空キーワードを除いて整える
 			const keywords = mutePattern.filter((keyword) => keyword !== "");
 
-			if (keywords.length == 1 && note.id == keywords[0]) {
+			if (keywords.length === 1 && note.id === keywords[0]) {
 				return true;
 			}
 
@@ -74,6 +77,13 @@ function checkWordMute(
 
 /**
  * ノートがワードミュートに該当するか判定する（自分自身は除外）。
+ *
+ * @param note 判定対象のノート相当オブジェクト
+ * @param me 判定を行うユーザー
+ * @param mutedWords ミュート設定のキーワード配列
+ * @returns ミュート対象なら `true`
+ * @remarks
+ * NOTE: `create.ts` などノート作成途中の経路から呼ばれるため、`id`・`reply`・`renote` は未設定の可能性がある。
  * @internal
  */
 export async function getWordHardMute(

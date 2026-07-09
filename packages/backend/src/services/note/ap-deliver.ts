@@ -1,7 +1,19 @@
 /**
- * ノート AP 配信ジョブ
+ * @packageDocumentation
+ *
+ * ノートの ActivityPub 配信ジョブ。
+ *
+ * @remarks
+ * - ノート本体の配信と、初回リノート時のリアクション再送を扱う。
+ * - リアクション再送は「RT 後に Like した場合」と同じ配送先レシピに合わせる。
+ *
+ * @internal
  */
-import DeliverManager, { deliverToInboxes } from "@/remote/activitypub/deliver-manager.js";
+import DeliverManager, {
+	collectRemoteFollowerInboxesByActorIds,
+	deliverToInboxes,
+	intersectInboxes,
+} from "@/remote/activitypub/deliver-manager.js";
 import renderNote from "@/remote/activitypub/renderer/note.js";
 import renderCreate from "@/remote/activitypub/renderer/create.js";
 import renderAnnounce from "@/remote/activitypub/renderer/announce.js";
@@ -11,7 +23,7 @@ import config from "@/config/index.js";
 import { countSameRenotes } from "@/misc/count-same-renotes.js";
 import { deliverToRelays } from "../relay.js";
 import { decodeReaction, resolveApReaction } from "@/misc/reaction-lib.js";
-import { buildReactionDeliverManager } from "@/services/note/reaction/deliver.js";
+import { isReactionFederationDeliverable } from "@/services/note/reaction/deliver.js";
 import { Emojis, NoteReactions, Notes, Users } from "@/models/index.js";
 import { In, IsNull } from "typeorm";
 import type { ILocalUser, User } from "@/models/entities/user.js";
@@ -240,12 +252,52 @@ async function resendLocalReactionsForRenote(
 	);
 
 	const emojiMap = await getReactionEmojiMap(latestReactions);
+	const remoteAuthorDirectInboxes = new Map<string, boolean>();
+	if (renote.userHost !== null) {
+		const reactee = await Users.findOneBy({ id: renote.userId });
+		if (reactee && Users.isRemoteUser(reactee) && reactee.inbox) {
+			remoteAuthorDirectInboxes.set(reactee.inbox, false);
+		}
+	}
+	const specifiedDirectInboxes = new Map<string, boolean>();
+	if (renote.visibility === "specified") {
+		const directUserIds = new Set<User["id"]>();
+		if (renote.visibleUserIds?.length) {
+			for (const id of renote.visibleUserIds as User["id"][]) directUserIds.add(id);
+		}
+		if (renote.ccUserIds?.length) {
+			for (const id of renote.ccUserIds as User["id"][]) directUserIds.add(id);
+		}
+		if (directUserIds.size > 0) {
+			const directUsers = await Users.findBy({ id: In([...directUserIds]) });
+			for (const user of directUsers) {
+				if (Users.isRemoteUser(user) && user.inbox) {
+					specifiedDirectInboxes.set(user.inbox, false);
+				}
+			}
+		}
+	}
 
-	// リノート作者がリモートのとき、1回だけ取得して全リアクションで使い回す
-	const reactee =
-		renote.userHost !== null
-			? await Users.findOneBy({ id: renote.userId }).then((u) => u ?? null)
-			: null;
+	const followersDeliverableReactions = latestReactions.filter((reaction) => {
+		const reactionUser = reaction.user;
+		if (!reactionUser || reactionUser.host !== null) return false;
+		if (!["public", "home", "followers"].includes(renote.visibility)) return false;
+		return isReactionFederationDeliverable(reactionUser, renote);
+	});
+	const actorsWithUnion = followersDeliverableReactions
+		.filter((reaction) => reaction.userId !== renote.userId && renote.userHost === null)
+		.map((reaction) => reaction.userId);
+	const actorsWithoutUnion = followersDeliverableReactions
+		.filter((reaction) => !(reaction.userId !== renote.userId && renote.userHost === null))
+		.map((reaction) => reaction.userId);
+
+	const inboxesByActorWithUnion = await collectRemoteFollowerInboxesByActorIds(
+		actorsWithUnion,
+		renote.userHost === null ? { unionFolloweeIds: [renote.userId] } : undefined,
+	);
+	const inboxesByActorWithoutUnion = await collectRemoteFollowerInboxesByActorIds(
+		actorsWithoutUnion,
+	);
 
 	for (const reaction of latestReactions) {
 		const reactionUser = reaction.user;
@@ -263,21 +315,39 @@ async function resendLocalReactionsForRenote(
 		} as NoteReaction;
 
 		const activity = renderActivity(await renderLike(deliverRecord, renote));
-		const dm = await buildReactionDeliverManager(
-			reactionUser,
-			renote,
-			activity,
-			{ disableUnion: true, reactee },
-		);
-		const reactionInboxes = await dm.collectInboxes();
+		const reactionInboxes = new Map<string, boolean>();
+		// 通常 Like と同じく、リモート作者には常に direct する。
+		for (const [inbox, isSharedInbox] of remoteAuthorDirectInboxes.entries()) {
+			reactionInboxes.set(inbox, isSharedInbox);
+		}
+		// public/home/followers はフォロワー配信（union あり）を再現する。
+		if (["public", "home", "followers"].includes(renote.visibility)) {
+			const followersInboxes =
+				inboxesByActorWithUnion.get(reactionUser.id) ??
+				inboxesByActorWithoutUnion.get(reactionUser.id) ??
+				new Map<string, boolean>();
+			for (const [inbox, isSharedInbox] of followersInboxes.entries()) {
+				reactionInboxes.set(inbox, isSharedInbox);
+			}
+		}
+		// specified は visible/cc の direct を追加する。
+		if (
+			renote.visibility === "specified" &&
+			isReactionFederationDeliverable(reactionUser, renote)
+		) {
+			for (const [inbox, isSharedInbox] of specifiedDirectInboxes.entries()) {
+				reactionInboxes.set(inbox, isSharedInbox);
+			}
+		}
+		const targetInboxes = intersectInboxes(reactionInboxes, noteInboxes);
 		noteApDeliverLogger.debug(
-			`[reaction-resend] deliver reaction: reactionInboxes=${reactionInboxes.size} (renote=${renote.id}, reaction=${reaction.id})`,
+			`[reaction-resend] deliver reaction: reactionInboxes=${reactionInboxes.size} targetInboxes=${targetInboxes.size} (renote=${renote.id}, reaction=${reaction.id})`,
 		);
 
-		await deliverToInboxes(
+		void deliverToInboxes(
 			reactionUser as ILocalUser,
 			activity,
-			reactionInboxes,
+			targetInboxes,
 		);
 	}
 }

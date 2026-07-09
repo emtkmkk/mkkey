@@ -31,12 +31,128 @@ interface IDirectRecipe extends IRecipe {
 	to: IRemoteUser;
 }
 
+type RemoteFollowerRow = {
+	followeeId: User["id"];
+	followerId: User["id"];
+	followerSharedInbox: string | null;
+	followerInbox: string;
+};
+
 const isFollowers = (recipe: any): recipe is IFollowersRecipe =>
 	recipe.type === "Followers";
 
 const isDirect = (recipe: any): recipe is IDirectRecipe =>
 	recipe.type === "Direct";
 //#endregion 型定義
+
+//#region inbox収集ヘルパー
+/**
+ * Followings 行から inbox Map を構築する。
+ * @param rows - Followings クエリ結果
+ * @returns actorId ごとの inbox 集合
+ * @internal
+ */
+export function buildFollowerInboxMapByActorIds(rows: RemoteFollowerRow[]) {
+	const inboxesByActorIds = new Map<User["id"], Map<string, boolean>>();
+
+	for (const row of rows) {
+		const actorInboxes =
+			inboxesByActorIds.get(row.followeeId) ?? new Map<string, boolean>();
+		const inbox = row.followerSharedInbox || row.followerInbox;
+		actorInboxes.set(inbox, row.followerSharedInbox !== null);
+		inboxesByActorIds.set(row.followeeId, actorInboxes);
+	}
+
+	return inboxesByActorIds;
+}
+
+/**
+ * inbox の積集合を返す。
+ * @param source - 元 inbox 集合
+ * @param target - 交差先 inbox 集合
+ * @returns source と target に共通する inbox 集合
+ * @internal
+ */
+export function intersectInboxes(
+	source: Map<string, boolean>,
+	target: Map<string, boolean>,
+) {
+	const intersection = new Map<string, boolean>();
+
+	for (const [inbox, isSharedInbox] of source.entries()) {
+		if (target.has(inbox)) {
+			intersection.set(inbox, isSharedInbox);
+		}
+	}
+
+	return intersection;
+}
+
+/**
+ * 複数 actor のリモートフォロワー inbox を一括収集する。
+ *
+ * @remarks
+ * - `unionFolloweeIds` を渡すと、対象 actor のフォロワーをその集合のフォロワー ID と積集合に絞る。
+ *
+ * @param actorIds - 収集対象 actor ID
+ * @param options - union 条件
+ * @returns actorId ごとの inbox 集合
+ * @internal
+ */
+export async function collectRemoteFollowerInboxesByActorIds(
+	actorIds: User["id"][],
+	options?: { unionFolloweeIds?: User["id"][] },
+) {
+	const uniqueActorIds = Array.from(new Set(actorIds));
+	const inboxesByActorIds = new Map<User["id"], Map<string, boolean>>();
+	for (const actorId of uniqueActorIds) {
+		inboxesByActorIds.set(actorId, new Map<string, boolean>());
+	}
+	if (uniqueActorIds.length === 0) return inboxesByActorIds;
+
+	const unionFolloweeIds = options?.unionFolloweeIds ?? [];
+	let unionFollowerIds: Set<User["id"]> | null = null;
+
+	if (unionFolloweeIds.length > 0) {
+		const unionFollowers = (await Followings.find({
+			where: {
+				followeeId: In(unionFolloweeIds),
+				followerHost: Not(IsNull()),
+			},
+			select: {
+				followerId: true,
+			},
+		})) as { followerId: User["id"] }[];
+		unionFollowerIds = new Set(
+			unionFollowers.map((follower) => follower.followerId).filter(Boolean),
+		);
+		if (unionFollowerIds.size === 0) return inboxesByActorIds;
+	}
+
+	const followers = (await Followings.find({
+		where: {
+			followeeId: In(uniqueActorIds),
+			...(unionFollowerIds
+				? { followerId: In(Array.from(unionFollowerIds)) }
+				: {}),
+			followerHost: Not(IsNull()),
+		},
+		select: {
+			followeeId: true,
+			followerId: true,
+			followerSharedInbox: true,
+			followerInbox: true,
+		},
+	})) as RemoteFollowerRow[];
+
+	const batchedInboxes = buildFollowerInboxMapByActorIds(followers);
+	for (const actorId of uniqueActorIds) {
+		inboxesByActorIds.set(actorId, batchedInboxes.get(actorId) ?? new Map());
+	}
+
+	return inboxesByActorIds;
+}
+//#endregion inbox収集ヘルパー
 
 export default class DeliverManager {
 	private actor: { id: User["id"]; host: null };
@@ -117,64 +233,21 @@ export default class DeliverManager {
 					(r) => isFollowers(r) && r.union && Users.isLocalUser(r.union),
 				) as IFollowersRecipe[]
 			).map((r) => r.union);
-			const unionFollowerIds = new Set<string>();
-
-			for (const u of union) {
-				if (!u) continue;
-
-				const unionFollowers = (await Followings.find({
-					where: {
-						followeeId: u.id,
-						followerHost: Not(IsNull()),
-					},
-					select: {
-						followerId: true,
-					},
-				})) as {
-					followerId: string;
-				}[];
-
-				unionFollowers.forEach((f) => {
-					if (f?.followerId) {
-						unionFollowerIds.add(f.followerId);
-					} else if (typeof f === "string") {
-						unionFollowerIds.add(f);
-					} else {
-						apLogger.warn("unexpected follower entry shape in union resolution", { f });
-					}
-				});
-				apLogger.debug(`a ${this.actor.id} u ${u.id} : ${unionFollowerIds.size}`);
-			}
-
-			if (!union.length || unionFollowerIds.size !== 0) {
-				// TODO: SELECT DISTINCT ON ("followerSharedInbox") "followerSharedInbox" みたいな問い合わせにすればよりパフォーマンス向上できそう
-				// ただ、sharedInboxがnullなリモートユーザーも稀におり、その対応ができなさそう？
-				const followers = (await Followings.find({
-					where: {
-						followeeId: this.actor.id,
-						...(union.length
-							? { followerId: In(Array.from(unionFollowerIds)) }
-							: {}),
-						followerHost: Not(IsNull()),
-					},
-					select: {
-						followerSharedInbox: true,
-						followerInbox: true,
-					},
-				})) as {
-					followerSharedInbox: string | null;
-					followerInbox: string;
-				}[];
-
-				for (const following of followers) {
-					const inbox =
-						following.followerSharedInbox || following.followerInbox;
-					inboxes.set(inbox, following.followerSharedInbox !== null);
-				}
-			} else {
+			const batchedInboxes = await collectRemoteFollowerInboxesByActorIds(
+				[this.actor.id],
+				union.length > 0
+					? { unionFolloweeIds: union.map((u) => u.id) }
+					: undefined,
+			);
+			const actorInboxes = batchedInboxes.get(this.actor.id) ?? new Map();
+			if (union.length > 0 && actorInboxes.size === 0) {
 				apLogger.debug(
 					`skip : no remote follower (${union.map((u) => u?.id).join(", ")})`,
 				);
+			} else {
+				for (const [inbox, isSharedInbox] of actorInboxes.entries()) {
+					inboxes.set(inbox, isSharedInbox);
+				}
 			}
 		}
 

@@ -16,12 +16,42 @@ import { In } from "typeorm";
 import type { Note } from "@/models/entities/note.js";
 import type { ILocalUser, IRemoteUser, User } from "@/models/entities/user.js";
 
+/**
+ * リアクションの連合配信対象かを判定する。
+ *
+ * @remarks
+ * - `create.ts` の外側ゲートと `buildReactionDeliverManager` の条件を共通化する。
+ *
+ * @param user - リアクション実行ユーザー
+ * @param note - 対象ノート
+ * @returns 連合配信対象の場合は true
+ * @internal
+ */
+export function isReactionFederationDeliverable(
+	user: Pick<User, "host" | "isExplorable" | "isRemoteExplorable">,
+	note: Pick<
+		Note,
+		"channelId" | "localOnly" | "visibility" | "isPublicLikeList"
+	>,
+) {
+	if (!Users.isLocalUser(user)) return false;
+	if (note.channelId && note.localOnly) return false;
+	if (note.visibility === "hidden") return false;
+	if (!user.isExplorable || !user.isRemoteExplorable || !note.isPublicLikeList) {
+		return false;
+	}
+
+	return (
+		["public", "home", "followers"].includes(note.visibility) ||
+		note.visibility === "specified"
+	);
+}
+
 export async function buildReactionDeliverManager(
 	user: Pick<User, "id" | "host" | "isExplorable" | "isRemoteExplorable">,
 	note: Note,
 	activity: any,
 	options?: {
-		disableUnion?: boolean;
 		/** 事前取得したノート作者。渡すと findOneBy をスキップする */
 		reactee?: User | null;
 	},
@@ -38,7 +68,7 @@ export async function buildReactionDeliverManager(
 		}
 	}
 
-	if (user.isExplorable && user.isRemoteExplorable && note.isPublicLikeList) {
+	if (isReactionFederationDeliverable(user, note)) {
 		if (["public", "home", "followers"].includes(note.visibility)) {
 			if (note.userId !== user.id && note.userHost === null) {
 				const u =
@@ -46,11 +76,7 @@ export async function buildReactionDeliverManager(
 						? options.reactee
 						: await Users.findOneBy({ id: note.userId });
 				if (u && Users.isLocalUser(u)) {
-					if (options?.disableUnion) {
-						dm.addFollowersRecipe();
-					} else {
-						dm.addFollowersRecipe(u);
-					}
+					dm.addFollowersRecipe(u);
 				}
 			} else {
 				dm.addFollowersRecipe();

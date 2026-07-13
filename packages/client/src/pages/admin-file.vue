@@ -198,10 +198,13 @@ fetch();
 async function del() {
 	let text = i18n.t("driveFileDeleteConfirm", { name: file.name });
 	try {
-		const notes = await os.api("drive/files/attached-notes", {
-			fileId: file.id,
-		});
-		const count = Array.isArray(notes) ? notes.length : 0;
+		const res = (await os.api(
+			"drive/files/attached-notes-count",
+			{ fileId: file.id },
+			undefined,
+			true,
+		)) as { count?: number };
+		const count = typeof res?.count === "number" ? res.count : 0;
 		if (count > 0) {
 			text = i18n.t("driveFileDeleteConfirmWithNotes", {
 				name: file.name,
@@ -209,7 +212,7 @@ async function del() {
 			});
 		}
 	} catch {
-		// 他人のファイルなど件数取得できない場合は件数なし文言のまま
+		// 件数取得できない場合は件数なし文言のまま
 	}
 
 	const { canceled } = await os.confirm({

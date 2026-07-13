@@ -6,6 +6,8 @@
  * @remarks
  * - **API パス**: `drive/files/attached-notes`（GET `/api/drive/files/attached-notes` で呼び出し）
  * - 認証必須。fileId で指定したファイルを添付しているノートの一覧を返す。
+ * - 件数だけ欲しい場合は {@link ./attached-notes-count.ts}（`drive/files/attached-notes-count`）を使う。
+ *   こちらは全ノートを pack するため重い。
  *
  * @see {@link define} エンドポイント登録
  * @internal

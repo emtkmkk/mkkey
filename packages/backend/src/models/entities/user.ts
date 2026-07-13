@@ -39,6 +39,23 @@ export class User {
 	})
 	public lastActiveDate: Date | null;
 
+	/**
+	 * 休眠アカウント自動削除の予告メールを送った時刻。
+	 *
+	 * @remarks
+	 * - 未活動が一定期間続いたローカルユーザーへ警告メールを送ったあとにセットする。
+	 * - 再ログイン（`lastActiveDate` 更新）時に `null` へ戻し、再び休眠した場合は再送できる。
+	 * - `null` は「この休眠サイクルでは未送信」を表す。
+	 *
+	 * @see {@link warnInactiveDeletion} 日次送信ジョブ
+	 * @internal
+	 */
+	@Column('timestamp with time zone', {
+		nullable: true,
+		comment: 'When the inactive-deletion warning email was last sent (null = not yet in this dormant cycle).',
+	})
+	public inactiveDeletionWarnedAt: Date | null;
+
 	@Column('boolean', {
 		default: false,
 	})

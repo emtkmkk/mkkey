@@ -12,6 +12,7 @@
  * - **`moderationWarningPopupAt`**: `user` 列ではなく `moderation_warning_popup_ack` を `hydrateModerationWarningPopupAtForAuthUser` で注入。当日の警告 ACK 前は API / ストリームを制限するゲートに使う。
  * - **custom-motd**（任意認証）では `createdAt` / `notesCount` / `name` / `isCat` / `speakAsCat` を参照する。`birthday` は {@link UserProfile} 側のため User には無い。
  * - **notes/create** は `services/note/create` の投稿処理へ認証ユーザを渡し、`blockPost*` / `isSilenced` / `maxRankPoint` / `isBot` / `isPublicLikeList` / `avatarId` 等で可視性・スパム系の分岐を行う。
+ * - 認証成功時の `updateLastActiveDateOnLogin` で `lastActiveDate` 更新に加え、休眠削除予告の `inactiveDeletionWarnedAt` をクリアする。
  *
  * @see {@link api-handler} API 認証
  * @see {@link streaming} ストリーム接続認証
@@ -82,6 +83,16 @@ const AUTH_USER_SELECT = {
 
 /**
  * ログイン成功時に lastActiveDate を更新し、休眠だった場合のみ休眠スキップキャッシュを無効化する。
+ *
+ * @param user - 認証に成功したローカルユーザー
+ * @returns Promise
+ * @remarks
+ * - `inactiveDeletionWarnedAt` も同時に `null` へ戻す。
+ *   これにより、再度3ヶ月以上未活動になったときに警告メールを再送できる。
+ * - NOTE: ストリーミング接続だけの活動更新ではここは通らないため、
+ *   日次ジョブ側でも再活動ユーザーのフラグ掃除を行う。
+ * @see {@link warnInactiveDeletion}
+ * @internal
  */
 async function updateLastActiveDateOnLogin(user: {
 	id: CacheableLocalUser["id"];
@@ -96,8 +107,10 @@ async function updateLastActiveDateOnLogin(user: {
 		prev?.host ?? user.host ?? null,
 		prev?.lastActiveDate ?? null,
 	);
+	// 再ログインで休眠サイクルを終了し、警告メールの「1回限り」フラグをリセットする
 	Users.update(user.id, {
 		lastActiveDate: new Date(),
+		inactiveDeletionWarnedAt: null,
 	});
 }
 

@@ -29,7 +29,7 @@ import type { Note } from "@/models/entities/note.js";
 import type { DriveFile } from "@/models/entities/drive-file.js";
 import { IsNull, MoreThan } from "typeorm";
 import { deleteFileSync } from "@/services/drive/delete-file.js";
-import { sendEmail } from "@/services/send-email.js";
+import { buildGuidanceEmail, sendEmail } from "@/services/send-email.js";
 import deleteFollowing from "@/services/following/delete.js";
 import { createNotification } from "@/services/create-notification.js";
 import { getUser } from "@/server/api/common/getters.js";
@@ -255,14 +255,25 @@ export async function deleteAccount(
 		// Send email notification
 		const profile = await UserProfiles.findOneByOrFail({ userId: user.id });
 		if (profile.email && profile.emailVerified) {
-			sendEmail(
-				profile.email,
-				"アカウントは消去されました。",
-				"あなたのアカウントは消去されました。",
-				"あなたのアカウントは消去されました。",
-			);
-			logger.succ("Email sent completed");
-			job.log("succ - " + "Email sent completed");
+			// NOTE: メール送信失敗で削除ジョブ全体を失敗させない
+			try {
+				const mail = await buildGuidanceEmail({
+					subjectBody: "アカウント削除完了のご案内",
+					recipientUsername: user.username,
+					greeting: "plain",
+					paragraphs: [
+						`ご利用のアカウント（@${user.username}）の削除処理が完了いたしましたので、お知らせいたします。`,
+					],
+					closing:
+						"これまで{serverName}をご利用いただき、誠にありがとうございました。",
+				});
+				await sendEmail(profile.email, mail.subject, mail.html, mail.text);
+				logger.succ("Email sent completed");
+				job.log("succ - " + "Email sent completed");
+			} catch (err) {
+				logger.error(err as Error);
+				job.log(`error - Failed to send email: ${String(err)}`);
+			}
 		}
 	}
 

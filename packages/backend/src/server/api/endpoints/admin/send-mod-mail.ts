@@ -2,7 +2,7 @@ import * as sanitizeHtml from "sanitize-html";
 import define from "../../define.js";
 import { Users, UserProfiles } from "@/models/index.js";
 import { ApiError } from "../../error.js";
-import { sendEmail } from "@/services/send-email.js";
+import { buildGuidanceEmail, sendEmail } from "@/services/send-email.js";
 import { createNotification } from "@/services/create-notification.js";
 
 export const meta = {
@@ -58,11 +58,21 @@ export default define(meta, paramDef, async (ps) => {
 			throw new ApiError(meta.errors.noEmail);
 		}
 
-		sendEmail(
-			email,
-			"Moderation notice",
-			sanitizeHtml(ps.comment),
-			sanitizeHtml(ps.comment),
-		);
+		const separator = "----------------------------------------";
+		const mail = await buildGuidanceEmail({
+			subjectBody: "運営からのお知らせ",
+			recipientUsername: user.username,
+			paragraphs: [
+				"{serverName}の運営チームより、以下のとおりご連絡いたします。",
+				separator,
+				{
+					// モデレータ入力の改行を保持する（サニタイズ後に <br> 化）
+					html: sanitizeHtml(ps.comment).replace(/\r?\n/g, "<br>"),
+					text: ps.comment,
+				},
+				separator,
+			],
+		});
+		sendEmail(email, mail.subject, mail.html, mail.text);
 	});
 });

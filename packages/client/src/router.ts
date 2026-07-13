@@ -375,6 +375,10 @@ export const routes = [
 		component: page(() => import("./pages/verify-email.vue")),
 	},
 	{
+		path: "/unsubscribe-email/:token",
+		component: page(() => import("./pages/unsubscribe-email.vue")),
+	},
+	{
 		path: "/announcements",
 		component: page(() => import("./pages/announcements.vue")),
 	},

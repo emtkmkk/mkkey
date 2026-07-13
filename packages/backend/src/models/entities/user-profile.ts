@@ -103,6 +103,13 @@ export class UserProfile {
 	})
 	public emailNotificationTypes: string[];
 
+	@Index({ unique: true })
+	@Column('varchar', {
+		length: 128, nullable: true,
+		comment: '案内メールの配信停止リンク用トークン（ログイン不要・恒久有効）',
+	})
+	public emailUnsubscribeToken: string | null;
+
 	@Column('boolean', {
 		default: false,
 	})

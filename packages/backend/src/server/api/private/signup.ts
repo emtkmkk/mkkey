@@ -16,7 +16,7 @@ import { verifyHcaptcha, verifyRecaptcha } from "@/misc/captcha.js";
 import { Users, RegistrationTickets, UserPendings, UserProfiles } from "@/models/index.js";
 import { signup } from "../common/signup.js";
 import config from "@/config/index.js";
-import { sendEmail } from "@/services/send-email.js";
+import { buildGuidanceEmail, sendEmail } from "@/services/send-email.js";
 import { genId } from "@/misc/gen-id.js";
 import { validateEmailForAccount } from "@/services/validate-email-for-account.js";
 import { hashPassword } from "@/misc/password.js";
@@ -211,12 +211,18 @@ export default async (ctx: Koa.Context) => {
 
 		const link = `${config.url}/signup-complete/${code}`;
 
-		sendEmail(
-			emailAddress,
-			"もこきー メールアドレス確認",
-			`もこきーへの登録を完了するには、このリンクへアクセスしてください:<br><a href="${link}">${link}</a>`,
-			`もこきーへの登録を完了するには、このリンクへアクセスしてください: ${link}`,
-		);
+		const mail = await buildGuidanceEmail({
+			subjectBody: "メールアドレス確認のご案内",
+			recipientUsername: username,
+			greeting: "plain",
+			paragraphs: [
+				"このたびは{serverName}にご登録いただき、誠にありがとうございます。",
+				"以下のリンクにアクセスしていただきますと、ご登録が完了いたします。",
+				{ url: link },
+				"本メールにお心当たりのない場合は、お手数ですが本メールを破棄していただきますようお願いいたします。",
+			],
+		});
+		sendEmail(emailAddress, mail.subject, mail.html, mail.text);
 
 		ctx.status = 204;
 	} else {

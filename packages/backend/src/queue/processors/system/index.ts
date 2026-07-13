@@ -12,6 +12,7 @@ import {
 	refreshStatsMvEmoji,
 	refreshStatsMvFederationAndEmojiStats,
 } from "./refresh-stats-mv.js";
+import { warnInactiveDeletion } from "./warn-inactive-deletion.js";
 
 type QueueProcessorWrapper = <T>(
 	queueName: string,
@@ -30,6 +31,7 @@ const jobs = {
 	checkSuspendedInstances,
 	refreshStatsMvEmoji,
 	refreshStatsMvFederationAndEmojiStats,
+	warnInactiveDeletion,
 } as Record<
 	string,
 	| Bull.ProcessCallbackFunction<Record<string, unknown>>

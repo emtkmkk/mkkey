@@ -15,7 +15,7 @@ import define from "../../define.js";
 import rndstr from "rndstr";
 import config from "@/config/index.js";
 import { Users, UserProfiles } from "@/models/index.js";
-import { sendEmail } from "@/services/send-email.js";
+import { buildGuidanceEmail, sendEmail } from "@/services/send-email.js";
 import { ApiError } from "../../error.js";
 import { validateEmailForAccount } from "@/services/validate-email-for-account.js";
 import { HOUR } from "@/const.js";
@@ -95,12 +95,17 @@ export default define(meta, paramDef, async (ps, user) => {
 
 		const link = `${config.url}/verify-email/${code}`;
 
-		sendEmail(
-			ps.email,
-			"Email verification",
-			`To verify email, please click this link:<br><a href="${link}">${link}</a>`,
-			`To verify email, please click this link: ${link}`,
-		);
+		const mail = await buildGuidanceEmail({
+			subjectBody: "メールアドレス確認のご案内",
+			recipientUsername: user.username,
+			paragraphs: [
+				"メールアドレスの変更を受け付けました。",
+				"以下のリンクにアクセスしていただきますと、メールアドレスの確認が完了いたします。",
+				{ url: link },
+				"本メールにお心当たりのない場合は、お手数ですが本メールを破棄していただきますようお願いいたします。",
+			],
+		});
+		sendEmail(ps.email, mail.subject, mail.html, mail.text);
 	}
 
 	return iObj;

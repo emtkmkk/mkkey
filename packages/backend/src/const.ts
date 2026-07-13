@@ -41,6 +41,74 @@ export const USER_SLEEP_THRESHOLD = 2 * DAY;
 export const USER_DEEPSLEEP_THRESHOLD = 7 * DAY;
 export const USER_SUPERSLEEP_THRESHOLD = 30 * DAY;
 
+/**
+ * バッチ的なメール送信で1通送るごとに空ける待ち時間（ms）。
+ *
+ * @remarks
+ * 一度のバッチ処理で多数のメールを送る場合の共通インターバル。
+ * SMTP やメールプロバイダへの負荷・スパム判定を避けるため、連続送信しない。
+ *
+ * @see {@link services/send-email!runEmailBatch}
+ * @public
+ */
+export const BATCH_EMAIL_SEND_INTERVAL = 3 * MINUTE;
+
+// #region 休眠アカウント削除予告メール
+/**
+ * 休眠アカウント警告メールの対象となる投稿数の上限（以下で対象）。
+ *
+ * @remarks
+ * 運用ルール「投稿1000以下かつ長期未ログインは予告無く削除される場合がある」に合わせる。
+ *
+ * @public
+ */
+export const INACTIVE_DELETION_WARN_MAX_NOTES = 1000;
+
+/**
+ * 警告メールを送る未活動期間（月）。
+ *
+ * @remarks
+ * この期間を超えて未活動のローカルユーザーへ、再ログインまで1回限りメールする。
+ * 判定基準は `lastActiveDate`（無い場合は `createdAt`）。
+ *
+ * @see {@link INACTIVE_DELETION_ELIGIBLE_AFTER_MONTHS}
+ * @public
+ */
+export const INACTIVE_DELETION_WARN_AFTER_MONTHS = 3;
+
+/**
+ * 予告無し削除の対象になりうる未活動期間（月）。
+ *
+ * @remarks
+ * メール本文の「〜までにログインすることで対象外」の期限算出に使う（基準日 + この月数）。
+ * 自動削除ジョブ自体は未実装で、運用上の目安として案内する。
+ *
+ * @see {@link INACTIVE_DELETION_WARN_AFTER_MONTHS}
+ * @public
+ */
+export const INACTIVE_DELETION_ELIGIBLE_AFTER_MONTHS = 4;
+
+/**
+ * 警告メールを送信してよい時間帯の開始時（JST・この時刻を含む）。
+ *
+ * @remarks
+ * 深夜にメールが届かないようにするためのガード。cron 自体は JST 18時発火だが、
+ * リトライ遅延・手動実行・サーバ TZ 誤設定への保険としてジョブ側でも判定する。
+ *
+ * @see {@link INACTIVE_DELETION_WARN_SEND_HOUR_END}
+ * @public
+ */
+export const INACTIVE_DELETION_WARN_SEND_HOUR_START = 8;
+
+/**
+ * 警告メールを送信してよい時間帯の終了時（JST・この時刻を含まない）。
+ *
+ * @see {@link INACTIVE_DELETION_WARN_SEND_HOUR_START}
+ * @public
+ */
+export const INACTIVE_DELETION_WARN_SEND_HOUR_END = 21;
+// #endregion
+
 export const MAX_REACTION_PER_ACCOUNT = 3;
 
 /** 管理者として扱うユーザーID（オンラインステータス表示・ミュート除外などで参照） */

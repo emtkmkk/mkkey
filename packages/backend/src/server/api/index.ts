@@ -31,6 +31,7 @@ import signin from "./private/signin.js";
 import signinPasskeyChallenge from "./private/signin-passkey-challenge.js";
 import signupPending from "./private/signup-pending.js";
 import verifyEmail from "./private/verify-email.js";
+import unsubscribeEmail from "./private/unsubscribe-email.js";
 import discord from "./service/discord.js";
 import github from "./service/github.js";
 import google from "./service/google.js";
@@ -223,6 +224,7 @@ router.post("/signin", signin);
 router.post("/signin/passkey-challenge", signinPasskeyChallenge);
 router.post("/signup-pending", signupPending);
 router.post("/verify-email", verifyEmail);
+router.post("/unsubscribe-email", unsubscribeEmail);
 
 router.use(discord.routes());
 router.use(github.routes());

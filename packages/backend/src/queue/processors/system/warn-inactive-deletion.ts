@@ -136,30 +136,30 @@ async function findWarnTargets(warnThreshold: Date): Promise<
 	const rows = await Users.createQueryBuilder("user")
 		.innerJoin("user_profile", "profile", 'profile."userId" = user.id')
 		.where("user.host IS NULL")
-		.andWhere('user."isDeleted" = false')
-		.andWhere('user."isSuspended" = false')
-		.andWhere('user."notesCount" <= :maxNotes', {
+		.andWhere("user.isDeleted = false")
+		.andWhere("user.isSuspended = false")
+		.andWhere("user.notesCount <= :maxNotes", {
 			maxNotes: INACTIVE_DELETION_WARN_MAX_NOTES,
 		})
-		.andWhere('user."inactiveDeletionWarnedAt" IS NULL')
+		.andWhere("user.inactiveDeletionWarnedAt IS NULL")
 		.andWhere("profile.email IS NOT NULL")
 		.andWhere('profile."emailVerified" = true')
 		.andWhere('profile."receiveAnnouncementEmail" = true')
 		.andWhere(
 			new Brackets((qb) => {
 				qb.where(
-					'user."lastActiveDate" IS NOT NULL AND user."lastActiveDate" <= :warnThreshold',
+					"user.lastActiveDate IS NOT NULL AND user.lastActiveDate <= :warnThreshold",
 					{ warnThreshold },
 				).orWhere(
-					'user."lastActiveDate" IS NULL AND user."createdAt" <= :warnThreshold',
+					"user.lastActiveDate IS NULL AND user.createdAt <= :warnThreshold",
 					{ warnThreshold },
 				);
 			}),
 		)
 		.select("user.id", "id")
 		.addSelect("user.username", "username")
-		.addSelect('user."lastActiveDate"', "lastActiveDate")
-		.addSelect('user."createdAt"', "createdAt")
+		.addSelect("user.lastActiveDate", "lastActiveDate")
+		.addSelect("user.createdAt", "createdAt")
 		.addSelect("profile.email", "email")
 		.addSelect('profile."emailUnsubscribeToken"', "emailUnsubscribeToken")
 		.getRawMany<{

@@ -196,15 +196,20 @@ async function findWarnTargets(warnThreshold: Date): Promise<
 /**
  * 1ユーザー向けの警告メール（件名・本文・配信停止ヘッダ）を組み立てる。
  *
+ * @remarks
+ * 期限（最終活動日+4ヶ月）が未来なら「{期限日}までにログインを」、
+ * すでに過去なら「現在削除対象になりうる状態のため、継続希望なら一度ログインを」と案内を分ける。
+ * 過去の日付を期限として見せると、もう間に合わないように読めてしまうため。
+ *
  * @param username - 宛先ユーザー名（表示用）
- * @param deadlineLabel - 予告無し削除対象外となるログイン期限の日本語表記
+ * @param deadline - 予告無し削除の対象になりうる日時（最終活動日+4ヶ月）
  * @param unsubscribeToken - 配信停止リンク用トークン
  * @returns 件名 / HTML / text 本文 / 追加ヘッダ
  * @internal
  */
 async function buildWarnEmail(
 	username: string,
-	deadlineLabel: string,
+	deadline: Date,
 	unsubscribeToken: string,
 ): Promise<{
 	subject: string;
@@ -214,6 +219,13 @@ async function buildWarnEmail(
 }> {
 	const unsubscribeUrl = `${config.url}/unsubscribe-email/${unsubscribeToken}`;
 
+	const loginRequest =
+		deadline.getTime() > Date.now()
+			? `お手数ですが、${formatJapaneseDate(
+					deadline,
+				)}までに一度ログインいただきますと、予告なしのアカウント削除の対象外となります。`
+			: "ご利用のアカウントは、現在、予告なしで削除される可能性がある状態です。利用の継続をご希望の場合は、お手数ですが一度ログインをお願いいたします。";
+
 	const { subject, html, text } = await buildGuidanceEmail({
 		subjectBody: "アカウントの取り扱いに関するご案内",
 		recipientUsername: username,
@@ -222,7 +234,7 @@ async function buildWarnEmail(
 			`サーバールールにより、投稿数が${INACTIVE_DELETION_WARN_MAX_NOTES.toLocaleString(
 				"ja-JP",
 			)}以下で、かつ長期間ログインのないアカウントは、予告なく削除される場合がございます。`,
-			`お手数ですが、${deadlineLabel}までに一度ログインいただきますと、予告なしのアカウント削除の対象外となります。`,
+			loginRequest,
 			"なお、ログイン後に再び長期間ログインがない場合は、改めて対象となる可能性がございますので、ご了承ください。",
 			"本メールの配信停止をご希望の場合は、以下のリンクからお手続きいただけます。",
 			{ url: unsubscribeUrl },
@@ -305,7 +317,6 @@ export async function warnInactiveDeletion(
 				target.activityBase,
 				INACTIVE_DELETION_ELIGIBLE_AFTER_MONTHS,
 			);
-			const deadlineLabel = formatJapaneseDate(deadline);
 
 			// 配信停止トークンが未発行なら発行して保存する（ユーザー単位で固定）
 			let unsubscribeToken = target.emailUnsubscribeToken;
@@ -319,7 +330,7 @@ export async function warnInactiveDeletion(
 
 			const { subject, html, text, headers } = await buildWarnEmail(
 				target.username,
-				deadlineLabel,
+				deadline,
 				unsubscribeToken,
 			);
 

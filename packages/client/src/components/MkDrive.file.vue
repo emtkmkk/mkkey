@@ -38,6 +38,16 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * ドライブ内の1ファイルを表すカード。コンテキストメニューから削除などを行う。
+ *
+ * @remarks
+ * 削除確認では添付投稿件数を表示し、投稿は残って添付だけ消える旨を伝える。
+ *
+ * @public
+ */
 import { computed, defineAsyncComponent, ref } from "vue";
 import * as Misskey from "calckey-js";
 import copyToClipboard from "@/scripts/copy-to-clipboard";
@@ -206,10 +216,47 @@ function addApp() {
 	alert('not implemented yet');
 }
 */
+/**
+ * ドライブファイル削除の確認ダイアログ文言を組み立てる。
+ *
+ * @remarks
+ * `drive/files/attached-notes` で件数を取る。管理者画面で他人のファイルを
+ * 扱う場合など API が失敗したら件数なしの文言にフォールバックする。
+ *
+ * @param fileId - 削除対象ファイル ID
+ * @param fileName - 表示用ファイル名
+ * @returns 確認ダイアログ用テキスト
+ * @internal
+ */
+async function buildDriveFileDeleteConfirmText(
+	fileId: string,
+	fileName: string,
+): Promise<string> {
+	try {
+		const notes = await os.api("drive/files/attached-notes", {
+			fileId,
+		});
+		const count = Array.isArray(notes) ? notes.length : 0;
+		if (count > 0) {
+			return i18n.t("driveFileDeleteConfirmWithNotes", {
+				name: fileName,
+				count,
+			});
+		}
+	} catch {
+		// 他人のファイル削除など件数取得できない場合は件数なし文言へ
+	}
+	return i18n.t("driveFileDeleteConfirm", { name: fileName });
+}
+
 async function deleteFile() {
+	const text = await buildDriveFileDeleteConfirmText(
+		props.file.id,
+		props.file.name,
+	);
 	const { canceled } = await os.confirm({
 		type: "warning",
-		text: i18n.t("driveFileDeleteConfirm", { name: props.file.name }),
+		text,
 	});
 
 	if (canceled) return;

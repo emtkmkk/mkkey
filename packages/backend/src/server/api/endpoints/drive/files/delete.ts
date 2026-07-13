@@ -6,15 +6,18 @@
  * @remarks
  * - **API パス**: `drive/files/delete`（POST `/api/drive/files/delete` で呼び出し）
  * - 認証必須。fileId で指定したドライブファイルを削除する。
+ * - レート制限は 20 回/時間・最短間隔 1 秒（投稿削除がかつて使っていた引き締め値に合わせる）。
+ * - ノートの `fileIds` は掃除しない。欠落添付はクライアント側でプレースホルダ表示する。
  *
  * @see {@link define} エンドポイント登録
  * @internal
  */
 import { deleteFile } from "@/services/drive/delete-file.js";
 import { publishDriveStream } from "@/services/stream.js";
+import { SECOND, HOUR } from "@/const.js";
 import define from "../../../define.js";
 import { ApiError } from "../../../error.js";
-import { DriveFiles, Users } from "@/models/index.js";
+import { DriveFiles } from "@/models/index.js";
 
 export const meta = {
 	tags: ["drive"],
@@ -22,6 +25,12 @@ export const meta = {
 	requireCredential: true,
 
 	kind: "write:drive",
+
+	limit: {
+		duration: HOUR,
+		max: 20,
+		minInterval: SECOND,
+	},
 
 	description: "指定したドライブファイルを削除します。",
 

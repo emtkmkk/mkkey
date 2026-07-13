@@ -158,8 +158,11 @@
 					:to="`/notes/${note.renoteId}`"
 					>{{ i18n.ts.quoteAttached }}: ...</MkA
 				>
-				<div v-if="note.files.length > 0" class="files">
-					<XMediaList :media-list="note.files" />
+				<div v-if="noteHasFileSlots(note)" class="files">
+					<XMediaList
+						:media-list="note.files"
+						:file-ids="note.fileIds"
+					/>
 				</div>
 				<XPoll v-if="note.poll" :note="note" class="poll" />
 				<template v-if="detailed">
@@ -268,6 +271,7 @@ import { shouldEnableMfmCompat } from "@/scripts/mfm-compat";
 import { i18n } from "@/i18n";
 import { defaultStore } from "@/store";
 import { $i } from "@/account";
+import { noteHasFileSlots, noteFileSlotCount } from "@/scripts/note-file-attachments";
 
 const props = defineProps<{
 	note: misskey.entities.Note;
@@ -290,6 +294,7 @@ const isSensitive =
 const cwDetermine =
 	props.note.cw || (isSensitive && defaultStore.state.nsfw === "toCW");
 const cwView = cwDetermine || defaultStore.state.noteAllCw;
+const fileSlotCount = noteFileSlotCount(props.note);
 const isLong =
 	!props.detailedView &&
 	!cwView &&
@@ -297,7 +302,7 @@ const isLong =
 	(props.note.text.split("\n").length > 9 ||
 		props.note.text.length > 500 ||
 		(!defaultStore.state.compactGrid &&
-			(props.note.files?.length > 4 || props.note.files?.length === 3)));
+			(fileSlotCount > 4 || fileSlotCount === 3)));
 let collapsed = ref(!cwView && isLong);
 const urls = props.note.text
 	? extractUrlFromMfm(mfm.parse(props.note.text))

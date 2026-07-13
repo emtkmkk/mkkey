@@ -196,9 +196,25 @@ async function fetch() {
 fetch();
 
 async function del() {
+	let text = i18n.t("driveFileDeleteConfirm", { name: file.name });
+	try {
+		const notes = await os.api("drive/files/attached-notes", {
+			fileId: file.id,
+		});
+		const count = Array.isArray(notes) ? notes.length : 0;
+		if (count > 0) {
+			text = i18n.t("driveFileDeleteConfirmWithNotes", {
+				name: file.name,
+				count,
+			});
+		}
+	} catch {
+		// 他人のファイルなど件数取得できない場合は件数なし文言のまま
+	}
+
 	const { canceled } = await os.confirm({
 		type: "warning",
-		text: i18n.t("removeAreYouSure", { x: file.name }),
+		text,
 	});
 	if (canceled) return;
 

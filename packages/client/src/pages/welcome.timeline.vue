@@ -23,8 +23,17 @@
 						/>
 						<!-- <MkA v-if="note.renoteId" class="rp" :to="`/notes/${note.renoteId}`">RN: ...</MkA> -->
 					</div>
-					<div v-if="note.files.length > 0" class="richcontent">
-						<XMediaList :media-list="note.files" />
+					<div
+						v-if="
+							(note.fileIds && note.fileIds.length > 0) ||
+							note.files.length > 0
+						"
+						class="richcontent"
+					>
+						<XMediaList
+							:media-list="note.files"
+							:file-ids="note.fileIds"
+						/>
 					</div>
 					<div v-if="note.poll">
 						<XPoll :note="note" :readOnly="true" />

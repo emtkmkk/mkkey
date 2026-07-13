@@ -1,13 +1,12 @@
 /**
  * @packageDocumentation
  *
- * 指定ドライブファイルが添付されているノート一覧を取得する API エンドポイント。
+ * 指定ドライブファイルが添付されているノート一覧（または件数）を取得する API。
  *
  * @remarks
- * - **API パス**: `drive/files/attached-notes`（GET `/api/drive/files/attached-notes` で呼び出し）
- * - 認証必須。fileId で指定したファイルを添付しているノートの一覧を返す。
- * - 件数だけ欲しい場合は {@link ./attached-notes-count.ts}（`drive/files/attached-notes-count`）を使う。
- *   こちらは全ノートを pack するため重い。
+ * - **API パス**: `drive/files/attached-notes`
+ * - `countOnly: true` のときはノートを pack せず `COUNT` のみ返す（削除確認用）。
+ * - `= ANY(note.fileIds)` は既存 GIN `IDX_NOTE_FILE_IDS` を利用する。
  *
  * @see {@link define} エンドポイント登録
  * @internal
@@ -23,18 +22,14 @@ export const meta = {
 
 	kind: "read:drive",
 
-	description: "指定したドライブファイルを添付しているノート一覧を取得します。",
+	description:
+		"指定したドライブファイルを添付しているノート一覧を取得します。countOnly 時は件数のみ返します。",
 
+	// countOnly 時は { count }、通常時は Note[] を返す
 	res: {
-		type: "array",
+		type: "object",
 		optional: false,
 		nullable: false,
-		items: {
-			type: "object",
-			optional: false,
-			nullable: false,
-			ref: "Note",
-		},
 	},
 
 	errors: {
@@ -50,19 +45,32 @@ export const paramDef = {
 	type: "object",
 	properties: {
 		fileId: { type: "string", format: "misskey:id" },
+		/**
+		 * true のときノート一覧ではなく件数だけ返す。
+		 * 削除確認ダイアログ向け（pack しないので軽い）。
+		 */
+		countOnly: { type: "boolean", default: false },
 	},
 	required: ["fileId"],
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
-	// ファイルを取得する
-	const file = await DriveFiles.findOneBy({
-		id: ps.fileId,
-		userId: user.id,
-	});
+	const file = await DriveFiles.findOneBy(
+		user.isAdmin || user.isModerator
+			? { id: ps.fileId }
+			: { id: ps.fileId, userId: user.id },
+	);
 
 	if (file == null) {
 		throw new ApiError(meta.errors.noSuchFile);
+	}
+
+	// 件数のみ（削除確認用）。GIN インデックスを使う COUNT。
+	if (ps.countOnly) {
+		const count = await Notes.createQueryBuilder("note")
+			.where(":file = ANY(note.fileIds)", { file: file.id })
+			.getCount();
+		return { count };
 	}
 
 	const notes = await Notes.createQueryBuilder("note")

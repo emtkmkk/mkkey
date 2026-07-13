@@ -220,7 +220,7 @@ function addApp() {
  * ドライブファイル削除の確認ダイアログ文言を組み立てる。
  *
  * @remarks
- * `drive/files/attached-notes-count` で件数だけ取る（ノート pack はしない）。
+ * `drive/files/attached-notes` の `countOnly` で件数だけ取る（ノート pack はしない）。
  * 失敗時は件数なし文言にフォールバックする。
  *
  * @param fileId - 削除対象ファイル ID
@@ -235,8 +235,8 @@ async function buildDriveFileDeleteConfirmText(
 	try {
 		// suppressToast: 件数取得失敗でエラートーストを出さず、確認ダイアログ自体は必ず出す
 		const res = (await os.api(
-			"drive/files/attached-notes-count",
-			{ fileId },
+			"drive/files/attached-notes",
+			{ fileId, countOnly: true },
 			undefined,
 			true,
 		)) as { count?: number };

@@ -147,7 +147,6 @@ import * as ep___drive from "./endpoints/drive.js";
 import * as ep___drive_autoFolders from "./endpoints/drive/auto-folders.js";
 import * as ep___drive_files from "./endpoints/drive/files.js";
 import * as ep___drive_files_attachedNotes from "./endpoints/drive/files/attached-notes.js";
-import * as ep___drive_files_attachedNotesCount from "./endpoints/drive/files/attached-notes-count.js";
 import * as ep___drive_files_checkExistence from "./endpoints/drive/files/check-existence.js";
 import * as ep___drive_files_captionImage from "./endpoints/drive/files/caption-image.js";
 import * as ep___drive_files_create from "./endpoints/drive/files/create.js";
@@ -556,7 +555,6 @@ const eps = [
         ["drive/auto-folders", ep___drive_autoFolders],
         ["drive/files", ep___drive_files],
 	["drive/files/attached-notes", ep___drive_files_attachedNotes],
-	["drive/files/attached-notes-count", ep___drive_files_attachedNotesCount],
 	["drive/files/caption-image", ep___drive_files_captionImage],
 	["drive/files/check-existence", ep___drive_files_checkExistence],
 	["drive/files/create", ep___drive_files_create],

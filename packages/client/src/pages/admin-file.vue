@@ -199,8 +199,8 @@ async function del() {
 	let text = i18n.t("driveFileDeleteConfirm", { name: file.name });
 	try {
 		const res = (await os.api(
-			"drive/files/attached-notes-count",
-			{ fileId: file.id },
+			"drive/files/attached-notes",
+			{ fileId: file.id, countOnly: true },
 			undefined,
 			true,
 		)) as { count?: number };

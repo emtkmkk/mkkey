@@ -435,6 +435,11 @@ export const packedMeDetailedOnlySchema = {
 			nullable: true,
 			optional: false,
 		},
+		receiveUnreadSummaryEmail: {
+			type: "boolean",
+			nullable: true,
+			optional: false,
+		},
 		alwaysMarkNsfw: {
 			type: "boolean",
 			nullable: true,

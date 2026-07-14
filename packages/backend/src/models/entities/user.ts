@@ -56,6 +56,23 @@ export class User {
 	})
 	public inactiveDeletionWarnedAt: Date | null;
 
+	/**
+	 * 未読通知サマリーメールの前回集計基準時刻。
+	 *
+	 * @remarks
+	 * - サマリーメール送信成功時に「集計を開始した時刻」をセットする。
+	 * - この時刻以降に作成された未読通知が「新しい未読」として次回の集計対象になる。
+	 * - `null` は「一度も送っていない」を表し、初回は未読全部が対象。
+	 *
+	 * @see {@link sendUnreadSummaryEmail} 日次送信ジョブ
+	 * @internal
+	 */
+	@Column('timestamp with time zone', {
+		nullable: true,
+		comment: 'When the unread-notifications summary email was last sent (aggregation base time).',
+	})
+	public unreadSummaryEmailSentAt: Date | null;
+
 	@Column('boolean', {
 		default: false,
 	})

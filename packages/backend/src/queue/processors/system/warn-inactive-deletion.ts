@@ -11,7 +11,8 @@
  * - 深夜にメールが届かないよう、JST の許可時間帯（8時〜21時）以外は送信せずスキップする。
  * - 1通ごとに待ち時間（既定3分）を空けて逐次送信し（{@link runEmailBatch}）、
  *   送信中に時間帯を外れたら残りは翌日に持ち越す。
- * - 本文の配信停止リンクと RFC 8058 ワンクリック配信停止（List-Unsubscribe）に対応する。
+ * - メールフッタの配信停止リンクと RFC 8058 ワンクリック配信停止（List-Unsubscribe）に対応する
+ *   （sendEmail の `unsubscribeToken` オプションで自動付与）。
  * - 4ヶ月での自動削除自体はこのジョブでは行わない（運用案内のみ）。
  *
  * @see {@link INACTIVE_DELETION_WARN_AFTER_MONTHS}
@@ -20,7 +21,6 @@
  */
 import type Bull from "bull";
 import { Brackets } from "typeorm";
-import config from "@/config/index.js";
 import {
 	INACTIVE_DELETION_ELIGIBLE_AFTER_MONTHS,
 	INACTIVE_DELETION_WARN_AFTER_MONTHS,
@@ -194,31 +194,29 @@ async function findWarnTargets(warnThreshold: Date): Promise<
 }
 
 /**
- * 1ユーザー向けの警告メール（件名・本文・配信停止ヘッダ）を組み立てる。
+ * 1ユーザー向けの警告メール（件名・本文）を組み立てる。
  *
  * @remarks
  * 期限（最終活動日+4ヶ月）が未来なら「{期限日}までにログインを」、
  * すでに過去なら「現在削除対象になりうる状態のため、継続希望なら一度ログインを」と案内を分ける。
  * 過去の日付を期限として見せると、もう間に合わないように読めてしまうため。
  *
+ * 配信停止リンク・List-Unsubscribe ヘッダは sendEmail の `unsubscribeToken` オプションで付くため、
+ * ここでは本文に含めない。
+ *
  * @param username - 宛先ユーザー名（表示用）
  * @param deadline - 予告無し削除の対象になりうる日時（最終活動日+4ヶ月）
- * @param unsubscribeToken - 配信停止リンク用トークン
- * @returns 件名 / HTML / text 本文 / 追加ヘッダ
+ * @returns 件名 / HTML / text 本文
  * @internal
  */
 async function buildWarnEmail(
 	username: string,
 	deadline: Date,
-	unsubscribeToken: string,
 ): Promise<{
 	subject: string;
 	html: string;
 	text: string;
-	headers: Record<string, string>;
 }> {
-	const unsubscribeUrl = `${config.url}/unsubscribe-email/${unsubscribeToken}`;
-
 	const loginRequest =
 		deadline.getTime() > Date.now()
 			? `お手数ですが、${formatJapaneseDate(
@@ -226,7 +224,7 @@ async function buildWarnEmail(
 				)}までに一度ログインいただきますと、予告なしのアカウント削除の対象外となります。`
 			: "ご利用のアカウントは、現在、予告なしで削除される可能性がある状態です。利用の継続をご希望の場合は、お手数ですが一度ログインをお願いいたします。";
 
-	const { subject, html, text } = await buildGuidanceEmail({
+	return await buildGuidanceEmail({
 		subjectBody: "アカウントの取り扱いに関するご案内",
 		recipientUsername: username,
 		paragraphs: [
@@ -236,21 +234,8 @@ async function buildWarnEmail(
 			)}以下で、かつ長期間ログインのないアカウントは、予告なく削除される場合がございます。`,
 			loginRequest,
 			"なお、ログイン後に再び長期間ログインがない場合は、改めて対象となる可能性がございますので、ご了承ください。",
-			"本メールの配信停止をご希望の場合は、以下のリンクからお手続きいただけます。",
-			{ url: unsubscribeUrl },
 		],
 	});
-
-	return {
-		subject,
-		html,
-		text,
-		// RFC 8058 ワンクリック配信停止（メールアプリの「配信停止」ボタン用）
-		headers: {
-			"List-Unsubscribe": `<${config.url}/api/unsubscribe-email?token=${unsubscribeToken}>`,
-			"List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
-		},
-	};
 }
 
 /**
@@ -328,13 +313,14 @@ export async function warnInactiveDeletion(
 				);
 			}
 
-			const { subject, html, text, headers } = await buildWarnEmail(
+			const { subject, html, text } = await buildWarnEmail(
 				target.username,
 				deadline,
-				unsubscribeToken,
 			);
 
-			await sendEmail(target.email, subject, html, text, headers);
+			await sendEmail(target.email, subject, html, text, {
+				unsubscribeToken,
+			});
 			await Users.update(target.id, {
 				inactiveDeletionWarnedAt: new Date(),
 			});

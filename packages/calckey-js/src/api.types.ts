@@ -710,6 +710,7 @@ export type Endpoints = {
 			isCat?: boolean;
 			injectFeaturedNote?: boolean;
 			receiveAnnouncementEmail?: boolean;
+			receiveUnreadSummaryEmail?: boolean;
 			alwaysMarkNsfw?: boolean;
 			mutedWords?: string[][];
 			mutingNotificationTypes?: Notification["type"][];

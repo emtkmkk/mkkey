@@ -377,6 +377,9 @@ export const routes = [
 	{
 		path: "/unsubscribe-email/:token",
 		component: page(() => import("./pages/unsubscribe-email.vue")),
+		query: {
+			kind: "kind",
+		},
 	},
 	{
 		path: "/announcements",

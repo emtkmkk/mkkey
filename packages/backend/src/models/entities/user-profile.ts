@@ -217,6 +217,12 @@ export class UserProfile {
 	})
 	public receiveAnnouncementEmail: boolean;
 
+	/** 未読通知サマリーメールの受信可否（配信停止リンク kind=summary でも false になる） */
+	@Column('boolean', {
+		default: true,
+	})
+	public receiveUnreadSummaryEmail: boolean;
+
 	@Column({
 		...id(),
 		nullable: true,

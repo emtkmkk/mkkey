@@ -7,25 +7,89 @@ import config from "@/config/index.js";
 export const logger = new Logger("email");
 
 /**
+ * {@link sendEmail} の追加オプション。
+ *
+ * @public
+ */
+export interface SendEmailOptions {
+	/**
+	 * 配信停止トークン（`user_profile.emailUnsubscribeToken`）。
+	 *
+	 * 指定すると以下がすべて自動で付く:
+	 * - HTML フッタに「このメールの配信を停止する」リンクが付く
+	 * - text 本文の末尾に配信停止リンクの案内が付く
+	 * - RFC 8058 ワンクリック配信停止用の `List-Unsubscribe` ヘッダが付く
+	 *
+	 * 未指定（トランザクショナルメール）の場合、フッタはホスト名リンクのみになる。
+	 */
+	unsubscribeToken?: string;
+
+	/**
+	 * 配信停止リンクで止まるメールの種別。
+	 *
+	 * - `announcement`（既定）: お知らせメール全般（`receiveAnnouncementEmail` を false に）
+	 * - `summary`: 未読通知サマリーメールのみ（`receiveUnreadSummaryEmail` を false に）
+	 *
+	 * @defaultValue `"announcement"`
+	 */
+	unsubscribeKind?: "announcement" | "summary";
+}
+
+/**
  * メールを送信する。
  *
  * @param to - 宛先メールアドレス
  * @param subject - 件名
  * @param html - HTML 本文（共通の外枠テンプレートに埋め込まれる）
  * @param text - プレーンテキスト本文（そのまま送信される）
- * @param headers - 追加のメールヘッダ（List-Unsubscribe 等）
+ * @param options - 追加オプション（配信停止トークン等）
  */
 export async function sendEmail(
 	to: string,
 	subject: string,
 	html: string,
 	text: string,
-	headers?: Record<string, string>,
+	options?: SendEmailOptions,
 ) {
 	const meta = await fetchMeta(true);
 
+	const serverName = meta.name || config.host;
 	const iconUrl = `${config.url}/static-assets/mi-white.png`;
-	const emailSettingUrl = `${config.url}/settings/email`;
+
+	// #region 配信停止まわりの組み立て
+	// summary のみ URL に kind を付ける（無指定=announcement は従来 URL のまま後方互換）
+	const isSummaryKind = options?.unsubscribeKind === "summary";
+
+	const unsubscribeUrl = options?.unsubscribeToken
+		? `${config.url}/unsubscribe-email/${options.unsubscribeToken}${
+				isSummaryKind ? "?kind=summary" : ""
+		  }`
+		: null;
+
+	// RFC 8058 ワンクリック配信停止（メールアプリの「配信停止」ボタン用）
+	const headers = options?.unsubscribeToken
+		? {
+				"List-Unsubscribe": `<${config.url}/api/unsubscribe-email?token=${
+					options.unsubscribeToken
+				}${isSummaryKind ? "&kind=summary" : ""}>`,
+				"List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+		  }
+		: undefined;
+
+	// HTML フッタ: 配信停止対象のメールのみ配信停止リンクを載せる。
+	// トランザクショナルメール（パスワードリセット等）はログインできない状態の受信者も
+	// 多いため、設定画面へのリンクは置かない。
+	const footerLink = unsubscribeUrl
+		? `<div><a href="${escapeHtml(
+				unsubscribeUrl,
+		  )}" style="color: #9ccfd8 !important;">このメールの配信を停止する</a></div>`
+		: "";
+
+	// text 版にはフッタが無いため、末尾に配信停止案内を足す
+	const fullText = unsubscribeUrl
+		? `${text}\n\n----\nこのメールの配信停止をご希望の場合は、以下のリンクからお手続きいただけます。\n${unsubscribeUrl}`
+		: text;
+	// #endregion
 
 	const enableAuth = meta.smtpUser != null && meta.smtpUser !== "";
 
@@ -49,30 +113,29 @@ export async function sendEmail(
 			to: to,
 			subject: subject,
 			headers: headers,
-			text: text,
+			text: fullText,
 			html: `<!DOCTYPE html>
 <html>
 	<head>
 		<meta charset="utf-8">
-		<title>${subject}</title>
+		<title>${escapeHtml(subject)}</title>
 	</head>
-	<body style="background: #191724; padding: 16px; margin: 0; font-family: sans-serif; font-size: 14px;">
-		<main style="max-width: 500px; margin: 0 auto; background: #1f1d2e; color: #e0def4; border-radius: 20px;">
-			<header style="padding: 32px; background: #31748f; color: #e0def4; display: flex; border-radius: 20px;">
-				<img src="${meta.logoImageUrl || meta.iconUrl || iconUrl}" style="max-width: 128px; max-height: 72px; vertical-align: bottom; margin-right: 16px;"/>
-				<h1 style="margin: 0 0 1em 0;">${meta.name}</h1>
+	<body style="margin: 0; padding: 24px 16px; background: #191724; font-family: sans-serif; font-size: 14px;">
+		<main style="max-width: 500px; margin: 0 auto; background: #1f1d2e; color: #e0def4; border-radius: 20px; overflow: hidden;">
+			<header style="padding: 24px 32px; background: #31748f;">
+				<a href="${config.url}" style="color: #e0def4 !important; text-decoration: none;">
+					<img src="${meta.logoImageUrl || meta.iconUrl || iconUrl}" style="max-width: 128px; max-height: 48px; vertical-align: middle; margin-right: 12px;"/>
+					<span style="font-size: 20px; font-weight: bold; vertical-align: middle;">${escapeHtml(serverName)}</span>
+				</a>
 			</header>
-			<article style="padding: 32px;">
-				<h1 style="color: #ebbcba !important;">${subject}</h1>
+			<article style="padding: 28px 32px 32px 32px; line-height: 1.9;">
+				<h1 style="margin: 0 0 1.2em 0; font-size: 17px; color: #ebbcba !important;">${escapeHtml(subject)}</h1>
 				<div style="color: #e0def4;">${html}</div>
 			</article>
-			<footer style="padding: 32px; border-top: solid 1px #26233a;">
-				<a href="${emailSettingUrl}" style="color: #9ccfd8 !important;">メール設定</a>
+			<footer style="padding: 20px 32px 24px 32px; border-top: solid 1px #26233a; font-size: 12px; line-height: 2;">
+				${footerLink}<div><a href="${config.url}" style="color: #908caa !important; text-decoration: none;">${config.host}</a></div>
 			</footer>
 		</main>
-		<nav style="box-sizing: border-box; max-width: 500px; margin: 16px auto 0 auto; padding: 0 32px;">
-			<a href="${config.url}" style="color: #9ccfd8 !important;">${config.host}</a>
-		</nav>
 	</body>
 </html>`,
 		});
@@ -133,9 +196,9 @@ export interface GuidanceEmailOptions {
  *
  * @param str - エスケープする文字列
  * @returns エスケープ済み文字列
- * @internal
+ * @public
  */
-function escapeHtml(str: string): string {
+export function escapeHtml(str: string): string {
 	return str
 		.replace(/&/g, "&amp;")
 		.replace(/</g, "&lt;")

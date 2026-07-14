@@ -11,17 +11,21 @@ import { definePageMetadata } from "@/scripts/page-metadata";
 
 const props = defineProps<{
 	token: string;
+	kind?: string;
 }>();
 
 const message = ref("配信停止の手続きを行っています…");
 
 onMounted(async () => {
+	const isSummary = props.kind === "summary";
 	try {
 		await os.api("unsubscribe-email", {
 			token: props.token,
+			...(isSummary ? { kind: "summary" } : {}),
 		});
-		message.value =
-			"お知らせメールの配信停止が完了しました。配信を再開する場合は、ログイン後に「設定 > メール」から変更できます。";
+		message.value = `${
+			isSummary ? "未読通知のお知らせメール" : "お知らせメール"
+		}の配信停止が完了しました。配信を再開する場合は、ログイン後に「設定 > メール」から変更できます。`;
 	} catch {
 		message.value =
 			"配信停止の手続きができませんでした。リンクが無効か、すでに配信停止済みの可能性があります。";

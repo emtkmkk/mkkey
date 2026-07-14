@@ -121,6 +121,7 @@ export type MeDetailed = UserDetailed & {
 	noCrawle: boolean;
 	preventAiLearning: boolean;
 	receiveAnnouncementEmail: boolean;
+	receiveUnreadSummaryEmail: boolean;
 	usePasswordLessLogin: boolean;
 	/** 当日の警告ポップアップが必要なときのみ */
 	needsModerationWarningPopup?: boolean;

@@ -164,6 +164,7 @@ export const paramDef = {
 		showSelfRenoteToHome: { type: "boolean" },
 		injectFeaturedNote: { type: "boolean" },
 		receiveAnnouncementEmail: { type: "boolean" },
+		receiveUnreadSummaryEmail: { type: "boolean" },
 		alwaysMarkNsfw: { type: "boolean" },
 		autoSensitive: { type: "boolean" },
 		ffVisibility: { type: "string", enum: ["public", "followers", "private"] },
@@ -354,6 +355,8 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 		profileUpdates.injectFeaturedNote = ps.injectFeaturedNote;
 	if (typeof ps.receiveAnnouncementEmail === "boolean")
 		profileUpdates.receiveAnnouncementEmail = ps.receiveAnnouncementEmail;
+	if (typeof ps.receiveUnreadSummaryEmail === "boolean")
+		profileUpdates.receiveUnreadSummaryEmail = ps.receiveUnreadSummaryEmail;
 	if (typeof ps.alwaysMarkNsfw === "boolean")
 		profileUpdates.alwaysMarkNsfw = ps.alwaysMarkNsfw;
 	if (typeof ps.autoSensitive === "boolean")

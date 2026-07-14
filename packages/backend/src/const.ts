@@ -109,6 +109,29 @@ export const INACTIVE_DELETION_WARN_SEND_HOUR_START = 8;
 export const INACTIVE_DELETION_WARN_SEND_HOUR_END = 21;
 // #endregion
 
+// #region 未読通知サマリーメール
+/** サマリーメールの対象となる未活動日数（この日数以上ログインがないユーザーに送る） */
+export const UNREAD_SUMMARY_MIN_INACTIVE_DAYS = 2;
+
+/** サマリーメールの再送クールダウン（日）。前回送信からこの日数は再送しない */
+export const UNREAD_SUMMARY_COOLDOWN_DAYS = 7;
+
+/** サマリーメールを送信してよい時間帯の開始時（JST・この時刻を含む） */
+export const UNREAD_SUMMARY_SEND_HOUR_START = 8;
+
+/** サマリーメールを送信してよい時間帯の終了時（JST・この時刻を含まない） */
+export const UNREAD_SUMMARY_SEND_HOUR_END = 21;
+
+/** 通知の種類ごとに本文へ載せる抜粋の最大件数 */
+export const UNREAD_SUMMARY_EXCERPTS_PER_TYPE = 3;
+
+/** 抜粋に載せるノート本文等の最大文字数 */
+export const UNREAD_SUMMARY_EXCERPT_TEXT_LENGTH = 60;
+
+/** アンテナ内訳（アンテナ名ごとの件数）の最大行数 */
+export const UNREAD_SUMMARY_MAX_ANTENNA_ROWS = 5;
+// #endregion
+
 export const MAX_REACTION_PER_ACCOUNT = 3;
 
 /** 管理者として扱うユーザーID（オンラインステータス表示・ミュート除外などで参照） */

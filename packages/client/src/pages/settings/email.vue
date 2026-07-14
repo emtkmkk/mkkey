@@ -25,8 +25,16 @@
 			<FormSwitch
 				:model-value="$i.receiveAnnouncementEmail"
 				@update:modelValue="onChangeReceiveAnnouncementEmail"
+				class="_formBlock"
 			>
 				{{ i18n.ts.receiveAnnouncementFromInstance }}
+			</FormSwitch>
+			<FormSwitch
+				:model-value="$i.receiveUnreadSummaryEmail"
+				@update:modelValue="onChangeReceiveUnreadSummaryEmail"
+				class="_formBlock"
+			>
+				{{ i18n.ts.receiveUnreadSummaryEmail }}
 			</FormSwitch>
 		</FormSection>
 	</div>
@@ -47,6 +55,12 @@ const emailAddress = ref($i!.email);
 const onChangeReceiveAnnouncementEmail = (v) => {
 	os.api("i/update", {
 		receiveAnnouncementEmail: v,
+	});
+};
+
+const onChangeReceiveUnreadSummaryEmail = (v) => {
+	os.api("i/update", {
+		receiveUnreadSummaryEmail: v,
 	});
 };
 

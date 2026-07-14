@@ -643,22 +643,24 @@ export default function () {
 		},
 	);
 
-	// 休眠アカウント（投稿1000以下・3ヶ月未活動）への自動削除予告メール（1日1回・JST 18時）
-	// NOTE: cron/tz を変更すると旧設定の repeatable ジョブが Redis に残留して二重実行になるため、
-	//       登録前に不一致エントリを掃除する。
-	{
-		const warnInactiveDeletionRepeat = {
-			cron: "0 18 * * *",
-			tz: "Asia/Tokyo",
-		};
+	/**
+	 * tz 付き repeatable ジョブを登録する。
+	 *
+	 * NOTE: cron/tz を変更すると旧設定の repeatable ジョブが Redis に残留して
+	 * 二重実行になるため、登録前に同名で設定が一致しないエントリを掃除する。
+	 */
+	const addTzAwareRepeatableJob = (
+		name: string,
+		jobId: string,
+		repeat: { cron: string; tz: string },
+	) => {
 		void (async () => {
 			try {
 				const repeatableJobs = await systemQueue.getRepeatableJobs();
 				for (const repeatable of repeatableJobs) {
 					if (
-						repeatable.name === "warnInactiveDeletion" &&
-						(repeatable.cron !== warnInactiveDeletionRepeat.cron ||
-							repeatable.tz !== warnInactiveDeletionRepeat.tz)
+						repeatable.name === name &&
+						(repeatable.cron !== repeat.cron || repeatable.tz !== repeat.tz)
 					) {
 						await systemQueue.removeRepeatableByKey(repeatable.key);
 						systemLogger.info(
@@ -668,19 +670,24 @@ export default function () {
 				}
 			} catch (err) {
 				systemLogger.warn(
-					`Failed to clean up outdated warnInactiveDeletion repeatable jobs: ${err}`,
+					`Failed to clean up outdated ${name} repeatable jobs: ${err}`,
 				);
 			}
-			systemQueue.add(
-				"warnInactiveDeletion",
-				{},
-				{
-					repeat: warnInactiveDeletionRepeat,
-					jobId: "warn-inactive-deletion",
-				},
-			);
+			systemQueue.add(name, {}, { repeat, jobId });
 		})();
-	}
+	};
+
+	// 休眠アカウント（投稿1000以下・3ヶ月未活動）への自動削除予告メール（1日1回・JST 18時）
+	addTzAwareRepeatableJob("warnInactiveDeletion", "warn-inactive-deletion", {
+		cron: "0 18 * * *",
+		tz: "Asia/Tokyo",
+	});
+
+	// 未読通知サマリーメール（1日1回・JST 12時。休眠警告と時間帯を分けて SMTP 負荷を分散）
+	addTzAwareRepeatableJob("sendUnreadSummaryEmail", "unread-summary-email", {
+		cron: "0 12 * * *",
+		tz: "Asia/Tokyo",
+	});
 
 	systemQueue.add(
 		"refreshStatsMvEmoji",

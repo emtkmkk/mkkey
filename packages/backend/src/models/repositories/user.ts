@@ -1247,6 +1247,7 @@ export const UserRepository = db.getRepository(User).extend({
 						followedMessage: profile!.followedMessage,
 						injectFeaturedNote: profile!.injectFeaturedNote,
 						receiveAnnouncementEmail: profile!.receiveAnnouncementEmail,
+						receiveUnreadSummaryEmail: profile!.receiveUnreadSummaryEmail,
 						alwaysMarkNsfw: profile!.alwaysMarkNsfw,
 						autoSensitive: profile!.autoSensitive,
 						carefulBot: profile!.carefulBot,

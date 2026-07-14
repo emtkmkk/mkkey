@@ -511,6 +511,10 @@ async function aggregateUnread(
  * 対象ユーザー（id のみ）を抽出する。詳細は送信直前に再取得・再チェックする。
  *
  * @param now - 実行時刻
+ * @remarks
+ * NOTE: EXISTS 内で `user."col"` のようにドット直後を手クォートすると TypeORM の
+ * プロパティ置換が効かず、PG 予約語の素の `user` が残って構文エラーになる。
+ * エイリアス参照は `user.col` 形式にすること。
  * @internal
  */
 async function findSummaryTargets(now: Date): Promise<{ id: string }[]> {
@@ -549,10 +553,13 @@ async function findSummaryTargets(now: Date): Promise<{ id: string }[]> {
 			}),
 		)
 		// 前回送信以降の新しい未読通知があるユーザーのみ（ミュート除外は集計時に行う）
+		// NOTE: `user."col"` のようにドット直後を手クォートすると TypeORM の
+		// replacePropertyNames が効かず、PG 予約語の素の `user` が残って
+		// `syntax error at or near "."` になる。プロパティパス形式（user.col）にすること。
 		.andWhere(
 			`EXISTS (SELECT 1 FROM notification n
 				WHERE n."notifieeId" = user.id AND n."isRead" = false
-				AND n."createdAt" > COALESCE(user."unreadSummaryEmailSentAt", '-infinity'))`,
+				AND n."createdAt" > COALESCE(user.unreadSummaryEmailSentAt, '-infinity'::timestamptz))`,
 		)
 		.select("user.id", "id")
 		.getRawMany<{ id: string }>();

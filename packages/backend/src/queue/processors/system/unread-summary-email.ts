@@ -12,6 +12,10 @@
  * - 通知はすべての種類が対象（アンテナ新着 `unreadAntenna` 含む）。種類ごとに
  *   件数と内容の抜粋を載せる。ミュートユーザー・ミュートインスタンス・
  *   サスペンド notifier 由来の通知は通知一覧 API と同様に除外する。
+ * - 通知設定で受け取らないことにしている種類（`mutingNotificationTypes`）は載せない
+ *   （作成時に既読化されるため通常は未読にならないが、設定変更前の古い未読も確実に除外する）。
+ * - HTML 版の抜粋には notifier のアイコン画像とカスタム絵文字リアクションの画像を使う
+ *   （メールクライアントが画像をブロックした場合は alt / text 版の文字表記にフォールバック）。
  * - 深夜にメールが届かないよう、JST の許可時間帯（8時〜21時）以外は送信せずスキップする。
  * - 1通ごとに待ち時間（既定3分）を空けて逐次送信し（{@link runEmailBatch}）、
  *   送信中に時間帯を外れたら残りは翌日に持ち越す。
@@ -26,6 +30,7 @@ import { Brackets, type SelectQueryBuilder } from "typeorm";
 import config from "@/config/index.js";
 import {
 	DAY,
+	HOUR,
 	UNREAD_SUMMARY_COOLDOWN_DAYS,
 	UNREAD_SUMMARY_EXCERPTS_PER_TYPE,
 	UNREAD_SUMMARY_EXCERPT_TEXT_LENGTH,
@@ -35,6 +40,8 @@ import {
 	UNREAD_SUMMARY_SEND_HOUR_START,
 } from "@/const.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
+import { populateEmoji } from "@/misc/populate-emojis.js";
+import { decodeReaction } from "@/misc/reaction-lib.js";
 import { secureRndstr } from "@/misc/secure-rndstr.js";
 import type { Notification } from "@/models/entities/notification.js";
 import type { Note } from "@/models/entities/note.js";
@@ -179,9 +186,14 @@ function applyVisibilityFilters<T extends SelectQueryBuilder<Notification>>(
  *
  * @param userId - 受信者
  * @param since - この時刻より後に作成された通知のみ（null は下限なし=初回）
+ * @param mutedTypes - 通知設定で受け取らないことにしている種類（除外する）
  * @internal
  */
-function buildUnreadQuery(userId: string, since: Date | null) {
+function buildUnreadQuery(
+	userId: string,
+	since: Date | null,
+	mutedTypes: string[],
+) {
 	const query = Notifications.createQueryBuilder("notification")
 		.leftJoin("notification.notifier", "notifier")
 		.where("notification.notifieeId = :userId", { userId })
@@ -189,6 +201,12 @@ function buildUnreadQuery(userId: string, since: Date | null) {
 
 	if (since != null) {
 		query.andWhere("notification.createdAt > :since", { since });
+	}
+
+	if (mutedTypes.length > 0) {
+		query.andWhere("notification.type NOT IN (:...mutedTypes)", {
+			mutedTypes,
+		});
 	}
 
 	return applyVisibilityFilters(query, userId);
@@ -214,7 +232,11 @@ function noteExcerpt(note: Note | null): string {
 }
 
 /**
- * notifier の表示名部分（HTML は acct をグレーで補足）を返す。
+ * notifier の表示名部分（HTML はアイコン画像 + 名前 + acct をグレーで補足）を返す。
+ *
+ * @remarks
+ * アイコンは `Users.getAvatarUrlSync`（アバター未設定時は identicon）。
+ * 抜粋クエリで `notifier.avatar` を join 済みであること。
  *
  * @internal
  */
@@ -226,12 +248,54 @@ function renderNotifier(notification: Notification): Line | null {
 	const acct = `@${notifier.username}${
 		notifier.host ? `@${notifier.host}` : ""
 	}`;
+	const avatarUrl = Users.getAvatarUrlSync(notifier);
 
 	return {
-		html: `${escapeHtml(display)} <span style="color: #908caa;">(${escapeHtml(
-			acct,
-		)})</span>`,
+		html: `<img src="${escapeHtml(
+			avatarUrl,
+		)}" width="20" height="20" alt="" style="border-radius: 6px; vertical-align: -5px; margin-right: 6px;"/>${escapeHtml(
+			display,
+		)} <span style="color: #908caa;">(${escapeHtml(acct)})</span>`,
 		text: `${display} (${acct})`,
+	};
+}
+
+/**
+ * リアクション表記を返す。カスタム絵文字は HTML では画像、text では `:name:` 表記。
+ *
+ * @remarks
+ * Unicode 絵文字はそのまま文字で表示する。絵文字が解決できない場合（削除済み等）は
+ * 元の文字列表記にフォールバックする。リモート絵文字の URL は populateEmoji が
+ * プロキシ URL に変換する。
+ *
+ * @internal
+ */
+async function renderReaction(reaction: string | null): Promise<Line> {
+	if (reaction == null || reaction === "") return { html: "", text: "" };
+
+	// Unicode 絵文字はそのまま
+	if (!reaction.startsWith(":")) {
+		return { html: escapeHtml(reaction), text: reaction };
+	}
+
+	const decoded = decodeReaction(reaction);
+	const label = decoded.name ? `:${decoded.name}:` : reaction;
+
+	// "name@." (ローカル) / "name@host" 形式で解決する
+	const emoji = await populateEmoji(
+		decoded.reaction.split(":").join(""),
+		null,
+	).catch(() => null);
+
+	if (emoji == null) {
+		return { html: escapeHtml(label), text: label };
+	}
+
+	return {
+		html: `<img src="${escapeHtml(emoji.url)}" width="18" height="18" alt="${escapeHtml(
+			label,
+		)}" style="vertical-align: -4px;"/>`,
+		text: label,
 	};
 }
 
@@ -240,7 +304,9 @@ function renderNotifier(notification: Notification): Line | null {
  *
  * @internal
  */
-function renderExcerptLine(notification: Notification): Line | null {
+async function renderExcerptLine(
+	notification: Notification,
+): Promise<Line | null> {
 	const who = renderNotifier(notification);
 
 	/** 「本文…」の suffix（空なら空文字列） */
@@ -268,11 +334,11 @@ function renderExcerptLine(notification: Notification): Line | null {
 		case "quote":
 			return withWho(quoted(noteExcerpt(notification.note)));
 		case "reaction": {
-			const reaction = notification.reaction ?? "";
+			const reaction = await renderReaction(notification.reaction);
 			const excerpt = quoted(noteExcerpt(notification.note));
 			return withWho({
-				html: `: ${escapeHtml(reaction)}${excerpt.html}`,
-				text: `: ${reaction}${excerpt.text}`,
+				html: `: ${reaction.html}${excerpt.html}`,
+				text: `: ${reaction.text}${excerpt.text}`,
 			});
 		}
 		case "renote":
@@ -341,14 +407,16 @@ function buildSection(
  *
  * @param userId - 受信者
  * @param since - 前回サマリーの集計基準時刻（null は初回=未読全部）
+ * @param mutedTypes - 通知設定で受け取らないことにしている種類（除外する）
  * @internal
  */
 async function aggregateUnread(
 	userId: string,
 	since: Date | null,
+	mutedTypes: string[],
 ): Promise<UnreadSummary> {
 	// 種類別カウント
-	const countRows = await buildUnreadQuery(userId, since)
+	const countRows = await buildUnreadQuery(userId, since, mutedTypes)
 		.select("notification.type", "type")
 		.addSelect("COUNT(*)", "count")
 		.groupBy("notification.type")
@@ -370,7 +438,7 @@ async function aggregateUnread(
 
 		if (type === "unreadAntenna") {
 			// アンテナはアンテナ名（reaction カラム）ごとの件数内訳
-			const antennaRows = await buildUnreadQuery(userId, since)
+			const antennaRows = await buildUnreadQuery(userId, since, mutedTypes)
 				.andWhere("notification.type = 'unreadAntenna'")
 				.select("notification.reaction", "antennaName")
 				.addSelect("COUNT(*)", "count")
@@ -416,18 +484,21 @@ async function aggregateUnread(
 		}
 
 		// 抜粋（最新N件）。notifier は buildUnreadQuery で join 済みなので選択だけ足す
-		const excerptRows = await buildUnreadQuery(userId, since)
+		const excerptRows = await buildUnreadQuery(userId, since, mutedTypes)
 			.andWhere("notification.type = :type", { type })
 			.addSelect("notifier")
+			.leftJoinAndSelect("notifier.avatar", "notifierAvatar")
 			.leftJoinAndSelect("notification.note", "note")
 			.leftJoinAndSelect("note.renote", "renote")
 			.orderBy("notification.createdAt", "DESC")
 			.take(UNREAD_SUMMARY_EXCERPTS_PER_TYPE)
 			.getMany();
 
-		const lines = excerptRows
-			.map((notification) => renderExcerptLine(notification))
-			.filter((line): line is Line => line != null);
+		const lines = (
+			await Promise.all(
+				excerptRows.map((notification) => renderExcerptLine(notification)),
+			)
+		).filter((line): line is Line => line != null);
 
 		sections.push(buildSection(label, count, lines));
 	}
@@ -488,24 +559,52 @@ async function findSummaryTargets(now: Date): Promise<{ id: string }[]> {
 }
 
 /**
+ * 日付を `yyyy/mm/dd`（JST）で整形する。
+ *
+ * @remarks
+ * サーバの TZ に依存しないよう UTC+9 固定で計算する（JST は DST なし）。
+ *
+ * @internal
+ */
+function formatSlashDateJst(date: Date): string {
+	const jst = new Date(date.getTime() + 9 * HOUR);
+	const month = String(jst.getUTCMonth() + 1).padStart(2, "0");
+	const day = String(jst.getUTCDate()).padStart(2, "0");
+	return `${jst.getUTCFullYear()}/${month}/${day}`;
+}
+
+/**
  * サマリーメール本文を組み立てる。
  *
+ * @remarks
+ * サマリーメールは通知の要約が主役のため、案内メール共通の冒頭挨拶は付けない。
+ *
+ * @param username - 宛先ユーザー名
+ * @param inactiveSince - 未ログイン期間の開始（lastActiveDate または createdAt）
+ * @param aggregatedAt - 集計基準時刻
+ * @param summary - 集計結果
  * @internal
  */
 async function buildSummaryMail(
 	username: string,
-	isFirst: boolean,
+	inactiveSince: Date,
+	aggregatedAt: Date,
 	summary: UnreadSummary,
 ): Promise<{ subject: string; html: string; text: string }> {
-	const intro = isFirst
-		? "あなた宛てに未読の通知が届いています。内容の概要をお知らせいたします。"
-		: "前回のお知らせ以降、あなた宛てに新しい通知が届いています。内容の概要をお知らせいたします。";
+	const inactiveDays = Math.max(
+		1,
+		Math.floor((aggregatedAt.getTime() - inactiveSince.getTime()) / DAY),
+	);
+	const intro = `${formatSlashDateJst(
+		inactiveSince,
+	)}から${inactiveDays}日間の未ログイン期間に届いたあなた宛ての通知の概要をお知らせいたします。`;
 
 	const notificationsUrl = `${config.url}/my/notifications`;
 
 	return await buildGuidanceEmail({
-		subjectBody: `新しい通知が${summary.total}件届いています`,
+		subjectBody: `未ログイン期間の通知サマリー(${summary.total}件)`,
 		recipientUsername: username,
+		greeting: "none",
 		paragraphs: [
 			intro,
 			...summary.sections,
@@ -600,9 +699,13 @@ export async function sendUnreadSummaryEmail(
 			// #endregion
 
 			const since = user.unreadSummaryEmailSentAt;
-			const summary = await aggregateUnread(user.id, since);
+			const summary = await aggregateUnread(
+				user.id,
+				since,
+				profile.mutingNotificationTypes ?? [],
+			);
 			if (summary.total === 0) {
-				// 未読が全部ミュート由来だった等。sentAt は更新せず翌日再判定
+				// 未読が全部ミュート・種別ミュート由来だった等。sentAt は更新せず翌日再判定
 				skipped++;
 				job.log(`info - Skip @${user.username}: no visible unread`);
 				return;
@@ -620,7 +723,8 @@ export async function sendUnreadSummaryEmail(
 
 			const { subject, html, text } = await buildSummaryMail(
 				user.username,
-				since == null,
+				activityBase,
+				aggregatedAt,
 				summary,
 			);
 

@@ -1,5 +1,6 @@
 import { ColdDeviceStorage } from "@/store";
-import { defaultStore } from "@/store.js";
+import { defaultStore } from "@/store";
+import * as os from "@/os";
 
 let ctx: AudioContext;
 const cache = new Map<string, AudioBuffer>();
@@ -92,7 +93,7 @@ export function play(type: string) {
 	const sound = ColdDeviceStorage.get(`sound_${type}` as any);
 	if (!sound || sound.type == null || !canPlay) return;
 	canPlay = false;
-	playFile(sound).then(() => {
+	playFile(sound).finally(() => {
 		// ごく短時間に音が重複しないように
 		setTimeout(() => {
 			canPlay = true;

@@ -124,9 +124,8 @@ export class Storage<T extends StateDef> {
 		this.pizzaxChannel.addEventListener(
 			"message",
 			({ where, key, value, userId }) => {
-				// アカウント変更すればunisonReloadが効くため、このreturnが発火することは
-				// まずないと思うけど一応弾いておく
-				if (where === "deviceAccount" && !($i && userId !== $i.id)) return;
+				// 自分以外のアカウントからの通知は無視する
+				if (where === "deviceAccount" && !($i && userId === $i.id)) return;
 				this.reactiveState[key as keyof T].value = this.state[key as keyof T] =
 					value;
 			},
@@ -183,7 +182,14 @@ export class Storage<T extends StateDef> {
 								}
 							}
 						})
-						.then(() => resolve());
+						.then(
+							() => resolve(),
+							(err) => {
+								// registry取得に失敗しても起動を止めない（accountスコープはデフォルト値のまま進行）
+								console.error("Pizzax failed to load account data!", err);
+								resolve();
+							},
+						);
 				}, 1);
 			} else {
 				resolve();

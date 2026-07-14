@@ -177,7 +177,8 @@ const initializeErrorLogging = async () => {
 		);
 
 		const logError = async (message: string) => {
-			const logtext = `${formattedDate} - ${message}`;
+			const now = new Date();
+			const logtext = `${now.toLocaleDateString()} ${now.toLocaleTimeString()} - ${message}`;
 			let currentLogs =
 				(await withTimeout(get("errorLog"), 2000, "errorLog read timed out")) ||
 				[];
@@ -1583,8 +1584,10 @@ const ensureHealthModeInstanceFallback = () => {
 
 	await runWithRetryWhileOpen(() => ensureLocaleAndApply(), 1000);
 
-	// 最低ロード時間の開始（longLoading がオンのときだけ 2.2 秒待つ）
-	await initializeUserWallpaperSync();
+	// 壁紙同期は非必須機能のため、起動をブロックしない（失敗しても起動を継続する）
+	initializeUserWallpaperSync().catch((err) => {
+		console.warn("Failed to initialize wallpaper sync", err);
+	});
 
 	const minimumLoadPromise = defaultStore.ready.then(() =>
 		defaultStore.state.longLoading ? wait(2200) : Promise.resolve(),

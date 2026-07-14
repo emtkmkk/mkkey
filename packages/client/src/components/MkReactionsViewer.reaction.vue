@@ -128,15 +128,6 @@ async function toggleReaction(event) {
 				os.api("notes/reactions/delete", {
 					noteId: props.note.id,
 					reaction: props.reaction,
-				}).then(() => {
-					if (false) {
-						os.api("notes/reactions/create", {
-							noteId: props.note.id,
-							reaction: props.reaction,
-						}).then(() => {
-							sound.play("reaction");
-						});
-					}
 				});
 			} else if (!oldReaction) {
 				os.api("notes/reactions/create", {
@@ -201,7 +192,7 @@ useTooltip(
 
 		const popupReaction = props.multi
 			? props.reaction
-			: reacted.value && props.note.myReaction !== props.reaction.value
+			: reacted.value && props.note.myReaction !== props.reaction
 			? props.note.myReaction
 			: props.reaction;
 

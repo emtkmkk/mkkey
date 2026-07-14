@@ -70,7 +70,7 @@ const items = ref([]);
 const fetching = ref(true);
 
 const tick = () => {
-	fetch(`/api/fetch-rss?url=${widgetProps.url}`, {
+	fetch(`/api/fetch-rss?url=${encodeURIComponent(widgetProps.url)}`, {
 		headers: mergeMkkeyApiClientHeaders(),
 	}).then((res) => {
 		res.json().then((feed) => {

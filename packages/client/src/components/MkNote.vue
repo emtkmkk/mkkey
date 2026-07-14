@@ -253,12 +253,6 @@
                                                :hasPickerButton="showReactionPickerButton"
                                                :isReactionListVisible="isReactionListVisible"
                                        />
-					<XStarButton
-						v-if="false"
-						ref="starButton"
-						class="button"
-						:note="appearNote"
-					/>
                                        <button
                                                v-if="showReactionPickerButton"
                                                :title="
@@ -469,7 +463,6 @@ import XPoll from "@/components/MkPoll.vue";
 import XRenoteButton from "@/components/MkRenoteButton.vue";
 import XReactionsViewer from "@/components/MkReactionsViewer.vue";
 import XUsersTooltip from "@/components/MkUsersTooltip.vue";
-import XStarButton from "@/components/MkStarButton.vue";
 import XStarButtonNoEmoji from "@/components/MkStarButtonNoEmoji.vue";
 import XQuoteButton from "@/components/MkQuoteButton.vue";
 import MkUrlPreview from "@/components/MkUrlPreview.vue";
@@ -549,7 +542,6 @@ const isQuote = note.renoteId != null && !isRenote;
 const el = ref<HTMLElement>();
 const footerEl = ref<HTMLElement>();
 const menuButton = ref<HTMLElement>();
-const starButton = ref<InstanceType<typeof XStarButton>>();
 const renoteButton = ref<InstanceType<typeof XRenoteButton>>();
 const renoteTime = ref<HTMLElement>();
 const reactButton = ref<HTMLElement>();
@@ -641,12 +633,13 @@ const isfavButtonReacted = $computed(() => {
 
 
 const isDefaultReactionReacted = $computed(() => {
-	if (appearNote.myReaction) {
-		return (
-			normalizeReactionName(appearNote.myReaction) ===
-			instance.defaultReaction
-		);
+	if (
+		appearNote.myReaction &&
+		normalizeReactionName(appearNote.myReaction) === instance.defaultReaction
+	) {
+		return true;
 	}
+	// multiユーザーは myReaction が先頭反応のみを示すため、myReactions側も必ず確認する
 	if (appearNote.myReactions) {
 		return appearNote.myReactions.some(
 			(r) => normalizeReactionName(r) === instance.defaultReaction
@@ -791,7 +784,7 @@ const keymap = {
 	"down|j": focusAfter,
 	esc: blur,
 	"m|o": () => menu(true),
-	s: () => showContent.value !== showContent.value,
+	s: () => (showContent.value = !showContent.value),
 };
 
 useNoteCapture({
@@ -835,7 +828,7 @@ function react(viaKeyboard = false): void {
 		appearNote.user.instance?.maxReactionsPerAccount === 0
 	) {
 		os.api("notes/reactions/create", {
-			noteId: note.id,
+			noteId: appearNote.id,
 			reaction: "",
 		}).then(() => {
 			sound.play("reaction");
@@ -883,21 +876,24 @@ const undoReactionButtonRef = ref<HTMLElement>();
 useTooltip(
 	reactionPickerButtonRef,
 	async (showing) => {
-		if (reactionCountViewModel.tooltipQuery.shouldSkip) {
+		const tooltipQuery = reactionCountViewModel.value.tooltipQuery;
+		if (tooltipQuery.shouldSkip) {
 			return;
 		}
 
 		const reactions = await os.api("notes/reactions", {
 			noteId: appearNote.id,
-			type: reactionCountViewModel.tooltipQuery.type,
-			excludeType: reactionCountViewModel.tooltipQuery.excludeType,
+			...(tooltipQuery.type ? { type: tooltipQuery.type } : {}),
+			...(tooltipQuery.excludeType
+				? { excludeType: tooltipQuery.excludeType }
+				: {}),
 			limit: 11,
 		});
 
 		const users = reactions.map((x) => x.user);
 		if (users.length < 1) return;
 
-		const count = reactionCountViewModel.tooltipQuery.count;
+		const count = tooltipQuery.count;
 
 		os.popup(
 			XUsersTooltip,
@@ -918,21 +914,24 @@ useTooltip(
 useTooltip(
 	undoReactionButtonRef,
 	async (showing) => {
-		if (reactionCountViewModel.tooltipQuery.shouldSkip) {
+		const tooltipQuery = reactionCountViewModel.value.tooltipQuery;
+		if (tooltipQuery.shouldSkip) {
 			return;
 		}
 
 		const reactions = await os.api("notes/reactions", {
 			noteId: appearNote.id,
-			type: reactionCountViewModel.tooltipQuery.type,
-			excludeType: reactionCountViewModel.tooltipQuery.excludeType,
+			...(tooltipQuery.type ? { type: tooltipQuery.type } : {}),
+			...(tooltipQuery.excludeType
+				? { excludeType: tooltipQuery.excludeType }
+				: {}),
 			limit: 11,
 		});
 
 		const users = reactions.map((x) => x.user);
 		if (users.length < 1) return;
 
-		const count = reactionCountViewModel.tooltipQuery.count;
+		const count = tooltipQuery.count;
 
 		os.popup(
 			XUsersTooltip,

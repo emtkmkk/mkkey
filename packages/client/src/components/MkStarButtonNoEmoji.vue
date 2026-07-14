@@ -1,7 +1,13 @@
 <template>
 	<button
 		v-if="defaultStore.state.favButtonReaction !== 'hidden'"
-		v-tooltip.noDelay.bottom="i18n.ts._gallery.like"
+		v-tooltip.noDelay.bottom="
+			defaultStore.state.favButtonReaction === 'favorite'
+				? i18n.ts.favorite
+				: defaultStore.state.favButtonReaction === 'custom'
+				? defaultStore.state.favButtonReactionCustom
+				: i18n.ts._gallery.like
+		"
 		class="_button"
 		:class="$style.root"
 		ref="buttonRef"
@@ -70,8 +76,6 @@ function toggleStar(ev?: MouseEvent): void {
 
 	if (!props.reacted) {
 		if (defaultStore.state.favButtonReaction === "picker") {
-			pleaseLogin();
-			blur();
 			reactionPicker.show(
 				buttonRef.value,
 				(reaction) => {
@@ -82,9 +86,7 @@ function toggleStar(ev?: MouseEvent): void {
 						sound.play("reaction");
 					});
 				},
-				() => {
-					focus();
-				}
+				() => {},
 			);
 		} else if (defaultStore.state.favButtonReaction !== "favorite") {
 			os.api("notes/reactions/create", {
@@ -139,7 +141,7 @@ useTooltip(buttonRef, async (showing) => {
 
 	const reactions = await os.apiGet("notes/reactions", {
 		noteId: props.note.id,
-		type: type,
+		...(type ? { type } : {}),
 		limit: 11,
 		_cacheKey_: props.count,
 	});

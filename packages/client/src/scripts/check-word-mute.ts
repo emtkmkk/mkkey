@@ -20,12 +20,14 @@ function checkWordMute(
 
 	let result = { muted: false, matched: [] };
 
+	// NOTE: 呼び出し元の配列（defaultStore.state.mutedWords など）を破壊しないようローカルコピーへ追加する
 	if (defaultStore.state.excludeNSFW) {
-		if (defaultStore.state.excludeNotFollowNSFW) {
-			mutedWords.push(["pname:", "filter:nsfw", "-relation:follow"]);
-		} else {
-			mutedWords.push(["pname:", "filter:nsfw"]);
-		}
+		mutedWords = [
+			...mutedWords,
+			defaultStore.state.excludeNotFollowNSFW
+				? ["pname:", "filter:nsfw", "-relation:follow"]
+				: ["pname:", "filter:nsfw"],
+		];
 	}
 
 	for (const mutePattern of mutedWords) {

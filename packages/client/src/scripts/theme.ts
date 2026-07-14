@@ -99,7 +99,7 @@ export function applyTheme(theme: Theme, persist = true) {
 		document.documentElement.style.setProperty(`--${k}`, v.toString());
 	}
 
-	document.documentElement.style.setProperty("color-schema", colorSchema);
+	document.documentElement.style.setProperty("color-scheme", colorSchema);
 
 	if (persist) {
 		localStorage.setItem("theme", JSON.stringify(props));

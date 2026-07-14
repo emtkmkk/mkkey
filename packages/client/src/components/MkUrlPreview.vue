@@ -320,7 +320,7 @@
    *
    * @public
    */
-  import { computed, onMounted, onUnmounted, watch } from "vue";
+  import { computed, onUnmounted } from "vue";
   import { url as local, lang, version } from "@/config";
   import { i18n } from "@/i18n";
   import { defaultStore } from "@/store";
@@ -617,7 +617,10 @@ const fetchUrlData = async () => {
 		`/url?url=${encodeURIComponent(previewFetchUrl)}&lang=${encodeURIComponent(requestLang)}&v=${encodeURIComponent(version)}`,
 	  );
 	  const info = await response.json();
-	  if (info.url == null) return;
+	  if (info.url == null) {
+	    fetching = false;
+	    return;
+	  }
 
 	  // Steamの場合の処理
         if (info.steam) {
@@ -637,8 +640,8 @@ const fetchUrlData = async () => {
             info.steam.currentPrice ||
             (info.steam.isFree ? "無料プレイ" : "");
           steamGenres = info.steam.genres;
-          steamComingSoon = !!info.steam.releaseDate.comingSoon;
-          steamReleaseDate = info.steam.releaseDate.date;
+          steamComingSoon = !!info.steam.releaseDate?.comingSoon;
+          steamReleaseDate = info.steam.releaseDate?.date ?? "";
         } else if (info.amazon) {
           isAmazon = true;
           isSensitive = info.isSensitive ?? false;
@@ -713,52 +716,6 @@ const fetchUrlData = async () => {
   }
 
   (window as any).addEventListener("message", adjustTweetHeight);
-
-  onMounted(() => {
-	const checkIframeContent = () => {
-	  const tweetIframe = document.querySelector(
-		`iframe[src*="twitter.com"], iframe[src*="x.com"]`
-	  ) as HTMLIFrameElement;
-	  if (tweetIframe) {
-		tweetIframe.onload = () => {
-		  const iframeDocument =
-			tweetIframe.contentDocument || tweetIframe.contentWindow?.document;
-		  if (iframeDocument) {
-			const spanElements = Array.from(
-			  iframeDocument.querySelectorAll("span")
-			);
-			for (const span of spanElements) {
-			  const textContent = span.textContent?.trim();
-			  if (textContent === "Not found") {
-				tweetExpanded = false;
-				tweetId = null;
-				break;
-			  }
-			  if (textContent && textContent !== "Not found") {
-				console.log(`x span: ${textContent}`);
-				break;
-			  }
-			}
-		  }
-		};
-	  }
-	};
-
-	// 初期化時にも checkIframeContent を実行
-	if (tweetExpanded) {
-	  checkIframeContent();
-	}
-
-	// tweetExpanded の変化を監視
-	watch(
-	  () => tweetExpanded,
-	  () => {
-		if (tweetExpanded) {
-		  checkIframeContent();
-		}
-	  }
-	);
-  });
 
   onUnmounted(() => {
 	(window as any).removeEventListener("message", adjustTweetHeight);

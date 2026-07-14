@@ -13,7 +13,7 @@
 						<span
 							v-for="badge in mkBadge"
 							:key="badge.key"
-							style="badge"
+							class="badge"
 							:title="i18n.ts[badge.key]"
 							v-tooltip="i18n.ts[badge.key]"
 							><MkEmoji

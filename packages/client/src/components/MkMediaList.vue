@@ -55,7 +55,7 @@
  *
  * @public
  */
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import * as misskey from "calckey-js";
 import PhotoSwipeLightbox from "photoswipe/lightbox";
 import PhotoSwipe from "photoswipe";
@@ -226,6 +226,11 @@ function initLightbox(): void {
 
 onMounted(() => {
 	if (!defaultStore.state.imageNewTab) initLightbox();
+});
+
+onUnmounted(() => {
+	lightbox?.destroy();
+	lightbox = null;
 });
 
 watch(

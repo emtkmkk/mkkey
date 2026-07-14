@@ -44,8 +44,6 @@ export default defineComponent({
 			});
 		}
 
-		if (props.items.length === 0) return;
-
 		const renderChildren = () =>
 			props.items.map((item, i) => {
 				if (!slots || !slots.default) return;

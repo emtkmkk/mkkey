@@ -14,7 +14,6 @@ import { $i } from "@/account";
 import { mergeMkkeyApiClientHeaders } from "@/scripts/mkkey-api-client-headers";
 import { get, set } from "@/scripts/idb-proxy";
 import { v4 as uuid } from "uuid";
-import { resolve } from "chart.js/dist/helpers/helpers.options";
 import { defaultStore } from "./store";
 
 export const pendingApiRequestsCount = ref(0);
@@ -597,7 +596,7 @@ export function inputDate(props: {
 			{
 				done: (result) => {
 					resolve(
-						result || !result.canceled
+						result
 							? { result: new Date(result.result), canceled: result.canceled }
 							: { canceled: true },
 					);

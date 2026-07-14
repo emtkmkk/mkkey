@@ -76,7 +76,6 @@ import XReactionsViewer from "@/components/MkReactionsViewer.vue";
 import XMediaList from "@/components/MkMediaList.vue";
 import XCwButton from "@/components/MkCwButton.vue";
 import XPoll from "@/components/MkPoll.vue";
-import XStarButton from "@/components/MkStarButton.vue";
 import XStarButtonNoEmoji from "@/components/MkStarButtonNoEmoji.vue";
 import XRenoteButton from "@/components/MkRenoteButton.vue";
 import XQuoteButton from "@/components/MkQuoteButton.vue";
@@ -148,7 +147,6 @@ const isRenote =
 const el = ref<HTMLElement>();
 const noteEl = $ref();
 const menuButton = ref<HTMLElement>();
-const starButton = ref<InstanceType<typeof XStarButton>>();
 const renoteButton = ref<InstanceType<typeof XRenoteButton>>();
 const renoteTime = ref<HTMLElement>();
 const reactButton = ref<HTMLElement>();

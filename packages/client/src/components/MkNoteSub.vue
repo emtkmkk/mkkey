@@ -152,12 +152,6 @@
 						:hasPickerButton="showReactionPickerButton"
 						:isReactionListVisible="isReactionListVisible"
 					/>
-					<XStarButton
-						v-if="false"
-						ref="starButton"
-						class="button"
-						:note="appearNote"
-					/>
 					<button
 						v-if="showReactionPickerButton"
 						:title="
@@ -296,7 +290,6 @@ import * as misskey from "calckey-js";
 import XNoteHeader from "@/components/MkNoteHeader.vue";
 import MkSubNoteContent from "@/components/MkSubNoteContent.vue";
 import XReactionsViewer from "@/components/MkReactionsViewer.vue";
-import XStarButton from "@/components/MkStarButton.vue";
 import XStarButtonNoEmoji from "@/components/MkStarButtonNoEmoji.vue";
 import XRenoteButton from "@/components/MkRenoteButton.vue";
 import XQuoteButton from "@/components/MkQuoteButton.vue";
@@ -403,7 +396,6 @@ const isRenote =
 const el = ref<HTMLElement>();
 const footerEl = ref<HTMLElement>();
 const menuButton = ref<HTMLElement>();
-const starButton = ref<InstanceType<typeof XStarButton>>();
 const renoteButton = ref<InstanceType<typeof XRenoteButton>>();
 const reactButton = ref<HTMLElement>();
 let appearNote = $computed(() =>
@@ -453,12 +445,13 @@ const isfavButtonReacted = $computed(() => {
 
 
 const isDefaultReactionReacted = $computed(() => {
-	if (appearNote.myReaction) {
-		return (
-			normalizeReactionName(appearNote.myReaction) ===
-			instance.defaultReaction
-		);
+	if (
+		appearNote.myReaction &&
+		normalizeReactionName(appearNote.myReaction) === instance.defaultReaction
+	) {
+		return true;
 	}
+	// multiユーザーは myReaction が先頭反応のみを示すため、myReactions側も必ず確認する
 	if (appearNote.myReactions) {
 		return appearNote.myReactions.some(
 			(r) => normalizeReactionName(r) === instance.defaultReaction
@@ -533,21 +526,24 @@ const undoReactionButtonRef = ref<HTMLElement>();
 useTooltip(
 	reactionPickerButtonRef,
 	async (showing) => {
-		if (reactionCountViewModel.tooltipQuery.shouldSkip) {
+		const tooltipQuery = reactionCountViewModel.value.tooltipQuery;
+		if (tooltipQuery.shouldSkip) {
 			return;
 		}
 
 		const reactions = await os.api("notes/reactions", {
 			noteId: appearNote.id,
-			type: reactionCountViewModel.tooltipQuery.type,
-			excludeType: reactionCountViewModel.tooltipQuery.excludeType,
+			...(tooltipQuery.type ? { type: tooltipQuery.type } : {}),
+			...(tooltipQuery.excludeType
+				? { excludeType: tooltipQuery.excludeType }
+				: {}),
 			limit: 11,
 		});
 
 		const users = reactions.map((x) => x.user);
 		if (users.length < 1) return;
 
-		const count = reactionCountViewModel.tooltipQuery.count;
+		const count = tooltipQuery.count;
 
 		os.popup(
 			XUsersTooltip,
@@ -567,21 +563,24 @@ useTooltip(
 useTooltip(
 	undoReactionButtonRef,
 	async (showing) => {
-		if (reactionCountViewModel.tooltipQuery.shouldSkip) {
+		const tooltipQuery = reactionCountViewModel.value.tooltipQuery;
+		if (tooltipQuery.shouldSkip) {
 			return;
 		}
 
 		const reactions = await os.api("notes/reactions", {
 			noteId: appearNote.id,
-			type: reactionCountViewModel.tooltipQuery.type,
-			excludeType: reactionCountViewModel.tooltipQuery.excludeType,
+			...(tooltipQuery.type ? { type: tooltipQuery.type } : {}),
+			...(tooltipQuery.excludeType
+				? { excludeType: tooltipQuery.excludeType }
+				: {}),
 			limit: 11,
 		});
 
 		const users = reactions.map((x) => x.user);
 		if (users.length < 1) return;
 
-		const count = reactionCountViewModel.tooltipQuery.count;
+		const count = tooltipQuery.count;
 
 		os.popup(
 			XUsersTooltip,

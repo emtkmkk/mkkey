@@ -46,7 +46,7 @@ export function getNoteMenu(props: {
 	const hasTranslatableText =
 		typeof appearNote.text === "string" && appearNote.text.trim().length > 0;
 	const isPinnedNote =
-		($i.pinnedNoteIds || []).includes(appearNote.id) || props.pinned === true;
+		($i?.pinnedNoteIds ?? []).includes(appearNote.id) || props.pinned === true;
 
 	function del(): void {
 		os.confirm({

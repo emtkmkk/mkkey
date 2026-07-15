@@ -44,7 +44,8 @@
  * ドライブ内の1ファイルを表すカード。コンテキストメニューから削除などを行う。
  *
  * @remarks
- * 削除確認では添付投稿件数を表示し、投稿は残って添付だけ消える旨を伝える。
+ * 削除確認では pack 済みの `usageCount` から添付投稿件数を表示し、
+ * 投稿は残って添付だけ消える旨を伝える（件数取得のための API 呼び出しはしない）。
  *
  * @public
  */
@@ -220,44 +221,28 @@ function addApp() {
  * ドライブファイル削除の確認ダイアログ文言を組み立てる。
  *
  * @remarks
- * `drive/files/attached-notes` の `countOnly` で件数だけ取る（ノート pack はしない）。
- * 失敗時は件数なし文言にフォールバックする。
+ * pack 済みの `usageCount` を使うため API 呼び出しは不要。
+ * 投稿に紐づいていれば件数付き文言、なければ件数なし文言を返す。
  *
- * @param fileId - 削除対象ファイル ID
- * @param fileName - 表示用ファイル名
+ * @param file - 削除対象のパック済みドライブファイル
  * @returns 確認ダイアログ用テキスト
  * @internal
  */
-async function buildDriveFileDeleteConfirmText(
-	fileId: string,
-	fileName: string,
-): Promise<string> {
-	try {
-		// suppressToast: 件数取得失敗でエラートーストを出さず、確認ダイアログ自体は必ず出す
-		const res = (await os.api(
-			"drive/files/attached-notes",
-			{ fileId, countOnly: true },
-			undefined,
-			true,
-		)) as { count?: number };
-		const count = typeof res?.count === "number" ? res.count : 0;
-		if (count > 0) {
-			return i18n.t("driveFileDeleteConfirmWithNotes", {
-				name: fileName,
-				count,
-			});
-		}
-	} catch {
-		// 件数取得できない場合は件数なし文言へ
+function buildDriveFileDeleteConfirmText(
+	file: Misskey.entities.DriveFile,
+): string {
+	const count = file.usageCount ?? 0;
+	if (count > 0) {
+		return i18n.t("driveFileDeleteConfirmWithNotes", {
+			name: file.name,
+			count,
+		});
 	}
-	return i18n.t("driveFileDeleteConfirm", { name: fileName });
+	return i18n.t("driveFileDeleteConfirm", { name: file.name });
 }
 
 async function deleteFile() {
-	const text = await buildDriveFileDeleteConfirmText(
-		props.file.id,
-		props.file.name,
-	);
+	const text = buildDriveFileDeleteConfirmText(props.file);
 	const { canceled } = await os.confirm({
 		type: "warning",
 		text,

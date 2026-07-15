@@ -60,7 +60,7 @@ function getBullBoardCookieAttributes(maxAge?: number): string {
 }
 
 export async function signout() {
-	waiting();
+	const waitingDialog = waiting();
 	// ログアウト直後に前アカウントの未読バッジが OS に残らないよう先にクリアする
 	clearAppBadge();
 
@@ -145,8 +145,14 @@ export async function signout() {
 	document.cookie = `token=; ${getBullBoardCookieAttributes(0)}`;
 	document.cookie = `token=; ${getCookieAttributes(0)}`;
 
-	if (accounts.length > 0) login(accounts[0].token);
-	else unisonReload("/");
+	if (accounts.length > 0) {
+		// NOTE: login() 自身が固有の waiting() を表示するため、
+		// ここで閉じておかないと signout 側のスピナーが（login 失敗時に）残り続ける
+		waitingDialog.close();
+		login(accounts[0].token);
+	} else {
+		unisonReload("/");
+	}
 }
 
 export async function getAccounts(): Promise<
@@ -205,6 +211,7 @@ export function fetchAccount(token: string): Promise<Account> {
 							text: JSON.stringify(res.error),
 						});
 					}
+					fail(res.error);
 				} else {
 					res.token = token;
 					done(res);
@@ -230,9 +237,19 @@ export async function refreshAccount() {
 }
 
 export async function login(token: Account["token"], redirect?: string) {
-	waiting();
+	const waitingDialog = waiting();
 	if (_DEV_) console.log("logging as token ", token);
-	const me = await fetchAccount(token);
+	let me: Account;
+	try {
+		me = await fetchAccount(token);
+	} catch (err) {
+		// NOTE: fetchAccount が失敗理由のダイアログを既に表示済み。
+		// ここではスピナーだけを閉じ、ページはそのまま維持する（fetchAccount が
+		// suspended/usage-paused の場合は自身で signout 経由の遷移を行う）。
+		waitingDialog.close();
+		if (_DEV_) console.warn("login: fetchAccount failed", err);
+		return;
+	}
 	localStorage.setItem("account", JSON.stringify(me));
 	// Bull dashboard（/queue）の認証で使う。GHSA-38w6 対策で path=/queue・SameSite=Strict に限定。
 	document.cookie = `token=${token}; ${getBullBoardCookieAttributes(31536000)}`;

@@ -380,7 +380,7 @@ async function init(): Promise<void> {
 			},
 			(err) => {
 				error.value = true;
-				errorMsg.value = err;
+				errorMsg.value = err?.message ?? String(err);
 				fetching.value = false;
 			}
 		);
@@ -429,12 +429,19 @@ const refresh = async (): void => {
 			},
 			(err) => {
 				error.value = true;
-				errorMsg.value = err;
+				errorMsg.value = err?.message ?? String(err);
 				fetching.value = false;
 			}
 		);
 };
 
+/**
+ * 末尾方向の追加取得。
+ *
+ * @remarks
+ * - 成功ハンドラ内で例外が出ても `moreFetching` が残らないよう `finally` で解除する。
+ * - 失敗時は `moreFetchError` を立て、ボタン再表示で再試行可能にする。
+ */
 const fetchMore = async (): Promise<void> => {
 	if (fetching.value || moreFetching.value || items.value.length === 0)
 		return;
@@ -452,8 +459,8 @@ const fetchMore = async (): Promise<void> => {
 			? props.pagination.params.value
 			: props.pagination.params
 		: {};
-	await os
-		.api(endpoint, {
+	try {
+		const res = await os.api(endpoint, {
 			...params,
 			limit: SECOND_FETCH_LIMIT + 1,
 			...(props.pagination.offsetMode
@@ -467,67 +474,72 @@ const fetchMore = async (): Promise<void> => {
 				: {
 						untilId: items.value[items.value.length - 1].id,
 				  }),
-		})
-		.then(
-			(res) => {
-				for (let i = 0; i < res.length; i++) {
-					const item = res[i];
-					if (props.pagination.reversed) {
-						if (i === res.length - 9) item._shouldInsertAd_ = true;
-					} else {
-						if (i === 10) item._shouldInsertAd_ = true;
-					}
-				}
-				const itemIdArray = items.value?.map((x) => x.id);
-				if (
-					res.length >
-					(props.pagination.offsetMode || props.pagination.reversed
-						? SECOND_FETCH_LIMIT
-						: 0)
-				) {
-					if (res.length > SECOND_FETCH_LIMIT) res.pop();
-					// 既に取得してる項目に重複項目があれば取り除く
-					// TODO : 重いかも
-					const resFiltered = res.filter(
-						(x) => !itemIdArray.includes(x.id)
-					);
-					items.value = props.pagination.reversed
-						? [...resFiltered].reverse().concat(items.value)
-						: items.value.concat(resFiltered);
-					more.value = res?.length === resFiltered?.length;
-				} else {
-					const resFiltered = res.filter(
-						(x) => !itemIdArray.includes(x.id)
-					);
-					items.value = props.pagination.reversed
-						? [...resFiltered].reverse().concat(items.value)
-						: items.value.concat(resFiltered);
-					more.value = false;
-				}
-				offset.value += res.length;
-				if (res[0]?.createdAt)
-					defaultStore.set("lastBackedDate", {
-						...defaultStore.state.lastBackedDate,
-						[props.pagination.endpoint]: {
-							date: res[0]?.createdAt,
-							createdAt: new Date().toISOString(),
-						},
-					});
-				moreFetching.value = false;
-				ctAutoReload.value = true;
-				if (timerId) clearTimeout(timerId);
-				timerId = setTimeout(() => {
-					ctAutoReload.value = false;
-				}, 1500);
-			},
-			(err) => {
-				moreFetchError.value = true;
-				errorMsg.value = err;
-				moreFetching.value = false;
+		});
+		for (let i = 0; i < res.length; i++) {
+			const item = res[i];
+			if (props.pagination.reversed) {
+				if (i === res.length - 9) item._shouldInsertAd_ = true;
+			} else {
+				if (i === 10) item._shouldInsertAd_ = true;
 			}
-		);
+		}
+		const itemIdArray = items.value?.map((x) => x.id);
+		if (
+			res.length >
+			(props.pagination.offsetMode || props.pagination.reversed
+				? SECOND_FETCH_LIMIT
+				: 0)
+		) {
+			if (res.length > SECOND_FETCH_LIMIT) res.pop();
+			// 既に取得してる項目に重複項目があれば取り除く
+			// TODO : 重いかも
+			const resFiltered = res.filter(
+				(x) => !itemIdArray.includes(x.id)
+			);
+			items.value = props.pagination.reversed
+				? [...resFiltered].reverse().concat(items.value)
+				: items.value.concat(resFiltered);
+			// NOTE: 取得件数がしきい値を超えた時点で「まだ続きがある」ことは確定しているため、
+			// 既存アイテムとの重複除去の有無に関わらず more は常に true にする
+			more.value = true;
+		} else {
+			const resFiltered = res.filter(
+				(x) => !itemIdArray.includes(x.id)
+			);
+			items.value = props.pagination.reversed
+				? [...resFiltered].reverse().concat(items.value)
+				: items.value.concat(resFiltered);
+			more.value = false;
+		}
+		offset.value += res.length;
+		if (res[0]?.createdAt)
+			defaultStore.set("lastBackedDate", {
+				...defaultStore.state.lastBackedDate,
+				[props.pagination.endpoint]: {
+					date: res[0]?.createdAt,
+					createdAt: new Date().toISOString(),
+				},
+			});
+		ctAutoReload.value = true;
+		if (timerId) clearTimeout(timerId);
+		timerId = setTimeout(() => {
+			ctAutoReload.value = false;
+		}, 1500);
+	} catch (err: any) {
+		moreFetchError.value = true;
+		errorMsg.value = err?.message ?? String(err);
+	} finally {
+		// 成功ハンドラ内例外・API 失敗いずれでもスピナー解除を保証する
+		moreFetching.value = false;
+	}
 };
 
+/**
+ * 先頭方向（reversed）の追加取得。
+ *
+ * @remarks
+ * `fetchMore` と同様、`finally` で `moreFetching` を必ず解除する。
+ */
 const fetchMoreAhead = async (): Promise<void> => {
 	if (
 		!more.value ||
@@ -549,8 +561,8 @@ const fetchMoreAhead = async (): Promise<void> => {
 			? props.pagination.params.value
 			: props.pagination.params
 		: {};
-	await os
-		.api(endpoint, {
+	try {
+		const res = await os.api(endpoint, {
 			...params,
 			limit: SECOND_FETCH_LIMIT + 1,
 			...(props.pagination.offsetMode
@@ -568,40 +580,36 @@ const fetchMoreAhead = async (): Promise<void> => {
 				: {
 						sinceId: items.value[items.value.length - 1].id,
 				  }),
-		})
-		.then(
-			(res) => {
-				if (
-					res.length >
-					(props.pagination.offsetMode || props.pagination.reversed
-						? SECOND_FETCH_LIMIT
-						: 0)
-				) {
-					if (res.length > SECOND_FETCH_LIMIT) res.pop();
-					items.value = props.pagination.reversed
-						? [...res].reverse().concat(items.value)
-						: items.value.concat(res);
-					more.value = true;
-				} else {
-					items.value = props.pagination.reversed
-						? [...res].reverse().concat(items.value)
-						: items.value.concat(res);
-					more.value = false;
-				}
-				offset.value += res.length;
-				moreFetching.value = false;
-				ctAutoReload.value = true;
-				if (timerId) clearTimeout(timerId);
-				timerId = setTimeout(() => {
-					ctAutoReload.value = false;
-				}, 1500);
-			},
-			(err) => {
-				moreFetchError.value = true;
-				errorMsg.value = err;
-				moreFetching.value = false;
-			}
-		);
+		});
+		if (
+			res.length >
+			(props.pagination.offsetMode || props.pagination.reversed
+				? SECOND_FETCH_LIMIT
+				: 0)
+		) {
+			if (res.length > SECOND_FETCH_LIMIT) res.pop();
+			items.value = props.pagination.reversed
+				? [...res].reverse().concat(items.value)
+				: items.value.concat(res);
+			more.value = true;
+		} else {
+			items.value = props.pagination.reversed
+				? [...res].reverse().concat(items.value)
+				: items.value.concat(res);
+			more.value = false;
+		}
+		offset.value += res.length;
+		ctAutoReload.value = true;
+		if (timerId) clearTimeout(timerId);
+		timerId = setTimeout(() => {
+			ctAutoReload.value = false;
+		}, 1500);
+	} catch (err: any) {
+		moreFetchError.value = true;
+		errorMsg.value = err?.message ?? String(err);
+	} finally {
+		moreFetching.value = false;
+	}
 };
 
 const isTop = (): boolean =>
@@ -765,6 +773,14 @@ onBeforeUnmount(() => {
 	if (timerForSetPause) {
 		clearTimeout(timerForSetPause);
 		timerForSetPause = null;
+	}
+	if (scrollRemove) {
+		scrollRemove();
+		scrollRemove = null;
+	}
+	if (timerId) {
+		clearTimeout(timerId);
+		timerId = null;
 	}
 	scrollObserver.disconnect();
 });

@@ -221,8 +221,7 @@ window.addEventListener("resize", () => {
 
 const drawerMenuShowing = ref(false);
 
-const route = "TODO";
-watch(route, () => {
+watch(mainRouter.currentRef, () => {
 	drawerMenuShowing.value = false;
 });
 

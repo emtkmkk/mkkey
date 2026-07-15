@@ -23,10 +23,11 @@
 
 		<div ref="noteEl" class="article" tabindex="-1">
 			<MkNote
-				@contextmenu.stop="onContextmenu"
+				ref="noteComponent"
 				tabindex="-1"
 				:note="appearNote"
 				:detailedView="true"
+				:pinned="props.pinned"
 				:option="option"
 			></MkNote>
 		</div>
@@ -59,49 +60,26 @@
 
 <script lang="ts" setup>
 import {
-	computed,
 	inject,
 	onMounted,
 	onUnmounted,
 	onUpdated,
-	reactive,
 	ref,
 } from "vue";
-import * as mfm from "mfm-js";
 import type * as misskey from "calckey-js";
 import MkNote from "@/components/MkNote.vue";
 import MkNoteSub from "@/components/MkNoteSub.vue";
-import XNoteSimple from "@/components/MkNoteSimple.vue";
-import XReactionsViewer from "@/components/MkReactionsViewer.vue";
-import XMediaList from "@/components/MkMediaList.vue";
-import XCwButton from "@/components/MkCwButton.vue";
-import XPoll from "@/components/MkPoll.vue";
-import XStarButtonNoEmoji from "@/components/MkStarButtonNoEmoji.vue";
-import XRenoteButton from "@/components/MkRenoteButton.vue";
-import XQuoteButton from "@/components/MkQuoteButton.vue";
-import MkUrlPreview from "@/components/MkUrlPreview.vue";
-import MkInstanceTicker from "@/components/MkInstanceTicker.vue";
-import MkVisibility from "@/components/MkVisibility.vue";
-import { pleaseLogin } from "@/scripts/please-login";
 import { getWordSoftMute } from "@/scripts/check-word-mute";
 import { userPage } from "@/filters/user";
 import { notePage } from "@/filters/note";
-import { useRouter } from "@/router";
 import * as os from "@/os";
 import { defaultStore, noteViewInterruptors } from "@/store";
-import { reactionPicker } from "@/scripts/reaction-picker";
-import { extractUrlFromMfm } from "@/scripts/extract-url-from-mfm";
 import { $i } from "@/account";
 import { i18n } from "@/i18n";
-import { getNoteMenu } from "@/scripts/get-note-menu";
 import { useNoteCapture } from "@/scripts/use-note-capture";
-import { openReplyWithChoice } from "@/scripts/reply-note";
 import { deepClone } from "@/scripts/clone";
 import { stream } from "@/stream";
 import { NoteUpdatedEvent } from "calckey-js/built/streaming.types";
-import * as sound from "@/scripts/sound.js";
-
-const router = useRouter();
 
 const props = defineProps<{
 	note: misskey.entities.Note;
@@ -124,8 +102,6 @@ const softMuteReasonI18nSrc = (what?: string) => {
 	return i18n.ts.userSaysSomething;
 };
 
-const enableEmojiReactions = defaultStore.state.enableEmojiReactions;
-
 // plugin
 if (noteViewInterruptors.length > 0) {
 	onMounted(async () => {
@@ -146,45 +122,26 @@ const isRenote =
 
 const el = ref<HTMLElement>();
 const noteEl = $ref();
-const menuButton = ref<HTMLElement>();
-const renoteButton = ref<InstanceType<typeof XRenoteButton>>();
-const renoteTime = ref<HTMLElement>();
-const reactButton = ref<HTMLElement>();
+const noteComponent = ref<InstanceType<typeof MkNote>>();
 let appearNote = $computed(() =>
 	isRenote ? (note.renote as misskey.entities.Note) : note
 );
-const isMyRenote = $i && $i.id === note.userId;
-const showContent = ref(false);
 const isDeleted = ref(false);
 const muted = ref(getWordSoftMute(note, $i, defaultStore.state.mutedWords));
-const translation = ref(null);
-const translating = ref(false);
-const info = ref(null);
-const urls = appearNote.text
-	? extractUrlFromMfm(mfm.parse(appearNote.text))
-			.filter(
-				(url) =>
-					appearNote.renote?.url !== url &&
-					appearNote.renote?.uri !== url
-			)
-			.slice(0, 5)
-	: null;
-const showTicker =
-	defaultStore.state.instanceTicker === "always" ||
-	(defaultStore.state.instanceTicker === "remote" &&
-		appearNote.user.instance);
 const conversation = ref<misskey.entities.Note[]>([]);
 const replies = ref<misskey.entities.Note[]>([]);
 const directReplies = ref<misskey.entities.Note[]>([]);
 let isScrolling;
 
+// NOTE: 返信・リアクション・RT・メニューは内側の MkNote（detailedView）にそのまま実装があるため、
+// ここでは委譲するだけにする（重複実装のドリフト・未接続refによるクラッシュを避ける）
 const keymap = {
-	r: () => reply(true),
-	"e|a|plus": () => react(true),
-	q: () => renoteButton.value.renote(true),
+	r: () => noteComponent.value?.reply(true),
+	"e|a|plus": () => noteComponent.value?.react(true),
+	q: () => noteComponent.value?.renote(true),
 	esc: blur,
-	"m|o": () => menu(true),
-	s: () => showContent.value !== showContent.value,
+	"m|o": () => noteComponent.value?.menu(true),
+	s: () => noteComponent.value?.toggleShowContent(),
 };
 
 useNoteCapture({
@@ -192,113 +149,6 @@ useNoteCapture({
 	note: $$(appearNote),
 	isDeletedRef: isDeleted,
 });
-
-function reply(viaKeyboard = false): void {
-	pleaseLogin();
-	openReplyWithChoice(appearNote, {
-		viaKeyboard,
-		animation: !viaKeyboard,
-		src: viaKeyboard ? noteEl.value : undefined,
-		onOpened: focus,
-	});
-}
-
-function react(viaKeyboard = false): void {
-	pleaseLogin();
-	blur();
-	reactionPicker.show(
-		reactButton.value,
-		(reaction) => {
-			os.api("notes/reactions/create", {
-				noteId: appearNote.id,
-				reaction: reaction,
-			}).then(() => {
-				sound.play("reaction");
-			});
-		},
-		() => {
-			focus();
-		}
-	);
-}
-
-function undoReact(note): void {
-	const oldReaction = note.myReaction;
-	if (!oldReaction) return;
-	os.api("notes/reactions/delete", {
-		noteId: note.id,
-	});
-}
-
-function onContextmenu(ev: MouseEvent): void {
-	const isLink = (el: HTMLElement) => {
-		if (el.tagName === "A") return true;
-		if (el.parentElement) {
-			return isLink(el.parentElement);
-		}
-	};
-	if (isLink(ev.target)) return;
-	if (window.getSelection().toString() !== "") return;
-
-	if (defaultStore.state.doContextMenu === "reactionPicker") {
-		ev.preventDefault();
-		react();
-	} else if (defaultStore.state.doContextMenu === "contextMenu") {
-		os.contextMenu(
-			getNoteMenu({
-				note: note,
-				translating,
-				translation,
-				menuButton,
-				isDeleted,
-				info,
-				pinned: props.pinned,
-			}),
-			ev
-		).then(focus);
-	}
-}
-
-function menu(viaKeyboard = false): void {
-	os.popupMenu(
-		getNoteMenu({
-			note: note,
-			translating,
-			translation,
-			menuButton,
-			isDeleted,
-			info,
-			pinned: props.pinned,
-		}),
-		menuButton.value,
-		{
-			viaKeyboard,
-		}
-	).then(focus);
-}
-
-function showRenoteMenu(viaKeyboard = false): void {
-	if (!isMyRenote) return;
-	os.popupMenu(
-		[
-			{
-				text: i18n.ts.unrenote,
-				icon: "ph-trash ph-bold ph-lg",
-				danger: true,
-				action: () => {
-					os.api("notes/delete", {
-						noteId: note.id,
-					});
-					isDeleted.value = true;
-				},
-			},
-		],
-		renoteTime.value,
-		{
-			viaKeyboard: viaKeyboard,
-		}
-	);
-}
 
 function focus() {
 	if (!props.notAutoFocus) {

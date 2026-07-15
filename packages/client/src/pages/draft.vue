@@ -60,6 +60,7 @@ import { MenuA, MenuButton, MenuItem, MenuLink } from "@/types/menu";
 import { notePage } from "@/filters/note";
 import { preprocess } from "@/scripts/preprocess";
 import { $i } from "@/account";
+import { draftsReady, getDraftsMap } from "@/scripts/drafts-store";
 
 const emit = defineEmits<{
 	(ev: "done", v: { canceled: boolean; result: any }): void;
@@ -70,9 +71,17 @@ const emit = defineEmits<{
 	(ev: "closeAll"): void;
 }>();
 
-let jsonParse = $ref(JSON.parse(localStorage.getItem("drafts") || "{}"));
+// NOTE: 下書きはIndexedDBに永続化されており、読み込み完了までは null（テンプレート側でローディング表示）
+let jsonParse = $ref<Record<string, any> | null>(null);
+
+draftsReady().then(() => {
+	// NOTE: getDraftsMap() は共有キャッシュの参照を返すため、同一参照のままだと
+	// Vue の変更検知が働かない。ref 更新のたびに浅いコピーを作る。
+	jsonParse = { ...getDraftsMap() };
+});
 
 let drafts = $computed(() => {
+	if (jsonParse == null) return null;
 	return Object.keys(jsonParse)
 		.filter((x) => jsonParse[x]?.data)
 		.map((x) => {
@@ -176,7 +185,7 @@ async function saveNew() {
 		key: `manual:${uuid()?.slice(0, 8)}`,
 		name,
 	});
-	jsonParse = JSON.parse(localStorage.getItem("drafts") || "{}");
+	jsonParse = { ...getDraftsMap() };
 }
 
 function load(key: string) {
@@ -185,7 +194,7 @@ function load(key: string) {
 
 function deleteDraft(key: string) {
 	emit("delete", { canceled: false, key });
-	jsonParse = JSON.parse(localStorage.getItem("drafts") || "{}");
+	jsonParse = { ...getDraftsMap() };
 }
 
 function menu(ev: MouseEvent, draftKey: string) {

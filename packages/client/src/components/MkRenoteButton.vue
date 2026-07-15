@@ -298,6 +298,10 @@ async function doRenote(data, ev?: MouseEvent) {
 	}
 	return os.api("notes/create", data);
 }
+
+defineExpose({
+	renote,
+});
 </script>
 
 <style lang="scss" scoped>

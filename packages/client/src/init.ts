@@ -84,6 +84,7 @@ import {
 import { acct } from "./filters/user";
 import { applyProfile, autoSave, getCurrentUaClass, getProfileUaClass, isAutoProfile } from "./scripts/backup";
 import { initializeWallpaperSync } from "@/scripts/wallpaper-sync";
+import { draftsReady, getDraftsMap, setDraftsMap } from "@/scripts/drafts-store";
 import { v4 as uuid } from "uuid";
 
 declare global {
@@ -891,11 +892,12 @@ const initializeEmoji = async () => {
         emojiLoad();
 };
 
-const saveFailedQueueDatas = () => {
+const saveFailedQueueDatas = async () => {
 	if (defaultStore.state.queueDatas?.length) {
+		await draftsReady();
 		for (let i = defaultStore.state.queueDatas?.length - 1; i >= 0; i--) {
 			try {
-				const draftData = JSON.parse(localStorage.getItem("drafts") || "{}");
+				const draftData = getDraftsMap();
 
 				if (
 					!defaultStore.state.queueDatas[i].draftData?.key ||
@@ -914,16 +916,16 @@ const saveFailedQueueDatas = () => {
 						(data.data.useCw && data.data.cw) ||
 						data.data.files?.length ||
 						data.data.poll ||
-						data.data.referencesFlg !== true
+						(data.data.referenceIds?.length && data.data.referencesFlg === true)
 					) {
 						draftData[`auto:${uuid()?.slice(0, 8)}`] =
 							defaultStore.state.queueDatas[i].draftData;
-						localStorage.setItem("drafts", JSON.stringify(draftData));
+						setDraftsMap(draftData);
 						return;
 					}
 				}
 				draftData[key] = defaultStore.state.queueDatas[i].draftData;
-				localStorage.setItem("drafts", JSON.stringify(draftData));
+				setDraftsMap(draftData);
 			} catch (e) {
 				console.log(e);
 			}
@@ -1684,7 +1686,7 @@ const ensureHealthModeInstanceFallback = () => {
 
 		await initializeEmoji();
 
-		saveFailedQueueDatas();
+		await saveFailedQueueDatas();
 
 		initializePowerMode();
 

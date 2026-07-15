@@ -512,6 +512,12 @@ import {
 import { uploadFile, uploads } from "@/scripts/upload";
 import type { UploadFileOptions } from "@/scripts/upload";
 import { deepClone } from "@/scripts/clone";
+import {
+	draftsReady,
+	getDraftsMap,
+	setDraftsMap,
+	type DraftEntry,
+} from "@/scripts/drafts-store";
 import XDraft from "@/components/MkDraftDialog.vue";
 import XCheatSheet from "@/components/MkCheatSheetDialog.vue";
 import { preprocess } from "@/scripts/preprocess";
@@ -2227,7 +2233,7 @@ function saveDraft(key?, name?) {
 				(useCw && cw) ||
 				files?.length ||
 				poll ||
-				referencesFlg !== true ||
+				(referenceIds?.length && referencesFlg) ||
 				postLocked
 			)
 		) {
@@ -2237,7 +2243,7 @@ function saveDraft(key?, name?) {
 			return;
 		}
 
-		const draftData = JSON.parse(localStorage.getItem("drafts") || "{}");
+		const draftData = getDraftsMap();
 
 		draftData[key ? key : draftKey] = {
 			updatedAt: new Date(),
@@ -2254,12 +2260,15 @@ function saveDraft(key?, name?) {
 					visibility === "specified" ? visibleUsers.map((u) => u.id) : [],
 				replyId: reply?.id ? reply.id : null,
 				quoteId: quoteId ? quoteId : props.renote ? props.renote.id : null,
+				// NOTE: referenceIds はグローバルストア(postFormReferenceIds)由来で下書き固有ではないが、
+				// 「この下書きが参照を伴っていたか」を後から判定できるよう件数のみ保存する
+				referenceIds: referencesFlg ? referenceIds : [],
 				referencesFlg: referencesFlg,
 				postLocked: postLocked,
 			},
 		};
 
-		localStorage.setItem("drafts", JSON.stringify(draftData));
+		setDraftsMap(draftData);
 
 		if (key) {
 			clear();
@@ -2273,7 +2282,7 @@ function saveDraft(key?, name?) {
 let backupDraftData: any;
 function backupDraft(key?) {
 	try {
-		const draftData = JSON.parse(localStorage.getItem("drafts") || "{}");
+		const draftData = getDraftsMap();
 
 		backupDraftData = {...draftData[key ? key : draftKey]};
 
@@ -2286,29 +2295,29 @@ function backupDraft(key?) {
 
 function restoreDraft(key?) {
 	try {
-		const draftData = JSON.parse(localStorage.getItem("drafts") || "{}");
+		const draftData = getDraftsMap();
 
 		const data = draftData[key ? key : draftKey]
 		if (data?.data) {
-			if ((data.data.text || (data.data.useCw && data.data.cw) || data.data.files?.length || data.data.poll || data.data.referencesFlg !== true)) {
+			if ((data.data.text || (data.data.useCw && data.data.cw) || data.data.files?.length || data.data.poll || (data.data.referenceIds?.length && data.data.referencesFlg === true))) {
 				draftData[`auto:${uuid()?.slice(0, 8)}`] = backupDraftData;
-				localStorage.setItem("drafts", JSON.stringify(draftData));
+				setDraftsMap(draftData);
 				return;
 			}
 		}
 		draftData[key ? key : draftKey] = backupDraftData
-		localStorage.setItem("drafts", JSON.stringify(draftData));
+		setDraftsMap(draftData);
 	} catch (e) {
 		console.log(e)
 	}
 }
 function deleteDraft(key?) {
 	try {
-		const draftData = JSON.parse(localStorage.getItem("drafts") || "{}");
+		const draftData = getDraftsMap();
 
 		delete draftData[key ? key : draftKey];
 
-		localStorage.setItem("drafts", JSON.stringify(draftData));
+		setDraftsMap(draftData);
 	} catch (e) {
 		console.log(e)
 	}
@@ -3083,9 +3092,7 @@ async function openDraft(ev: MouseEvent) {
 }
 
 function loadDraft(key?) {
-	const draft = JSON.parse(localStorage.getItem("drafts") || "{}")[
-		key ? key : draftKey
-	];
+	const draft = getDraftsMap()[key ? key : draftKey];
 	if (draft) {
 		// NB: 内容が空でも `postLocked` が true なら復元対象とする
 		//     （空のままロック ON で保存したケース）
@@ -3094,7 +3101,7 @@ function loadDraft(key?) {
 			(draft.data.useCw && draft.data.cw) ||
 			draft.data.files?.length ||
 			draft.data.poll ||
-			draft.data.referencesFlg !== true ||
+			(draft.data.referenceIds?.length && draft.data.referencesFlg === true) ||
 			draft.data.postLocked
 		) {
 			text = draft.data.text;
@@ -3215,7 +3222,10 @@ onMounted(() => {
                 autocompleteInstances.push(new Autocomplete(hashtagsInputEl, $$(hashtags)));
         }
 
-	nextTick(() => {
+	nextTick(async () => {
+		// IndexedDB からの下書き読み込み完了を待ってから復元・保存を行う
+		await draftsReady();
+
 		// 書きかけの投稿を復元
 		if (!props.instant && !props.mention && !props.specified) {
 			loadDraft();

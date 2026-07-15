@@ -436,12 +436,20 @@ export function getNoteMenu(props: {
 	async function translate(): Promise<void> {
 		if (props.translation.value != null) return;
 		props.translating.value = true;
-		const res = await os.api("notes/translate", {
-			noteId: appearNote.id,
-			targetLang: localStorage.getItem("lang") || navigator.language,
-		});
-		props.translating.value = false;
-		props.translation.value = res;
+		try {
+			const res = await os.api("notes/translate", {
+				noteId: appearNote.id,
+				targetLang: localStorage.getItem("lang") || navigator.language,
+			});
+			props.translation.value = res;
+		} catch (err) {
+			os.alert({
+				type: "error",
+				text: `${err?.message}\n${err?.id}`,
+			});
+		} finally {
+			props.translating.value = false;
+		}
 	}
 
 	let menu;
@@ -718,7 +726,7 @@ export function getNoteMenu(props: {
 				!(appearNote.localOnly && appearNote.channelId) &&
 				!(
 					appearNote.lastSendActivityAt &&
-					Date.now() < appearNote.lastSendActivityAt.valueOf() + 1000 * 60 * 30
+					Date.now() < new Date(appearNote.lastSendActivityAt).valueOf() + 1000 * 60 * 30
 				)
 					? [
 							null,
@@ -991,7 +999,7 @@ export function getNoteMenu(props: {
 				!(appearNote.localOnly && appearNote.channelId) &&
 				!(
 					appearNote.lastSendActivityAt &&
-					Date.now() < appearNote.lastSendActivityAt.valueOf() + 1000 * 60 * 30
+					Date.now() < new Date(appearNote.lastSendActivityAt).valueOf() + 1000 * 60 * 30
 				)
 					? [
 							null,

@@ -1075,6 +1075,17 @@ function toggleReference() {
 		referenceIds = Array.from(new Set([...referenceIds, appearNote.id]))
 	}
 }
+
+// NOTE: MkNoteDetailed が詳細ページのホットキー・右クリックメニューを委譲するために利用する
+defineExpose({
+	reply,
+	react,
+	menu,
+	renote: (viaKeyboard = false) => renoteButton.value?.renote(viaKeyboard),
+	toggleShowContent: () => {
+		showContent.value = !showContent.value;
+	},
+});
 </script>
 
 <style lang="scss" scoped>

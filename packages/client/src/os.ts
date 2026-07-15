@@ -720,9 +720,20 @@ export function success() {
 	});
 }
 
-export function waiting() {
-	return new Promise((resolve, reject) => {
-		const showing = ref(true);
+/**
+ * 待機中スピナーダイアログを表示する。
+ *
+ * @remarks
+ * NOTE: 戻り値には `close()` を生やしており、成功時のページ遷移/リロード以外の経路
+ * （エラー時など）でも呼び出し側から明示的にダイアログを閉じられるようにしている。
+ * `close()` を呼ばない場合、このダイアログはユーザー操作では閉じられない。
+ *
+ * @returns `done` イベントで解決する Promise に `close()` を生やしたもの
+ * @public
+ */
+export function waiting(): Promise<void> & { close: () => void } {
+	const showing = ref(true);
+	const promise = new Promise<void>((resolve) => {
 		popup(
 			defineAsyncComponent(() => import("@/components/MkWaitingDialog.vue")),
 			{
@@ -734,6 +745,11 @@ export function waiting() {
 			},
 			"closed",
 		);
+	});
+	return Object.assign(promise, {
+		close: () => {
+			showing.value = false;
+		},
 	});
 }
 

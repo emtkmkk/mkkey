@@ -13,7 +13,7 @@
 		ref="buttonRef"
 		@click="toggleStar($event)"
 	>
-		<span v-if="!reacted">
+		<span v-if="!effectiveReacted">
 			<i
 				v-if="instance.defaultReaction === '👍'"
 				class="ph-thumbs-up ph-bold ph-lg"
@@ -48,12 +48,13 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
+import { computed, ref, watch } from "vue";
 import type { Note } from "calckey-js/built/entities";
 import Ripple from "@/components/MkRipple.vue";
 import XDetails from "@/components/MkUsersTooltip.vue";
 import { pleaseLogin } from "@/scripts/please-login";
 import * as os from "@/os";
+import { $i } from "@/account";
 import { defaultStore } from "@/store";
 import { i18n } from "@/i18n";
 import { instance } from "@/instance";
@@ -71,8 +72,83 @@ const props = defineProps<{
 
 const buttonRef = ref<HTMLElement>();
 
+// favoriteモードでは「reacted」の意味は無関係で、実際の非公開お気に入り状態を別途保持する
+const isFavorited = ref(false);
+
+/**
+ * favoriteモード時のみ、notes/state からお気に入り状態を取得する。
+ *
+ * @internal
+ */
+async function fetchFavoritedState(): Promise<void> {
+	if (!$i || defaultStore.state.favButtonReaction !== "favorite") return;
+	try {
+		const state = await os.api("notes/state", { noteId: props.note.id });
+		isFavorited.value = state.isFavorited;
+	} catch {
+		// 取得失敗時は見た目上のみ非お気に入り扱い（実際の状態には影響しない）
+	}
+}
+
+fetchFavoritedState();
+
+watch(
+	() => defaultStore.state.favButtonReaction,
+	(mode) => {
+		if (mode === "favorite") fetchFavoritedState();
+	},
+);
+
+/** ボタンの点灯状態。favoriteモードは実際のお気に入り状態、それ以外はデフォルトリアクション済みか */
+const effectiveReacted = computed(() =>
+	defaultStore.state.favButtonReaction === "favorite"
+		? isFavorited.value
+		: props.reacted,
+);
+
+function popRipple(ev?: MouseEvent): void {
+	const el =
+		ev &&
+		((ev.currentTarget ?? ev.target) as HTMLElement | null | undefined);
+	if (!el) return;
+	const rect = el.getBoundingClientRect();
+	const x = rect.left + el.offsetWidth / 2;
+	const y = rect.top + el.offsetHeight / 2;
+	os.popup(Ripple, { x, y }, {}, "end");
+}
+
+/**
+ * favoriteモード用の真のトグル。お気に入り済みなら delete、未お気に入りなら create を呼ぶ。
+ *
+ * @internal
+ */
+async function toggleFavorite(ev?: MouseEvent): Promise<void> {
+	const nextFavorited = !isFavorited.value;
+	isFavorited.value = nextFavorited;
+	try {
+		await os.api(
+			nextFavorited ? "notes/favorites/create" : "notes/favorites/delete",
+			{ noteId: props.note.id },
+		);
+	} catch (err: any) {
+		// 失敗時は表示を元に戻す
+		isFavorited.value = !nextFavorited;
+		os.alert({
+			type: "error",
+			text: `${err?.message}\n${err?.id}`,
+		});
+		return;
+	}
+	if (nextFavorited) popRipple(ev);
+}
+
 function toggleStar(ev?: MouseEvent): void {
 	pleaseLogin();
+
+	if (defaultStore.state.favButtonReaction === "favorite") {
+		void toggleFavorite(ev);
+		return;
+	}
 
 	if (!props.reacted) {
 		if (defaultStore.state.favButtonReaction === "picker") {
@@ -88,7 +164,7 @@ function toggleStar(ev?: MouseEvent): void {
 				},
 				() => {},
 			);
-		} else if (defaultStore.state.favButtonReaction !== "favorite") {
+		} else {
 			os.api("notes/reactions/create", {
 				noteId: props.note.id,
 				reaction:
@@ -102,35 +178,20 @@ function toggleStar(ev?: MouseEvent): void {
 			}).then(() => {
 				sound.play("reaction");
 			});
-		} else {
-			os.apiWithDialog("notes/favorites/create", {
-				noteId: props.note.id,
-			});
 		}
-		const el =
-			ev &&
-			((ev.currentTarget ?? ev.target) as HTMLElement | null | undefined);
-		if (el) {
-			const rect = el.getBoundingClientRect();
-			const x = rect.left + el.offsetWidth / 2;
-			const y = rect.top + el.offsetHeight / 2;
-			os.popup(Ripple, { x, y }, {}, "end");
-		}
+		popRipple(ev);
 	} else {
-		if (defaultStore.state.favButtonReaction === "favorite") {
-			os.apiWithDialog("notes/favorites/create", {
-				noteId: props.note.id,
-			});
-		} else {
-			os.api("notes/reactions/delete", {
-				noteId: props.note.id,
-				reaction: instance.defaultReaction,
-			});
-		}
+		os.api("notes/reactions/delete", {
+			noteId: props.note.id,
+			reaction: instance.defaultReaction,
+		});
 	}
 }
 
 useTooltip(buttonRef, async (showing) => {
+	// favoriteモードは非公開の個人ブックマークなので、リアクション者一覧は表示しない
+	if (defaultStore.state.favButtonReaction === "favorite") return;
+
 	// 2ボタンの場合: 常にデフォルトリアクションのユーザーのみ
 	// 1ボタンの場合（ピッカーなし）: リストあり→デフォルト、リストなし→全ユーザー
 	const type = props.hasPickerButton

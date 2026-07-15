@@ -982,7 +982,8 @@ const ENDPOINT_DESCRIPTIONS_JA: Record<
 	},
 	"notifications/create": {
 		summary: "通知を作成",
-		description: "自分宛ての通知を手動で作成します（主にテスト用）。",
+		description:
+			"自分宛てのアプリ通知を手動で作成します。本文・ヘッダー・アイコンに加え、アイコン右下のサブアイコン（画像 URL / Unicode 絵文字 / カスタム絵文字 `:name:` ・リモート `:name@host:`）を指定できます。存在しないカスタム絵文字は指定なしとして扱われます。",
 	},
 	"notifications/mark-all-as-read": {
 		summary: "通知をすべて既読にする",

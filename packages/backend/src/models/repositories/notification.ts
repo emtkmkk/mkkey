@@ -211,6 +211,7 @@ export const NotificationRepository = db.getRepository(Notification).extend({
 						body: notification.customBody,
 						header: notification.customHeader || token?.name,
 						icon: notification.customIcon || token?.iconUrl,
+						subIcon: notification.customSubIcon || undefined,
 				  }
 				: {}),
 		});

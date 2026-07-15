@@ -284,6 +284,8 @@ export type Notification = {
 			header?: string | null;
 			body: string;
 			icon?: string | null;
+			/** アイコン右下に表示するサブアイコン（絵文字または画像 URL） */
+			subIcon?: string | null;
 			/** プッシュ通知テスト用フラグ（SW / クライアント内部） */
 			isPushTest?: boolean;
 	  }

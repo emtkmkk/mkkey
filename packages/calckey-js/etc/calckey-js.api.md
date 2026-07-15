@@ -1878,6 +1878,7 @@ export type Endpoints = {
             body: string;
             header?: string | null;
             icon?: string | null;
+            subIcon?: string | null;
         };
         res: null;
     };

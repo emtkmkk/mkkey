@@ -951,7 +951,12 @@ export type Endpoints = {
 
 	// notifications
 	"notifications/create": {
-		req: { body: string; header?: string | null; icon?: string | null };
+		req: {
+			body: string;
+			header?: string | null;
+			icon?: string | null;
+			subIcon?: string | null;
+		};
 		res: null;
 	};
 	"notifications/mark-all-as-read": { req: NoParams; res: null };

@@ -96,5 +96,11 @@ export const packedNotificationSchema = {
 			nullable: true,
 			description: "アイコン URL。",
 		},
+		subIcon: {
+			type: "string",
+			optional: true,
+			nullable: true,
+			description: "アイコン右下に表示するサブアイコン（絵文字または画像 URL）。",
+		},
 	},
 } as const;

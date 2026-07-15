@@ -643,6 +643,12 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 							? `${notificationBody}\n${swVersionLine}`
 							: swVersionLine;
 					}
+					const subIcon = (data.body as { subIcon?: string | null })
+						.subIcon;
+					const badge =
+						typeof subIcon === "string" && /^https?:\/\//.test(subIcon)
+							? subIcon
+							: undefined;
 					return composeWithDisplayText(
 						data,
 						data.body.header || data.body.body,
@@ -650,6 +656,7 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 						{
 							body: notificationBody,
 							icon: data.body.icon,
+							badge,
 							tag: isPushTest ? "push-test" : undefined,
 							data,
 						},

@@ -165,6 +165,13 @@ export class Notification {
 	})
 	public customIcon: string | null;
 
+	/** アプリ通知のサブアイコン（アイコン右下に表示。絵文字または画像 URL） */
+	@Column('varchar', {
+		length: 1024, nullable: true,
+		comment: 'アプリ通知のサブアイコン（絵文字または画像 URL）',
+	})
+	public customSubIcon: string | null;
+
 	/** アプリ通知の対象アプリ（トークン） */
 	@Index()
 	@Column({

@@ -130,6 +130,25 @@
 					:reaction="defaultReaction"
 					:no-style="true"
 				/>
+				<img
+					v-else-if="
+						notification.type === 'app' &&
+						notification.subIcon &&
+						subIconIsImage
+					"
+					class="sub-icon-img"
+					:src="notification.subIcon"
+					alt=""
+				/>
+				<XReactionIcon
+					v-else-if="
+						notification.type === 'app' &&
+						notification.subIcon &&
+						!subIconIsImage
+					"
+					:reaction="notification.subIcon"
+					:no-style="true"
+				/>
 			</div>
 		</div>
 		<div class="tail">
@@ -518,6 +537,13 @@ const isDefaultReaction = $computed(() => {
 	return reaction === instance.defaultReaction;
 });
 
+// アプリ通知のサブアイコンが画像 URL か絵文字かを判定する
+const subIconIsImage = $computed(() => {
+	if (props.notification.type !== "app") return false;
+	const subIcon = props.notification.subIcon;
+	return typeof subIcon === "string" && /^https?:\/\//.test(subIcon);
+});
+
 let readObserver: IntersectionObserver | undefined;
 let connection;
 let firstRead = false;
@@ -750,6 +776,14 @@ useTooltip(reactionRef, (showing) => {
 				padding: 0.1875rem;
 				background: #31748f;
 				pointer-events: none;
+			}
+
+			> .sub-icon-img {
+				display: block;
+				width: 100%;
+				height: 100%;
+				border-radius: 100%;
+				object-fit: cover;
 			}
 		}
 	}

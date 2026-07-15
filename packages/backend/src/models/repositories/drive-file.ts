@@ -170,9 +170,11 @@ export const DriveFileRepository = db.getRepository(DriveFile).extend({
 			properties: opts.self ? file.properties : this.getPublicProperties(file),
 			url: opts.self ? file.url : this.getPublicUrl(file, false),
 			thumbnailUrl: this.getPublicUrl(file, true),
-                        originalUrl: this.getPublicUrl(file, false, true),
-                        comment: file.comment,
-                        folderId: file.folderId,
+			originalUrl: this.getPublicUrl(file, false, true),
+			comment: file.comment,
+			// 投稿への添付回数。削除確認ダイアログなどでクライアントが API 呼び出しなしに使う
+			usageCount: file.usageCount ?? 0,
+			folderId: file.folderId,
                         folder:
                                 opts.detail && file.folderId
                                         ? DriveFolders.pack(file.folderId, {
@@ -212,9 +214,11 @@ export const DriveFileRepository = db.getRepository(DriveFile).extend({
 			properties: opts.self ? file.properties : this.getPublicProperties(file),
 			url: opts.self ? file.url : this.getPublicUrl(file, false),
 			thumbnailUrl: this.getPublicUrl(file, true),
-                        originalUrl: this.getPublicUrl(file, false, true),
-                        comment: file.comment,
-                        folderId: file.folderId,
+			originalUrl: this.getPublicUrl(file, false, true),
+			comment: file.comment,
+			// 投稿への添付回数。削除確認ダイアログなどでクライアントが API 呼び出しなしに使う
+			usageCount: file.usageCount ?? 0,
+			folderId: file.folderId,
                         folder:
                                 opts.detail && file.folderId
                                         ? DriveFolders.pack(file.folderId, {

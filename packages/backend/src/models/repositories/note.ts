@@ -1008,6 +1008,8 @@ export const NoteRepository = db.getRepository(Note).extend({
 	 * 各ノートの pack は Promise.allSettled で並列実行し、fulfilled の結果のみを返す。
 	 * いずれかのノートで pack が失敗（rejected）した場合、そのノートは戻り値に含まれず、件数が減った配列になる。
 	 * NOTE: ログイン閲覧時は冒頭で getRelationsBulk / UserMemos / UserProfiles を一括取得し packNoteUser の per-note クエリを避ける。
+	 * NOTE: 「純RT → 引用 → 引用先」の2段 renote まで noteMap / packedFileMap に含める（画面に表示され得る範囲）。
+	 * TODO: references（参照）に付いたファイルは未収集。必要な場合は同様に追加する。
 	 */
         async packMany(
                 notes: Note[],
@@ -1183,6 +1185,49 @@ export const NoteRepository = db.getRepository(Note).extend({
                 for (const n of notesForReplyRenoteFetched) {
                         noteMap.set(n.id, n);
                 }
+
+		// RT+引用など2段 renote ネスト対策:
+		// packMany の事前収集は top-level + 直下1階層までなので、画面に出る
+		// 「純RT → 引用 → 引用先」の2階層目を noteMap/userMap に足し、
+		// 続く packedFileMap 収集で引用先の fileIds も解決できるようにする。
+		// reply は detail:false で pack され renote を展開しないため、renote のみ辿る。
+		// TODO: references（参照）に付いたファイルは別経路で未収集のまま。
+		// 必要な場合は同様に収集対象へ追加する。
+		const secondLevelRenoteIds = [
+			...new Set(
+				[...noteMap.values()]
+					.map((n) => n.renoteId)
+					.filter((id): id is string => id != null && !noteMap.has(id)),
+			),
+		];
+		if (secondLevelRenoteIds.length > 0) {
+			const secondLevelNotes = await this.find({
+				where: { id: In(secondLevelRenoteIds) },
+				relations: ["user"],
+			});
+			for (const n of secondLevelNotes) {
+				noteMap.set(n.id, n);
+				// 2階層目ノートの pack で user / avatar 解決に使う
+				if (n.user) {
+					userMap.set(n.user.id, n.user);
+					userIds.add(n.user.id);
+				} else if (n.userId) {
+					userIds.add(n.userId);
+				}
+			}
+			// relations で user が取れなかった分だけ補完取得
+			const stillMissingUserIds = [...userIds].filter(
+				(id) => !userMap.has(id),
+			);
+			if (stillMissingUserIds.length > 0) {
+				const moreUsers = await Users.find({
+					where: { id: In(stillMissingUserIds) },
+				});
+				for (const u of moreUsers) {
+					userMap.set(u.id, u);
+				}
+			}
+		}
 
 		const noteFilesToPackIds = new Set<DriveFile["id"]>();
 		for (const note of notes) {

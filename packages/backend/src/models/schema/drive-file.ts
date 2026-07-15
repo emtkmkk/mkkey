@@ -124,6 +124,12 @@ export const packedDriveFileSchema = {
 			nullable: true,
 			description: "コメント。",
 		},
+		usageCount: {
+			type: "number",
+			optional: false,
+			nullable: false,
+			description: "投稿への添付回数（削除確認などの表示用）。",
+		},
 		folderId: {
 			type: "string",
 			optional: false,

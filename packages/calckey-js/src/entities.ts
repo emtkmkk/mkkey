@@ -142,10 +142,12 @@ export type DriveFile = {
 	originalUrl: string;
 	type: string;
 	size: number;
-        md5: string;
-        blurhash: string;
-        comment: string | null;
-        properties: Record<string, any>;
+	md5: string;
+	blurhash: string;
+	comment: string | null;
+	properties: Record<string, any>;
+	/** 投稿への添付回数（削除確認などの表示用）。古いレスポンスでは未定義のことがある。 */
+	usageCount?: number;
 };
 
 export type DriveFolder = TODO;

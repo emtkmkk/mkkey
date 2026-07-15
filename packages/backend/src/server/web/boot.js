@@ -123,7 +123,7 @@
 	}
 	const colorSchema = localStorage.getItem("colorSchema");
 	if (colorSchema) {
-		document.documentElement.style.setProperty("color-schema", colorSchema);
+		document.documentElement.style.setProperty("color-scheme", colorSchema);
 	}
 	//#endregion
 

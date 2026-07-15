@@ -56,6 +56,15 @@
 	background: var(--accent);
 }
 
+// NOTE: ルート要素の color-scheme: dark（theme.ts で設定）は iframe 要素にも継承される。
+// 埋め込み先の文書（X埋め込み・各種プレイヤー・captcha 等）が dark を宣言していない場合、
+// ブラウザはミスマッチ回避のため iframe の背面に不透明な白いバックドロップを描画してしまい、
+// 角丸コンテンツの四隅などが白く見える。iframe 要素側を light に固定して透過を維持する。
+// （埋め込み文書自体の配色はクエリパラメータ等で制御されており、この指定の影響を受けない）
+iframe {
+	color-scheme: light;
+}
+
 html {
 	touch-action: manipulation;
 	background-attachment: fixed;

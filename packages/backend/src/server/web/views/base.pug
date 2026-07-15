@@ -10,6 +10,30 @@ html
 
 	head
 		meta(charset='utf-8')
+
+		//- PWA起動時などの白フラッシュ対策:
+		//- 外部CSSやhead末尾のboot.jsを待たず、キャッシュ済みテーマの配色を最速で適用する。
+		//- color-scheme はキャンバス既定色（--bg未定義時のフォールバック）を暗くするために必須。
+		//- boot.jsでの再適用は冪等なので二重適用の問題はない。
+		script.
+			(function () {
+				try {
+					var colorSchema = localStorage.getItem("colorSchema");
+					if (colorSchema) {
+						document.documentElement.style.setProperty("color-scheme", colorSchema);
+					}
+					var cachedTheme = localStorage.getItem("theme");
+					if (cachedTheme) {
+						var bg = JSON.parse(cachedTheme).bg;
+						if (bg) {
+							document.documentElement.style.setProperty("--bg", bg);
+						}
+					}
+				} catch (e) {
+					// localStorage不可（プライベートモード等）や壊れたキャッシュ時は既定のまま進める
+				}
+			})();
+
 		meta(name='application-name' content='Cluckey')
 		meta(name='referrer' content='origin')
 		meta(name='darkreader-lock' content='')

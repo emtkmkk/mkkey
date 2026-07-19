@@ -1055,7 +1055,19 @@ export function post(props: Record<string, any> = {}) {
 
 export const deckGlobalEvents = new EventEmitter();
 
-async function appendErrorLog(message: string) {
+/**
+ * 端末内の errorLog にメッセージを追記する。
+ *
+ * @remarks
+ * - IndexedDB（`errorLog`）へ保存し、設定のエラーログ画面から確認できる。
+ * - 直近 50 件まで保持する（古いものから捨てる）。
+ * - Vue の errorHandler 外（PhotoSwipe コールバック等）の失敗もここに残す用途がある。
+ *
+ * @param message - 記録する本文（接頭辞で発生箇所を識別するとよい）
+ * @returns 保存完了を待つ Promise
+ * @public
+ */
+export async function appendErrorLog(message: string): Promise<void> {
 	const currentDate = new Date();
 	const formattedDate = `${currentDate.toLocaleDateString()} ${currentDate.toLocaleTimeString()}`;
 	let currentLogs = (await get("errorLog")) || [];

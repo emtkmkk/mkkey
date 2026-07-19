@@ -52,10 +52,12 @@
  *
  * @remarks
  * `fileIds` を渡すと、`mediaList` に無い ID は「削除されたファイル」プレースホルダになる。
+ * 画像拡大は PhotoSwipe（`imageNewTab` が無効のとき）。初期化失敗や itemData 解決失敗は
+ * {@link appendErrorLog} に残す（Vue errorHandler 外のため）。
  *
  * @public
  */
-import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import * as misskey from "calckey-js";
 import PhotoSwipeLightbox from "photoswipe/lightbox";
 import PhotoSwipe from "photoswipe";
@@ -72,6 +74,9 @@ import {
 	type NoteMediaSlot,
 } from "@/scripts/note-file-attachments";
 
+/** PhotoSwipe に寸法が無いときの仮サイズ（アスペクト比維持用のプレースホルダ） */
+const FALLBACK_IMAGE_SIZE = 800;
+
 const props = defineProps<{
 	mediaList: misskey.entities.DriveFile[];
 	/** ノートの fileIds。指定時は欠落スロットも fileIds 順に表示する */
@@ -80,7 +85,7 @@ const props = defineProps<{
 	inDm?: boolean;
 }>();
 
-const gallery = ref(null);
+const gallery = ref<HTMLElement | null>(null);
 const pswpZIndex = os.claimZIndex("middle");
 let lightbox: PhotoSwipeLightbox | null = null;
 
@@ -106,6 +111,59 @@ const bannerSlots = computed(
 );
 
 /**
+ * PhotoSwipe の dataSource 対象になる画像だけを mediaList から抜き出す。
+ *
+ * @returns ブラウザで安全に表示できる画像ファイル一覧
+ * @internal
+ */
+function lightboxImageFiles(): misskey.entities.DriveFile[] {
+	return props.mediaList.filter((media) => {
+		if (media.type === "image/svg+xml") return true;
+		return (
+			media.type.startsWith("image") &&
+			FILE_TYPE_BROWSERSAFE.includes(media.type)
+		);
+	});
+}
+
+/**
+ * 再初期化判定用の安定キー（参照変更だけでは再初期化しない）。
+ *
+ * @returns 画像 ID をカンマ連結した文字列
+ * @internal
+ */
+function lightboxSourceKey(): string {
+	return lightboxImageFiles()
+		.map((media) => media.id)
+		.join(",");
+}
+
+/**
+ * DriveFile の表示用幅・高さを解決する。
+ *
+ * @remarks
+ * `properties` 欠落時は例外にせず仮寸法を返す（拡大自体は続行する）。
+ *
+ * @param file - 対象ファイル
+ * @returns 幅・高さと、orientation による入替が必要か
+ * @internal
+ */
+function resolveImageSize(file: misskey.entities.DriveFile): {
+	w: number;
+	h: number;
+} {
+	const propsMeta = file.properties ?? {};
+	let w = Number(propsMeta.width);
+	let h = Number(propsMeta.height);
+	if (!Number.isFinite(w) || w <= 0) w = FALLBACK_IMAGE_SIZE;
+	if (!Number.isFinite(h) || h <= 0) h = FALLBACK_IMAGE_SIZE;
+	if (propsMeta.orientation != null && propsMeta.orientation >= 5) {
+		[w, h] = [h, w];
+	}
+	return { w, h };
+}
+
+/**
  * v-for 用の安定キーを返す。
  *
  * @param slot - メディアスロット
@@ -116,132 +174,188 @@ function slotKey(slot: NoteMediaSlot): string {
 	return slot.kind === "missing" ? `missing:${slot.id}` : slot.file.id;
 }
 
+//#region PhotoSwipe
+
+/**
+ * 既存 lightbox を破棄する。
+ *
+ * @internal
+ */
+function destroyLightbox(): void {
+	lightbox?.destroy();
+	lightbox = null;
+}
+
+/**
+ * PhotoSwipe lightbox を初期化する。
+ *
+ * @remarks
+ * - `gallery` 未マウントや `imageNewTab` 有効時は何もしない。
+ * - 失敗時は {@link os.appendErrorLog} に残す。
+ *
+ * @internal
+ */
 function initLightbox(): void {
-	lightbox = new PhotoSwipeLightbox({
-		dataSource: props.mediaList
-			.filter((media) => {
-				if (media.type === "image/svg+xml") return true; // svgのwebpublicはpngなのでtrue
-				return (
-					media.type.startsWith("image") &&
-					FILE_TYPE_BROWSERSAFE.includes(media.type)
-				);
-			})
-			.map((media) => {
-				const item = {
+	if (defaultStore.state.imageNewTab) return;
+	if (!gallery.value) return;
+
+	destroyLightbox();
+
+	try {
+		const images = lightboxImageFiles();
+		lightbox = new PhotoSwipeLightbox({
+			dataSource: images.map((media) => {
+				const { w, h } = resolveImageSize(media);
+				return {
 					src: defaultStore.state.loadOriginalImages
 						? media.originalUrl || media.url
 						: media.url,
-					w: media.properties.width,
-					h: media.properties.height,
+					w,
+					h,
 					title: media.name,
 					alt: media.comment,
 				};
-				if (
-					media.properties.orientation != null &&
-					media.properties.orientation >= 5
-				) {
-					[item.w, item.h] = [item.h, item.w];
-				}
-				return item;
 			}),
-		gallery: gallery.value,
-		children: ".image",
-		thumbSelector: ".image",
-		loop: false,
-		padding:
-			window.innerWidth > 500
-				? {
-						top: 32,
-						bottom: 32,
-						left: 32,
-						right: 32,
-					}
-				: {
-						top: 0,
-						bottom: 0,
-						left: 0,
-						right: 0,
-					},
-		imageClickAction: "close",
-		tapAction: "toggle-controls",
-		pswpModule: PhotoSwipe,
-	});
-
-	lightbox.on("itemData", (ev) => {
-		const { itemData } = ev;
-
-		// element is children
-		const { element } = itemData;
-
-		const id = element.dataset.id;
-		const file = props.mediaList.find((media) => media.id === id);
-
-		itemData.src = defaultStore.state.loadOriginalImages
-			? file.originalUrl || file.url
-			: file.url;
-		itemData.w = Number(file.properties.width);
-		itemData.h = Number(file.properties.height);
-		if (
-			file.properties.orientation != null &&
-			file.properties.orientation >= 5
-		) {
-			[itemData.w, itemData.h] = [itemData.h, itemData.w];
-		}
-		itemData.title = file.name;
-		itemData.msrc = file.thumbnailUrl;
-		itemData.alt = file.comment;
-		itemData.thumbCropped = true;
-	});
-
-	lightbox.on("uiRegister", () => {
-		lightbox!.pswp.ui.registerElement({
-			name: "altText",
-			className: "pwsp__alt-text-container",
-			appendTo: "wrapper",
-			onInit: (el, pwsp) => {
-				let textBox = document.createElement("p");
-				textBox.className = "pwsp__alt-text";
-				el.appendChild(textBox);
-
-				let preventProp = function (ev: Event): void {
-					ev.stopPropagation();
-				};
-
-				// Allow scrolling/text selection
-				el.onwheel = preventProp;
-				el.onclick = preventProp;
-				el.onpointerdown = preventProp;
-				el.onpointercancel = preventProp;
-				el.onpointermove = preventProp;
-
-				pwsp.on("change", () => {
-					textBox.textContent = pwsp.currSlide.data.alt?.trim();
-				});
-			},
+			gallery: gallery.value,
+			children: ".image",
+			thumbSelector: ".image",
+			loop: false,
+			padding:
+				window.innerWidth > 500
+					? {
+							top: 32,
+							bottom: 32,
+							left: 32,
+							right: 32,
+						}
+					: {
+							top: 0,
+							bottom: 0,
+							left: 0,
+							right: 0,
+						},
+			imageClickAction: "close",
+			tapAction: "toggle-controls",
+			pswpModule: PhotoSwipe,
 		});
-	});
 
-	lightbox.init();
+		lightbox.on("itemData", (ev) => {
+			try {
+				const { itemData } = ev;
+				const element = itemData.element as HTMLElement | undefined;
+				if (!element) {
+					void os.appendErrorLog(
+						`MediaListLightbox: itemData missing element`,
+					);
+					return;
+				}
+
+				const id = element.dataset.id;
+				const file = props.mediaList.find((media) => media.id === id);
+				if (!file) {
+					void os.appendErrorLog(
+						`MediaListLightbox: file not found for id=${id ?? "(none)"}`,
+					);
+					return;
+				}
+
+				const { w, h } = resolveImageSize(file);
+				itemData.src = defaultStore.state.loadOriginalImages
+					? file.originalUrl || file.url
+					: file.url;
+				itemData.w = w;
+				itemData.h = h;
+				itemData.title = file.name;
+				itemData.msrc = file.thumbnailUrl;
+				itemData.alt = file.comment;
+				itemData.thumbCropped = true;
+			} catch (err) {
+				const error = err instanceof Error ? err : new Error(String(err));
+				void os.appendErrorLog(
+					`MediaListLightbox: itemData error: ${error.message}${
+						error.stack ? ` stack:${error.stack}` : ""
+					}`,
+				);
+			}
+		});
+
+		lightbox.on("uiRegister", () => {
+			lightbox!.pswp.ui.registerElement({
+				name: "altText",
+				className: "pwsp__alt-text-container",
+				appendTo: "wrapper",
+				onInit: (el, pwsp) => {
+					let textBox = document.createElement("p");
+					textBox.className = "pwsp__alt-text";
+					el.appendChild(textBox);
+
+					let preventProp = function (ev: Event): void {
+						ev.stopPropagation();
+					};
+
+					// Allow scrolling/text selection
+					el.onwheel = preventProp;
+					el.onclick = preventProp;
+					el.onpointerdown = preventProp;
+					el.onpointercancel = preventProp;
+					el.onpointermove = preventProp;
+
+					pwsp.on("change", () => {
+						textBox.textContent = pwsp.currSlide.data.alt?.trim();
+					});
+				},
+			});
+		});
+
+		lightbox.init();
+	} catch (err) {
+		destroyLightbox();
+		const error = err instanceof Error ? err : new Error(String(err));
+		void os.appendErrorLog(
+			`MediaListLightbox: init failed: ${error.message}${
+				error.stack ? ` stack:${error.stack}` : ""
+			}`,
+		);
+	}
 }
 
+/**
+ * lightbox を破棄してから必要なら再初期化する。
+ *
+ * @remarks
+ * DOM 更新後に `gallery` が揃うよう `nextTick` する。
+ *
+ * @internal
+ */
+async function refreshLightbox(): Promise<void> {
+	destroyLightbox();
+	if (defaultStore.state.imageNewTab) return;
+	await nextTick();
+	initLightbox();
+}
+
+//#endregion
+
 onMounted(() => {
-	if (!defaultStore.state.imageNewTab) initLightbox();
+	void refreshLightbox();
 });
 
 onUnmounted(() => {
-	lightbox?.destroy();
-	lightbox = null;
+	destroyLightbox();
 });
 
 watch(
 	() => defaultStore.state.imageNewTab,
-	(val) => {
-		if (val) {
-			lightbox?.destroy();
-			lightbox = null;
-		} else {
-			initLightbox();
-		}
+	() => {
+		void refreshLightbox();
+	},
+);
+
+// 画像構成が変わったとき、または gallery が後から出たときに再初期化
+watch(
+	() => [lightboxSourceKey(), gallery.value] as const,
+	() => {
+		void refreshLightbox();
 	},
 );
 

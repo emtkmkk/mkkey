@@ -10,30 +10,12 @@
 					mode="out-in"
 				>
 					<div v-if="post" class="rkxwuolj">
-						<div class="files">
-							<div :key="post.id" class="file" @click.stop>
-								<template
-									v-for="file in post.files?.filter((x) =>
-										previewable(x)
-									)"
-								>
-									<XVideo
-										v-if="file.type?.startsWith('video')"
-										:key="file.id"
-										:video="file"
-									/>
-									<XImage
-										v-else-if="
-											file.type?.startsWith('image')
-										"
-										:key="file.id"
-										class="image"
-										:data-id="file.id"
-										:image="file"
-										:raw="false"
-									/>
-								</template>
-							</div>
+						<div class="files" @click.stop>
+							<!-- PhotoSwipe は MkMediaList 側。単独 MkMediaImage だと拡大しない -->
+							<XMediaList
+								v-if="post.files?.length"
+								:media-list="post.files"
+							/>
 						</div>
 						<div class="body _block">
 							<div class="title">{{ post.title }}</div>
@@ -170,11 +152,11 @@
  * @remarks
  * - 投稿のメディア・説明・いいね・共有を表示する
  * - 所有者のみ編集ボタンをヘッダーと本文に表示する
+ * - 添付メディアの拡大は {@link MkMediaList}（PhotoSwipe）に任せる
  *
  * @public
  */
 import { computed, watch } from "vue";
-import * as misskey from "calckey-js";
 import MkButton from "@/components/MkButton.vue";
 import * as os from "@/os";
 import MkContainer from "@/components/MkContainer.vue";
@@ -185,9 +167,7 @@ import { url } from "@/config";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { shareAvailable } from "@/scripts/share-available";
-import XImage from "@/components/MkMediaImage.vue";
-import XVideo from "@/components/MkMediaVideo.vue";
-import { FILE_TYPE_BROWSERSAFE } from "@/const";
+import XMediaList from "@/components/MkMediaList.vue";
 import { useRouter } from "@/router";
 import { $i } from "@/account";
 
@@ -256,15 +236,6 @@ function edit() {
 	router.push(`/gallery/${post.id}/edit`);
 }
 
-const previewable = (file: misskey.entities.DriveFile): boolean => {
-	if (file.type === "image/svg+xml") return true; // svgのwebpublic/thumbnailはpngなのでtrue
-	// FILE_TYPE_BROWSERSAFEに適合しないものはブラウザで表示するのに不適切
-	return (
-		(file.type.startsWith("video") || file.type.startsWith("image")) &&
-		FILE_TYPE_BROWSERSAFE.includes(file.type)
-	);
-};
-
 watch(() => props.postId, fetchPost, { immediate: true });
 
 const headerActions = $computed(() =>
@@ -305,19 +276,7 @@ definePageMetadata(
 
 .rkxwuolj {
 	> .files {
-		> .file {
-			> img {
-				display: block;
-				max-width: 100%;
-				max-height: 31.25rem;
-				margin: 0 auto;
-				border-radius: 0.625rem;
-			}
-
-			& + .file {
-				margin-top: 1rem;
-			}
-		}
+		margin-bottom: 0.5rem;
 	}
 
 	> .body {

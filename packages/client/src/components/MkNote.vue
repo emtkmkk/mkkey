@@ -199,10 +199,7 @@
 					:pinned="pinned"
 					:detailedView="detailedView"
 					:showContent="showContent"
-					:translation="translation"
-					:translating="translating"
-					:info="info"
-					:isDeleted="isDeleted"
+					:note-menu-refs="noteMenuRefs"
 					:focusNote="focus"
 					:blurNote="blur"
 				/>
@@ -325,6 +322,8 @@
  * - フッター（返信・RT・★・リアクション追加/取消・引用・メニュー）は `MkNoteFooter.vue` に
  *   実装が集約されている。本コンポーネントは `footerRef` 経由で操作を委譲するだけ。
  * - キーボードショートカット・右クリックメニューも同様に `footerRef` へ委譲する。
+ * - `getNoteMenu` が Ref を直接更新するため、`noteMenuRefs` はテンプレート経由の
+ *   自動アンラップを避け、スクリプト側で組み立てたプレーンオブジェクトとして渡す。
  *
  * @internal
  */
@@ -426,6 +425,22 @@ const muted = ref(
 const translation = ref(null);
 const translating = ref(false);
 const info = ref(null);
+/**
+ * getNoteMenu が参照する Ref 群。
+ *
+ * @remarks
+ * NOTE: テンプレートで `:info="info"` のように渡すと Vue が自動アンラップし、
+ * Footer 側では `null` が届いて `props.info.value = ...` が TypeError になる。
+ * プレーンオブジェクトに載せて渡すことで Ref 実体を維持する。
+ *
+ * @internal
+ */
+const noteMenuRefs = {
+	info,
+	translation,
+	translating,
+	isDeleted,
+};
 const hiddenSoftMutes = defaultStore.state.hiddenSoftMutes;
 const muteExcludeReplyQuote = defaultStore.state.muteExcludeReplyQuote;
 const muteExcludeNotification = defaultStore.state.muteExcludeNotification;

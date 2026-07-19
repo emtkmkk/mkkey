@@ -1,5 +1,9 @@
 <template>
-	<FocusTrap :active="false" ref="focusTrap">
+	<FocusTrap
+		:active="false"
+		ref="focusTrap"
+		:fallback-focus="getTrapFallbackFocus"
+	>
 		<div tabindex="-1">
 			<div
 				ref="itemsEl"
@@ -202,6 +206,19 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * ポップアップ / ドロワー形式のメニュー UI。
+ *
+ * @remarks
+ * - `FocusTrap` は直子の `ref` を内部用に差し替えるため、`fallback-focus` は
+ *   内側の `itemsEl` から親コンテナを辿って返す（tabbable が無いときの保険）。
+ * - 非同期メニュー項目は一時的に `pending` のみになり、ボタン等の tabbable が
+ *   一切無い状態で `activate()` されることがある。
+ *
+ * @internal
+ */
 import {
 	computed,
 	menu,
@@ -238,6 +255,22 @@ const emit = defineEmits<{
 }>();
 
 let itemsEl = $ref<HTMLDivElement>();
+
+/**
+ * tabbable が無いときにフォーカスを逃す要素を返す。
+ *
+ * @returns メニュー外枠（`tabindex="-1"`）または undefined
+ * @remarks
+ * NOTE: FocusTrap が直子 ref を奪うため、内側 `itemsEl` の parentElement を使う。
+ *
+ * @internal
+ */
+function getTrapFallbackFocus(): HTMLElement | undefined {
+	if (itemsEl?.parentElement instanceof HTMLElement) {
+		return itemsEl.parentElement;
+	}
+	return undefined;
+}
 
 let items2: InnerMenuItem[] = $ref([]);
 

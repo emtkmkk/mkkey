@@ -6,7 +6,10 @@
 		@keyup.esc="$emit('close')"
 		@closed="$emit('closed')"
 	>
-		<FocusTrap v-model:active="isActive">
+		<FocusTrap
+			v-model:active="isActive"
+			:fallback-focus="getTrapFallbackFocus"
+		>
 			<div
 				ref="rootEl"
 				class="ebkgoccj"
@@ -59,6 +62,18 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * ヘッダー付きモーダルウィンドウ（外側 MkModal + 内側 FocusTrap）。
+ *
+ * @remarks
+ * - 内側 FocusTrap にも `fallback-focus` を付け、スロット内容が空/非表示の瞬間の
+ *   tabbable 不足エラーを防ぐ。
+ * - `isActive` は必ず定義する（未定義だと FocusTrap の active が常に default true）。
+ *
+ * @internal
+ */
 import { onMounted, onUnmounted, ref, shallowRef } from "vue";
 import { FocusTrap } from "focus-trap-vue";
 import MkModal from "./MkModal.vue";
@@ -87,11 +102,31 @@ const emit = defineEmits<{
 	(event: "ok"): void;
 }>();
 
+/** 内側 FocusTrap の有効状態（v-model:active 用） */
+const isActive = ref(true);
+
 let modal = shallowRef<InstanceType<typeof MkModal>>();
 let rootEl = shallowRef<HTMLElement>();
 let headerEl = shallowRef<HTMLElement>();
 let bodyWidth = ref(0);
 let bodyHeight = ref(0);
+
+/**
+ * tabbable が無いときにフォーカスを逃す要素を返す。
+ *
+ * @returns ウィンドウ外枠（`tabindex="-1"`）または undefined
+ * @remarks
+ * NOTE: FocusTrap が直子 `rootEl` の ref を奪うため、内側 `headerEl` の親を使う。
+ *
+ * @internal
+ */
+function getTrapFallbackFocus(): HTMLElement | undefined {
+	const header = headerEl.value;
+	if (header?.parentElement instanceof HTMLElement) {
+		return header.parentElement;
+	}
+	return rootEl.value ?? undefined;
+}
 
 const close = () => {
 	modal.value?.close();

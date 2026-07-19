@@ -97,10 +97,7 @@
 					:note="note"
 					:appearNote="appearNote"
 					:showContent="showContent"
-					:translation="translation"
-					:translating="translating"
-					:info="info"
-					:isDeleted="isDeleted"
+					:note-menu-refs="noteMenuRefs"
 					:focusNote="focus"
 					:blurNote="blur"
 				/>
@@ -169,6 +166,8 @@
  * @remarks
  * - フッター（返信・RT・★・リアクション追加/取消・引用・メニュー）は `MkNoteFooter.vue` に
  *   実装が集約されている。本コンポーネントは `footerRef` 経由で操作を委譲するだけ。
+ * - `getNoteMenu` が Ref を直接更新するため、`noteMenuRefs` はテンプレート経由の
+ *   自動アンラップを避け、スクリプト側で組み立てたプレーンオブジェクトとして渡す。
  *
  * @internal
  */
@@ -238,6 +237,21 @@ const muted = ref(getWordSoftMute(note, $i, defaultStore.state.mutedWords));
 const translation = ref(null);
 const translating = ref(false);
 const info = ref(null);
+/**
+ * getNoteMenu が参照する Ref 群。
+ *
+ * @remarks
+ * NOTE: テンプレートで個別に Ref を渡すと自動アンラップされ、
+ * Footer 側で `null.value = ...` の TypeError になる。
+ *
+ * @internal
+ */
+const noteMenuRefs = {
+	info,
+	translation,
+	translating,
+	isDeleted,
+};
 const replies: misskey.entities.Note[] =
 	props.conversation
 		?.filter(

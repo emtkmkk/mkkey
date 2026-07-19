@@ -142,6 +142,8 @@
  * - ★ボタン、リアクション追加ボタン、取り消しボタンの表示条件をここで統合する。
  * - multi / 非 multi の違いにより、同じ isMaxReacted でも UI の意味が変わるため条件を分けて扱う。
  * - `hideToolbarNormalReply` で返信を隠す（誤爆防止対象、または常にメニュー返信）。空リプをツールバーに出しているときは返信数を空リプボタン直後へ出し、返信ボタン非表示でも件数が見えるようにする。
+ * - `noteMenuRefs` は親がスクリプト側で組み立てた Ref バッグ。テンプレート経由だと
+ *   Vue がアンラップし `getNoteMenu` の `.value` 代入が壊れるため、必ずオブジェクトで受け取る。
  *
  * @internal
  */
@@ -171,6 +173,21 @@ import {
 } from "@/scripts/stranger-air-reply-toolbar";
 import { openReplyWithChoice } from "@/scripts/reply-note";
 
+/**
+ * getNoteMenu が直接更新する親ノート側の Ref 群。
+ *
+ * @remarks
+ * NOTE: 個別 prop で Ref を渡すとテンプレート自動アンラップで値が届いてしまう。
+ *
+ * @internal
+ */
+type NoteMenuRefs = {
+	info: Ref<any>;
+	translation: Ref<any>;
+	translating: Ref<boolean>;
+	isDeleted: Ref<boolean>;
+};
+
 const props = defineProps<{
 	/** 生のノート（developerRenote/developerQuote トグル表示用） */
 	note: misskey.entities.Note;
@@ -180,10 +197,13 @@ const props = defineProps<{
 	detailedView?: boolean;
 	/** CW等が開いている（内容が見えている）状態か */
 	showContent: boolean;
-	translation: Ref<any>;
-	translating: Ref<boolean>;
-	info: Ref<any>;
-	isDeleted: Ref<boolean>;
+	/**
+	 * getNoteMenu 用の Ref バッグ（親スクリプトで組み立てたもの）。
+	 *
+	 * @remarks
+	 * NOTE: テンプレートで Ref を個別に渡さないこと（自動アンラップで壊れる）。
+	 */
+	noteMenuRefs: NoteMenuRefs;
 	/** 返信/RT等の操作後にノート本体へフォーカスを戻すためのコールバック */
 	focusNote: () => void;
 	/** リアクションピッカー展開前に呼ぶブラーコールバック */
@@ -497,16 +517,27 @@ async function undoReact(targetNote): void {
 	});
 }
 
+/**
+ * ノートメニュー（⋯）を開く。
+ *
+ * @param viaKeyboard - キーボード操作由来のとき true（フォーカス移動用）
+ * @returns void
+ * @remarks
+ * NOTE: `noteMenuRefs` の各 Ref をそのまま getNoteMenu に渡す。
+ * アンラップ済みの値を渡すとソース表示等で TypeError になる。
+ */
 function menu(viaKeyboard = false): void {
+	// NOTE: 分割代入せずプロパティ参照のまま渡す（Reactive 経由のアンラップを避ける）
+	const refs = props.noteMenuRefs;
 	os.popupMenu(
 		getNoteMenu({
 			note: note,
-			translating: props.translating,
-			translation: props.translation,
+			translating: refs.translating,
+			translation: refs.translation,
 			menuButton: menuButtonRef,
-			isDeleted: props.isDeleted,
+			isDeleted: refs.isDeleted,
 			currentClipPage,
-			info: props.info,
+			info: refs.info,
 			pinned: props.pinned,
 		}),
 		menuButtonRef.value,
@@ -516,17 +547,23 @@ function menu(viaKeyboard = false): void {
 	).then(props.focusNote);
 }
 
-/** 右クリックメニュー（本体側の @contextmenu ハンドラから呼ばれる） */
+/**
+ * 右クリックメニュー（本体側の @contextmenu ハンドラから呼ばれる）。
+ *
+ * @param ev - コンテキストメニューイベント
+ * @returns void
+ */
 function openContextMenu(ev: MouseEvent): void {
+	const refs = props.noteMenuRefs;
 	os.contextMenu(
 		getNoteMenu({
 			note: note,
-			translating: props.translating,
-			translation: props.translation,
+			translating: refs.translating,
+			translation: refs.translation,
 			menuButton: menuButtonRef,
-			isDeleted: props.isDeleted,
+			isDeleted: refs.isDeleted,
 			currentClipPage,
-			info: props.info,
+			info: refs.info,
 			pinned: props.pinned,
 		}),
 		ev

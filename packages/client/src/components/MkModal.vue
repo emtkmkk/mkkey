@@ -20,7 +20,7 @@
 	>
 		<FocusTrap
 			v-model:active="isActive"
-			:fallback-focus="() => trapContainerRef ?? undefined"
+			:fallback-focus="getTrapFallbackFocus"
 		>
 			<div
 				ref="trapContainerRef"
@@ -78,6 +78,21 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * モーダル基盤（ダイアログ / ポップアップ / ドロワー）。FocusTrap でフォーカスを閉じ込める。
+ *
+ * @remarks
+ * - `focus-trap-vue` は直子の `ref` を `wrapperEl` に差し替えるため、直子に付けた
+ *   `trapContainerRef` だけでは `fallback-focus` が常に undefined になりうる。
+ * - tabbable が無いスロット（例: MkWaitingDialog）では、内側 `content` の親要素を
+ *   fallback に使う必要がある。
+ * - `isActive` は表示状態と同期する。未定義のままだと active が常に default true になり、
+ *   非表示時にも trap が残ってエラーになりうる。
+ *
+ * @internal
+ */
 import { nextTick, onMounted, watch, provide } from "vue";
 import * as os from "@/os";
 import { isTouchUsing } from "@/scripts/touch";
@@ -140,12 +155,59 @@ let transformOrigin = $ref("center");
 let showing = $ref(true);
 let content = $shallowRef<HTMLElement>();
 /**
- * フォーカストラップのコンテナ。
- * スロット内に tabbable が無い（未描画・テキストのみなど）場合の fallbackFocus 用。
+ * フォーカストラップのコンテナ（テンプレート ref）。
+ *
+ * @remarks
+ * NOTE: FocusTrap が直子 ref を奪うため、ここが null のままになることがある。
+ * fallback は {@link getTrapFallbackFocus} を使うこと。
+ *
  * @internal
  */
 let trapContainerRef = $shallowRef<HTMLElement>();
+/**
+ * FocusTrap の有効状態。表示中のみ true。
+ *
+ * @remarks
+ * NOTE: 未定義だと v-model が効かず active が常に default true になる。
+ *
+ * @internal
+ */
+let isActive = $ref(true);
 const zIndex = os.claimZIndex(props.zPriority);
+
+/**
+ * 現在モーダルが表示対象かどうか。
+ *
+ * @internal
+ */
+const isShown = $computed(() =>
+	props.manualShowing != null ? props.manualShowing : showing
+);
+
+// 非表示時は trap を外し、tabbable 不足エラーを防ぐ
+watch(
+	$$(isShown),
+	(shown) => {
+		isActive = !!shown;
+	},
+	{ immediate: true }
+);
+
+/**
+ * tabbable が無いときにフォーカスを逃す要素を返す。
+ *
+ * @returns trap コンテナ（`tabindex="-1"`）または undefined
+ * @remarks
+ * NOTE: FocusTrap が直子 `trapContainerRef` を差し替えるため、内側 `content` の親を優先する。
+ *
+ * @internal
+ */
+function getTrapFallbackFocus(): HTMLElement | undefined {
+	if (content?.parentElement instanceof HTMLElement) {
+		return content.parentElement;
+	}
+	return trapContainerRef ?? undefined;
+}
 let useSendAnime = $ref(false);
 const type = $computed<ModalTypes>(() => {
 	if (props.preferType === "auto") {

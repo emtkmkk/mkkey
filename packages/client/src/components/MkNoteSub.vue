@@ -41,7 +41,7 @@
 						:note="note"
 						:parentId="appearNote.parentId"
 						:conversation="conversation"
-						@focusfooter="footerEl.focus()"
+						@focusfooter="footerRef?.focus()"
 						@changeShowContent="(v) => (showContent = v)"
 					/>
 					<div v-if="info" class="translation">
@@ -92,129 +92,18 @@
 						</div>
 					</div>
 				</div>
-				<footer ref="footerEl" class="footer" @click.stop tabindex="-1">
-					<XReactionsViewer
-						v-if="enableEmojiReactions"
-						v-show="isReactionListVisible"
-						ref="reactionsViewer"
-						:note="appearNote"
-						:allow-default-reaction="!isStarButtonHandlesDefault"
-					/>
-					<button
-						v-if="referenceIds && referenceIds.length"
-						v-tooltip.bottom="i18n.ts.referencesAttached"
-						class="button _button"
-						:class="{ reacted: referenceIds?.includes(appearNote.id) }"
-						@click="toggleReference()"
-					>
-						<i class="ph-stack ph-bold ph-lg"></i>
-					</button>
-					<button
-						v-if="showToolbarAirReplyForNote(appearNote)"
-						v-tooltip.bottom="i18n.ts.airReply"
-						class="button _button"
-						@click="airReply()"
-					>
-						<i class="ph-paper-plane-tilt ph-bold ph-lg"></i>
-						<template
-							v-if="
-								hideToolbarNormalReply(appearNote) &&
-								appearNote.repliesCount > 0
-							"
-						>
-							<p class="count">{{ appearNote.repliesCount }}</p>
-						</template>
-					</button>
-					<button
-						v-if="!hideToolbarNormalReply(appearNote)"
-						v-tooltip.noDelay.bottom="i18n.ts.reply"
-						class="button _button"
-						@click="reply(false, $event)"
-					>
-						<i class="ph-arrow-u-up-left ph-bold ph-lg"></i>
-						<template v-if="appearNote.repliesCount > 0">
-							<p class="count">{{ appearNote.repliesCount }}</p>
-						</template>
-					</button>
-					<XRenoteButton
-						ref="renoteButton"
-						class="button"
-						:note="appearNote"
-						:count="appearNote.renoteCount"
-					/>
-					<XStarButtonNoEmoji
-						v-if="showStarButtonNoEmoji"
-						ref="starButtonNoEmojiRef"
-						class="button"
-						:note="appearNote"
-						:count="reactionCountViewModel.showStarCount ? reactionCountViewModel.countForStarButton : 0"
-						:reacted="isDefaultReactionReacted"
-						:hasPickerButton="showReactionPickerButton"
-						:isReactionListVisible="isReactionListVisible"
-					/>
-					<button
-						v-if="showReactionPickerButton"
-						:title="
-							multiReaction
-								? (appearNote.myReactions?.length ?? 0) +
-								  ' / ' +
-								  maxReactions
-								: ''
-						"
-						ref="reactionPickerButtonRef"
-						v-tooltip.bottom="
-							i18n.ts.reaction +
-							(multiReaction
-								? ' (' +
-								  (appearNote.myReactions?.length ?? 0) +
-								  ' / ' +
-								  maxReactions +
-								  ')'
-								: '')
-						"
-						class="button _button"
-						:class="{
-							unsupported:
-								appearNote.user.instance
-									?.maxReactionsPerAccount === 0,
-						}"
-						@click="react()"
-					>
-						<!-- multiReaction のときだけ上限到達アイコンを表示する -->
-						<i
-							v-if="isMaxReacted"
-							class="ph-prohibit ph-bold ph-lg"
-						></i>
-						<i
-							v-else-if="multiReaction"
-							class="ph-smiley-wink ph-bold ph-lg"
-						></i>
-						<i v-else class="ph-smiley ph-bold ph-lg"></i>
-						<template v-if="reactionCountViewModel.showReactionPickerCount">
-							<p class="count">{{ reactionCountViewModel.countForReactionPickerButton }}</p>
-						</template>
-					</button>
-					<button
-						v-if="showUndoReactionButton"
-						ref="undoReactionButtonRef"
-						class="button _button"
-						@click="undoReact(appearNote)"
-					>
-						<i class="ph-minus ph-bold ph-lg" style="color: var(--accent);"></i>
-						<template v-if="reactionCountViewModel.showUndoReactionCount && showUndoReactionButton">
-							<p class="count">{{ reactionCountViewModel.countForUndoReactionButton }}</p>
-						</template>
-					</button>
-					<XQuoteButton class="button" :note="appearNote" />
-					<button
-						ref="menuButton"
-						v-tooltip.noDelay.bottom="i18n.ts.more"
-						class="button _button"
-						@click="menu()"
-					>
-						<i class="ph-dots-three-outline ph-bold ph-lg"></i>
-					</button>
-				</footer>
+				<MkNoteFooter
+					ref="footerRef"
+					:note="note"
+					:appearNote="appearNote"
+					:showContent="showContent"
+					:translation="translation"
+					:translating="translating"
+					:info="info"
+					:isDeleted="isDeleted"
+					:focusNote="focus"
+					:blurNote="blur"
+				/>
 			</div>
 		</div>
 		<template v-if="conversation">
@@ -275,49 +164,29 @@
 /**
  * @packageDocumentation
  *
- * 会話ツリー内のサブノート表示とフッター操作を管理するコンポーネント。
+ * 会話ツリー内のサブノート表示を管理するコンポーネント。
  *
  * @remarks
- * - メインノート (`MkNote.vue`) と同等のリアクション表示条件を維持する。
- * - ★ボタン周辺のツールチップは子コンポーネント側に委譲し、重複登録を避ける。
- * - `hideToolbarNormalReply` で返信ボタンを隠す（誤爆防止対象、または常にメニュー返信）。空リプをツールバーに出しているときは返信数を空リプボタン直後へ出し、返信ボタン非表示でも件数が見えるようにする。引用別ボタンは `effectiveSeparateRenoteQuoteForNote` で実効オフにしうる。
+ * - フッター（返信・RT・★・リアクション追加/取消・引用・メニュー）は `MkNoteFooter.vue` に
+ *   実装が集約されている。本コンポーネントは `footerRef` 経由で操作を委譲するだけ。
  *
  * @internal
  */
-import { inject, ref } from "vue";
-import type { Ref } from "vue";
+import { ref } from "vue";
 import * as misskey from "calckey-js";
 import XNoteHeader from "@/components/MkNoteHeader.vue";
 import MkSubNoteContent from "@/components/MkSubNoteContent.vue";
-import XReactionsViewer from "@/components/MkReactionsViewer.vue";
-import XStarButtonNoEmoji from "@/components/MkStarButtonNoEmoji.vue";
-import XRenoteButton from "@/components/MkRenoteButton.vue";
-import XQuoteButton from "@/components/MkQuoteButton.vue";
-import XUsersTooltip from "@/components/MkUsersTooltip.vue";
-import { pleaseLogin } from "@/scripts/please-login";
-import { getNoteMenu } from "@/scripts/get-note-menu";
+import MkNoteFooter from "@/components/MkNoteFooter.vue";
 import { getWordSoftMute } from "@/scripts/check-word-mute";
 import { notePage } from "@/filters/note";
 import { useRouter } from "@/router";
 import { userPage } from "@/filters/user";
-import * as os from "@/os";
-import { reactionPicker } from "@/scripts/reaction-picker";
 import { $i } from "@/account";
 import { i18n } from "@/i18n";
-import { instance } from "@/instance";
 import { useNoteCapture } from "@/scripts/use-note-capture";
 import { defaultStore } from "@/store";
 import { deepClone } from "@/scripts/clone";
 import copyToClipboard from "@/scripts/copy-to-clipboard";
-import * as sound from "@/scripts/sound.js";
-import { normalizeReactionName } from "@/scripts/reaction-utils";
-import { useTooltip } from "@/scripts/use-tooltip";
-import { useReactionCountViewModel } from "@/scripts/use-reaction-count-view-model";
-import {
-	hideToolbarNormalReply,
-	showToolbarAirReplyForNote,
-} from "@/scripts/stranger-air-reply-toolbar";
-import { openReplyWithChoice } from "@/scripts/reply-note";
 
 const router = useRouter();
 
@@ -340,40 +209,6 @@ const props = withDefaults(
 
 let note = $ref(deepClone(props.note));
 
-const multiReaction =
-	$i &&
-	$i.patron &&
-	(!props.note.user.host ||
-		props.note.user.instance?.maxReactionsPerAccount > 1);
-const maxReactions = multiReaction
-	? Math.min(props.note.user.instance?.maxReactionsPerAccount ?? 3, 3)
-	: 1;
-const isCanAction = $i && (!$i.isSilenced || props.note.user.isFollowed);
-/** 警告ユーザは canWarnedViewerReact が明示 true のときのみリアクション可（自分のノートは常に可） */
-const isCanReact = $computed(() => {
-	if (!isCanAction) return false;
-	if (!$i?.isModerationWarning) return true;
-	if (appearNote.userId === $i.id) return true;
-	return appearNote.canWarnedViewerReact === true;
-});
-
-/**
- * リアクション上限到達状態かどうかを返す。
- *
- * @remarks
- * 非 multi では「既に1件リアクション済み」の意味で true になる。
- *
- * @internal
- */
-const isMaxReacted = $computed(() =>
-	multiReaction
-		? props.note.myReactions?.length >= maxReactions
-		: props.note.myReaction != null
-);
-const referenceIds = $computed(
-	defaultStore.makeGetterSetter("postFormReferenceIds")
-);
-
 const showContent = ref(false);
 
 const softMuteReasonI18nSrc = (what?: string) => {
@@ -394,10 +229,7 @@ const isRenote =
 	!note.invisible;
 
 const el = ref<HTMLElement>();
-const footerEl = ref<HTMLElement>();
-const menuButton = ref<HTMLElement>();
-const renoteButton = ref<InstanceType<typeof XRenoteButton>>();
-const reactButton = ref<HTMLElement>();
+const footerRef = ref<InstanceType<typeof MkNoteFooter>>();
 let appearNote = $computed(() =>
 	isRenote ? (note.renote as misskey.entities.Note) : note
 );
@@ -414,276 +246,12 @@ const replies: misskey.entities.Note[] =
 				item.renoteId === props.note.id
 		)
 		.reverse() ?? [];
-const enableEmojiReactions = defaultStore.state.enableEmojiReactions;
-const showEmojiButton = defaultStore.state.showEmojiButton;
-const isReactionListVisible = $computed(() =>
-	enableEmojiReactions && showContent.value
-);
-
-const isStarButtonHandlesDefault = $computed(() => {
-	return defaultStore.state.favButtonReaction === "";
-});
-const favButtonReactionIsFavorite =
-        defaultStore.state.favButtonReaction === "favorite";
-
-const isfavButtonReacted = $computed(() => {
-	const favButtonReaction = multiReaction
-		? defaultStore.state.woozyMode === true
-			? "🥴"
-			: defaultStore.state.favButtonReaction === "custom"
-			? defaultStore.state.favButtonReactionCustom
-			: defaultStore.state.favButtonReaction === ""
-			? ":iine_fav:"
-			: defaultStore.state.favButtonReaction
-		: undefined;
-	return multiReaction
-		? appearNote.myReactions
-				?.map((x) => x.replace(/@[^:\s]?(:?)$/, "$1"))
-				.includes(favButtonReaction)
-		: false;
-});
-
-
-const isDefaultReactionReacted = $computed(() => {
-	if (
-		appearNote.myReaction &&
-		normalizeReactionName(appearNote.myReaction) === instance.defaultReaction
-	) {
-		return true;
-	}
-	// multiユーザーは myReaction が先頭反応のみを示すため、myReactions側も必ず確認する
-	if (appearNote.myReactions) {
-		return appearNote.myReactions.some(
-			(r) => normalizeReactionName(r) === instance.defaultReaction
-		);
-	}
-	return false;
-});
-
-/**
- * ★ボタン（絵文字なし）の表示可否を返す。
- *
- * @remarks
- * デフォルトリアクションを★ボタンで扱う設定時は、既に既定リアクション済みでも表示を維持する。
- *
- * @internal
- */
-const showStarButtonNoEmoji = $computed(() => {
-	const canShow =
-		((!isMaxReacted && !isfavButtonReacted && isCanReact) ||
-			favButtonReactionIsFavorite ||
-			(isStarButtonHandlesDefault && isDefaultReactionReacted));
-	return canShow && defaultStore.state.favButtonReaction !== "hidden";
-});
-
-/**
- * リアクションピッカーボタンの表示可否を返す。
- *
- * @remarks
- * - 非 multi の場合、既にリアクション済みなら取り消しボタンを優先するため非表示にする。
- * - multi の場合は上限到達時でもボタンを表示し、上限状態のアイコン表示に任せる。
- *
- * @internal
- */
-const showReactionPickerButton = $computed(
-	() =>
-		(enableEmojiReactions || showEmojiButton) &&
-		isCanReact &&
-		(multiReaction || !isMaxReacted)
-);
-
-/**
- * リアクション取り消しボタンの表示可否を返す。
- *
- * @remarks
- * 非 multi ユーザで既存リアクションがある場合のみ表示する。
- *
- * @internal
- */
-const showUndoReactionButton = $computed(
-	() =>
-		(enableEmojiReactions || showEmojiButton) &&
-		appearNote.myReaction != null &&
-		!multiReaction &&
-		isCanReact
-);
-
-const {
-	reactionCountViewModel,
-} = useReactionCountViewModel({
-	note: $$(appearNote),
-	isReactionListVisible: $$(isReactionListVisible),
-	showStarButtonNoEmoji: $$(showStarButtonNoEmoji),
-	showReactionPickerButton: $$(showReactionPickerButton),
-	showUndoReactionButton: $$(showUndoReactionButton),
-	isStarButtonHandlesDefault: $$(isStarButtonHandlesDefault),
-});
-
-const starButtonNoEmojiRef = ref<HTMLElement>();
-const reactionPickerButtonRef = ref<HTMLElement>();
-const undoReactionButtonRef = ref<HTMLElement>();
-
-useTooltip(
-	reactionPickerButtonRef,
-	async (showing) => {
-		const tooltipQuery = reactionCountViewModel.value.tooltipQuery;
-		if (tooltipQuery.shouldSkip) {
-			return;
-		}
-
-		const reactions = await os.api("notes/reactions", {
-			noteId: appearNote.id,
-			...(tooltipQuery.type ? { type: tooltipQuery.type } : {}),
-			...(tooltipQuery.excludeType
-				? { excludeType: tooltipQuery.excludeType }
-				: {}),
-			limit: 11,
-		});
-
-		const users = reactions.map((x) => x.user);
-		if (users.length < 1) return;
-
-		const count = tooltipQuery.count;
-
-		os.popup(
-			XUsersTooltip,
-			{
-				showing,
-				users,
-				count,
-				targetElement: reactionPickerButtonRef.value,
-			},
-			{},
-			"closed"
-		);
-	},
-	500
-);
-
-useTooltip(
-	undoReactionButtonRef,
-	async (showing) => {
-		const tooltipQuery = reactionCountViewModel.value.tooltipQuery;
-		if (tooltipQuery.shouldSkip) {
-			return;
-		}
-
-		const reactions = await os.api("notes/reactions", {
-			noteId: appearNote.id,
-			...(tooltipQuery.type ? { type: tooltipQuery.type } : {}),
-			...(tooltipQuery.excludeType
-				? { excludeType: tooltipQuery.excludeType }
-				: {}),
-			limit: 11,
-		});
-
-		const users = reactions.map((x) => x.user);
-		if (users.length < 1) return;
-
-		const count = tooltipQuery.count;
-
-		os.popup(
-			XUsersTooltip,
-			{
-				showing,
-				users,
-				count,
-				targetElement: undoReactionButtonRef.value,
-			},
-			{},
-			"closed"
-		);
-	},
-	500
-);
-
-defineExpose({
-	el,
-});
 
 useNoteCapture({
 	rootEl: el,
 	note: $$(appearNote),
 	isDeletedRef: isDeleted,
 });
-
-function reply(viaKeyboard = false, ev?: MouseEvent): void {
-	pleaseLogin();
-	openReplyWithChoice(appearNote, {
-		viaKeyboard,
-		animation: !viaKeyboard,
-		src: ev?.currentTarget ?? (viaKeyboard ? footerEl.value : undefined),
-		onOpened: focus,
-	});
-}
-
-function airReply(viaKeyboard = false): void {
-	const v =
-		appearNote.user.host != null && appearNote.visibility === "public"
-			? "home"
-			: appearNote.visibility;
-	os.post({
-		airReply: appearNote,
-		initialVisibility: v,
-		// 空リプのローカル限定は、元ノートがローカル限定のときだけ ON（ローカル相手の公開ノートでは既定に合わせる）
-		initialLocalOnly: appearNote.localOnly === true,
-		key: appearNote.id,
-		animation: !viaKeyboard,
-	}).then(() => {
-		focus();
-	});
-}
-
-function react(viaKeyboard = false): void {
-	if (isMaxReacted) return;
-	pleaseLogin();
-	blur();
-	reactionPicker.show(
-		reactionPickerButtonRef.value,
-		(reaction) => {
-			os.api("notes/reactions/create", {
-				noteId: appearNote.id,
-				reaction: reaction,
-			}).then(() => {
-				sound.play("reaction");
-			});
-		},
-		() => {
-			focus();
-		}
-	);
-}
-
-function undoReact(note): void {
-	const oldReaction = note.myReaction;
-	if (!oldReaction) return;
-	os.api("notes/reactions/delete", {
-		noteId: note.id,
-	});
-}
-
-const currentClipPage = inject<Ref<misskey.entities.Clip> | null>(
-	"currentClipPage",
-	null
-);
-
-function menu(viaKeyboard = false): void {
-	os.popupMenu(
-		getNoteMenu({
-			note: note,
-			translating,
-			translation,
-			menuButton,
-			isDeleted,
-			currentClipPage,
-			info,
-		}),
-		menuButton.value,
-		{
-			viaKeyboard,
-		}
-	).then(focus);
-}
 
 function focus() {
 	el.value.focus();
@@ -701,13 +269,13 @@ function noteClick(e) {
 	}
 }
 
-function toggleReference() {
-	if (referenceIds?.includes(appearNote.id)) {
-		referenceIds = referenceIds.filter((x) => x !== appearNote.id)
-	} else {
-		referenceIds = Array.from(new Set([...referenceIds, appearNote.id]))
-	}
-}
+defineExpose({
+	el,
+	reply: (viaKeyboard = false) => footerRef.value?.reply(viaKeyboard),
+	react: (viaKeyboard = false) => footerRef.value?.react(viaKeyboard),
+	renote: (viaKeyboard = false) => footerRef.value?.renote(viaKeyboard),
+	menu: (viaKeyboard = false) => footerRef.value?.menu(viaKeyboard),
+});
 </script>
 
 <style lang="scss" scoped>
@@ -760,45 +328,6 @@ function toggleReference() {
 					border-radius: var(--radius);
 					padding: 0.75rem;
 					margin-top: 0.5rem;
-				}
-			}
-			> .footer {
-				position: relative;
-				z-index: 2;
-				display: flex;
-				flex-wrap: wrap;
-				pointer-events: none; // Allow clicking anything w/out pointer-events: all; to open post
-
-				> .button {
-					margin: 0;
-					padding: 0.5rem;
-					opacity: 0.7;
-					flex-grow: 1;
-					max-width: 3.5em;
-					width: max-content;
-					min-width: max-content;
-					pointer-events: all;
-					transition: opacity 0.2s;
-					&:first-of-type {
-						margin-left: -0.5em;
-					}
-					&:hover {
-						color: var(--fgHighlighted);
-					}
-
-					> .count {
-						display: inline;
-						margin: 0 0 0 0.5rem;
-						opacity: 0.7;
-					}
-
-					&.reacted {
-						color: var(--accent);
-					}
-
-					> .unsupported {
-						opacity: 0.15 !important;
-					}
 				}
 			}
 		}

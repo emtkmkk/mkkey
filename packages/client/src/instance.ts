@@ -240,26 +240,41 @@ async function requestEmojis(
         return await api("emojis", params);
 }
 
-export async function fetchPlusEmoji(options?: EmojiFetchOptions) {
+/**
+ * リモート絵文字を取得し、キャッシュへ保存したうえで instance に反映する。
+ *
+ * @remarks
+ * fetchPlusEmoji（mini）/ fetchAllEmoji（all, remoteEmojiDataも保存）/
+ * fetchAllEmojiNoCache（all, remoteEmojiDataは保存しない）の共通実装。
+ *
+ * @internal
+ */
+async function fetchRemoteEmoji(
+        remoteEmojisMode: "mini" | "all",
+        cacheRemoteEmojiData: boolean,
+        options?: EmojiFetchOptions,
+): Promise<void> {
         const meta = await requestEmojis(
                 {
-                        remoteEmojis: "mini",
+                        remoteEmojis: remoteEmojisMode,
                 },
                 options,
         );
 
-        const remoteEmojiData = {
-                emojiFetchDate: meta.emojiFetchDate,
-                remoteEmojiMode: meta.remoteEmojiMode,
-                remoteEmojiCount: meta.remoteEmojiCount,
-                allEmojis: meta.allEmojis,
-                emojiUpdatedAt: meta.emojiUpdatedAt,
-        };
+        if (cacheRemoteEmojiData) {
+                const remoteEmojiData = {
+                        emojiFetchDate: meta.emojiFetchDate,
+                        remoteEmojiMode: meta.remoteEmojiMode,
+                        remoteEmojiCount: meta.remoteEmojiCount,
+                        allEmojis: meta.allEmojis,
+                        emojiUpdatedAt: meta.emojiUpdatedAt,
+                };
 
-        try {
-                await set("remoteEmojiData", remoteEmojiData);
-        } catch {
-                toast("ストレージの容量不足のため、絵文字のキャッシュを保存できませんでした。");
+                try {
+                        await set("remoteEmojiData", remoteEmojiData);
+                } catch {
+                        toast("ストレージの容量不足のため、絵文字のキャッシュを保存できませんでした。");
+                }
         }
 
         const localEmojiSnapshot = {
@@ -283,82 +298,18 @@ export async function fetchPlusEmoji(options?: EmojiFetchOptions) {
                 );
         }
 	void preloadFolloweeIdsIfNeeded($i?.id, instance.emojis);
+}
+
+export async function fetchPlusEmoji(options?: EmojiFetchOptions) {
+        await fetchRemoteEmoji("mini", true, options);
 }
 
 export async function fetchAllEmoji(options?: EmojiFetchOptions) {
-        const meta = await requestEmojis(
-                {
-                        remoteEmojis: "all",
-                },
-                options,
-        );
-
-        const remoteEmojiData = {
-                emojiFetchDate: meta.emojiFetchDate,
-                remoteEmojiMode: meta.remoteEmojiMode,
-                remoteEmojiCount: meta.remoteEmojiCount,
-                allEmojis: meta.allEmojis,
-                emojiUpdatedAt: meta.emojiUpdatedAt,
-        };
-
-        try {
-                await set("remoteEmojiData", remoteEmojiData);
-        } catch {
-                toast("ストレージの容量不足のため、絵文字のキャッシュを保存できませんでした。");
-        }
-
-        const localEmojiSnapshot = {
-                emojis: meta.emojis,
-                emojiUpdatedAt: meta.emojiUpdatedAt,
-                emojiFetchDate: meta.emojiFetchDate ?? new Date().toISOString(),
-        };
-
-        try {
-                await set("emojiData", localEmojiSnapshot);
-        } catch {
-                toast("ストレージの容量不足のため、絵文字のキャッシュを保存できませんでした。");
-        }
-
-        for (const [k, v] of Object.entries(meta)) {
-                instance[k] = v;
-        }
-        if (meta.allEmojis) {
-                instance.allEmojis = (meta.allEmojis as unknown[]).map(
-                        (e) => normalizeRemoteEmoji(e as Parameters<typeof normalizeRemoteEmoji>[0]),
-                );
-        }
-	void preloadFolloweeIdsIfNeeded($i?.id, instance.emojis);
+        await fetchRemoteEmoji("all", true, options);
 }
 
 export async function fetchAllEmojiNoCache(options?: EmojiFetchOptions) {
-        const meta = await requestEmojis(
-                {
-                        remoteEmojis: "all",
-                },
-                options,
-        );
-
-        const localEmojiSnapshot = {
-                emojis: meta.emojis,
-                emojiUpdatedAt: meta.emojiUpdatedAt,
-                emojiFetchDate: meta.emojiFetchDate ?? new Date().toISOString(),
-        };
-
-        try {
-                await set("emojiData", localEmojiSnapshot);
-        } catch {
-                toast("ストレージの容量不足のため、絵文字のキャッシュを保存できませんでした。");
-        }
-
-        for (const [k, v] of Object.entries(meta)) {
-                instance[k] = v;
-        }
-        if (meta.allEmojis) {
-                instance.allEmojis = (meta.allEmojis as unknown[]).map(
-                        (e) => normalizeRemoteEmoji(e as Parameters<typeof normalizeRemoteEmoji>[0]),
-                );
-        }
-	void preloadFolloweeIdsIfNeeded($i?.id, instance.emojis);
+        await fetchRemoteEmoji("all", false, options);
 }
 
 export async function fetchEmojiStats(limit) {

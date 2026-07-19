@@ -684,6 +684,8 @@ useTooltip(reactionRef, (showing) => {
 			width: 100%;
 			height: 100%;
 			border-radius: 0.375rem;
+			// アバターと同様に引き伸ばさず切り抜いて枠いっぱいに表示する
+			object-fit: cover;
 		}
 
 		> .sub-icon {

@@ -13,6 +13,7 @@
 import * as misskey from "calckey-js";
 import * as config from "@/config";
 import { defaultStore } from "@/store";
+import { ensureGolbezaTournamentReactionSlots } from "@/scripts/golbeza-tournament-reaction-gimmick";
 
 type ReactionCountMap = Record<string, number>;
 
@@ -135,6 +136,30 @@ function isMutedReaction(
 }
 
 /**
+ * 同名絵文字（ホスト違い）マージ時の代表キー選択で、`candidate` が `current` より
+ * 代表として優先されるか判定する。
+ *
+ * @remarks
+ * ローカル（`@.:`）を最優先し、次に件数降順、最後にキー名昇順でタイブレークする。
+ * `reactions` オブジェクトのキー挿入順（ストリーミング受信順や API 応答順で変わりうる）
+ * に依存しない決定的なルールにすることで、同じ集計結果に対して常に同じ代表絵文字が
+ * 選ばれるようにする。
+ *
+ * @internal
+ */
+function isPreferredRepresentative(
+	candidate: { reaction: string; count: number },
+	current: { reaction: string; count: number },
+): boolean {
+	const candidateIsLocal = candidate.reaction.endsWith("@.:");
+	const currentIsLocal = current.reaction.endsWith("@.:");
+	if (candidateIsLocal !== currentIsLocal) return candidateIsLocal;
+	if (candidate.count !== current.count)
+		return candidate.count > current.count;
+	return candidate.reaction < current.reaction;
+}
+
+/**
  * ノートの `reactions` から、ミュート設定を反映した上で UI に見せる件数マップを返す。
  *
  * @param note 対象ノート
@@ -150,14 +175,7 @@ export function getVisibleReactions(
 	);
 	let reactions: ReactionCountMap = { ...(note.reactions ?? {}) };
 
-	if (note.tags && note.text?.includes("#ゴルベーザ百天王バトル")) {
-		if (reactions["🅰️"] == null) {
-			reactions["🅰️"] = 0;
-		}
-		if (reactions["🅱️"] == null) {
-			reactions["🅱️"] = 0;
-		}
-	}
+	ensureGolbezaTournamentReactionSlots(note, reactions);
 
 	const localReactions = Object.keys(reactions).filter((x) =>
 		x.includes("@"),
@@ -171,28 +189,26 @@ export function getVisibleReactions(
 		if (targetReactions.length === 0) return;
 
 		let totalCount = 0;
-		let maxReaction = {
-			reaction: localReaction,
-			count: reactions[localReaction] ?? 0,
-		};
+		let representative: { reaction: string; count: number } | undefined;
 
 		targetReactions.forEach((name) => {
 			const reactionCount = reactions[name] ?? 0;
+			const candidate = { reaction: name, count: reactionCount };
 			if (
-				!localReaction.endsWith("@.:") &&
-				maxReaction.count < reactionCount
+				representative == null ||
+				isPreferredRepresentative(candidate, representative)
 			) {
-				maxReaction = { reaction: name, count: reactionCount };
+				representative = candidate;
 			}
 			totalCount += reactionCount;
 			delete reactions[name];
 		});
 
-		if (isMutedReaction(maxReaction.reaction, muteMatchers)) {
+		if (isMutedReaction(representative!.reaction, muteMatchers)) {
 			totalCount = 0;
 		}
 
-		mergedReactions[maxReaction.reaction] = totalCount;
+		mergedReactions[representative!.reaction] = totalCount;
 	});
 
 	const visibleReactions: ReactionCountMap = {

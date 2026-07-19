@@ -297,23 +297,15 @@ import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { defaultStore } from "@/store";
 import { unisonReload } from "@/scripts/unison-reload";
-import { deviceKind } from "@/scripts/device-kind";
+import { useIsMobile } from "@/scripts/use-is-mobile";
 import { instance } from "@/instance";
 import { isSupportNavigatorConnection } from "@/scripts/datasaver";
 import { ui } from "@/config";
 
 const DESKTOP_THRESHOLD = 1100;
-const MOBILE_THRESHOLD = 500;
 
-// デスクトップでウィンドウを狭くしたときモバイルUIが表示されて欲しいことはあるので deviceKind === 'desktop' の判定は行わない
 const isDesktop = ref(window.innerWidth >= DESKTOP_THRESHOLD);
-const isMobile = ref(
-	deviceKind === "smartphone" || window.innerWidth <= MOBILE_THRESHOLD
-);
-window.addEventListener("resize", () => {
-	isMobile.value =
-		deviceKind === "smartphone" || window.innerWidth <= MOBILE_THRESHOLD;
-});
+const isMobile = useIsMobile();
 
 const supportAutoDataSaver = computed(() => isSupportNavigatorConnection());
 const showLocalPostsInTimeline = computed(

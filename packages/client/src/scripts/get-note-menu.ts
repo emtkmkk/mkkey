@@ -458,562 +458,304 @@ export function getNoteMenu(props: {
 			noteId: appearNote.id,
 		});
 
-		if (defaultStore.state.shortNoteMenu) {
+		const shortMode = defaultStore.state.shortNoteMenu;
 
-			menu = [
-				...(props.currentClipPage?.value.userId === $i.id
-					? [
-							{
-								icon: "ph-minus-circle ph-bold ph-lg",
-								text: i18n.ts.unclip,
-								danger: true,
-								action: unclip,
-							},
-							null,
-						]
-					: []),
-				...(hideToolbarNormalReply(appearNote)
-					? [getNormalReplyMenuItem()]
-					: []),
-				defaultStore.state.enabledAirReply &&
-				(appearNote.visibility !== "specified" ||
-					(!appearNote?.user.host && appearNote?.ccUserIdsCount))
-					? {
-							icon: "ph-paper-plane-tilt ph-bold ph-lg",
-							text: i18n.ts.airReply,
-							action: airReply,
-						}
-					: undefined,
-
-				defaultStore.state.firstPostButtonVisibilityForce &&
-				![
-					defaultStore.state.defaultNoteVisibility,
-					...(defaultStore.state.secondPostButton
-						? [defaultStore.state.secondPostVisibility]
-						: []),
-					...(defaultStore.state.thirdPostButton
-						? [defaultStore.state.thirdPostVisibility]
-						: []),
-					...(defaultStore.state.fourthPostButton
-						? [defaultStore.state.fourthPostVisibility]
-						: []),
-					...(defaultStore.state.fifthPostButton
-						? [defaultStore.state.fifthPostVisibility]
-						: []),
-				].includes("specified")
-					? {
-							icon: "ph-envelope-simple-open ph-bold ph-lg",
-							text: i18n.ts.directReply,
-							action: directReply,
-						}
-					: undefined,
-				{
-					icon: "ph-smiley ph-bold ph-lg",
-					text: i18n.ts.reaction,
-					action: showReactions,
-				},
-				{
-					type: "parent" as const,
-					text: i18n.ts.infoAndShare,
-					icon: "ph-share-network ph-bold ph-lg",
-					children: [
-						...(/[\*<>$`\[\]_~:\u001c\u001f\u11a3-\u11a7\u180e\u200b-\u200f\u2060\u3164\u034f\u202a-\u202e\u2061-\u2063]|\\\(|\\\)/.test(
-							(appearNote.cw ?? "") + (appearNote.text ?? ""),
-						) &&
-						!props.info?.value?.ready &&
-						!appearNote.deletedAt
-							? [
-									{
-										icon: "ph-clipboard-text ph-bold ph-lg",
-										text: i18n.ts.showSource,
-										action: showSource,
-									},
-								]
-							: ((appearNote.cw ?? "") + (appearNote.text ?? "")).length > 0 &&
-								!appearNote.deletedAt
-							? [
-									{
-										icon: "ph-clipboard-text ph-bold ph-lg",
-										text: i18n.ts.copyContent,
-										action: copyContent,
-									},
-								]
-							: []),
+		// 情報・共有系の項目（shortMode時は infoAndShare サブメニューに束ね、通常時はトップレベルに並べる）
+		const infoAndShareItems = [
+			...(/[\*<>$`\[\]_~:\u001c\u001f\u11a3-\u11a7\u180e\u200b-\u200f\u2060\u3164\u034f\u202a-\u202e\u2061-\u2063]|\\\(|\\\)/.test(
+				(appearNote.cw ?? "") + (appearNote.text ?? ""),
+			) &&
+			!props.info?.value?.ready &&
+			!appearNote.deletedAt
+				? [
 						{
-							icon: "ph-link-simple ph-bold ph-lg",
-							text: i18n.ts.copyLink,
-							action: copyLink,
+							icon: "ph-clipboard-text ph-bold ph-lg",
+							text: i18n.ts.showSource,
+							action: showSource,
 						},
-						appearNote.url || appearNote.uri
-							? {
-									icon: "ph-link ph-bold ph-lg",
-									text: i18n.ts.copyRemoteLink,
-									action: copyRemoteLink,
-								}
-							: undefined,
-						...(defaultStore.state.developer
-							? [
-									{
-										icon: "ph-file-code ph-bold ph-lg",
-										text: i18n.ts.showNote,
-										action: showNote,
-									},
-								]
-							: []),
-						appearNote.url || appearNote.uri
-							? {
-									icon: "ph-arrow-square-out ph-bold ph-lg",
-									text: i18n.ts.showOnRemote,
-									action: () => {
-										window.open(appearNote.url || appearNote.uri, "_blank");
-									},
-								}
-							: undefined,
-						shareAvailable() && !appearNote.deletedAt
-						? {
-								icon: "ph-share-network ph-bold ph-lg",
-								text: i18n.ts.share,
-								action: share,
-							}
-						: undefined,
-						instance.translatorAvailable &&
-						hasTranslatableText &&
-						!appearNote.deletedAt
-							? {
-									icon: "ph-translate ph-bold ph-lg",
-									text: i18n.ts.translate,
-									action: translate,
-								}
-							: undefined,
 					]
-				},
-				null,
-				defaultStore.state.postFormReferenceIds.includes(appearNote.id) ?  {
-					icon: "ph-stack-minus ph-bold ph-lg",
-					text: i18n.ts.removeReferences,
-					action: removeReferences,
-				} : {
-					icon: "ph-stack-plus ph-bold ph-lg",
-					text: i18n.ts.addReferences,
-					action: addReferences,
-				},
-				statePromise.then((state) =>
-					state?.isFavorited
-						? {
-								icon: "ph-bookmark-simple ph-bold ph-lg",
-								text: i18n.ts.unfavorite,
-								action: () => toggleFavorite(false),
-							}
-						: {
-								icon: "ph-bookmark-simple ph-bold ph-lg",
-								text: i18n.ts.favorite,
-								action: () => toggleFavorite(true),
-							},
-				),
-				{
-					icon: "ph-paperclip ph-bold ph-lg",
-					text: i18n.ts.clip,
-					action: () => clip(),
-				},
-				appearNote.userId !== $i.id && defaultStore.state.developer
-					? statePromise.then((state) =>
-							state.isWatching
-								? {
-										icon: "ph-eye-slash ph-bold ph-lg",
-										text: i18n.ts.unwatch,
-										action: () => toggleWatch(false),
-									}
-								: {
-										icon: "ph-eye ph-bold ph-lg",
-										text: i18n.ts.watch,
-										action: () => toggleWatch(true),
-									},
-						)
-					: undefined,
-				appearNote.userId === $i.id || defaultStore.state.developer ?
-				statePromise.then((state) =>
-					state.isMutedThread
-						? {
-								icon: "ph-speaker-x ph-bold ph-lg",
-								text: i18n.ts.unmuteThread,
-								action: () => toggleThreadMute(false),
-							}
-						: {
-								icon: "ph-speaker-x ph-bold ph-lg",
-								text: i18n.ts.muteThread,
-								action: () => toggleThreadMute(true),
-							},
-				) : undefined,
-				...(appearNote.userId === $i.id
-					? isPinnedNote
-						? [
-								{
-									icon: "ph-caret-double-up ph-bold ph-lg",
-									text: i18n.ts.upperPin,
-									action: () => togglePin(true),
-								},
-								{
-									icon: "ph-push-pin ph-bold ph-lg",
-									text: i18n.ts.unpin,
-									action: () => togglePin(false),
-								},
-							]
-						: [
-								{
-									icon: "ph-push-pin ph-bold ph-lg",
-									text: i18n.ts.pin,
-									action: () => togglePin(true),
-								},
-							]
-					: []),
-				/*
-			...($i.isModerator || $i.isAdmin ? [
-				null,
-				{
-					icon: 'ph-megaphone-simple ph-bold ph-lg',
-					text: i18n.ts.promote,
-					action: promote
-				}]
-				: []
-			),*/
-				...(appearNote.userId !== $i.id
-					? [
-							null,
-							{
-								icon: "ph-warning-circle ph-bold ph-lg",
-								text: i18n.ts.reportAbuse,
-								action: () => {
-									const u =
-										appearNote.url ||
-										appearNote.uri ||
-										`${url}/notes/${appearNote.id}`;
-									os.popup(
-										defineAsyncComponent(
-											() => import("@/components/MkAbuseReportWindow.vue"),
-										),
-										{
-											user: appearNote.user,
-											initialComment: `Note: ${u}\n-----\n`,
-										},
-										{},
-										"closed",
-									);
-								},
-							},
-						]
-					: []),
-				...((appearNote.userId === $i.id || $i.isModerator || $i.isAdmin) &&
-				!appearNote.deletedAt
-					? [
-							null,
-							appearNote.userId === $i.id
-								? {
-										icon: "ph-eraser ph-bold ph-lg",
-										text: i18n.ts.deleteAndEdit,
-										action: delEdit,
-									}
-								: undefined,
-							{
-								icon: "ph-trash ph-bold ph-lg",
-								text: i18n.ts.delete,
-								danger: true,
-								action: del,
-							},
-						]
-					: []),
-				...((appearNote.userId === $i.id || $i.isModerator || $i.isAdmin) &&
-				appearNote.deletedAt &&
-				!(appearNote.localOnly && appearNote.channelId) &&
-				!(
-					appearNote.lastSendActivityAt &&
-					Date.now() < new Date(appearNote.lastSendActivityAt).valueOf() + 1000 * 60 * 30
-				)
-					? [
-							null,
-							{
-								icon: "ph-trash ph-bold ph-lg",
-								text: i18n.ts.deleteActivity,
-								danger: true,
-								action: delActivity,
-							},
-						]
-					: []),
-			].filter((x) => x !== undefined);
-		} else {
+				: ((appearNote.cw ?? "") + (appearNote.text ?? "")).length > 0 &&
+					!appearNote.deletedAt
+				? [
+						{
+							icon: "ph-clipboard-text ph-bold ph-lg",
+							text: i18n.ts.copyContent,
+							action: copyContent,
+						},
+					]
+				: []),
+			{
+				icon: "ph-link-simple ph-bold ph-lg",
+				text: i18n.ts.copyLink,
+				action: copyLink,
+			},
+			appearNote.url || appearNote.uri
+				? {
+						icon: "ph-link ph-bold ph-lg",
+						text: i18n.ts.copyRemoteLink,
+						action: copyRemoteLink,
+					}
+				: undefined,
+			...(defaultStore.state.developer
+				? [
+						{
+							icon: "ph-file-code ph-bold ph-lg",
+							text: i18n.ts.showNote,
+							action: showNote,
+						},
+					]
+				: []),
+			appearNote.url || appearNote.uri
+				? {
+						icon: "ph-arrow-square-out ph-bold ph-lg",
+						text: i18n.ts.showOnRemote,
+						action: () => {
+							window.open(appearNote.url || appearNote.uri, "_blank");
+						},
+					}
+				: undefined,
+			shareAvailable() && !appearNote.deletedAt
+				? {
+						icon: "ph-share-network ph-bold ph-lg",
+						text: i18n.ts.share,
+						action: share,
+					}
+				: undefined,
+			instance.translatorAvailable &&
+			hasTranslatableText &&
+			!appearNote.deletedAt
+				? {
+						icon: "ph-translate ph-bold ph-lg",
+						text: i18n.ts.translate,
+						action: translate,
+					}
+				: undefined,
+		];
 
-			menu = [
-				...(props.currentClipPage?.value.userId === $i.id
-					? [
-							{
-								icon: "ph-minus-circle ph-bold ph-lg",
-								text: i18n.ts.unclip,
-								danger: true,
-								action: unclip,
-							},
-							null,
-						]
-					: []),
-				...(hideToolbarNormalReply(appearNote)
-					? [getNormalReplyMenuItem()]
-					: []),
-				defaultStore.state.enabledAirReply &&
-				(appearNote.visibility !== "specified" ||
-					(!appearNote?.user.host && appearNote?.ccUserIdsCount))
-					? {
-							icon: "ph-paper-plane-tilt ph-bold ph-lg",
-							text: i18n.ts.airReply,
-							action: airReply,
-						}
-					: undefined,
+		// NOTE: ウォッチ/スレッドミュートの表示条件は shortMode と通常メニューで元々異なっており、
+		// 意図的な仕様として維持する（統一しない）。
+		const canToggleWatch = shortMode
+			? appearNote.userId !== $i.id && defaultStore.state.developer
+			: appearNote.userId !== $i.id;
+		const canToggleThreadMute = shortMode
+			? appearNote.userId === $i.id || defaultStore.state.developer
+			: true;
 
-				defaultStore.state.firstPostButtonVisibilityForce &&
-				![
-					defaultStore.state.defaultNoteVisibility,
-					...(defaultStore.state.secondPostButton
-						? [defaultStore.state.secondPostVisibility]
-						: []),
-					...(defaultStore.state.thirdPostButton
-						? [defaultStore.state.thirdPostVisibility]
-						: []),
-					...(defaultStore.state.fourthPostButton
-						? [defaultStore.state.fourthPostVisibility]
-						: []),
-					...(defaultStore.state.fifthPostButton
-						? [defaultStore.state.fifthPostVisibility]
-						: []),
-				].includes("specified")
-					? {
-							icon: "ph-envelope-simple-open ph-bold ph-lg",
-							text: i18n.ts.directReply,
-							action: directReply,
-						}
-					: undefined,
-				{
-					icon: "ph-smiley ph-bold ph-lg",
-					text: i18n.ts.reaction,
-					action: showReactions,
-				},
-				...(/[\*<>$`\[\]_~:\u001c\u001f\u11a3-\u11a7\u180e\u200b-\u200f\u2060\u3164\u034f\u202a-\u202e\u2061-\u2063]|\\\(|\\\)/.test(
-					(appearNote.cw ?? "") + (appearNote.text ?? ""),
-				) &&
-				!props.info?.value?.ready &&
-				!appearNote.deletedAt
-					? [
-							{
-								icon: "ph-clipboard-text ph-bold ph-lg",
-								text: i18n.ts.showSource,
-								action: showSource,
-							},
-						]
-					: ((appearNote.cw ?? "") + (appearNote.text ?? "")).length > 0 &&
-						!appearNote.deletedAt
-					? [
-							{
-								icon: "ph-clipboard-text ph-bold ph-lg",
-								text: i18n.ts.copyContent,
-								action: copyContent,
-							},
-						]
+		menu = [
+			...(props.currentClipPage?.value.userId === $i.id
+				? [
+						{
+							icon: "ph-minus-circle ph-bold ph-lg",
+							text: i18n.ts.unclip,
+							danger: true,
+							action: unclip,
+						},
+						null,
+					]
+				: []),
+			...(hideToolbarNormalReply(appearNote)
+				? [getNormalReplyMenuItem()]
+				: []),
+			defaultStore.state.enabledAirReply &&
+			(appearNote.visibility !== "specified" ||
+				(!appearNote?.user.host && appearNote?.ccUserIdsCount))
+				? {
+						icon: "ph-paper-plane-tilt ph-bold ph-lg",
+						text: i18n.ts.airReply,
+						action: airReply,
+					}
+				: undefined,
+
+			defaultStore.state.firstPostButtonVisibilityForce &&
+			![
+				defaultStore.state.defaultNoteVisibility,
+				...(defaultStore.state.secondPostButton
+					? [defaultStore.state.secondPostVisibility]
 					: []),
-				{
-					icon: "ph-link-simple ph-bold ph-lg",
-					text: i18n.ts.copyLink,
-					action: copyLink,
-				},
-				appearNote.url || appearNote.uri
-					? {
-							icon: "ph-link ph-bold ph-lg",
-							text: i18n.ts.copyRemoteLink,
-							action: copyRemoteLink,
-						}
-					: undefined,
-				...(defaultStore.state.developer
-					? [
-							{
-								icon: "ph-file-code ph-bold ph-lg",
-								text: i18n.ts.showNote,
-								action: showNote,
-							},
-						]
+				...(defaultStore.state.thirdPostButton
+					? [defaultStore.state.thirdPostVisibility]
 					: []),
-				appearNote.url || appearNote.uri
-					? {
-							icon: "ph-arrow-square-out ph-bold ph-lg",
-							text: i18n.ts.showOnRemote,
-							action: () => {
-								window.open(appearNote.url || appearNote.uri, "_blank");
-							},
-						}
-					: undefined,
-				shareAvailable() && !appearNote.deletedAt
-					? {
+				...(defaultStore.state.fourthPostButton
+					? [defaultStore.state.fourthPostVisibility]
+					: []),
+				...(defaultStore.state.fifthPostButton
+					? [defaultStore.state.fifthPostVisibility]
+					: []),
+			].includes("specified")
+				? {
+						icon: "ph-envelope-simple-open ph-bold ph-lg",
+						text: i18n.ts.directReply,
+						action: directReply,
+					}
+				: undefined,
+			{
+				icon: "ph-smiley ph-bold ph-lg",
+				text: i18n.ts.reaction,
+				action: showReactions,
+			},
+			...(shortMode
+				? [
+						{
+							type: "parent" as const,
+							text: i18n.ts.infoAndShare,
 							icon: "ph-share-network ph-bold ph-lg",
-							text: i18n.ts.share,
-							action: share,
-						}
-					: undefined,
-				instance.translatorAvailable &&
-				hasTranslatableText &&
-				!appearNote.deletedAt
+							children: infoAndShareItems,
+						},
+					]
+				: infoAndShareItems),
+			null,
+			defaultStore.state.postFormReferenceIds.includes(appearNote.id) ?  {
+				icon: "ph-stack-minus ph-bold ph-lg",
+				text: i18n.ts.removeReferences,
+				action: removeReferences,
+			} : {
+				icon: "ph-stack-plus ph-bold ph-lg",
+				text: i18n.ts.addReferences,
+				action: addReferences,
+			},
+			statePromise.then((state) =>
+				state?.isFavorited
 					? {
-							icon: "ph-translate ph-bold ph-lg",
-							text: i18n.ts.translate,
-							action: translate,
+							icon: "ph-bookmark-simple ph-bold ph-lg",
+							text: i18n.ts.unfavorite,
+							action: () => toggleFavorite(false),
 						}
-					: undefined,
-				null,
-				defaultStore.state.postFormReferenceIds.includes(appearNote.id) ?  {
-					icon: "ph-stack-minus ph-bold ph-lg",
-					text: i18n.ts.removeReferences,
-					action: removeReferences,
-				} : {
-					icon: "ph-stack-plus ph-bold ph-lg",
-					text: i18n.ts.addReferences,
-					action: addReferences,
-				},
-				statePromise.then((state) =>
-					state?.isFavorited
-						? {
-								icon: "ph-bookmark-simple ph-bold ph-lg",
-								text: i18n.ts.unfavorite,
-								action: () => toggleFavorite(false),
-							}
-						: {
-								icon: "ph-bookmark-simple ph-bold ph-lg",
-								text: i18n.ts.favorite,
-								action: () => toggleFavorite(true),
+					: {
+							icon: "ph-bookmark-simple ph-bold ph-lg",
+							text: i18n.ts.favorite,
+							action: () => toggleFavorite(true),
+						},
+			),
+			{
+				icon: "ph-paperclip ph-bold ph-lg",
+				text: i18n.ts.clip,
+				action: () => clip(),
+			},
+			canToggleWatch
+				? statePromise.then((state) =>
+						state.isWatching
+							? {
+									icon: "ph-eye-slash ph-bold ph-lg",
+									text: i18n.ts.unwatch,
+									action: () => toggleWatch(false),
+								}
+							: {
+									icon: "ph-eye ph-bold ph-lg",
+									text: i18n.ts.watch,
+									action: () => toggleWatch(true),
+								},
+					)
+				: undefined,
+			canToggleThreadMute
+				? statePromise.then((state) =>
+						state.isMutedThread
+							? {
+									icon: "ph-speaker-x ph-bold ph-lg",
+									text: i18n.ts.unmuteThread,
+									action: () => toggleThreadMute(false),
+								}
+							: {
+									icon: "ph-speaker-x ph-bold ph-lg",
+									text: i18n.ts.muteThread,
+									action: () => toggleThreadMute(true),
+								},
+					)
+				: undefined,
+			...(appearNote.userId === $i.id
+				? isPinnedNote
+					? [
+							{
+								icon: "ph-caret-double-up ph-bold ph-lg",
+								text: i18n.ts.upperPin,
+								action: () => togglePin(true),
 							},
-				),
-				{
-					icon: "ph-paperclip ph-bold ph-lg",
-					text: i18n.ts.clip,
-					action: () => clip(),
-				},
-				appearNote.userId !== $i.id
-					? statePromise.then((state) =>
-							state.isWatching
-								? {
-										icon: "ph-eye-slash ph-bold ph-lg",
-										text: i18n.ts.unwatch,
-										action: () => toggleWatch(false),
-									}
-								: {
-										icon: "ph-eye ph-bold ph-lg",
-										text: i18n.ts.watch,
-										action: () => toggleWatch(true),
+							{
+								icon: "ph-push-pin ph-bold ph-lg",
+								text: i18n.ts.unpin,
+								action: () => togglePin(false),
+							},
+						]
+					: [
+							{
+								icon: "ph-push-pin ph-bold ph-lg",
+								text: i18n.ts.pin,
+								action: () => togglePin(true),
+							},
+						]
+				: []),
+			/*
+		...($i.isModerator || $i.isAdmin ? [
+			null,
+			{
+				icon: 'ph-megaphone-simple ph-bold ph-lg',
+				text: i18n.ts.promote,
+				action: promote
+			}]
+			: []
+		),*/
+			...(appearNote.userId !== $i.id
+				? [
+						null,
+						{
+							icon: "ph-warning-circle ph-bold ph-lg",
+							text: i18n.ts.reportAbuse,
+							action: () => {
+								const u =
+									appearNote.url ||
+									appearNote.uri ||
+									`${url}/notes/${appearNote.id}`;
+								os.popup(
+									defineAsyncComponent(
+										() => import("@/components/MkAbuseReportWindow.vue"),
+									),
+									{
+										user: appearNote.user,
+										initialComment: `Note: ${u}\n-----\n`,
 									},
-						)
-					: undefined,
-				statePromise.then((state) =>
-					state.isMutedThread
-						? {
-								icon: "ph-speaker-x ph-bold ph-lg",
-								text: i18n.ts.unmuteThread,
-								action: () => toggleThreadMute(false),
-							}
-						: {
-								icon: "ph-speaker-x ph-bold ph-lg",
-								text: i18n.ts.muteThread,
-								action: () => toggleThreadMute(true),
+									{},
+									"closed",
+								);
 							},
-				),
-				...(appearNote.userId === $i.id
-					? isPinnedNote
-						? [
-								{
-									icon: "ph-caret-double-up ph-bold ph-lg",
-									text: i18n.ts.upperPin,
-									action: () => togglePin(true),
-								},
-								{
-									icon: "ph-push-pin ph-bold ph-lg",
-									text: i18n.ts.unpin,
-									action: () => togglePin(false),
-								},
-							]
-						: [
-								{
-									icon: "ph-push-pin ph-bold ph-lg",
-									text: i18n.ts.pin,
-									action: () => togglePin(true),
-								},
-							]
-					: []),
-				/*
-			...($i.isModerator || $i.isAdmin ? [
-				null,
-				{
-					icon: 'ph-megaphone-simple ph-bold ph-lg',
-					text: i18n.ts.promote,
-					action: promote
-				}]
-				: []
-			),*/
-				...(appearNote.userId !== $i.id
-					? [
-							null,
-							{
-								icon: "ph-warning-circle ph-bold ph-lg",
-								text: i18n.ts.reportAbuse,
-								action: () => {
-									const u =
-										appearNote.url ||
-										appearNote.uri ||
-										`${url}/notes/${appearNote.id}`;
-									os.popup(
-										defineAsyncComponent(
-											() => import("@/components/MkAbuseReportWindow.vue"),
-										),
-										{
-											user: appearNote.user,
-											initialComment: `Note: ${u}\n-----\n`,
-										},
-										{},
-										"closed",
-									);
-								},
-							},
-						]
-					: []),
-				...((appearNote.userId === $i.id || $i.isModerator || $i.isAdmin) &&
-				!appearNote.deletedAt
-					? [
-							null,
-							appearNote.userId === $i.id
-								? {
-										icon: "ph-eraser ph-bold ph-lg",
-										text: i18n.ts.deleteAndEdit,
-										action: delEdit,
-									}
-								: undefined,
-							{
-								icon: "ph-trash ph-bold ph-lg",
-								text: i18n.ts.delete,
-								danger: true,
-								action: del,
-							},
-						]
-					: []),
-				...((appearNote.userId === $i.id || $i.isModerator || $i.isAdmin) &&
-				appearNote.deletedAt &&
-				!(appearNote.localOnly && appearNote.channelId) &&
-				!(
-					appearNote.lastSendActivityAt &&
-					Date.now() < new Date(appearNote.lastSendActivityAt).valueOf() + 1000 * 60 * 30
-				)
-					? [
-							null,
-							{
-								icon: "ph-trash ph-bold ph-lg",
-								text: i18n.ts.deleteActivity,
-								danger: true,
-								action: delActivity,
-							},
-						]
-					: []),
-			].filter((x) => x !== undefined);
-		}
-
+						},
+					]
+				: []),
+			...((appearNote.userId === $i.id || $i.isModerator || $i.isAdmin) &&
+			!appearNote.deletedAt
+				? [
+						null,
+						appearNote.userId === $i.id
+							? {
+									icon: "ph-eraser ph-bold ph-lg",
+									text: i18n.ts.deleteAndEdit,
+									action: delEdit,
+								}
+							: undefined,
+						{
+							icon: "ph-trash ph-bold ph-lg",
+							text: i18n.ts.delete,
+							danger: true,
+							action: del,
+						},
+					]
+				: []),
+			...((appearNote.userId === $i.id || $i.isModerator || $i.isAdmin) &&
+			appearNote.deletedAt &&
+			!(appearNote.localOnly && appearNote.channelId) &&
+			!(
+				appearNote.lastSendActivityAt &&
+				Date.now() < new Date(appearNote.lastSendActivityAt).valueOf() + 1000 * 60 * 30
+			)
+				? [
+						null,
+						{
+							icon: "ph-trash ph-bold ph-lg",
+							text: i18n.ts.deleteActivity,
+							danger: true,
+							action: delActivity,
+						},
+					]
+				: []),
+		].filter((x) => x !== undefined);
 	} else {
 		menu = [
 			{

@@ -322,22 +322,14 @@ import { definePageMetadata } from "@/scripts/page-metadata";
 import { defaultStore, postFormActions } from "@/store";
 import { instance } from "@/instance";
 import { unisonReload } from "@/scripts/unison-reload";
-import { deviceKind } from "@/scripts/device-kind";
+import { useIsMobile } from "@/scripts/use-is-mobile";
 
 const DESKTOP_THRESHOLD = 1100;
-const MOBILE_THRESHOLD = 500;
 const isNowPlayingSupported =
 	typeof navigator !== "undefined" && "mediaSession" in navigator;
 
-// デスクトップでウィンドウを狭くしたときモバイルUIが表示されて欲しいことはあるので deviceKind === 'desktop' の判定は行わない
 const isDesktop = ref(window.innerWidth >= DESKTOP_THRESHOLD);
-const isMobile = ref(
-        deviceKind === "smartphone" || window.innerWidth <= MOBILE_THRESHOLD
-);
-window.addEventListener("resize", () => {
-        isMobile.value =
-                deviceKind === "smartphone" || window.innerWidth <= MOBILE_THRESHOLD;
-});
+const isMobile = useIsMobile();
 
 const developer = computed(defaultStore.makeGetterSetter("developer"));
 const showMkkeySettingTips = computed(

@@ -9,6 +9,24 @@ export type Muted = {
 
 const NotMuted = { muted: false, matched: [] };
 
+// 正規表現ミュートは同じパターンがノート描画のたびに繰り返し評価されるため、コンパイル結果をキャッシュする
+const regexpMuteCache = new Map<string, RegExp | null>();
+
+function getCachedMuteRegExp(mutePattern: string, pattern: string, flags: string): RegExp | null {
+	const cached = regexpMuteCache.get(mutePattern);
+	if (cached !== undefined) return cached;
+
+	let compiled: RegExp | null;
+	try {
+		compiled = new RegExp(pattern, flags);
+	} catch {
+		// This should never happen due to input sanitisation.
+		compiled = null;
+	}
+	regexpMuteCache.set(mutePattern, compiled);
+	return compiled;
+}
+
 function checkWordMute(
 	note: NoteLike,
 	mutedWords: Array<string | string[]>,
@@ -79,13 +97,13 @@ function checkWordMute(
 				continue;
 			}
 
-			try {
-				if (new RegExp(regexp[1], regexp[2]).test(text)) {
-					result.muted = true;
-					result.matched.push(mutePattern);
-				}
-			} catch (err) {
-				// This should never happen due to input sanitisation.
+			const compiledRegexp = getCachedMuteRegExp(mutePattern, regexp[1], regexp[2]);
+			// NOTE: キャッシュしたインスタンスを使い回すため、g/yフラグ付きでも
+			// 呼び出しごとに lastIndex を必ずリセットしてから判定する
+			if (compiledRegexp) compiledRegexp.lastIndex = 0;
+			if (compiledRegexp?.test(text)) {
+				result.muted = true;
+				result.matched.push(mutePattern);
 			}
 		}
 	}

@@ -1,6 +1,6 @@
 <template>
 	<button
-		v-if="count > 0 || ['🅰️', '🅱️'].includes(reaction)"
+		v-if="count > 0 || GOLBEZA_TOURNAMENT_REACTION_SLOTS.includes(reaction)"
 		ref="buttonRef"
 		v-ripple="canToggle && !defaultStore.state.showReactionMenu"
 		class="hkzvhatu _button"
@@ -45,6 +45,7 @@ import { i18n } from "@/i18n";
 import { defaultStore } from "@/store";
 import { openReactionMenu_ } from "@/scripts/reaction-menu";
 import * as sound from "@/scripts/sound.js";
+import { GOLBEZA_TOURNAMENT_REACTION_SLOTS } from "@/scripts/golbeza-tournament-reaction-gimmick";
 
 const props = defineProps<{
 	reaction: string;

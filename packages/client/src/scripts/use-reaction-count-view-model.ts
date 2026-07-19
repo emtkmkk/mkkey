@@ -3,6 +3,7 @@ import type { MaybeRefOrGetter } from "vue";
 import type * as misskey from "calckey-js";
 import { instance } from "@/instance";
 import {
+	getVisibleReactions,
 	getVisibleReactionsTotal,
 	normalizeReactionName,
 } from "@/scripts/reaction-utils";
@@ -34,13 +35,15 @@ export const useReactionCountViewModel = (
 	);
 
 	const defaultReactionCount = computed(() => {
+		// NOTE: 生の note.reactions を直接見ると、リアクションミュートやホスト表記の
+		// マージ処理（getVisibleReactions）を経ていないため、totalReactions / チップ表示と
+		// 数字が食い違うことがあった。同じ集計元から算出するよう統一する。
 		let count = 0;
 		const note = resolveMaybeRefOrGetter(options.note);
-		if (note.reactions) {
-			for (const reaction of Object.keys(note.reactions)) {
-				if (normalizeReactionName(reaction) === instance.defaultReaction) {
-					count += note.reactions[reaction];
-				}
+		const visibleReactions = getVisibleReactions(note);
+		for (const reaction of Object.keys(visibleReactions)) {
+			if (normalizeReactionName(reaction) === instance.defaultReaction) {
+				count += visibleReactions[reaction];
 			}
 		}
 		return count;
@@ -85,19 +88,12 @@ export const useReactionCountViewModel = (
 			: reactionCountToShow.value
 	);
 
-	const countForReactionPickerButton = computed(() =>
-		!resolveMaybeRefOrGetter(options.showStarButtonNoEmoji) &&
-		useSplitReactionCounts.value
-			? defaultReactionCount.value
-			: countForPickerButton.value
-	);
+	// NOTE: 「★非表示かつsplit扱い」は到達不能（split成立には常に showStarButtonNoEmoji が必要。
+	// picker/undo同時表示のケースも非multiでは排他のため、片方だけでsplitすることはない）。
+	// そのため countForPickerButton と常に同値であり、ここでは分岐を持たない。
+	const countForReactionPickerButton = computed(() => countForPickerButton.value);
 
-	const countForUndoReactionButton = computed(() =>
-		!resolveMaybeRefOrGetter(options.showStarButtonNoEmoji) &&
-		useSplitReactionCounts.value
-			? nonDefaultReactionCount.value
-			: countForPickerButton.value
-	);
+	const countForUndoReactionButton = computed(() => countForPickerButton.value);
 
 	const canShowReactionCount = computed(
 		() =>

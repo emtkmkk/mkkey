@@ -910,6 +910,31 @@ type AwaitType<T> = T extends Promise<infer U>
 	: T;
 let openingEmojiPicker: AwaitType<ReturnType<typeof popup>> | null = null;
 let activeTextarea: HTMLTextAreaElement | HTMLInputElement | null = null;
+
+/**
+ * 絵文字挿入先として扱ってよい要素か（`data-prevent-emoji-insert` 付きは除外）。
+ *
+ * @internal
+ */
+function isEmojiInsertTarget(
+	el: EventTarget | null,
+): el is HTMLTextAreaElement | HTMLInputElement {
+	return (
+		el instanceof HTMLElement &&
+		(el.tagName === "TEXTAREA" || el.tagName === "INPUT") &&
+		(el as HTMLElement).dataset.preventEmojiInsert == null
+	);
+}
+
+// NOTE: 要素ごとに focus リスナーを貼ると、ピッカーを開くたびに増え続けて解除されない
+// （MutationObserver は disconnect されるが、個々の focus リスナーは残り続ける）。
+// focusin は bubble するため、document に一度だけ委譲リスナーを張ればよい。
+document.addEventListener("focusin", (ev) => {
+	if (isEmojiInsertTarget(ev.target)) {
+		activeTextarea = ev.target;
+	}
+});
+
 export async function openEmojiPicker(
 	src?: HTMLElement,
 	opts,
@@ -918,38 +943,6 @@ export async function openEmojiPicker(
 	if (openingEmojiPicker) return;
 
 	activeTextarea = initialTextarea;
-
-	const textareas = document.querySelectorAll("textarea, input");
-	for (const textarea of Array.from(textareas)) {
-		textarea.addEventListener("focus", () => {
-			activeTextarea = textarea;
-		});
-	}
-
-	const observer = new MutationObserver((records) => {
-		for (const record of records) {
-			for (const node of Array.from(record.addedNodes).filter(
-				(node) => node instanceof HTMLElement,
-			) as HTMLElement[]) {
-				const textareas = node.querySelectorAll("textarea, input");
-				for (const textarea of Array.from(textareas).filter(
-					(textarea) => textarea.dataset.preventEmojiInsert == null,
-				)) {
-					if (document.activeElement === textarea) activeTextarea = textarea;
-					textarea.addEventListener("focus", () => {
-						activeTextarea = textarea;
-					});
-				}
-			}
-		}
-	});
-
-	observer.observe(document.body, {
-		childList: true,
-		subtree: true,
-		attributes: false,
-		characterData: false,
-	});
 
 	openingEmojiPicker = await popup(
 		defineAsyncComponent(() => import("@/components/MkEmojiPickerDialog.vue")),
@@ -967,7 +960,6 @@ export async function openEmojiPicker(
 			closed: () => {
 				openingEmojiPicker!.dispose();
 				openingEmojiPicker = null;
-				observer.disconnect();
 			},
 		},
 	);

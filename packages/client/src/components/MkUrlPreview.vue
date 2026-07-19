@@ -230,7 +230,7 @@
 	  ></iframe>
 	</div>
 	<div
-	  v-else
+	  v-else-if="!failed"
 	  v-size="{ max: [400, 350] }"
 	  class="mk-url-preview"
 	  :class="{ legacyStyle: useLegacyStyle }"
@@ -476,6 +476,9 @@ function truncateByGrapheme(
 }
 
   let fetching = $ref(true);
+  // 取得失敗（サーバが url 無しの error 応答を返した場合等）。
+  // NOTE: 失敗時に空のプレビュー枠を出さないため、テンプレート側で全体を非表示にする。
+  let failed = $ref(false);
   let title = $ref<string | null>(null);
   let description = $ref<string | null>(null);
   let thumbnail = $ref<string | null>(null);
@@ -581,6 +584,7 @@ const fetchUrlData = async () => {
   const requestLang = normalizedLang;
 
   // 状態の初期化
+  failed = false;
   isSteam = false;
   isAmazon = false;
   steamAgeLimit = null;
@@ -618,6 +622,9 @@ const fetchUrlData = async () => {
 	  );
 	  const info = await response.json();
 	  if (info.url == null) {
+	    // サーバ側で取得失敗（レートリミット・anti-bot・ネガティブキャッシュ等）。
+	    // 空のカードを出さず、従来どおり何も表示しない。
+	    failed = true;
 	    fetching = false;
 	    return;
 	  }
@@ -699,6 +706,7 @@ const fetchUrlData = async () => {
 	  fetching = false;
 	} catch (error) {
 	  console.error("URLデータの取得中にエラーが発生しました:", error);
+	  failed = true;
 	  fetching = false;
 	}
   };

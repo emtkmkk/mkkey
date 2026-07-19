@@ -128,7 +128,7 @@
 						:parentId="appearNote.parentId"
 						:option="option"
 						@push="(e) => router.push(notePage(e))"
-						@focusfooter="footerEl.focus()"
+						@focusfooter="footerRef?.focus()"
 						@changeShowContent="(v) => (showContent = v)"
 					></MkSubNoteContent>
 					<div v-if="info" class="translation">
@@ -192,133 +192,20 @@
 						<MkTime :time="appearNote.createdAt" mode="absolute" />
 					</MkA>
 				</div>
-				<footer ref="footerEl" class="footer" @click.stop tabindex="-1">
-					<XReactionsViewer
-						v-if="enableEmojiReactions || detailedView"
-						v-show="showContent"
-						ref="reactionsViewer"
-						:note="appearNote"
-						:multi="multiReaction"
-						:allow-default-reaction="!isStarButtonHandlesDefault"
-					/>
-					<button
-						v-if="referenceIds && referenceIds.length"
-						v-tooltip.bottom="i18n.ts.referencesAttached"
-						class="button _button"
-						:class= "{reacted: referenceIds?.includes(appearNote.id)}"
-						@click="toggleReference()"
-					>
-						<i class="ph-stack ph-bold ph-lg"></i>
-                                        </button>
-                                        <button
-						v-if="showToolbarAirReplyForNote(appearNote)"
-						v-tooltip.bottom="i18n.ts.airReply"
-						class="button _button"
-						@click="airReply()"
-					>
-						<i class="ph-paper-plane-tilt ph-bold ph-lg"></i>
-						<template
-							v-if="
-								hideToolbarNormalReply(appearNote) &&
-								appearNote.repliesCount > 0
-							"
-						>
-							<p class="count">{{ appearNote.repliesCount }}</p>
-						</template>
-					</button>
-					<button
-						v-if="!hideToolbarNormalReply(appearNote)"
-						v-tooltip.bottom="i18n.ts.reply"
-						class="button _button"
-						@click="reply(false, $event)"
-					>
-						<i class="ph-arrow-u-up-left ph-bold ph-lg"></i>
-						<template v-if="appearNote.repliesCount > 0">
-							<p class="count">{{ appearNote.repliesCount }}</p>
-						</template>
-					</button>
-					<XRenoteButton
-						ref="renoteButton"
-						class="button"
-						:note="developerRenote ? note : appearNote"
-						:count="appearNote.renoteCount"
-					/>
-                                       <XStarButtonNoEmoji
-                                               v-if="showStarButtonNoEmoji"
-                                               ref="starButtonNoEmojiRef"
-                                               class="button"
-                                               :note="appearNote"
-                                               :count="reactionCountViewModel.showStarCount ? reactionCountViewModel.countForStarButton : 0"
-                                               :reacted="isDefaultReactionReacted"
-                                               :hasPickerButton="showReactionPickerButton"
-                                               :isReactionListVisible="isReactionListVisible"
-                                       />
-                                       <button
-                                               v-if="showReactionPickerButton"
-                                               :title="
-                                                       multiReaction
-                                                               ? (appearNote.myReactions?.length ?? 0) +
-                                                                 ' / ' +
-                                                                 maxReactions
-								: ''
-						"
-						ref="reactionPickerButtonRef"
-						v-tooltip.bottom="
-							i18n.ts.reaction +
-							(multiReaction
-								? ' (' +
-								  (appearNote.myReactions?.length ?? 0) +
-								  ' / ' +
-								  maxReactions +
-								  ')'
-								: '')
-						"
-						class="button _button"
-						:class="{
-							unsupported:
-								appearNote.user.instance
-									?.maxReactionsPerAccount === 0,
-						}"
-                                               @click="react()"
-                                       >
-                                               <!-- multiReaction のときだけ上限到達アイコンを表示する -->
-                                               <i
-                                                       v-if="isMaxReacted"
-                                                       class="ph-prohibit ph-bold ph-lg"
-                                               ></i>
-                                               <i
-                                                       v-else-if="multiReaction"
-                                                       class="ph-smiley-wink ph-bold ph-lg"
-                                               ></i>
-                                               <i v-else class="ph-smiley ph-bold ph-lg"></i>
-						<template v-if="reactionCountViewModel.showReactionPickerCount">
-							<p class="count">{{ reactionCountViewModel.countForReactionPickerButton }}</p>
-						</template>
-                                       </button>
-                                       <button
-                                               v-if="showUndoReactionButton"
-                                               ref="undoReactionButtonRef"
-                                               class="button _button"
-                                               @click="undoReact(appearNote)"
-                                       >
-                                               <i class="ph-minus ph-bold ph-lg" style="color: var(--accent);"></i>
-						<template v-if="reactionCountViewModel.showUndoReactionCount && showUndoReactionButton">
-							<p class="count">{{ reactionCountViewModel.countForUndoReactionButton }}</p>
-						</template>
-                                       </button>
-					<XQuoteButton
-						class="button"
-						:note="developerQuote ? note : appearNote"
-					/>
-					<button
-						ref="menuButton"
-						v-tooltip.bottom="i18n.ts.more"
-						class="button _button"
-						@click="menu()"
-					>
-						<i class="ph-dots-three-outline ph-bold ph-lg"></i>
-					</button>
-				</footer>
+				<MkNoteFooter
+					ref="footerRef"
+					:note="note"
+					:appearNote="appearNote"
+					:pinned="pinned"
+					:detailedView="detailedView"
+					:showContent="showContent"
+					:translation="translation"
+					:translating="translating"
+					:info="info"
+					:isDeleted="isDeleted"
+					:focusNote="focus"
+					:blurNote="blur"
+				/>
 			</div>
 		</article>
 	</div>
@@ -432,26 +319,21 @@
 /**
  * @packageDocumentation
  *
- * ノート本体の表示とフッター操作を管理するコンポーネント。
+ * ノート本体の表示を管理するコンポーネント。
  *
  * @remarks
- * - ★ボタン、リアクション追加ボタン、取り消しボタンの表示条件をここで統合する。
- * - multi / 非 multi の違いにより、同じ isMaxReacted でも UI の意味が変わるため条件を分けて扱う。
- * - `hideToolbarNormalReply` で返信を隠す（誤爆防止対象、または常にメニュー返信）。空リプをツールバーに出しているときは返信数を空リプボタン直後へ出し、返信ボタン非表示でも件数が見えるようにする。引用別ボタンは `effectiveSeparateRenoteQuoteForNote` で実効オフにしうる。
+ * - フッター（返信・RT・★・リアクション追加/取消・引用・メニュー）は `MkNoteFooter.vue` に
+ *   実装が集約されている。本コンポーネントは `footerRef` 経由で操作を委譲するだけ。
+ * - キーボードショートカット・右クリックメニューも同様に `footerRef` へ委譲する。
  *
  * @internal
  */
 import {
 	unref,
-	computed,
 	inject,
 	onMounted,
-	onUnmounted,
-	reactive,
 	ref,
 } from "vue";
-import * as mfm from "mfm-js";
-import type { Ref } from "vue";
 import type * as misskey from "calckey-js";
 import MkNoteSub from "@/components/MkNoteSub.vue";
 import MkSubNoteContent from "./MkSubNoteContent.vue";
@@ -460,39 +342,23 @@ import XNoteSimple from "@/components/MkNoteSimple.vue";
 import XMediaList from "@/components/MkMediaList.vue";
 import XCwButton from "@/components/MkCwButton.vue";
 import XPoll from "@/components/MkPoll.vue";
-import XRenoteButton from "@/components/MkRenoteButton.vue";
-import XReactionsViewer from "@/components/MkReactionsViewer.vue";
-import XUsersTooltip from "@/components/MkUsersTooltip.vue";
-import XStarButtonNoEmoji from "@/components/MkStarButtonNoEmoji.vue";
-import XQuoteButton from "@/components/MkQuoteButton.vue";
+import MkNoteFooter from "@/components/MkNoteFooter.vue";
 import MkUrlPreview from "@/components/MkUrlPreview.vue";
 import MkVisibility from "@/components/MkVisibility.vue";
-import { pleaseLogin } from "@/scripts/please-login";
 import { focusPrev, focusNext } from "@/scripts/focus";
 import { getWordSoftMute } from "@/scripts/check-word-mute";
 import { useRouter } from "@/router";
 import { userPage } from "@/filters/user";
 import * as os from "@/os";
 import { defaultStore, noteViewInterruptors } from "@/store";
-import { instance } from "@/instance";
-import { reactionPicker } from "@/scripts/reaction-picker";
 import { $i } from "@/account";
 import { i18n } from "@/i18n";
-import { getNoteMenu } from "@/scripts/get-note-menu";
 import { useNoteCapture } from "@/scripts/use-note-capture";
-import { useTooltip } from "@/scripts/use-tooltip";
-import { useReactionCountViewModel } from "@/scripts/use-reaction-count-view-model";
 import { notePage } from "@/filters/note";
 import { deepClone } from "@/scripts/clone";
 import { getNoteSummary } from "@/scripts/get-note-summary";
 import copyToClipboard from "@/scripts/copy-to-clipboard";
-import * as sound from "@/scripts/sound.js";
-import { normalizeReactionName } from "@/scripts/reaction-utils";
-import {
-	hideToolbarNormalReply,
-	showToolbarAirReplyForNote,
-} from "@/scripts/stranger-air-reply-toolbar";
-import { openReplyWithChoice } from "@/scripts/reply-note";
+import { hideToolbarNormalReply } from "@/scripts/stranger-air-reply-toolbar";
 
 const router = useRouter();
 
@@ -540,11 +406,8 @@ const isRenote =
 const isQuote = note.renoteId != null && !isRenote;
 
 const el = ref<HTMLElement>();
-const footerEl = ref<HTMLElement>();
-const menuButton = ref<HTMLElement>();
-const renoteButton = ref<InstanceType<typeof XRenoteButton>>();
+const footerRef = ref<InstanceType<typeof MkNoteFooter>>();
 const renoteTime = ref<HTMLElement>();
-const reactButton = ref<HTMLElement>();
 let appearNote = $computed(() =>
 	isRenote ? (note.renote as misskey.entities.Note) : note
 );
@@ -555,14 +418,6 @@ let replyNote = $computed(() =>
 	note.reply != null ? (note.reply as misskey.entities.Note) : note
 );
 const isMyRenote = $i && $i.id === note.userId;
-const multiReaction =
-	$i &&
-	$i.patron &&
-	(!appearNote.user.host ||
-		appearNote.user.instance?.maxReactionsPerAccount > 1);
-const maxReactions = multiReaction
-	? Math.min(appearNote.user.instance?.maxReactionsPerAccount ?? 3, 3)
-	: 1;
 const showContent = ref(false);
 const isDeleted = ref(false);
 const muted = ref(
@@ -571,18 +426,6 @@ const muted = ref(
 const translation = ref(null);
 const translating = ref(false);
 const info = ref(null);
-const enableEmojiReactions = defaultStore.state.enableEmojiReactions;
-const showEmojiButton = defaultStore.state.showEmojiButton;
-const isDetailedView = $computed(() => props.detailedView ?? false);
-const isReactionListVisible = $computed(() =>
-	(enableEmojiReactions || isDetailedView) && showContent.value
-);
-
-const isStarButtonHandlesDefault = $computed(() => {
-	return defaultStore.state.favButtonReaction === "";
-});
-const favButtonReactionIsFavorite =
-        defaultStore.state.favButtonReaction === "favorite";
 const hiddenSoftMutes = defaultStore.state.hiddenSoftMutes;
 const muteExcludeReplyQuote = defaultStore.state.muteExcludeReplyQuote;
 const muteExcludeNotification = defaultStore.state.muteExcludeNotification;
@@ -590,123 +433,10 @@ const isExcludeReplyQuote =
 	muteExcludeReplyQuote &&
 	(unref(muted)?.what === "reply" || unref(muted)?.what === "renote");
 const isExcludeNotification = muteExcludeNotification && props.notification;
-const isCanAction = $i && (!$i.isSilenced || appearNote.user.isFollowed);
-/** 警告ユーザは canWarnedViewerReact が明示 true のときのみリアクション可（自分のノートは常に可） */
-const isCanReact = $computed(() => {
-	if (!isCanAction) return false;
-	if (!$i?.isModerationWarning) return true;
-	if (appearNote.userId === $i.id) return true;
-	return appearNote.canWarnedViewerReact === true;
-});
 const excludeMute = isExcludeReplyQuote || isExcludeNotification;
-const developerRenote = defaultStore.state.developerRenote;
-const developerQuote = defaultStore.state.developerQuote;
-const developerNoteMenu = defaultStore.state.developerNoteMenu;
-const referenceIds = $computed(
-	defaultStore.makeGetterSetter("postFormReferenceIds")
-);
 const recentRenoteId = $computed(
 	defaultStore.makeGetterSetter("recentRenoteId")
 );
-
-const isMaxReacted = $computed(() =>
-	multiReaction
-		? appearNote.myReactions?.length >= maxReactions
-		: appearNote.myReaction != null
-);
-const isfavButtonReacted = $computed(() => {
-	const favButtonReaction = multiReaction
-		? defaultStore.state.woozyMode === true
-			? "🥴"
-			: defaultStore.state.favButtonReaction === "custom"
-			? defaultStore.state.favButtonReactionCustom
-			: defaultStore.state.favButtonReaction === ""
-			? ":iine_fav:"
-			: defaultStore.state.favButtonReaction
-		: undefined;
-	return multiReaction
-		? appearNote.myReactions
-				?.map((x) => x.replace(/@[^:\s]?(:?)$/, "$1"))
-				.includes(favButtonReaction)
-		: false;
-});
-
-
-const isDefaultReactionReacted = $computed(() => {
-	if (
-		appearNote.myReaction &&
-		normalizeReactionName(appearNote.myReaction) === instance.defaultReaction
-	) {
-		return true;
-	}
-	// multiユーザーは myReaction が先頭反応のみを示すため、myReactions側も必ず確認する
-	if (appearNote.myReactions) {
-		return appearNote.myReactions.some(
-			(r) => normalizeReactionName(r) === instance.defaultReaction
-		);
-	}
-	return false;
-});
-
-/**
- * ★ボタン（絵文字なし）の表示可否を返す。
- *
- * @remarks
- * - 通常はリアクション未到達かつ操作可能な場合に表示する。
- * - デフォルトリアクションを★ボタンで扱う設定時は、既に既定リアクション済みでも表示を維持する。
- *
- * @internal
- */
-const showStarButtonNoEmoji = $computed(() => {
-	const canShow =
-		((!isMaxReacted && !isfavButtonReacted && isCanReact) ||
-			favButtonReactionIsFavorite ||
-			(isStarButtonHandlesDefault && isDefaultReactionReacted));
-	return canShow && defaultStore.state.favButtonReaction !== "hidden";
-});
-
-/**
- * リアクションピッカーボタンの表示可否を返す。
- *
- * @remarks
- * - 非 multi の場合、既にリアクション済みなら取り消しボタンを優先するため非表示にする。
- * - multi の場合は上限到達時でもボタンを表示し、上限状態のアイコン表示に任せる。
- *
- * @internal
- */
-const showReactionPickerButton = $computed(
-	() =>
-		(enableEmojiReactions || isDetailedView || showEmojiButton) &&
-		isCanReact &&
-		(multiReaction || !isMaxReacted)
-);
-
-/**
- * リアクション取り消しボタンの表示可否を返す。
- *
- * @remarks
- * 非 multi ユーザで既存リアクションがある場合のみ表示する。
- *
- * @internal
- */
-const showUndoReactionButton = $computed(
-	() =>
-		(enableEmojiReactions || isDetailedView || showEmojiButton) &&
-		appearNote.myReaction != null &&
-		!multiReaction &&
-		isCanReact
-);
-
-const {
-	reactionCountViewModel,
-} = useReactionCountViewModel({
-	note: $$(appearNote),
-	isReactionListVisible: $$(isReactionListVisible),
-	showStarButtonNoEmoji: $$(showStarButtonNoEmoji),
-	showReactionPickerButton: $$(showReactionPickerButton),
-	showUndoReactionButton: $$(showUndoReactionButton),
-	isStarButtonHandlesDefault: $$(isStarButtonHandlesDefault),
-});
 
 const isReactedRenote = $computed(
 	() =>
@@ -716,59 +446,73 @@ const isReactedRenote = $computed(
 		appearNote.myReaction
 );
 
-const isRecentRenote = $computed(() => {
+/**
+ * 「最近表示したRT」として畳むかどうかを判定し、必要なら recentRenoteId へ登録する。
+ *
+ * @remarks
+ * 以前は `$computed`（reactiveなgetter）として実装されており、依存先の
+ * `recentRenoteId` 自身への書き込みが再評価を誘発しうる構造だった。結果として
+ * ノートが再描画されるたびに recentRenoteId（pizzaxストア）への書き込み＝
+ * idb書き込み＋BroadcastChannel送信が発生していた。
+ * この判定・記録はノート表示時に一度行えば十分（`summaryRenote` も一度きりの
+ * seedとして使われるだけで、以降はリアクティブに追従しない）ため、
+ * 通常の関数として一度だけ実行する形に変更する。
+ *
+ * @internal
+ */
+function computeIsRecentRenote(): boolean {
 	// 設定がオンでリノート時に判定
-	if (!unref(muted)?.muted && !isReactedRenote && isRenote) {
-		//一時間以上前に確認したリノートを除外
-		const now = Date.now();
-		//無意味に書き込むことを回避
-		if (recentRenoteId.some((x) => now - x.date >= 60 * 60 * 1000))
-			recentRenoteId = recentRenoteId.filter(
-				(x) => now - x.date < 60 * 60 * 1000
-			);
-		const targetRecentRenoteId = recentRenoteId.filter(
-			(x) => x.id === appearNote.id
+	if (unref(muted)?.muted || isReactedRenote || !isRenote) return false;
+
+	//一時間以上前に確認したリノートを除外（無意味な書き込みを避けるため変化があるときだけ書く）
+	const now = Date.now();
+	if (recentRenoteId.some((x) => now - x.date >= 60 * 60 * 1000)) {
+		recentRenoteId = recentRenoteId.filter(
+			(x) => now - x.date < 60 * 60 * 1000
 		);
-		//設定がオフならここで処理終了
-		if (!defaultStore.state.recentRenoteHidden) return false;
-		//最近見たリノートリストに登録されているか
-		if (targetRecentRenoteId?.length !== 0) {
-			if (targetRecentRenoteId.some((x) => x.fid === note.id)) {
-				//登録時のノートと同じ場合は畳まない。falseを返す
-				return false;
-			} else {
-				//リノート先が同じでノートが異なる場合は畳む。trueを返す
-				//ただし自分のノートの場合は表示する
-				if (isMyRenote) {
-					//タイムスタンプはそのままで自分のノートを登録
-					recentRenoteId = recentRenoteId.filter(
-						(x) => x.id !== appearNote.id
-					);
-					recentRenoteId = [
-						...recentRenoteId,
-						{
-							id: appearNote.id,
-							fid: note.id,
-							date: targetRecentRenoteId[0]?.date,
-						},
-					];
-					return false;
-				} else {
-					return true;
-				}
-			}
-		} else {
-			//されていない場合はリノートを除外したリスト+現在の双方のノートidを保存した後、falseを返す
+	}
+
+	//設定がオフならここで処理終了
+	if (!defaultStore.state.recentRenoteHidden) return false;
+
+	//最近見たリノートリストに登録されているか
+	const targetRecentRenoteId = recentRenoteId.filter(
+		(x) => x.id === appearNote.id
+	);
+	if (targetRecentRenoteId.length !== 0) {
+		if (targetRecentRenoteId.some((x) => x.fid === note.id)) {
+			//登録時のノートと同じ場合は畳まない
+			return false;
+		}
+		//リノート先が同じでノートが異なる場合は畳む
+		//ただし自分のノートの場合は表示する
+		if (isMyRenote) {
+			//タイムスタンプはそのままで自分のノートを登録
+			recentRenoteId = recentRenoteId.filter(
+				(x) => x.id !== appearNote.id
+			);
 			recentRenoteId = [
 				...recentRenoteId,
-				{ id: appearNote.id, fid: note.id, date: now },
+				{
+					id: appearNote.id,
+					fid: note.id,
+					date: targetRecentRenoteId[0]?.date,
+				},
 			];
 			return false;
 		}
-	} else {
-		return false;
+		return true;
 	}
-});
+
+	//されていない場合はリノートを除外したリスト+現在の双方のノートidを保存した後、falseを返す
+	recentRenoteId = [
+		...recentRenoteId,
+		{ id: appearNote.id, fid: note.id, date: now },
+	];
+	return false;
+}
+
+const isRecentRenote = computeIsRecentRenote();
 
 const summaryRenote = ref(isReactedRenote || isRecentRenote);
 
@@ -776,14 +520,14 @@ const keymap = {
 	r: () => {
 		// 誤爆防止で返信ボタンを隠している間は R キーでも返信を開かない（メニューから意図的に操作する）
 		if (hideToolbarNormalReply(appearNote)) return;
-		reply(true);
+		footerRef.value?.reply(true);
 	},
-	"e|a|plus": () => react(true),
-	q: () => renoteButton.value.renote(true),
+	"e|a|plus": () => footerRef.value?.react(true),
+	q: () => footerRef.value?.renote(true),
 	"up|k": focusBefore,
 	"down|j": focusAfter,
 	esc: blur,
-	"m|o": () => menu(true),
+	"m|o": () => footerRef.value?.menu(true),
 	s: () => (showContent.value = !showContent.value),
 };
 
@@ -792,166 +536,6 @@ useNoteCapture({
 	note: $$(appearNote),
 	isDeletedRef: isDeleted,
 });
-
-function reply(viaKeyboard = false, ev?: MouseEvent): void {
-	pleaseLogin();
-	openReplyWithChoice(appearNote, {
-		viaKeyboard,
-		animation: !viaKeyboard,
-		src: ev?.currentTarget ?? (viaKeyboard ? footerEl.value : undefined),
-		onOpened: focus,
-	});
-}
-
-function airReply(viaKeyboard = false): void {
-	const v =
-		appearNote.user.host != null && appearNote.visibility === "public"
-			? "home"
-			: appearNote.visibility;
-	os.post({
-		airReply: appearNote,
-		initialVisibility: v,
-		// 空リプのローカル限定は、元ノートがローカル限定のときだけ ON（ローカル相手の公開ノートでは既定に合わせる）
-		initialLocalOnly: appearNote.localOnly === true,
-		key: appearNote.id,
-		animation: !viaKeyboard,
-	}).then(() => {
-		focus();
-	});
-}
-
-function react(viaKeyboard = false): void {
-	if (isMaxReacted) return;
-	pleaseLogin();
-	if (
-		defaultStore.state.mastodonOnetapFavorite &&
-		appearNote.user.instance?.maxReactionsPerAccount === 0
-	) {
-		os.api("notes/reactions/create", {
-			noteId: appearNote.id,
-			reaction: "",
-		}).then(() => {
-			sound.play("reaction");
-		});
-	} else {
-		blur();
-		reactionPicker.show(
-			reactionPickerButtonRef.value,
-			(reaction) => {
-				os.api("notes/reactions/create", {
-					noteId: appearNote.id,
-					reaction: reaction,
-				}).then(() => {
-					sound.play("reaction");
-				});
-			},
-			() => {
-				focus();
-			}
-		);
-	}
-}
-
-async function undoReact(note): void {
-	const oldReaction = note.myReaction;
-	if (!oldReaction) return;
-
-	const confirm = await os.confirm({
-		type: "warning",
-		text: i18n.ts.cancelReactionConfirm,
-	});
-	if (confirm.canceled) return;
-
-	os.api("notes/reactions/delete", {
-		noteId: note.id,
-		reaction: oldReaction,
-	});
-}
-
-const starButtonNoEmojiRef = ref<HTMLElement>();
-const reactionPickerButtonRef = ref<HTMLElement>();
-const undoReactionButtonRef = ref<HTMLElement>();
-
-// ピッカーボタン用のtooltip
-useTooltip(
-	reactionPickerButtonRef,
-	async (showing) => {
-		const tooltipQuery = reactionCountViewModel.value.tooltipQuery;
-		if (tooltipQuery.shouldSkip) {
-			return;
-		}
-
-		const reactions = await os.api("notes/reactions", {
-			noteId: appearNote.id,
-			...(tooltipQuery.type ? { type: tooltipQuery.type } : {}),
-			...(tooltipQuery.excludeType
-				? { excludeType: tooltipQuery.excludeType }
-				: {}),
-			limit: 11,
-		});
-
-		const users = reactions.map((x) => x.user);
-		if (users.length < 1) return;
-
-		const count = tooltipQuery.count;
-
-		os.popup(
-			XUsersTooltip,
-			{
-				showing,
-				users,
-				count,
-				targetElement: reactionPickerButtonRef.value,
-			},
-			{},
-			"closed"
-		);
-	},
-	500
-);
-
-// 取り消しボタン用のtooltip
-useTooltip(
-	undoReactionButtonRef,
-	async (showing) => {
-		const tooltipQuery = reactionCountViewModel.value.tooltipQuery;
-		if (tooltipQuery.shouldSkip) {
-			return;
-		}
-
-		const reactions = await os.api("notes/reactions", {
-			noteId: appearNote.id,
-			...(tooltipQuery.type ? { type: tooltipQuery.type } : {}),
-			...(tooltipQuery.excludeType
-				? { excludeType: tooltipQuery.excludeType }
-				: {}),
-			limit: 11,
-		});
-
-		const users = reactions.map((x) => x.user);
-		if (users.length < 1) return;
-
-		const count = tooltipQuery.count;
-
-		os.popup(
-			XUsersTooltip,
-			{
-				showing,
-				users,
-				count,
-				targetElement: undoReactionButtonRef.value,
-			},
-			{},
-			"closed"
-		);
-	},
-	500
-);
-
-const currentClipPage = inject<Ref<misskey.entities.Clip> | null>(
-	"currentClipPage",
-	null
-);
 
 function onContextmenu(ev: MouseEvent): void {
 	const isLink = (el: HTMLElement) => {
@@ -965,41 +549,10 @@ function onContextmenu(ev: MouseEvent): void {
 
 	if (defaultStore.state.doContextMenu === "reactionPicker") {
 		ev.preventDefault();
-		react();
+		footerRef.value?.react();
 	} else if (defaultStore.state.doContextMenu === "contextMenu") {
-		os.contextMenu(
-			getNoteMenu({
-				note: note,
-				translating,
-				translation,
-				menuButton,
-				isDeleted,
-				currentClipPage,
-				info,
-				pinned: props.pinned,
-			}),
-			ev
-		).then(focus);
+		footerRef.value?.openContextMenu(ev);
 	}
-}
-
-function menu(viaKeyboard = false): void {
-	os.popupMenu(
-		getNoteMenu({
-			note: note,
-			translating,
-			translation,
-			menuButton,
-			isDeleted,
-			currentClipPage,
-			info,
-			pinned: props.pinned,
-		}),
-		menuButton.value,
-		{
-			viaKeyboard,
-		}
-	).then(focus);
 }
 
 function showRenoteMenu(viaKeyboard = false): void {
@@ -1068,20 +621,12 @@ function readPromo() {
 	isDeleted.value = true;
 }
 
-function toggleReference() {
-	if (referenceIds?.includes(appearNote.id)) {
-		referenceIds = referenceIds.filter((x) => x !== appearNote.id)
-	} else {
-		referenceIds = Array.from(new Set([...referenceIds, appearNote.id]))
-	}
-}
-
 // NOTE: MkNoteDetailed が詳細ページのホットキー・右クリックメニューを委譲するために利用する
 defineExpose({
-	reply,
-	react,
-	menu,
-	renote: (viaKeyboard = false) => renoteButton.value?.renote(viaKeyboard),
+	reply: (viaKeyboard = false) => footerRef.value?.reply(viaKeyboard),
+	react: (viaKeyboard = false) => footerRef.value?.react(viaKeyboard),
+	menu: (viaKeyboard = false) => footerRef.value?.menu(viaKeyboard),
+	renote: (viaKeyboard = false) => footerRef.value?.renote(viaKeyboard),
 	toggleShowContent: () => {
 		showContent.value = !showContent.value;
 	},
@@ -1289,47 +834,10 @@ defineExpose({
 				opacity: 0.7;
 				font-size: 0.9em;
 			}
-			> .footer {
-				position: relative;
-				z-index: 2;
-				display: flex;
-				flex-wrap: wrap;
-				pointer-events: none; // Allow clicking anything w/out pointer-events: all; to open post
+			// NOTE: footer 自体のスタイルは MkNoteFooter.vue（子コンポーネント）が持つ。
+			// メインタイムライン用の上余白のみ、ここから :deep() で上乗せする。
+			:deep(.footer) {
 				margin-top: 0.4em;
-				> .button {
-					margin: 0;
-					padding: 0.5rem;
-					opacity: 0.7;
-					flex-grow: 1;
-					max-width: 3.5em;
-					width: max-content;
-					min-width: max-content;
-					pointer-events: all;
-					transition: opacity 0.2s;
-					&:first-of-type {
-						margin-left: -0.5em;
-					}
-					&:hover {
-						color: var(--fgHighlighted);
-					}
-
-					> .count {
-						display: inline;
-						margin: 0 0 0 0.5rem;
-						opacity: 0.7;
-					}
-
-					&.reacted {
-						color: var(--accent);
-					}
-
-					&.referenced {
-						color: var(--accent);
-					}
-				}
-				> .unsupported {
-					opacity: 0.15 !important;
-				}
 			}
 		}
 	}

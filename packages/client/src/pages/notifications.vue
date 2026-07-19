@@ -93,7 +93,7 @@ import XNotes from "@/components/MkNotes.vue";
 import * as os from "@/os";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
-import { deviceKind } from "@/scripts/device-kind";
+import { useIsMobile } from "@/scripts/use-is-mobile";
 import { defaultStore } from "@/store";
 import { getConfigurableNotificationTypes } from "@/scripts/experimental-notification-types";
 import "swiper/scss";
@@ -131,14 +131,7 @@ os.api("notifications/mark-all-as-read");
 
 const notificationsComponent: InstanceType<typeof XNotifications | typeof XNotes> = $ref();
 
-const MOBILE_THRESHOLD = 500;
-const isMobile = ref(
-	deviceKind === "smartphone" || window.innerWidth <= MOBILE_THRESHOLD
-);
-window.addEventListener("resize", () => {
-	isMobile.value =
-		deviceKind === "smartphone" || window.innerWidth <= MOBILE_THRESHOLD;
-});
+const isMobile = useIsMobile();
 
 const mentionsPagination = {
 	endpoint: "notes/mentions" as const,

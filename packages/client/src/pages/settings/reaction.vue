@@ -823,21 +823,13 @@ import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { deepClone } from "@/scripts/clone";
 import { unisonReload } from "@/scripts/unison-reload";
-import { deviceKind } from "@/scripts/device-kind";
+import { useIsMobile } from "@/scripts/use-is-mobile";
 import { instance } from "@/instance";
 import { $i } from "@/account";
 import FormLink from "@/components/form/link.vue";
 import * as config from "@/config";
 
-const MOBILE_THRESHOLD = 500;
-
-const isMobile = $ref(
-	deviceKind === "smartphone" || window.innerWidth <= MOBILE_THRESHOLD
-);
-window.addEventListener("resize", () => {
-	isMobile =
-		deviceKind === "smartphone" || window.innerWidth <= MOBILE_THRESHOLD;
-});
+const isMobile = useIsMobile();
 
 const tab = $ref("reactions");
 

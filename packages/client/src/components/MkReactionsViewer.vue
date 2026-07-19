@@ -19,6 +19,7 @@ import { instance } from "@/instance";
 import { $i } from "@/account";
 import XReaction from "@/components/MkReactionsViewer.reaction.vue";
 import { getVisibleReactions, normalizeReactionName } from "@/scripts/reaction-utils";
+import { GOLBEZA_TOURNAMENT_REACTION_SLOTS } from "@/scripts/golbeza-tournament-reaction-gimmick";
 
 const props = defineProps<{
 	note: misskey.entities.Note;
@@ -28,7 +29,7 @@ const props = defineProps<{
 
 const reactions = computed(() => getVisibleReactions(props.note));
 
-let lastSortedReactions = ["🅰️", "🅱️"];
+let lastSortedReactions = [...GOLBEZA_TOURNAMENT_REACTION_SLOTS];
 
 const sortedReactions = computed(() => {
 	const arrayReactions = Object.keys(reactions.value)

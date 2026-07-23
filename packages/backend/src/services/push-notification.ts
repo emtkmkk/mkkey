@@ -13,7 +13,8 @@
  */
 import push from "web-push";
 import config from "@/config/index.js";
-import { PushMutings, SwSubscriptions } from "@/models/index.js";
+import { Mutings, SwSubscriptions } from "@/models/index.js";
+import { hasMuteScope } from "@/misc/mute-scope.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import {
 	getSwSubscriptionsByUserId,
@@ -535,12 +536,13 @@ export async function isNotifierPushMuted(
 	if (notifieeId === notifierId) return false;
 
 	try {
-		return await PushMutings.exist({
+		const muting = await Mutings.findOne({
 			where: {
 				muterId: notifieeId,
 				muteeId: notifierId,
 			},
 		});
+		return muting != null && hasMuteScope(muting.scope, "push");
 	} catch {
 		// NOTE: テーブル未作成・DB 障害時はプッシュを止めない（フェイルセーフ）
 		return false;

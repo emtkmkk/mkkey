@@ -136,14 +136,24 @@ export async function createNotification(
 				// 種別ミュート・手動既読は isRead=true。プッシュもアプリ内表示と同様に抑止する
 				if (fresh.isRead) return;
 
-				const deliver = await shouldDeliverDelayedNotification(
-					notifieeId,
-					data.notifierId,
-				);
-				if (!deliver) return;
-
-				await pushNotification(notifieeId, "notification", packed);
-				publishMainStream(notifieeId, "unreadNotification", packed);
+				const [deliverInApp, deliverPush] = await Promise.all([
+					shouldDeliverDelayedNotification(
+						notifieeId,
+						data.notifierId,
+						"notification",
+					),
+					shouldDeliverDelayedNotification(
+						notifieeId,
+						data.notifierId,
+						"push",
+					),
+				]);
+				if (deliverPush) {
+					await pushNotification(notifieeId, "notification", packed);
+				}
+				if (deliverInApp) {
+					publishMainStream(notifieeId, "unreadNotification", packed);
+				}
 			} catch (err) {
 				notificationLogger.error("delayed notification delivery failed", { err });
 			}

@@ -1,3 +1,10 @@
+/**
+ * @packageDocumentation
+ *
+ * ユーザー操作メニューと、範囲付きミュート設定フォームを組み立てる。
+ *
+ * @internal
+ */
 import * as Acct from "calckey-js/built/acct";
 import { defineAsyncComponent } from "vue";
 import { i18n } from "@/i18n";
@@ -11,6 +18,7 @@ import { Router } from "@/nirax";
 import * as config from "@/config";
 import { defaultStore } from "@/store";
 import { acct } from "@/filters/user";
+import { configureUserMute } from "@/scripts/mute-scope";
 
 export function getUserMenu(user, router: Router = mainRouter) {
 	const meId = $i ? $i.id : null;
@@ -62,97 +70,9 @@ export function getUserMenu(user, router: Router = mainRouter) {
 		});
 	}
 
-	async function toggleMute() {
-		if (user.isMuted) {
-			os.apiWithDialog("mute/delete", {
-				userId: user.id,
-			}).then(() => {
-				user.isMuted = false;
-			});
-		} else {
-			const { canceled, result: period } = await os.select({
-				title: i18n.ts.mutePeriod,
-				items: [
-					{
-						value: "indefinitely",
-						text: i18n.ts.indefinitely,
-					},
-					{
-						value: "tenMinutes",
-						text: i18n.ts.tenMinutes,
-					},
-					{
-						value: "oneHour",
-						text: i18n.ts.oneHour,
-					},
-					{
-						value: "oneDay",
-						text: i18n.ts.oneDay,
-					},
-					{
-						value: "oneWeek",
-						text: i18n.ts.oneWeek,
-					},
-				],
-				default: "indefinitely",
-			});
-			if (canceled) return;
-
-			const expiresAt =
-				period === "indefinitely"
-					? null
-					: period === "tenMinutes"
-					? Date.now() + 1000 * 60 * 10
-					: period === "oneHour"
-					? Date.now() + 1000 * 60 * 60
-					: period === "oneDay"
-					? Date.now() + 1000 * 60 * 60 * 24
-					: period === "oneWeek"
-					? Date.now() + 1000 * 60 * 60 * 24 * 7
-					: null;
-
-			os.apiWithDialog("mute/create", {
-				userId: user.id,
-				expiresAt,
-			}).then(() => {
-				user.isMuted = true;
-			});
-		}
-	}
-
-	async function toggleIgnore(): Promise<void> {
-		os.apiWithDialog(
-			user.isFollowBlocking
-				? "follow-blocking/delete"
-				: "follow-blocking/create",
-			{
-				userId: user.id,
-			},
-		).then(() => {
-			user.isFollowBlocking = !user.isFollowBlocking;
-		});
-	}
-
-	async function toggleRenoteMute(): Promise<void> {
-		os.apiWithDialog(
-			user.isRenoteMuted ? "renote-mute/delete" : "renote-mute/create",
-			{
-				userId: user.id,
-			},
-		).then(() => {
-			user.isRenoteMuted = !user.isRenoteMuted;
-		});
-	}
-
-	async function togglePushMute(): Promise<void> {
-		os.apiWithDialog(
-			user.isPushMuted ? "push-mute/delete" : "push-mute/create",
-			{
-				userId: user.id,
-			},
-		).then(() => {
-			user.isPushMuted = !user.isPushMuted;
-		});
+	async function configureMute(): Promise<void> {
+		const updated = await configureUserMute(user);
+		if (updated != null) Object.assign(user, updated);
 	}
 
 	async function addHiddenIconUserIds(): Promise<void> {
@@ -417,42 +337,18 @@ export function getUserMenu(user, router: Router = mainRouter) {
 					action: inviteGroup,
 			  }
 			: undefined,
-		null,
-		{
-			icon: user.isRenoteMuted
-				? "ph-eye ph-bold ph-lg"
-				: "ph-eye-slash ph-bold ph-lg",
-			text: user.isRenoteMuted ? i18n.ts.renoteUnmute : i18n.ts.renoteMute,
-			action: toggleRenoteMute,
-		},
-		{
-			icon: user.isPushMuted
-				? "ph-bell ph-bold ph-lg"
-				: "ph-bell-slash ph-bold ph-lg",
-			text: user.isPushMuted ? i18n.ts.unPushMute : i18n.ts.pushMute,
-			action: togglePushMute,
-		},
 	] as any;
 
 	if ($i && meId !== user.id) {
 		menu = menu.concat([
 			{
-				icon: user.isMuted
-					? "ph-eye ph-bold ph-lg"
-					: "ph-eye-slash ph-bold ph-lg",
-				text: user.isMuted ? i18n.ts.unmute : i18n.ts.mute,
+				icon:
+					(user.muteTypes?.length ?? 0) > 0
+						? "ph-sliders-horizontal ph-bold ph-lg"
+						: "ph-eye-slash ph-bold ph-lg",
+				text: i18n.ts.muteSettings,
 				hidden: user.isBlocking === true,
-				action: toggleMute,
-			},
-			{
-				icon: "ph-prohibit-inset ph-bold ph-lg",
-				text: user.isFollowBlocking
-					? i18n.ts.followUnblock
-					: i18n.ts.followBlock,
-				hidden:
-					user.isBlocking === true ||
-					(user.isFollowed && !user.isFollowBlocking),
-				action: toggleIgnore,
+				action: configureMute,
 			},
 			{
 				icon: "ph-prohibit ph-bold ph-lg",

@@ -1,6 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * 未投票のアンケート候補から、note範囲ミュート対象を除いて返す。
+ *
+ * @internal
+ */
 import { Brackets, In } from "typeorm";
 import { Polls, Mutings, Notes, PollVotes } from "@/models/index.js";
 import define from "../../../define.js";
+import { createMuteScopeCondition } from "@/misc/mute-scope.js";
 
 export const meta = {
 	tags: ["notes"],
@@ -55,7 +63,8 @@ export default define(meta, paramDef, async (ps, user) => {
 	//#region mute
 	const mutingQuery = Mutings.createQueryBuilder("muting")
 		.select("muting.muteeId")
-		.where("muting.muterId = :muterId", { muterId: user.id });
+		.where("muting.muterId = :muterId", { muterId: user.id })
+		.andWhere(createMuteScopeCondition("muting", "note"));
 
 	query.andWhere(`poll.userId NOT IN (${mutingQuery.getQuery()})`);
 

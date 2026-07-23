@@ -10,7 +10,8 @@
  * @see {@link define} エンドポイント登録
  * @internal
  */
-import { RenoteMutings } from "@/models/index.js";
+import { createMuteScopeCondition } from "@/misc/mute-scope.js";
+import { Mutings } from "@/models/index.js";
 import define from "../../define.js";
 import { makePaginationQuery } from "../../common/make-pagination-query.js";
 
@@ -47,12 +48,20 @@ export const paramDef = {
 // eslint-disable-next-line import/no-default-export
 export default define(meta, paramDef, async (ps, me) => {
 	const query = makePaginationQuery(
-		RenoteMutings.createQueryBuilder("muting"),
+		Mutings.createQueryBuilder("muting"),
 		ps.sinceId,
 		ps.untilId,
-	).andWhere("muting.muterId = :meId", { meId: me.id });
+	)
+		.andWhere("muting.muterId = :meId", { meId: me.id })
+		.andWhere(createMuteScopeCondition("muting", "renote"));
 
 	const mutings = await query.take(ps.limit).getMany();
+	const packed = await Mutings.packMany(mutings, me);
 
-	return await RenoteMutings.packMany(mutings, me);
+	return packed.map((muting) => ({
+		id: muting.id,
+		createdAt: muting.createdAt,
+		muteeId: muting.muteeId,
+		mutee: muting.mutee,
+	}));
 });

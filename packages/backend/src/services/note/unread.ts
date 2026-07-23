@@ -14,6 +14,7 @@ import type { User } from "@/models/entities/user.js";
 import { Mutings, NoteThreadMutings, NoteUnreads } from "@/models/index.js";
 import { genId } from "@/misc/gen-id.js";
 import { In } from "typeorm";
+import { hasMuteScope } from "@/misc/mute-scope.js";
 
 export type NoteUnreadCandidate = {
 	userId: User["id"];
@@ -39,7 +40,7 @@ export async function insertNoteUnreadBatch(
 	const [mutingRows, threadMuteRows] = await Promise.all([
 		Mutings.find({
 			where: { muterId: In(userIds), muteeId: note.userId },
-			select: ["muterId"],
+			select: ["muterId", "scope"],
 		}),
 		NoteThreadMutings.find({
 			where: {
@@ -49,7 +50,13 @@ export async function insertNoteUnreadBatch(
 			select: ["userId"],
 		}),
 	]);
-	const mutedSet = new Set(mutingRows.map((r) => r.muterId));
+	const muteType =
+		note.renoteId != null && note.text == null ? "renote" : "note";
+	const mutedSet = new Set(
+		mutingRows
+			.filter((muting) => hasMuteScope(muting.scope, muteType))
+			.map((muting) => muting.muterId),
+	);
 	const threadMutedSet = new Set(threadMuteRows.map((r) => r.userId));
 	const toInsert = candidates.filter(
 		(c) => !mutedSet.has(c.userId) && !threadMutedSet.has(c.userId),
@@ -95,13 +102,15 @@ export async function insertNoteUnread(
 ) {
 	//#region ミュートしているなら無視
 	// TODO: 現在の仕様ではChannelにミュートは適用されないのでよしなにケアする
-	const isMuted = await Mutings.exist({
+	const muting = await Mutings.findOne({
 		where: {
 			muterId: userId,
 			muteeId: note.userId,
 		},
 	});
-	if (isMuted) return;
+	const muteType =
+		note.renoteId != null && note.text == null ? "renote" : "note";
+	if (muting != null && hasMuteScope(muting.scope, muteType)) return;
 	//#endregion
 
 	// スレッドミュート

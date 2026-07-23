@@ -42,8 +42,20 @@ export default abstract class Channel {
 		return this.connection.muting;
 	}
 
+	protected get noteMuting() {
+		return this.connection.noteMuting;
+	}
+
 	protected get renoteMuting() {
 		return this.connection.renoteMuting;
+	}
+
+	protected get notificationMuting() {
+		return this.connection.notificationMuting;
+	}
+
+	protected get messageMuting() {
+		return this.connection.messageMuting;
 	}
 
 	protected get blocking() {

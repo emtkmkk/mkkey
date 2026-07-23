@@ -10,12 +10,13 @@
  * @see {@link define} エンドポイント登録
  * @internal
  */
-import { genId } from "@/misc/gen-id.js";
-import { PushMutings } from "@/models/index.js";
-import { PushMuting } from "@/models/entities/push-muting.js";
+import { hasMuteScope } from "@/misc/mute-scope.js";
+import { Mutings } from "@/models/index.js";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
 import { getUser } from "../../common/getters.js";
+import { addMutingScope } from "@/services/muting.js";
+import { publishUserEvent } from "@/services/stream.js";
 
 export const meta = {
 	tags: ["account"],
@@ -57,19 +58,15 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw e;
 	});
 
-	const exist = await PushMutings.findOneBy({
+	const exist = await Mutings.findOneBy({
 		muterId: muter.id,
 		muteeId: mutee.id,
 	});
 
-	if (exist != null) {
+	if (exist != null && hasMuteScope(exist.scope, "push")) {
 		throw new ApiError(meta.errors.alreadyMuting);
 	}
 
-	await PushMutings.insert({
-		id: genId(),
-		createdAt: new Date(),
-		muterId: muter.id,
-		muteeId: mutee.id,
-	} as PushMuting);
+	await addMutingScope(muter.id, mutee.id, "push", null);
+	publishUserEvent(user.id, "mute", mutee);
 });

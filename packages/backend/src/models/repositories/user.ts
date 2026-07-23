@@ -20,6 +20,12 @@ import type { Promiseable } from "@/prelude/await-all.js";
 import { awaitAll } from "@/prelude/await-all.js";
 import { populateEmojis } from "@/misc/populate-emojis.js";
 import {
+	decodeMuteScope,
+	hasMuteScope,
+	MUTE_SCOPE_BITS,
+	type MuteType,
+} from "@/misc/mute-scope.js";
+import {
 	ADMIN_USER_ID,
 	MB,
 	DEFAULT_DRIVE_SIZE,
@@ -55,8 +61,6 @@ import {
 	Instances,
 	MessagingMessages,
 	Mutings,
-	RenoteMutings,
-	PushMutings,
 	Notes,
 	NoteUnreads,
 	Notifications,
@@ -66,7 +70,6 @@ import {
 	UserProfiles,
 	UserSecurityKeys,
 	UserMemos,
-	FollowBlockings,
 	EmojiCustomCategories,
 } from "../index.js";
 import type { Instance } from "../entities/instance.js";
@@ -115,6 +118,8 @@ export type UserRelation = {
         isRenoteMuted: boolean;
         isPushMuted: boolean;
         isFollowBlocking: boolean;
+        muteTypes: MuteType[];
+        muteExpiresAt: string | null;
         isInviter: boolean;
 };
 
@@ -223,6 +228,8 @@ export const UserRepository = db.getRepository(User).extend({
                                 isRenoteMuted: false,
                                 isPushMuted: false,
                                 isFollowBlocking: false,
+                                muteTypes: [],
+                                muteExpiresAt: null,
                                 isInviter: false,
                         } as UserRelation;
                 }
@@ -271,6 +278,8 @@ export const UserRepository = db.getRepository(User).extend({
                                 isRenoteMuted: false,
                                 isPushMuted: false,
                                 isFollowBlocking: false,
+                                muteTypes: [],
+                                muteExpiresAt: null,
                                 isInviter: false,
                         });
                 }
@@ -283,9 +292,6 @@ export const UserRepository = db.getRepository(User).extend({
                         blockings,
                         blockedBy,
                         mutings,
-                        renoteMutings,
-                        pushMutings,
-                        followBlockings,
                         invitees,
                 ] = await Promise.all([
                         Followings.findBy({
@@ -315,18 +321,6 @@ export const UserRepository = db.getRepository(User).extend({
                         Mutings.findBy({
                                 muterId: meId,
                                 muteeId: In(uniqueTargetIds),
-                        }),
-                        RenoteMutings.findBy({
-                                muterId: meId,
-                                muteeId: In(uniqueTargetIds),
-                        }),
-                        PushMutings.findBy({
-                                muterId: meId,
-                                muteeId: In(uniqueTargetIds),
-                        }),
-                        FollowBlockings.findBy({
-                                blockerId: meId,
-                                blockeeId: In(uniqueTargetIds),
                         }),
                         (async () => {
                                 const idsToFetch = uniqueTargetIds.filter((id) => {
@@ -380,22 +374,15 @@ export const UserRepository = db.getRepository(User).extend({
 
                 for (const muting of mutings) {
                         const relation = relationsMap.get(muting.muteeId);
-                        if (relation) relation.isMuted = true;
-                }
-
-                for (const muting of renoteMutings) {
-                        const relation = relationsMap.get(muting.muteeId);
-                        if (relation) relation.isRenoteMuted = true;
-                }
-
-                for (const muting of pushMutings) {
-                        const relation = relationsMap.get(muting.muteeId);
-                        if (relation) relation.isPushMuted = true;
-                }
-
-                for (const followBlocking of followBlockings) {
-                        const relation = relationsMap.get(followBlocking.blockeeId);
-                        if (relation) relation.isFollowBlocking = true;
+                        if (relation) {
+                                relation.muteTypes = decodeMuteScope(muting.scope);
+                                relation.muteExpiresAt =
+                                        muting.expiresAt?.toISOString() ?? null;
+                                relation.isMuted = relation.muteTypes.includes("all");
+                                relation.isRenoteMuted = hasMuteScope(muting.scope, "renote");
+                                relation.isPushMuted = hasMuteScope(muting.scope, "push");
+                                relation.isFollowBlocking = hasMuteScope(muting.scope, "follow");
+                        }
                 }
 
                 for (const info of targetUserMap.values()) {
@@ -414,7 +401,9 @@ export const UserRepository = db.getRepository(User).extend({
         },
 
 	async getHasUnreadMessagingMessage(userId: User["id"]): Promise<boolean> {
-		const mute = await Mutings.findBy({ muterId: userId });
+		const mute = (await Mutings.findBy({ muterId: userId })).filter((muting) =>
+			hasMuteScope(muting.scope, "message"),
+		);
 
 		const [withUser, withGroups] = await Promise.all([
 			MessagingMessages.count({
@@ -513,9 +502,9 @@ export const UserRepository = db.getRepository(User).extend({
 	},
 
 	async getHasUnreadNotification(userId: User["id"]): Promise<boolean> {
-		const mute = await Mutings.findBy({
-			muterId: userId,
-		});
+		const mute = (await Mutings.findBy({ muterId: userId })).filter((muting) =>
+			hasMuteScope(muting.scope, "notification"),
+		);
 		const mutedUserIds = mute.map((m) => m.muteeId);
 
 		const count = await Notifications.count({
@@ -535,13 +524,13 @@ export const UserRepository = db.getRepository(User).extend({
 	async getHasPendingReceivedFollowRequest(
 		userId: User["id"],
 	): Promise<boolean> {
-		const followBlocking = await FollowBlockings.findBy({
-			blockerId: userId,
-		});
+		const followBlocking = (
+			await Mutings.findBy({ muterId: userId })
+		).filter((muting) => hasMuteScope(muting.scope, "follow"));
 
 		const count = await FollowRequests.countBy({
 			followeeId: userId,
-			followerId: Not(In(followBlocking.map((x) => x.blockeeId))),
+			followerId: Not(In(followBlocking.map((muting) => muting.muteeId))),
 		});
 
 		return count > 0;
@@ -663,9 +652,13 @@ export const UserRepository = db.getRepository(User).extend({
   (SELECT EXISTS(SELECT 1 FROM note_unread n WHERE n."userId" = $1 AND n."isMentioned" = true LIMIT 1)) AS "hasUnreadMentions",
   (SELECT (COUNT(*) > 0) FROM announcement a WHERE NOT EXISTS (SELECT 1 FROM announcement_read ar WHERE ar."userId" = $1 AND ar."announcementId" = a.id)) AS "hasUnreadAnnouncement",
   (SELECT EXISTS(SELECT 1 FROM note_unread nu WHERE nu."userId" = $1 AND nu."noteChannelId" IS NOT NULL AND nu."noteChannelId" IN (SELECT cf."followeeId" FROM channel_following cf WHERE cf."followerId" = $1) LIMIT 1)) AS "hasUnreadChannel",
-  (SELECT EXISTS(SELECT 1 FROM notification n WHERE n."notifieeId" = $1 AND n."isRead" = false AND NOT EXISTS (SELECT 1 FROM muting m WHERE m."muterId" = $1 AND m."muteeId" = n."notifierId") LIMIT 1)) AS "hasUnreadNotification",
-  (SELECT EXISTS(SELECT 1 FROM follow_request fr WHERE fr."followeeId" = $1 AND NOT EXISTS (SELECT 1 FROM follow_blocking fb WHERE fb."blockerId" = $1 AND fb."blockeeId" = fr."followerId") LIMIT 1)) AS "hasPendingReceivedFollowRequest"`,
-			[userId],
+  (SELECT EXISTS(SELECT 1 FROM notification n WHERE n."notifieeId" = $1 AND n."isRead" = false AND NOT EXISTS (SELECT 1 FROM muting m WHERE m."muterId" = $1 AND m."muteeId" = n."notifierId" AND (m."expiresAt" IS NULL OR m."expiresAt" > CURRENT_TIMESTAMP) AND (m."scope" & $2) <> 0) LIMIT 1)) AS "hasUnreadNotification",
+  (SELECT EXISTS(SELECT 1 FROM follow_request fr WHERE fr."followeeId" = $1 AND NOT EXISTS (SELECT 1 FROM muting m WHERE m."muterId" = $1 AND m."muteeId" = fr."followerId" AND (m."expiresAt" IS NULL OR m."expiresAt" > CURRENT_TIMESTAMP) AND (m."scope" & $3) <> 0) LIMIT 1)) AS "hasPendingReceivedFollowRequest"`,
+			[
+				userId,
+				MUTE_SCOPE_BITS.notification | MUTE_SCOPE_BITS.all,
+				MUTE_SCOPE_BITS.follow | MUTE_SCOPE_BITS.all,
+			],
 		);
 		const r = rows[0] as Record<string, unknown>;
 		return {
@@ -1233,6 +1226,8 @@ export const UserRepository = db.getRepository(User).extend({
 
 			...(opts.detail && isMe
 				? {
+						hideMutedAndBlockedUserReactions:
+							profile!.hideMutedAndBlockedUserReactions,
 						...(profile!.showWarnedUsersInPublicTimeline
 							? {
 									showWarnedUsersInPublicTimeline: true,
@@ -1325,31 +1320,15 @@ export const UserRepository = db.getRepository(User).extend({
 						isRenoteMuted: relation.isRenoteMuted,
 						isPushMuted: relation.isPushMuted,
 						isFollowBlocking: relation.isFollowBlocking,
+						muteTypes:
+							relation.muteTypes.length > 0
+								? relation.muteTypes
+								: undefined,
+						muteExpiresAt: relation.muteExpiresAt,
 						isInviter: relation.isInviter ? true : undefined,
 						followedMessage: relation.isFollowing && profile ? profile.followedMessage : undefined,
 				  }
 				: {}),
-			...(
-				meId && !relation && (opts.detail || opts.relation)
-				? {
-					isRenoteMuted: RenoteMutings.count({
-				where: {
-					muterId: meId,
-					muteeId: user.id,
-				},
-				take: 1,
-			}).then((n) => n > 0),
-					isPushMuted: PushMutings.count({
-				where: {
-					muterId: meId,
-					muteeId: user.id,
-				},
-				take: 1,
-			})
-				.then((n) => n > 0)
-				.catch(() => false),
-				} : {}
-			)
 		} as Promiseable<Packed<"User">> as Promiseable<
 			IsMeAndIsUserDetailed<ExpectsMe, D>
 		>;

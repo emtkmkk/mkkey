@@ -269,6 +269,18 @@ export class UserProfile {
 	public rejectMuteReaction: boolean;
 
 	/**
+	 * ミュート・双方向ブロック対象のリアクションを表示件数から差し引くか。
+	 *
+	 * @remarks
+	 * 実験的機能のため既定値はfalse。リアクション者一覧の非表示には影響せず、
+	 * ノート本体の集計値とストリーム更新だけを制御する。
+	 */
+	@Column('boolean', {
+		default: false,
+	})
+	public hideMutedAndBlockedUserReactions: boolean;
+
+	/**
 	 * 閲覧者として、公開TL系で警告ユーザのノートを含めるか（既定 false）。
 	 *
 	 * @remarks

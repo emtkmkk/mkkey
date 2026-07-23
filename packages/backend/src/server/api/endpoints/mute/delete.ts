@@ -15,6 +15,7 @@ import { ApiError } from "../../error.js";
 import { getUser } from "../../common/getters.js";
 import { Mutings } from "@/models/index.js";
 import { publishUserEvent } from "@/services/stream.js";
+import { deleteAllMutingScopes } from "@/services/muting.js";
 
 export const meta = {
 	tags: ["account"],
@@ -81,10 +82,8 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw new ApiError(meta.errors.notMuting);
 	}
 
-	// ミュートを削除する
-	await Mutings.delete({
-		id: exist.id,
-	});
+	// 従来の解除APIは範囲を指定しないため、利用者間の全ミュートを削除する。
+	await deleteAllMutingScopes(muter.id, mutee.id);
 
 	publishUserEvent(user.id, "unmute", mutee);
 });

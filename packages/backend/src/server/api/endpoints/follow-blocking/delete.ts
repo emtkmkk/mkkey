@@ -10,10 +10,13 @@
  * @see {@link define} エンドポイント登録
  * @internal
  */
-import { FollowBlockings } from "@/models/index.js";
+import { hasMuteScope } from "@/misc/mute-scope.js";
+import { Mutings } from "@/models/index.js";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
 import { getUser } from "../../common/getters.js";
+import { removeMutingScope } from "@/services/muting.js";
+import { publishUserEvent } from "@/services/stream.js";
 
 export const meta = {
 	tags: ["account"],
@@ -57,17 +60,15 @@ export default define(meta, paramDef, async (ps, user) => {
 	});
 
 	// ミュートしていないか確認する
-	const exist = await FollowBlockings.findOneBy({
-		blockerId: blocker.id,
-		blockeeId: blockee.id,
+	const exist = await Mutings.findOneBy({
+		muterId: blocker.id,
+		muteeId: blockee.id,
 	});
 
-	if (exist == null) {
+	if (exist == null || !hasMuteScope(exist.scope, "follow")) {
 		throw new ApiError(meta.errors.notMuting);
 	}
 
-	// ミュートを削除する
-	await FollowBlockings.delete({
-		id: exist.id,
-	});
+	const result = await removeMutingScope(blocker.id, blockee.id, "follow");
+	publishUserEvent(user.id, result.muting == null ? "unmute" : "mute", blockee);
 });

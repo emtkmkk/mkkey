@@ -21,6 +21,7 @@ import { aggregateNoteEmojis, prefetchEmojis } from "@/misc/populate-emojis.js";
 import { notificationTypes } from "@/types.js";
 import { db } from "@/db/postgre.js";
 import Logger from "@/services/logger.js";
+import { hasMuteScope } from "@/misc/mute-scope.js";
 
 const notificationPackLogger = new Logger("notification-pack");
 import {
@@ -30,7 +31,7 @@ import {
 	AccessTokens,
 	NoteReactions,
 	Antennas,
-	FollowBlockings,
+	Mutings,
 } from "../index.js";
 
 export const NotificationRepository = db.getRepository(Notification).extend({
@@ -62,11 +63,13 @@ export const NotificationRepository = db.getRepository(Notification).extend({
 			);
 
 			if (blockingSet == null) {
-				const followBlocking = await FollowBlockings.findBy({
-					blockerId: notification.notifieeId,
+				const followBlocking = await Mutings.findBy({
+					muterId: notification.notifieeId,
 				});
 				blockingSet = new Set(
-					followBlocking.map((x) => x.blockeeId),
+					followBlocking
+						.filter((muting) => hasMuteScope(muting.scope, "follow"))
+						.map((muting) => muting.muteeId),
 				);
 			}
 
@@ -283,8 +286,8 @@ export const NotificationRepository = db.getRepository(Notification).extend({
 
 		if (followRequestNotifieeMap.size > 0) {
 			const blockerIds = [...followRequestNotifieeMap.keys()];
-			const followBlockings = await FollowBlockings.findBy({
-				blockerId: In(blockerIds),
+			const followBlockings = await Mutings.findBy({
+				muterId: In(blockerIds),
 			});
 
 			for (const blockerId of blockerIds) {
@@ -292,14 +295,16 @@ export const NotificationRepository = db.getRepository(Notification).extend({
 			}
 
 			for (const blocking of followBlockings) {
-				let blockeeSet = followBlockingMap.get(blocking.blockerId);
+				if (!hasMuteScope(blocking.scope, "follow")) continue;
+
+				let blockeeSet = followBlockingMap.get(blocking.muterId);
 
 				if (blockeeSet == null) {
 					blockeeSet = new Set<User["id"]>();
-					followBlockingMap.set(blocking.blockerId, blockeeSet);
+					followBlockingMap.set(blocking.muterId, blockeeSet);
 				}
 
-				blockeeSet.add(blocking.blockeeId);
+				blockeeSet.add(blocking.muteeId);
 			}
 		}
 

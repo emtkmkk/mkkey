@@ -18,6 +18,7 @@ import { Muting } from "@/models/entities/muting.js";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
 import { getNote } from "../../common/getters.js";
+import { createMuteScopeCondition } from "@/misc/mute-scope.js";
 
 export const meta = {
 	tags: ["notes", "reactions"],
@@ -92,6 +93,9 @@ export default define(meta, paramDef, async (ps, user) => {
 			throw new ApiError(meta.errors.noSuchNote);
 		throw err;
 	});
+	if (note == null) {
+		throw new ApiError(meta.errors.noSuchNote);
+	}
 
 	let query = NoteReactions.createQueryBuilder("reaction").where(
 		"reaction.noteId = :noteId",
@@ -122,6 +126,7 @@ export default define(meta, paramDef, async (ps, user) => {
                         .from(Muting, "muting")
                         .where("muting.muterId = :viewerId", { viewerId: user.id })
                         .andWhere("muting.muteeId = reaction.userId")
+                        .andWhere(createMuteScopeCondition("muting", "reaction"))
                         .getQuery();
 
                 query.andWhere(`NOT EXISTS ${mutingExistsQuery}`);

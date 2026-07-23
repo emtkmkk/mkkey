@@ -34,7 +34,11 @@ export default class extends Channel {
 						)
 					)
 						return;
-					if (data.body.userId && this.muting.has(data.body.userId)) return;
+					if (
+						data.body.userId &&
+						this.notificationMuting.has(data.body.userId)
+					)
+						return;
 
 					break;
 				}
@@ -47,7 +51,16 @@ export default class extends Channel {
 					)
 						return;
 
-					if (this.muting.has(data.body.userId)) return;
+					if (this.notificationMuting.has(data.body.userId)) return;
+					break;
+				}
+				case "messagingMessage":
+				case "unreadMessagingMessage": {
+					if (
+						data.body.userId &&
+						this.messageMuting.has(data.body.userId)
+					)
+						return;
 					break;
 				}
 			}

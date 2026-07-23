@@ -10,12 +10,13 @@
  * @see {@link define} エンドポイント登録
  * @internal
  */
-import { genId } from "@/misc/gen-id.js";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
 import { getUser } from "../../common/getters.js";
-import { FollowBlocking } from "@/models/entities/follow-blocking.js";
-import { FollowBlockings } from "@/models/index.js";
+import { hasMuteScope } from "@/misc/mute-scope.js";
+import { Mutings } from "@/models/index.js";
+import { addMutingScope } from "@/services/muting.js";
+import { publishUserEvent } from "@/services/stream.js";
 
 export const meta = {
 	tags: ["account"],
@@ -59,20 +60,15 @@ export default define(meta, paramDef, async (ps, user) => {
 	});
 
 	// 既にミュート中か確認する
-	const exist = await FollowBlockings.findOneBy({
-		blockerId: blocker.id,
-		blockeeId: blockee.id,
+	const exist = await Mutings.findOneBy({
+		muterId: blocker.id,
+		muteeId: blockee.id,
 	});
 
-	if (exist != null) {
+	if (exist != null && hasMuteScope(exist.scope, "follow")) {
 		throw new ApiError(meta.errors.alreadyBlocking);
 	}
 
-	// ミュートを作成する
-	await FollowBlockings.insert({
-		id: genId(),
-		createdAt: new Date(),
-		blockerId: blocker.id,
-		blockeeId: blockee.id,
-	} as FollowBlocking);
+	await addMutingScope(blocker.id, blockee.id, "follow", null);
+	publishUserEvent(user.id, "mute", blockee);
 });

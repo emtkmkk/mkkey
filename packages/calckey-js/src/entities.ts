@@ -1,5 +1,23 @@
+/**
+ * @packageDocumentation
+ *
+ * Calckey APIが返す主要エンティティ型を定義する。
+ *
+ * @public
+ */
 export type ID = string;
 export type DateString = string;
+
+/** ユーザー単位ミュートで選択できる対象範囲。 */
+export type MuteType =
+	| "all"
+	| "note"
+	| "renote"
+	| "notification"
+	| "push"
+	| "reaction"
+	| "message"
+	| "follow";
 
 type TODO = Record<string, any>;
 
@@ -69,6 +87,9 @@ export type UserDetailed = UserLite & {
 	isMuted: boolean;
 	isRenoteMuted: boolean;
 	isPushMuted: boolean;
+	isFollowBlocking?: boolean;
+	muteTypes?: MuteType[];
+	muteExpiresAt?: DateString | null;
 	isSilenced: boolean;
 	isSuspended: boolean;
 	lang: string | null;
@@ -125,6 +146,7 @@ export type MeDetailed = UserDetailed & {
 	usePasswordLessLogin: boolean;
 	/** 当日の警告ポップアップが必要なときのみ */
 	needsModerationWarningPopup?: boolean;
+	hideMutedAndBlockedUserReactions: boolean;
 	/** ON のときのみ */
 	showWarnedUsersInPublicTimeline?: boolean;
 	showWarnedUsersInPublicTimelineEffective?: boolean;

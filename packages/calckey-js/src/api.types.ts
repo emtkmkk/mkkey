@@ -1,3 +1,10 @@
+/**
+ * @packageDocumentation
+ *
+ * Calckey APIエンドポイントごとの要求・応答型を定義する。
+ *
+ * @public
+ */
 import {
 	Ad,
 	Announcement,
@@ -35,6 +42,7 @@ import {
 	NoteReaction,
 	Signin,
 	MessagingMessage,
+	MuteType,
 } from "./entities";
 
 type TODO = Record<string, any> | null;
@@ -715,6 +723,7 @@ export type Endpoints = {
 			mutedWords?: string[][];
 			mutingNotificationTypes?: Notification["type"][];
 			emailNotificationTypes?: string[];
+			hideMutedAndBlockedUserReactions?: boolean;
 		};
 		res: MeDetailed;
 	};
@@ -783,9 +792,24 @@ export type Endpoints = {
 	"miauth/gen-token": { req: TODO; res: TODO };
 
 	// mute
-	"mute/create": { req: TODO; res: TODO };
+	"mute/create": {
+		req: {
+			userId: User["id"];
+			expiresAt?: number | null;
+			types?: MuteType[];
+		};
+		res: null;
+	};
 	"mute/delete": { req: { userId: User["id"] }; res: null };
 	"mute/list": { req: TODO; res: TODO };
+	"mute/update": {
+		req: {
+			userId: User["id"];
+			types: MuteType[];
+			expiresAt?: number | null;
+		};
+		res: UserDetailed;
+	};
 	"renote-mute/create": { req: TODO; res: TODO };
 	"renote-mute/delete": { req: { userId: User["id"] }; res: null };
 	"renote-mute/list": { req: TODO; res: TODO };

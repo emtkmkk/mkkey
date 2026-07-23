@@ -1,3 +1,13 @@
+/**
+ * @packageDocumentation
+ *
+ * メッセージを保存し、受信者向けストリーム・未読通知・Pushを配信する。
+ *
+ * @remarks
+ * `message` 範囲のミュートは保存自体を拒否せず、履歴候補と未読通知だけを抑止する。
+ *
+ * @internal
+ */
 import type { CacheableUser, User } from "@/models/entities/user.js";
 import type { UserGroup } from "@/models/entities/user-group.js";
 import type { DriveFile } from "@/models/entities/drive-file.js";
@@ -24,6 +34,7 @@ import { renderActivity } from "@/remote/activitypub/renderer/index.js";
 import { deliver } from "@/queue/index.js";
 import { webhookDeliver } from "@/queue/index.js";
 import { getActiveWebhooks } from "@/misc/webhook-cache.js";
+import { hasMuteScope } from "@/misc/mute-scope.js";
 
 export async function createMessage(
 	user: { id: User["id"]; host: User["host"] },
@@ -97,13 +108,13 @@ export async function createMessage(
 			if (freshMessage.isRead) return; // 既読
 
 			//#region ただしミュートされているなら発行しない
-			const isSenderMuted = await Mutings.exist({
+			const muting = await Mutings.findOne({
 				where: {
 					muterId: recipientUser.id,
 					muteeId: user.id,
 				},
 			});
-			if (isSenderMuted) return;
+			if (muting != null && hasMuteScope(muting.scope, "message")) return;
 			//#endregion
 
 			publishMainStream(recipientUser.id, "unreadMessagingMessage", messageObj);

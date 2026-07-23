@@ -55,6 +55,7 @@ import {
 	NoteThreadMutings,
 } from "@/models/index.js";
 import { canUseEmoji } from "@/models/repositories/emoji.js";
+import { hasMuteScope } from "@/misc/mute-scope.js";
 import type { DriveFile } from "@/models/entities/drive-file.js";
 import type { App } from "@/models/entities/app.js";
 import { Not, In, IsNull } from "typeorm";
@@ -146,7 +147,9 @@ class NotificationManager {
 				});
 
 		const mentioneeMutedNotifierIds = new Set(
-			mentioneeMutes.map((mute) => mute.muterId),
+			mentioneeMutes
+				.filter((muting) => hasMuteScope(muting.scope, "notification"))
+				.map((muting) => muting.muterId),
 		);
 
 		for (const x of this.queue) {

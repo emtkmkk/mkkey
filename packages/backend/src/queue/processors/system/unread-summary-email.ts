@@ -51,6 +51,7 @@ import {
 	UserProfiles,
 	Users,
 } from "@/models/index.js";
+import { createMuteScopeCondition } from "@/misc/mute-scope.js";
 import {
 	buildGuidanceEmail,
 	escapeHtml,
@@ -139,7 +140,8 @@ function applyVisibilityFilters<T extends SelectQueryBuilder<Notification>>(
 ): T {
 	const mutingQuery = Mutings.createQueryBuilder("muting")
 		.select("muting.muteeId")
-		.where("muting.muterId = :muterId", { muterId: userId });
+		.where("muting.muterId = :muterId", { muterId: userId })
+		.andWhere(createMuteScopeCondition("muting", "notification"));
 
 	const mutingInstanceQuery = UserProfiles.createQueryBuilder("user_profile")
 		.select("user_profile.mutedInstances")

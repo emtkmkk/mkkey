@@ -180,6 +180,7 @@ export const paramDef = {
 		mutedWords: { type: "array" },
 		reactionMutedWords: { type: "array" },
 		rejectMuteReaction: { type: "boolean" },
+		hideMutedAndBlockedUserReactions: { type: "boolean" },
 		fixedName: { ...Users.nameSchema, nullable: true },
 		mutedInstances: {
 			type: "array",
@@ -318,6 +319,10 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 
 	if (ps.rejectMuteReaction !== undefined) {
 		profileUpdates.rejectMuteReaction = ps.rejectMuteReaction;
+	}
+	if (ps.hideMutedAndBlockedUserReactions !== undefined) {
+		profileUpdates.hideMutedAndBlockedUserReactions =
+			ps.hideMutedAndBlockedUserReactions;
 	}
 	if (ps.mutedInstances !== undefined)
 		profileUpdates.mutedInstances = ps.mutedInstances;
@@ -544,7 +549,7 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 	publishUserEvent(
 		user.id,
 		"updateUserProfile",
-		await UserProfiles.findOneBy({ userId: user.id }),
+		updatedProfile,
 	);
 
 	// meUpdated イベントを発行する

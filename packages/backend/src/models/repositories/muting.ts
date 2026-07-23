@@ -1,3 +1,10 @@
+/**
+ * @packageDocumentation
+ *
+ * 範囲付きユーザーミュートのAPI向けpack処理。
+ *
+ * @internal
+ */
 import { db } from "@/db/postgre.js";
 import { Users } from "../index.js";
 import { Muting } from "@/models/entities/muting.js";
@@ -5,8 +12,10 @@ import { awaitAll } from "@/prelude/await-all.js";
 import type { Packed } from "@/misc/schema.js";
 import type { User } from "@/models/entities/user.js";
 import { In } from "typeorm";
+import { decodeMuteScope } from "@/misc/mute-scope.js";
 
 export const MutingRepository = db.getRepository(Muting).extend({
+	/** 単一のミュート関係を利用者情報と範囲名付きでpackする。 */
 	async pack(
 		src: Muting["id"] | Muting,
 		me?: { id: User["id"] } | null | undefined,
@@ -23,11 +32,13 @@ export const MutingRepository = db.getRepository(Muting).extend({
 			id: muting.id,
 			createdAt: muting.createdAt.toISOString(),
 			expiresAt: muting.expiresAt ? muting.expiresAt.toISOString() : null,
+			muteTypes: decodeMuteScope(muting.scope),
 			muteeId: muting.muteeId,
 			mutee,
 		});
 	},
 
+	/** 複数のミュート関係を利用者の一括pack結果で組み立てる。 */
 	async packMany(
 		mutings: Muting[],
 		me: { id: User["id"] },

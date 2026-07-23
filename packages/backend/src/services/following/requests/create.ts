@@ -18,8 +18,9 @@ import {
 	Blockings,
 	FollowRequests,
 	Users,
-	FollowBlockings,
+	Mutings,
 } from "@/models/index.js";
+import { hasMuteScope } from "@/misc/mute-scope.js";
 import { genId } from "@/misc/gen-id.js";
 import { createNotification } from "../../create-notification.js";
 import config from "@/config/index.js";
@@ -92,12 +93,15 @@ export default async function (
 			detail: true,
 		}).then((packed) => publishMainStream(followee.id, "meUpdated", packed));
 
-		const FollowBlocking = await FollowBlockings.findOneBy({
-			blockerId: followee.id,
-			blockeeId: follower.id,
+		const followBlocking = await Mutings.findOneBy({
+			muterId: followee.id,
+			muteeId: follower.id,
 		});
 
-		if (!FollowBlocking) {
+		if (
+			followBlocking == null ||
+			!hasMuteScope(followBlocking.scope, "follow")
+		) {
 			// 通知を作成
 			createNotification(followee.id, "receiveFollowRequest", {
 				notifierId: follower.id,

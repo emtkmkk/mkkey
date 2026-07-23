@@ -1,3 +1,10 @@
+/**
+ * @packageDocumentation
+ *
+ * 範囲付きユーザーミュートのAPIスキーマ。
+ *
+ * @internal
+ */
 export const packedMutingSchema = {
 	type: "object",
 	properties: {
@@ -19,6 +26,24 @@ export const packedMutingSchema = {
 			optional: false,
 			nullable: true,
 			format: "date-time",
+		},
+		muteTypes: {
+			type: "array",
+			optional: false,
+			nullable: false,
+			items: {
+				type: "string",
+				enum: [
+					"all",
+					"note",
+					"renote",
+					"notification",
+					"push",
+					"reaction",
+					"message",
+					"follow",
+				],
+			},
 		},
 		muteeId: {
 			type: "string",

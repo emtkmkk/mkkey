@@ -13,10 +13,15 @@
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
 import { getUser } from "../../common/getters.js";
-import { genId } from "@/misc/gen-id.js";
-import { Users, Mutings, NoteWatchings } from "@/models/index.js";
-import type { Muting } from "@/models/entities/muting.js";
+import { Mutings, NoteWatchings } from "@/models/index.js";
 import { publishUserEvent } from "@/services/stream.js";
+import {
+	hasMuteScope,
+	MUTE_SCOPE_BITS,
+	muteTypes,
+	type MuteType,
+} from "@/misc/mute-scope.js";
+import { replaceMutingScopes } from "@/services/muting.js";
 
 export const meta = {
 	tags: ["account"],
@@ -63,6 +68,17 @@ export const paramDef = {
 			description:
 				"ミュート解除日時（Unix ミリ秒）。null のとき無期限。",
 		},
+		types: {
+			type: "array",
+			minItems: 1,
+			uniqueItems: true,
+			items: {
+				type: "string",
+				enum: muteTypes,
+			},
+			description:
+				"ミュート範囲。省略時は従来互換の all。all は他の指定より優先される。",
+		},
 	},
 	required: ["userId"],
 } as const;
@@ -87,13 +103,22 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw new ApiError();
 	}
 
-	// 既にミュート中か確認する
+	const requestedTypes = (ps.types ?? ["all"]) as MuteType[];
+
+	// 同じ範囲が既に設定済みの場合は従来どおり重複エラーにする。
 	const exist = await Mutings.findOneBy({
 		muterId: muter.id,
 		muteeId: mutee.id,
 	});
 
-	if (exist != null) {
+	if (
+		exist != null &&
+		requestedTypes.every((type) =>
+			type === "all"
+				? (exist.scope & MUTE_SCOPE_BITS.all) !== 0
+				: hasMuteScope(exist.scope, type),
+		)
+	) {
 		throw new ApiError(meta.errors.alreadyMuting);
 	}
 
@@ -101,19 +126,20 @@ export default define(meta, paramDef, async (ps, user) => {
 		return;
 	}
 
-	// ミュートを作成する
-	await Mutings.insert({
-		id: genId(),
-		createdAt: new Date(),
-		expiresAt: ps.expiresAt ? new Date(ps.expiresAt) : null,
-		muterId: muter.id,
-		muteeId: mutee.id,
-	} as Muting);
+	// create は新規関係を作る入口。既存の個別範囲がある場合は指定範囲へ置換する。
+	await replaceMutingScopes(
+		muter.id,
+		mutee.id,
+		requestedTypes,
+		ps.expiresAt ? new Date(ps.expiresAt) : null,
+	);
 
 	publishUserEvent(user.id, "mute", mutee);
 
-	NoteWatchings.delete({
-		userId: muter.id,
-		noteUserId: mutee.id,
-	});
+	if (requestedTypes.includes("all") || requestedTypes.includes("note")) {
+		NoteWatchings.delete({
+			userId: muter.id,
+			noteUserId: mutee.id,
+		});
+	}
 });

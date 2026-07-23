@@ -10,12 +10,13 @@
  * @see {@link define} エンドポイント登録
  * @internal
  */
-import { genId } from "@/misc/gen-id.js";
-import { RenoteMutings } from "@/models/index.js";
-import { RenoteMuting } from "@/models/entities/renote-muting.js";
+import { hasMuteScope } from "@/misc/mute-scope.js";
+import { Mutings } from "@/models/index.js";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
 import { getUser } from "../../common/getters.js";
+import { addMutingScope } from "@/services/muting.js";
+import { publishUserEvent } from "@/services/stream.js";
 
 export const meta = {
 	tags: ["account"],
@@ -59,22 +60,16 @@ export default define(meta, paramDef, async (ps, user) => {
 	});
 
 	// 既にミュート中か確認する
-	const exist = await RenoteMutings.findOneBy({
+	const exist = await Mutings.findOneBy({
 		muterId: muter.id,
 		muteeId: mutee.id,
 	});
 
-	if (exist != null) {
+	if (exist != null && hasMuteScope(exist.scope, "renote")) {
 		throw new ApiError(meta.errors.alreadyMuting);
 	}
 
-	// ミュートを作成する
-	await RenoteMutings.insert({
-		id: genId(),
-		createdAt: new Date(),
-		muterId: muter.id,
-		muteeId: mutee.id,
-	} as RenoteMuting);
-
-	// publishUserEvent(user.id, "mute", mutee);
+	// 旧APIは無期限のRT範囲を追加する互換口として維持する。
+	await addMutingScope(muter.id, mutee.id, "renote", null);
+	publishUserEvent(user.id, "mute", mutee);
 });

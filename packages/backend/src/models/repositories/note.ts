@@ -1,4 +1,6 @@
 /**
+ * @packageDocumentation
+ *
  * ノートリポジトリ（pack 含む）
  *
  * @remarks
@@ -51,6 +53,11 @@ import {
 	CACHE_MAX_USER_NOTE,
 } from "@/misc/cache-limits.js";
 import { IdentifiableError } from "@/misc/identifiable-error.js";
+import {
+	getHiddenReactionDeltas,
+	type HiddenReactionDeltaMap,
+} from "@/services/note/reaction/visibility.js";
+import { subtractHiddenReactionDeltas } from "@/misc/reaction-count.js";
 
 export async function populatePoll(note: Note, meId: User["id"] | null) {
 	const poll = await Polls.findOneByOrFail({ noteId: note.id });
@@ -142,6 +149,8 @@ type NotePackHint = {
 	profileMap?: Map<User["id"], UserProfile>;
 	/** packMany 用: 投稿者が閲覧者をフォローしているユーザ ID（警告ユーザー向け canWarnedViewerReact） */
 	authorFollowsViewerSet?: Set<User["id"]>;
+	/** 閲覧者から見えない利用者分のリアクション件数。空Mapも「集計済み」を表す */
+	hiddenReactionDeltas?: HiddenReactionDeltaMap;
 };
 
 /** packNoteUser に渡すヒントの部分型 */
@@ -226,7 +235,10 @@ function stripVolatileUserFields(user: Packed<"User">): Packed<"User"> {
 		isBlocked: _isBlocked,
 		isMuted: _isMuted,
 		isRenoteMuted: _isRenoteMuted,
+	isPushMuted: _isPushMuted,
 		isFollowBlocking: _isFollowBlocking,
+	muteTypes: _muteTypes,
+	muteExpiresAt: _muteExpiresAt,
 		isInviter: _isInviter,
 		followedMessage: _followedMessage,
 		...fixed
@@ -356,6 +368,7 @@ async function packNoteUser(
 		memo: memo?.memo || undefined,
 		originalName: memo?.customName ? fixed.name : undefined,
 		isRenoteMuted: relation == null ? false : relation.isRenoteMuted,
+		isPushMuted: relation == null ? false : relation.isPushMuted,
 		...(relation
 			? {
 					isFollowing: relation.isFollowing,
@@ -368,6 +381,8 @@ async function packNoteUser(
 					isBlocked: relation.isBlocked,
 					isMuted: relation.isMuted,
 					isFollowBlocking: relation.isFollowBlocking,
+					muteTypes: relation.muteTypes,
+					muteExpiresAt: relation.muteExpiresAt,
 					isInviter: relation.isInviter ? true : undefined,
 			  }
 			: {}),
@@ -656,7 +671,12 @@ export const NoteRepository = db.getRepository(Note).extend({
                                         note.userId,
                                         noteUser,
                                 ));
-			if (relation.isMuted || relation.isBlocked) {
+			const scopedMuted =
+				relation.muteTypes.includes("all") ||
+				relation.muteTypes.includes(
+					note.renoteId != null && note.text == null ? "renote" : "note",
+				);
+			if (scopedMuted || relation.isBlocked) {
 				throw new IdentifiableError(
 					"281827eb-bd11-3625-ac9d-336a0d80fac2",
 					"ブロックされているユーザの投稿です。",
@@ -702,25 +722,36 @@ export const NoteRepository = db.getRepository(Note).extend({
                         ? await populateMyReactions(note, meId, hint)
                         : undefined;
 
-                const reactions =
+                const reactions = (
                         note.isPublicLikeList || meId === note.userId
 				? {
 						...(myReactions?.myReactions?.length
-							? myReactions.myReactions.reduce(
-									(acc, curr) => ((acc[curr] = 1), acc),
-									{},
+							? Object.fromEntries(
+									myReactions.myReactions.map((reaction) => [reaction, 1]),
 							  )
 							: {}),
 						...note.reactions,
 				  }
 				: myReactions?.myReactions
-				? myReactions.myReactions.reduce(
-						(acc, curr) => ((acc[curr] = 1), acc),
-						{},
+				? Object.fromEntries(
+						myReactions.myReactions.map((reaction) => [reaction, 1]),
 				  )
-				: {};
+				: {}
+		) as Record<string, number>;
 
-		const reactionEmojiNames = Object.keys(reactions)
+		if (meId != null && hint.hiddenReactionDeltas === undefined) {
+			hint.hiddenReactionDeltas =
+				note.isPublicLikeList || meId === note.userId
+					? await getHiddenReactionDeltas([note.id], meId)
+					: new Map();
+		}
+		const hiddenDeltas = hint.hiddenReactionDeltas?.get(note.id);
+		const visibleReactions = subtractHiddenReactionDeltas(
+			reactions,
+			hiddenDeltas,
+		);
+
+		const reactionEmojiNames = Object.keys(visibleReactions)
 			.filter((x) => x?.startsWith(":"))
 			.map((x) => decodeReaction(x).reaction)
 			.map((x) => x.replace(/:/g, ""));
@@ -826,7 +857,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 			renoteCount: note.renoteCount,
 			repliesCount: note.repliesCount,
 			score: note.score,
-			reactions: convertLegacyReactions(reactions),
+			reactions: convertLegacyReactions(visibleReactions),
 			reactionEmojis: reactionEmojiWithHidden,
 			emojis: isVisible ? noteEmojiWithHidden : [],
 			tags: note.tags.length > 0 && isVisible ? note.tags : undefined,
@@ -1383,6 +1414,20 @@ export const NoteRepository = db.getRepository(Note).extend({
                         }
                 }
 
+		let hiddenReactionDeltas = initialHint?.hiddenReactionDeltas;
+		if (meId != null && hiddenReactionDeltas === undefined) {
+			const packableNotes = [...notes, ...noteMap.values()];
+			const eligibleNoteIds = packableNotes
+				.filter(
+					(note) => note.isPublicLikeList || note.userId === meId,
+				)
+				.map((note) => note.id);
+			hiddenReactionDeltas = await getHiddenReactionDeltas(
+				eligibleNoteIds,
+				meId,
+			);
+		}
+
                 const hint: NotePackHint = {
                         myReactions: myReactionsMap,
                         favorites: favoritedNoteIds,
@@ -1398,6 +1443,7 @@ export const NoteRepository = db.getRepository(Note).extend({
                         memoMap,
                         profileMap: profileMap.size > 0 ? profileMap : undefined,
                         authorFollowsViewerSet,
+			hiddenReactionDeltas,
                 };
 
                 const promises = await Promise.allSettled(

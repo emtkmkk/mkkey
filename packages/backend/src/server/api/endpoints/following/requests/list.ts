@@ -1,6 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * 受信したフォローリクエストから、follow範囲ミュート対象を除いて返す。
+ *
+ * @internal
+ */
 import define from "../../../define.js";
 import { Not, In } from "typeorm";
-import { FollowRequests, FollowBlockings } from "@/models/index.js";
+import { FollowRequests, Mutings } from "@/models/index.js";
+import { hasMuteScope } from "@/misc/mute-scope.js";
 
 export const meta = {
 	tags: ["following", "account"],
@@ -48,13 +56,13 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
-	const followBlocking = await FollowBlockings.findBy({
-		blockerId: user.id,
-	});
+	const followBlocking = (await Mutings.findBy({ muterId: user.id })).filter(
+		(muting) => hasMuteScope(muting.scope, "follow"),
+	);
 
 	const reqs = await FollowRequests.findBy({
 		followeeId: user.id,
-		followerId: Not(In(followBlocking.map((x) => x.blockeeId))),
+		followerId: Not(In(followBlocking.map((muting) => muting.muteeId))),
 	});
 
 	return await Promise.all(reqs.map((req) => FollowRequests.pack(req)));

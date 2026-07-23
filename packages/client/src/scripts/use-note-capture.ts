@@ -1,3 +1,10 @@
+/**
+ * @packageDocumentation
+ *
+ * 表示中ノートをストリーム更新へ追従させ、リアクション件数を安全に更新する。
+ *
+ * @internal
+ */
 import { onUnmounted, Ref } from "vue";
 import * as misskey from "calckey-js";
 import { stream } from "@/stream";
@@ -54,7 +61,14 @@ export function useNoteCapture(props: {
 				// TODO: reactionsプロパティがない場合ってあったっけ？ なければ || {} は消せる
 				const currentCount = note.value.reactions?.[reaction] || 0;
 
-				note.value.reactions[reaction] = Math.max(0, currentCount - 1);
+				const nextCount = currentCount - 1;
+				if (nextCount <= 0) {
+					const { [reaction]: _removed, ...remainingReactions } =
+						note.value.reactions;
+					note.value.reactions = remainingReactions;
+				} else {
+					note.value.reactions[reaction] = nextCount;
+				}
 
 				if ($i && body.userId === $i.id) {
 					note.value.myReaction = undefined;

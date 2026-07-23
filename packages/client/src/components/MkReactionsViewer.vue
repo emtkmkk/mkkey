@@ -13,6 +13,13 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * ノートの可視リアクションを並べ、0件以下の項目を描画対象から除外する。
+ *
+ * @internal
+ */
 import { computed, unref } from "vue";
 import * as misskey from "calckey-js";
 import { instance } from "@/instance";
@@ -33,6 +40,7 @@ let lastSortedReactions = [...GOLBEZA_TOURNAMENT_REACTION_SLOTS];
 
 const sortedReactions = computed(() => {
 	const arrayReactions = Object.keys(reactions.value)
+		.filter((name) => reactions.value[name] > 0)
 		.filter((name) => {
 			if (
 				normalizeReactionName(name) === instance.defaultReaction &&

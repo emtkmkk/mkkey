@@ -6,6 +6,7 @@ import {
 	UserGroupJoinings,
 } from "@/models/index.js";
 import define from "../../define.js";
+import { hasMuteScope } from "@/misc/mute-scope.js";
 
 export const meta = {
 	tags: ["messaging"],
@@ -40,9 +41,9 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
-	const mute = await Mutings.findBy({
-		muterId: user.id,
-	});
+	const mute = (await Mutings.findBy({ muterId: user.id })).filter((muting) =>
+		hasMuteScope(muting.scope, "message"),
+	);
 
 	const groups = ps.group
 		? await UserGroupJoinings.findBy({

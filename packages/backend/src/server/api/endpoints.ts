@@ -286,6 +286,7 @@ import * as ep___miauth_genToken from "./endpoints/miauth/gen-token.js";
 import * as ep___mute_create from "./endpoints/mute/create.js";
 import * as ep___mute_delete from "./endpoints/mute/delete.js";
 import * as ep___mute_list from "./endpoints/mute/list.js";
+import * as ep___mute_update from "./endpoints/mute/update.js";
 import * as ep___renote_mute_create from "./endpoints/renote-mute/create.js";
 import * as ep___renote_mute_delete from "./endpoints/renote-mute/delete.js";
 import * as ep___renote_mute_list from "./endpoints/renote-mute/list.js";
@@ -689,6 +690,7 @@ const eps = [
 	["mute/create", ep___mute_create],
 	["mute/delete", ep___mute_delete],
 	["mute/list", ep___mute_list],
+	["mute/update", ep___mute_update],
 	["my/apps", ep___my_apps],
 	["notes", ep___notes],
 	["notes/children", ep___notes_children],

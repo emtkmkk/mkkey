@@ -22,6 +22,7 @@ import {
 import define from "../../define.js";
 import { makePaginationQuery } from "../../common/make-pagination-query.js";
 import { createFollowingExistsCondition } from "../../common/following-exists-condition.js";
+import { createMuteScopeCondition } from "@/misc/mute-scope.js";
 
 export const meta = {
 	tags: ["account", "notifications"],
@@ -91,7 +92,8 @@ export default define(meta, paramDef, async (ps, user) => {
 
 	const mutingQuery = Mutings.createQueryBuilder("muting")
 		.select("muting.muteeId")
-		.where("muting.muterId = :muterId", { muterId: user.id });
+		.where("muting.muterId = :muterId", { muterId: user.id })
+		.andWhere(createMuteScopeCondition("muting", "notification"));
 
 	const mutingInstanceQuery = UserProfiles.createQueryBuilder("user_profile")
 		.select("user_profile.mutedInstances")

@@ -68,6 +68,12 @@ export default async function (blocker: User, blockee: User) {
 
 	await Blockings.insert(blocking);
 	await setModerationWarningByAdminBlock(blocker, blockee);
+	if (Users.isLocalUser(blocker)) {
+		publishUserEvent(blocker.id, "blockChange", blockee);
+	}
+	if (Users.isLocalUser(blockee)) {
+		publishUserEvent(blockee.id, "blockChange", blocker);
+	}
 
 	if (Users.isLocalUser(blockee)) {
 		// ブロック側が相手のフォローを外した → 手動アンフォローと同種の通知

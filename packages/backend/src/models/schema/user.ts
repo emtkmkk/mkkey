@@ -406,6 +406,35 @@ export const packedUserDetailedNotMeOnlySchema = {
 			nullable: false,
 			optional: true,
 		},
+		isFollowBlocking: {
+			type: "boolean",
+			nullable: false,
+			optional: true,
+		},
+		muteTypes: {
+			type: "array",
+			nullable: false,
+			optional: true,
+			items: {
+				type: "string",
+				enum: [
+					"all",
+					"note",
+					"renote",
+					"notification",
+					"push",
+					"reaction",
+					"message",
+					"follow",
+				],
+			},
+		},
+		muteExpiresAt: {
+			type: "string",
+			format: "date-time",
+			nullable: true,
+			optional: true,
+		},
 		//#endregion
 	},
 } as const;
@@ -580,6 +609,13 @@ export const packedMeDetailedOnlySchema = {
 			nullable: false,
 			optional: true,
 			description: "警告ポップアップを表示すべきときのみ true（/i で付与）。",
+		},
+		hideMutedAndBlockedUserReactions: {
+			type: "boolean",
+			nullable: false,
+			optional: false,
+			description:
+				"ミュート・双方向ブロック対象のリアクションを表示件数から差し引くか。",
 		},
 		showWarnedUsersInPublicTimeline: {
 			type: "boolean",

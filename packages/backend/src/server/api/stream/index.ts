@@ -20,11 +20,15 @@ import {
 	Users,
 	Followings,
 	Mutings,
-	RenoteMutings,
 	UserProfiles,
 	ChannelFollowings,
 	Blockings,
 } from "@/models/index.js";
+import {
+	hasMuteScope,
+	MUTE_SCOPE_BITS,
+} from "@/misc/mute-scope.js";
+import { shouldFilterReactionStream } from "@/misc/reaction-count.js";
 import type { AccessToken } from "@/models/entities/access-token.js";
 import type { UserProfile } from "@/models/entities/user-profile.js";
 import {
@@ -50,9 +54,15 @@ export default class Connection {
 	public user?: User;
 	public userProfile?: UserProfile | null;
 	public following: Set<User["id"]> = new Set();
+	/** 従来の全体ミュート対象。返信先・引用元を含む関連判定に使う。 */
 	public muting: Set<User["id"]> = new Set();
+	public noteMuting: Set<User["id"]> = new Set();
 	public renoteMuting: Set<User["id"]> = new Set();
-	public blocking: Set<User["id"]> = new Set(); // 被ブロック
+	public notificationMuting: Set<User["id"]> = new Set();
+	public reactionMuting: Set<User["id"]> = new Set();
+	public messageMuting: Set<User["id"]> = new Set();
+	public blocking: Set<User["id"]> = new Set(); // 自分をブロックした利用者
+	public blocked: Set<User["id"]> = new Set(); // 自分がブロックした利用者
 	public followingChannels: Set<ChannelModel["id"]> = new Set();
 	public token?: AccessToken;
 	private wsConnection: websocket.connection;
@@ -64,6 +74,8 @@ export default class Connection {
 	private host: string;
 	private accessToken: string;
 	private currentSubscribe: string[][] = [];
+	/** リアクション判定より先に完了させるミュート・ブロック関係の更新処理。 */
+	private relationshipUpdatePromise: Promise<void> = Promise.resolve();
 
 	constructor(
 		wsConnection: websocket.connection,
@@ -95,11 +107,14 @@ export default class Connection {
 
 		if (this.user) {
 			this.updateFollowing();
-			this.updateMuting();
-			this.updateRenoteMuting();
-			this.updateBlocking();
 			this.updateFollowingChannels();
-			this.updateUserProfile();
+			this.queueRelationshipUpdate(async () => {
+				await Promise.all([
+					this.updateMuting(),
+					this.updateBlocking(),
+					this.updateUserProfile(),
+				]);
+			});
 
 			this.subscriber.on(`user:${this.user.id}`, this.onUserEvent);
 		}
@@ -124,15 +139,16 @@ export default class Connection {
 				break;
 
 			case "mute":
-				this.muting.add(data.body.id);
+				this.queueRelationshipUpdate(() => this.updateMuting());
 				break;
 
 			case "unmute":
-				this.muting.delete(data.body.id);
+				this.queueRelationshipUpdate(() => this.updateMuting());
 				break;
 
-			// TODO: renote mute events
-			// TODO: block events
+			case "blockChange":
+				this.queueRelationshipUpdate(() => this.updateBlocking());
+				break;
 
 			case "followChannel":
 				this.followingChannels.add(data.body.id);
@@ -401,6 +417,21 @@ export default class Connection {
 	}
 
 	private async onNoteStreamMessage(data: StreamMessages["note"]["payload"]) {
+		await this.relationshipUpdatePromise;
+		const actorId =
+			data.type === "reacted" || data.type === "unreacted"
+				? data.body.body.userId
+				: null;
+		if (
+			shouldFilterReactionStream(
+				this.userProfile?.hideMutedAndBlockedUserReactions === true,
+				actorId,
+				[this.reactionMuting, this.blocking, this.blocked],
+			)
+		) {
+			return;
+		}
+
 		this.sendMessageToWs("noteUpdated", {
 			id: data.body.id,
 			type: data.type,
@@ -448,6 +479,16 @@ export default class Connection {
 				});
 			} else if (payload.type === "reacted" || payload.type === "unreacted") {
 				// reaction
+				const actorId = payload?.body?.body?.userId;
+				if (
+					shouldFilterReactionStream(
+						this.userProfile?.hideMutedAndBlockedUserReactions === true,
+						actorId,
+						[this.reactionMuting, this.blocking, this.blocked],
+					)
+				) {
+					return;
+				}
 				if (
 					!payload?.body?.body?.targetUserId ||
 					payload?.body?.body?.targetUserId.includes(this.user?.id)
@@ -585,6 +626,26 @@ export default class Connection {
 		}
 	}
 
+	/**
+	 * ミュート・ブロック関係の再取得を受信順に直列化する。
+	 *
+	 * @param update - DBから最新の関係集合を取得する処理
+	 * @returns なし
+	 *
+	 * @remarks
+	 * Redisで関係変更の直後にリアクションが届いても、古いSetで判定しないようにする。
+	 * 再取得に失敗した場合は接続を切らず、直前の関係集合を維持する。
+	 *
+	 * @internal
+	 */
+	private queueRelationshipUpdate(update: () => Promise<void>): void {
+		this.relationshipUpdatePromise = this.relationshipUpdatePromise
+			.then(update, update)
+			.catch((error) => {
+				apiLogger.error("Failed to update streaming relationships", { error });
+			});
+	}
+
 	private async updateFollowing() {
 		const followings = await Followings.find({
 			where: {
@@ -601,33 +662,55 @@ export default class Connection {
 			where: {
 				muterId: this.user!.id,
 			},
-			select: ["muteeId"],
+			select: ["muteeId", "scope"],
 		});
 
-		this.muting = new Set<string>(mutings.map((x) => x.muteeId));
-	}
-
-	private async updateRenoteMuting() {
-		const renoteMutings = await RenoteMutings.find({
-			where: {
-				muterId: this.user!.id,
-			},
-			select: ["muteeId"],
-		});
-
-		this.renoteMuting = new Set<string>(renoteMutings.map((x) => x.muteeId));
+		this.muting = new Set(
+			mutings
+				.filter((muting) => (muting.scope & MUTE_SCOPE_BITS.all) !== 0)
+				.map((muting) => muting.muteeId),
+		);
+		this.noteMuting = new Set(
+			mutings
+				.filter((muting) => hasMuteScope(muting.scope, "note"))
+				.map((muting) => muting.muteeId),
+		);
+		this.renoteMuting = new Set(
+			mutings
+				.filter((muting) => hasMuteScope(muting.scope, "renote"))
+				.map((muting) => muting.muteeId),
+		);
+		this.notificationMuting = new Set(
+			mutings
+				.filter((muting) => hasMuteScope(muting.scope, "notification"))
+				.map((muting) => muting.muteeId),
+		);
+		this.reactionMuting = new Set(
+			mutings
+				.filter((muting) => hasMuteScope(muting.scope, "reaction"))
+				.map((muting) => muting.muteeId),
+		);
+		this.messageMuting = new Set(
+			mutings
+				.filter((muting) => hasMuteScope(muting.scope, "message"))
+				.map((muting) => muting.muteeId),
+		);
 	}
 
 	private async updateBlocking() {
-		// ここでいうBlockingは被Blockingの意
-		const blockings = await Blockings.find({
-			where: {
-				blockeeId: this.user!.id,
-			},
-			select: ["blockerId"],
-		});
+		const [blockedBy, blocked] = await Promise.all([
+			Blockings.find({
+				where: { blockeeId: this.user!.id },
+				select: ["blockerId"],
+			}),
+			Blockings.find({
+				where: { blockerId: this.user!.id },
+				select: ["blockeeId"],
+			}),
+		]);
 
-		this.blocking = new Set<string>(blockings.map((x) => x.blockerId));
+		this.blocking = new Set<string>(blockedBy.map((x) => x.blockerId));
+		this.blocked = new Set<string>(blocked.map((x) => x.blockeeId));
 	}
 
 	private async updateFollowingChannels() {

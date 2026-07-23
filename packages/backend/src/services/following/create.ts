@@ -33,8 +33,9 @@ import {
 	Blockings,
 	Instances,
 	UserProfiles,
-	FollowBlockings,
+	Mutings,
 } from "@/models/index.js";
+import { hasMuteScope } from "@/misc/mute-scope.js";
 import {
 	instanceChart,
 	perUserFollowingChart,
@@ -242,11 +243,13 @@ export default async function (
 			blockerId: followee.id,
 			blockeeId: follower.id,
 		}),
-		FollowBlockings.findOneBy({
-			blockerId: followee.id,
-			blockeeId: follower.id,
+		Mutings.findOneBy({
+			muterId: followee.id,
+			muteeId: follower.id,
 		}),
 	]);
+	const isFollowBlocked =
+		followBlocking != null && hasMuteScope(followBlocking.scope, "follow");
 
 	if (Users.isRemoteUser(follower) && Users.isLocalUser(followee) && blocked) {
 		// リモートフォローを受けてブロックしていた場合は、エラーにするのではなくRejectを送り返しておしまい。
@@ -341,7 +344,7 @@ export default async function (
 			Users.isLocalUser(followee) &&
 			((await shouldSilenceInstance(follower.host)) ||
 				(needRequestFR && !followee.isBot))) ||
-		followBlocking
+		isFollowBlocked
 	) {
 		let autoAccept = false;
 
@@ -358,7 +361,7 @@ export default async function (
 		if (
 			!autoAccept &&
 			Users.isLocalUser(followee) &&
-			!followBlocking &&
+			!isFollowBlocked &&
 			(followeeProfile.autoAcceptFollowed ||
 				!(
 					followee.isLocked ||

@@ -27,6 +27,17 @@
 				i18n.ts.mkkey
 			}}</span>
 		</FormSwitch>
+		<FormSwitch
+			v-model="hideMutedAndBlockedUserReactions"
+			class="_formBlock"
+			@update:model-value="saveHiddenUserReactionSetting"
+		>
+			{{ i18n.ts.hideMutedAndBlockedUserReactions }}
+			<span class="_beta">{{ i18n.ts.beta }}</span>
+			<template #caption>
+				{{ i18n.ts.hideMutedAndBlockedUserReactionsDescription }}
+			</template>
+		</FormSwitch>
 
 		<div>
 			<FromSlot class="_formBlock" v-if="!hiddenReactionDeckAndRecent">
@@ -806,6 +817,13 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * リアクション表示・入力と、閲覧者別リアクション除外を設定するページ。
+ *
+ * @internal
+ */
 import { computed, unref, onMounted, defineAsyncComponent, watch } from "vue";
 import XDraggable from "vuedraggable";
 import FormInput from "@/components/form/input.vue";
@@ -832,6 +850,33 @@ import * as config from "@/config";
 const isMobile = useIsMobile();
 
 const tab = $ref("reactions");
+/**
+ * ミュート・ブロック対象者のリアクション件数を除外する閲覧者設定。
+ *
+ * @remarks
+ * 初期値は現在のアカウント情報から取得し、変更時にサーバーへ保存する。
+ *
+ * @internal
+ */
+let hideMutedAndBlockedUserReactions = $ref(
+	$i?.hideMutedAndBlockedUserReactions ?? false,
+);
+
+/**
+ * 閲覧者別リアクション除外設定を保存し、アカウント情報を更新する。
+ *
+ * @param value - リアクション件数除外を有効にする場合はtrue
+ * @returns 保存とローカルアカウント情報の更新が完了した時点で解決するPromise
+ * @throws 設定更新APIが失敗した場合
+ *
+ * @internal
+ */
+async function saveHiddenUserReactionSetting(value: boolean): Promise<void> {
+	const updated = await os.api("i/update", {
+		hideMutedAndBlockedUserReactions: value,
+	});
+	if ($i != null) Object.assign($i, updated);
+}
 
 const showMkkeySettingTips = $computed(
 	defaultStore.makeGetterSetter("showMkkeySettingTips")

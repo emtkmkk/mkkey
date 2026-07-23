@@ -21,6 +21,7 @@ import { Blockings, Users } from "@/models/index.js";
 import { unsetModerationWarningByAdminUnblock } from "../moderation-warning-by-admin-block.js";
 import { createNotification } from "@/services/create-notification.js";
 import { invalidateUserShowRelationCache } from "../invalidate-user-show-relation-cache.js";
+import { publishUserEvent } from "@/services/stream.js";
 
 const logger = new Logger("blocking/delete");
 
@@ -44,6 +45,12 @@ export default async function (blocker: CacheableUser, blockee: CacheableUser) {
 	await Blockings.delete(blocking.id);
 	await unsetModerationWarningByAdminUnblock(blocker, blockee);
 	await invalidateUserShowRelationCache(blocker.id, blockee.id);
+	if (Users.isLocalUser(blocker)) {
+		publishUserEvent(blocker.id, "blockChange", blockee);
+	}
+	if (Users.isLocalUser(blockee)) {
+		publishUserEvent(blockee.id, "blockChange", blocker);
+	}
 
 	if (Users.isLocalUser(blockee)) {
 		const notifier = await Users.findOneBy({ id: blocker.id });

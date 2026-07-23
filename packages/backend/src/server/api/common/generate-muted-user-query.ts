@@ -13,18 +13,30 @@ import { Brackets } from "typeorm";
 import type { User } from "@/models/entities/user.js";
 import { Mutings, UserProfiles } from "@/models/index.js";
 import { ADMIN_USER_ID } from "@/const.js";
+import {
+	createMuteScopeCondition,
+	MUTE_SCOPE_BITS,
+} from "@/misc/mute-scope.js";
 
 export function generateMutedUserQuery(
 	q: SelectQueryBuilder<any>,
 	me: { id: User["id"] },
 	exclude?: User,
 ) {
-	const mutingQuery = Mutings.createQueryBuilder("muting")
-		.select("muting.muteeId")
-		.where("muting.muterId = :muterId", { muterId: me.id });
+	const allMutingQuery = Mutings.createQueryBuilder("all_muting")
+		.select("all_muting.muteeId")
+		.where("all_muting.muterId = :muterId", { muterId: me.id })
+		.andWhere(`(all_muting."scope" & ${MUTE_SCOPE_BITS.all}) <> 0`);
+	const noteMutingQuery = Mutings.createQueryBuilder("note_muting")
+		.select("note_muting.muteeId")
+		.where("note_muting.muterId = :muterId", { muterId: me.id })
+		.andWhere(createMuteScopeCondition("note_muting", "note"));
 
 	if (exclude) {
-		mutingQuery.andWhere("muting.muteeId != :excludeId", {
+		allMutingQuery.andWhere("all_muting.muteeId != :excludeId", {
+			excludeId: exclude.id,
+		});
+		noteMutingQuery.andWhere("note_muting.muteeId != :excludeId", {
 			excludeId: exclude.id,
 		});
 	}
@@ -34,26 +46,35 @@ export function generateMutedUserQuery(
 		.where("user_profile.userId = :muterId", { muterId: me.id });
 
 	// 同一サブクエリを 1 回だけ生成して再利用し、重複評価を避ける
-	const mutingSubquery = mutingQuery.getQuery();
+	const allMutingSubquery = allMutingQuery.getQuery();
+	const noteMutingSubquery = noteMutingQuery.getQuery();
 	const mutingInstanceSubquery = mutingInstanceQuery.getQuery();
 
 	// 投稿の作者をミュートしていない かつ
 	// 投稿の返信先の作者をミュートしていない かつ
 	// 投稿の引用元の作者をミュートしていない
-	q.andWhere(
-		`(note.userId NOT IN (${mutingSubquery}) OR (note.visibility = 'specified' AND note.userId = :adminUserId))`,
-	)
+	q.andWhere(new Brackets((qb) => {
+		qb.where(new Brackets((normalMute) => {
+			normalMute
+				.where(`note.userId NOT IN (${allMutingSubquery})`)
+				.andWhere(new Brackets((noteMute) => {
+					noteMute
+						.where("note.renoteId IS NOT NULL AND note.text IS NULL")
+						.orWhere(`note.userId NOT IN (${noteMutingSubquery})`);
+				}));
+		})).orWhere("(note.visibility = 'specified' AND note.userId = :adminUserId)");
+	}))
 		.andWhere(
 			new Brackets((qb) => {
 				qb.where("note.replyUserId IS NULL").orWhere(
-					`note.replyUserId NOT IN (${mutingSubquery})`,
+					`note.replyUserId NOT IN (${allMutingSubquery})`,
 				);
 			}),
 		)
 		.andWhere(
 			new Brackets((qb) => {
 				qb.where("note.renoteUserId IS NULL").orWhere(
-					`note.renoteUserId NOT IN (${mutingSubquery})`,
+					`note.renoteUserId NOT IN (${allMutingSubquery})`,
 				);
 			}),
 		)
@@ -81,7 +102,8 @@ export function generateMutedUserQuery(
 		);
 
 	q.setParameters({
-		...mutingQuery.getParameters(),
+		...allMutingQuery.getParameters(),
+		...noteMutingQuery.getParameters(),
 		...mutingInstanceQuery.getParameters(),
 		adminUserId: ADMIN_USER_ID,
 	});
@@ -93,7 +115,8 @@ export function generateMutedUserQueryForUsers(
 ) {
 	const mutingQuery = Mutings.createQueryBuilder("muting")
 		.select("muting.muteeId")
-		.where("muting.muterId = :muterId", { muterId: me.id });
+		.where("muting.muterId = :muterId", { muterId: me.id })
+		.andWhere(`(muting."scope" & ${MUTE_SCOPE_BITS.all}) <> 0`);
 
 	const mutingSubquery = mutingQuery.getQuery();
 	q.andWhere(`user.id NOT IN (${mutingSubquery})`);

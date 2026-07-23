@@ -12,8 +12,8 @@
  * - **`moderationWarningPopupAt`**: `user` 列ではなく `moderation_warning_popup_ack` を `hydrateModerationWarningPopupAtForAuthUser` で注入。当日の警告 ACK 前は API / ストリームを制限するゲートに使う。
  * - **custom-motd**（任意認証）では `createdAt` / `notesCount` / `name` / `isCat` / `speakAsCat` を参照する。`birthday` は {@link UserProfile} 側のため User には無い。
  * - **notes/create** は `services/note/create` の投稿処理へ認証ユーザを渡し、`blockPost*` / `isSilenced` / `maxRankPoint` / `isBot` / `isPublicLikeList` / `avatarId` 等で可視性・スパム系の分岐を行う。
- *   周年バッジ判定用の `notesPostDays` / `lastNotePostedAt` / `notifiedAnniversaryLevel` も同様に参照する。
- *   欠けると `undefined + 1 = NaN` になり、判定不能かつ DB へ NaN を書き込みかねないので要注意。
+ *   なお周年バッジの進捗・通知（`notesPostDays` 等）は、キャッシュされた本オブジェクトではなく
+ *   `updateAnniversaryProgress` 側で DB の現在値をアトミックに読んで判定する（キャッシュ由来の二重通知を防ぐため）。
  * - 認証成功時の `updateLastActiveDateOnLogin` で `lastActiveDate` 更新に加え、休眠削除予告の `inactiveDeletionWarnedAt` をクリアする。
  *
  * @see {@link api-handler} API 認証
@@ -72,10 +72,6 @@ const AUTH_USER_SELECT = {
 	blockPostHome: true,
 	blockPostNotLocal: true,
 	blockPostNotLocalPublic: true,
-	// 周年バッジ: 投稿日数の集計・通知済みレベル判定（services/note/create）
-	notesPostDays: true,
-	lastNotePostedAt: true,
-	notifiedAnniversaryLevel: true,
 	isCat: true,
 	speakAsCat: true,
 	// ストリーム TL が参照するが、未選択だと undefined になり !flag で誤ってノートを落とす

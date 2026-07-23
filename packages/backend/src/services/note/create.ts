@@ -355,9 +355,6 @@ export default async (
 		notesCount: User["notesCount"];
 		onlineStatus: User["onlineStatus"];
 		maxRankPoint: User["maxRankPoint"];
-		notesPostDays: User["notesPostDays"];
-		lastNotePostedAt: User["lastNotePostedAt"];
-		notifiedAnniversaryLevel: User["notifiedAnniversaryLevel"];
 		isPublicLikeList: User["isPublicLikeList"];
 		blockPostPublic: User["blockPostPublic"];
 		blockPostHome: User["blockPostHome"];
@@ -1101,7 +1098,7 @@ export default async (
 
 		// 周年バッジ（もこきー熟練）の進捗更新・通知（ローカルユーザーのダイレクト以外の投稿のみ）
 		if (!isRemote && data.visibility !== "specified") {
-			updateAnniversaryProgress(user, data.createdAt).catch((err) => {
+			updateAnniversaryProgress(user.id, data.createdAt).catch((err) => {
 				noteLogger.warn("Failed to update anniversary progress", { e: err });
 			});
 		}
@@ -1750,63 +1747,73 @@ function incNotesCountOfUser(user: { id: User["id"] }) {
  * 新たに到達していれば「badge」通知（デフォルトON、ミュート設定で抑止可）を送る。
  *
  * @remarks
- * `users/stats` の都度集計とは独立した単調増加値のため、投稿削除では減らない。
- * 通知は「現在の最高レベル」のみ・投稿タイミングで1回だけ発生する
- * （`notifiedAnniversaryLevel` を通知済みレベルとして保持するため、レベルが複数上がっても1通のみ）。
+ * - `users/stats` の都度集計とは独立した単調増加値のため、投稿削除では減らない。
+ * - 認証ユーザは短期キャッシュ（`authUserByTokenCache`）のスナップショットで、
+ *   `Users.update` してもキャッシュ上の値は更新されない。よってキャッシュされた値に
+ *   依存すると、同一トークンの連投で古い `notifiedAnniversaryLevel` を読み続けて
+ *   毎回通知してしまう。そのため判定・更新はすべて **DB の現在値に対するアトミックな
+ *   条件付き UPDATE** で行う（同日連投・複数プロセスでも二重通知しない）。
+ * - 通知は「現在の最高レベル」のみ・投稿タイミングで1回だけ発生する。
  *
+ * @param userId - 投稿したローカルユーザーの ID
+ * @param postedAt - 投稿日時（新しい投稿日の判定に UTC 日で使用）
  * @internal
  */
 async function updateAnniversaryProgress(
-	user: {
-		id: User["id"];
-		notesPostDays: User["notesPostDays"];
-		lastNotePostedAt: User["lastNotePostedAt"];
-		notifiedAnniversaryLevel: User["notifiedAnniversaryLevel"];
-	},
+	userId: User["id"],
 	postedAt: Date,
 ): Promise<void> {
-	const isNewDay =
-		user.lastNotePostedAt == null ||
-		user.lastNotePostedAt.toISOString().slice(0, 10) !==
-			postedAt.toISOString().slice(0, 10);
+	const postedDay = postedAt.toISOString().slice(0, 10);
 
-	const notesPostDays = isNewDay
-		? user.notesPostDays + 1
-		: user.notesPostDays;
+	// 新しい投稿日のときだけ notesPostDays を +1（DB の lastNotePostedAt を基準に判定）。
+	// 同一行への並行 UPDATE は直列化され、WHERE が再評価されるため、同日は1回しか通らない。
+	const inc = await Users.createQueryBuilder()
+		.update()
+		.set({
+			notesPostDays: () => '"notesPostDays" + 1',
+			lastNotePostedAt: postedAt,
+		})
+		.where("id = :id", { id: userId })
+		.andWhere(
+			`("lastNotePostedAt" IS NULL OR ("lastNotePostedAt" AT TIME ZONE 'UTC')::date <> :postedDay::date)`,
+			{ postedDay },
+		)
+		.returning(["notesPostDays", "notifiedAnniversaryLevel"])
+		.execute();
 
+	// 新しい投稿日でなければ（同日2回目以降 or 競合敗北）notesPostDays は不変＝レベルも不変。
+	if (!inc.affected || inc.raw.length === 0) return;
+
+	const row = inc.raw[0];
+	const notesPostDays = Number(row.notesPostDays);
+	const notifiedLevel = Number(row.notifiedAnniversaryLevel);
 	const currentLevel = computeAnniversaryLevel(notesPostDays);
-	const shouldNotify =
-		currentLevel >= 1 && currentLevel > user.notifiedAnniversaryLevel;
 
-	if (!isNewDay && !shouldNotify) return;
+	if (currentLevel < 1 || currentLevel <= notifiedLevel) return;
 
-	const updates: Record<string, unknown> = {};
-	if (isNewDay) {
-		updates.notesPostDays = notesPostDays;
-		updates.lastNotePostedAt = postedAt;
-	}
-	if (shouldNotify) {
-		updates.notifiedAnniversaryLevel = currentLevel;
-	}
+	// 通知権をアトミックに取得。実際に行を更新できた（affected>0）1回だけ通知する。
+	const claim = await Users.createQueryBuilder()
+		.update()
+		.set({ notifiedAnniversaryLevel: currentLevel })
+		.where("id = :id", { id: userId })
+		.andWhere(`"notifiedAnniversaryLevel" < :currentLevel`, { currentLevel })
+		.execute();
 
-	await Users.update(user.id, updates);
+	if (!claim.affected) return;
 
-	if (shouldNotify) {
-		const profile = await UserProfiles.findOneBy({ userId: user.id });
-		const isBadgeMuted =
-			profile?.mutingNotificationTypes.includes("badge") ?? false;
+	const badge = buildAnniversaryBadge(notesPostDays);
+	if (badge == null) return;
 
-		if (!isBadgeMuted) {
-			const badge = buildAnniversaryBadge(notesPostDays);
-			if (badge) {
-				await createNotification(user.id, "badge", {
-					customHeader: badge.name,
-					customBody: badge.description,
-					customIcon: badge.emoji,
-				});
-			}
-		}
-	}
+	const profile = await UserProfiles.findOneBy({ userId });
+	const isBadgeMuted =
+		profile?.mutingNotificationTypes.includes("badge") ?? false;
+	if (isBadgeMuted) return;
+
+	await createNotification(userId, "badge", {
+		customHeader: badge.name,
+		customBody: badge.description,
+		customIcon: badge.emoji,
+	});
 }
 
 /**

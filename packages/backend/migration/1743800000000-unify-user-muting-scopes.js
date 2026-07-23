@@ -17,10 +17,14 @@ export class UnifyUserMutingScopes1743800000000 {
 		);
 
 		// 既存の個別ミュートは無期限だったため、重複時は統合行全体を無期限にする。
+		// 旧テーブルには削除済みユーザーを参照する孤児行が残っている場合があり、
+		// muting のFK制約に違反するため、両ユーザーが存在する行だけを移行する。
 		await queryRunner.query(`
 			INSERT INTO "muting" ("id", "createdAt", "expiresAt", "muteeId", "muterId", "scope")
 			SELECT MIN("id"), MIN("createdAt"), NULL, "muteeId", "muterId", 4
-			FROM "renote_muting"
+			FROM "renote_muting" rm
+			WHERE EXISTS (SELECT 1 FROM "user" u WHERE u."id" = rm."muterId")
+				AND EXISTS (SELECT 1 FROM "user" u WHERE u."id" = rm."muteeId")
 			GROUP BY "muteeId", "muterId"
 			ON CONFLICT ("muterId", "muteeId") DO UPDATE
 			SET
@@ -31,7 +35,9 @@ export class UnifyUserMutingScopes1743800000000 {
 		await queryRunner.query(`
 			INSERT INTO "muting" ("id", "createdAt", "expiresAt", "muteeId", "muterId", "scope")
 			SELECT MIN("id"), MIN("createdAt"), NULL, "muteeId", "muterId", 16
-			FROM "push_muting"
+			FROM "push_muting" pm
+			WHERE EXISTS (SELECT 1 FROM "user" u WHERE u."id" = pm."muterId")
+				AND EXISTS (SELECT 1 FROM "user" u WHERE u."id" = pm."muteeId")
 			GROUP BY "muteeId", "muterId"
 			ON CONFLICT ("muterId", "muteeId") DO UPDATE
 			SET
@@ -42,7 +48,9 @@ export class UnifyUserMutingScopes1743800000000 {
 		await queryRunner.query(`
 			INSERT INTO "muting" ("id", "createdAt", "expiresAt", "muteeId", "muterId", "scope")
 			SELECT MIN("id"), MIN("createdAt"), NULL, "blockeeId", "blockerId", 128
-			FROM "follow_blocking"
+			FROM "follow_blocking" fb
+			WHERE EXISTS (SELECT 1 FROM "user" u WHERE u."id" = fb."blockerId")
+				AND EXISTS (SELECT 1 FROM "user" u WHERE u."id" = fb."blockeeId")
 			GROUP BY "blockeeId", "blockerId"
 			ON CONFLICT ("muterId", "muteeId") DO UPDATE
 			SET

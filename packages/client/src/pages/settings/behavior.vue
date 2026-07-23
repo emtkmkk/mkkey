@@ -22,6 +22,14 @@
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
+			<FormSwitch
+				v-model="showUserMenuMessagingAndGroup"
+				class="_formBlock"
+				>{{ i18n.ts.showUserMenuMessagingAndGroup
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span></FormSwitch
+			>
 			<FormSwitch v-model="showReactionMenuContext" class="_formBlock"
 				>{{ i18n.ts.showReactionMenuContext
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
@@ -442,6 +450,10 @@ const showReactionMenuContext = $computed(
 );
 const shortNoteMenu = $computed(
 	defaultStore.makeGetterSetter("shortNoteMenu")
+);
+/** ユーザーメニューのチャット開始／グループ招待の表示 */
+const showUserMenuMessagingAndGroup = $computed(
+	defaultStore.makeGetterSetter("showUserMenuMessagingAndGroup")
 );
 async function reloadAsk() {
 	const { canceled } = await os.confirm({

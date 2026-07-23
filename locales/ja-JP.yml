@@ -1522,6 +1522,7 @@ autoSaveBackup: "自動でバックアップを保存する"
 autoSaveDeviceName: "端末のニックネーム"
 autoSaveDeviceNameDescription: "入力すると、自動バックアップのファイル名に反映されます。"
 shortNoteMenu: "短い投稿のメニューを使用する"
+showUserMenuMessagingAndGroup: "ユーザーメニューに「チャットを開始」「グループに招待」を表示"
 
 _sensitiveMediaDetection:
   description: "機械学習を使って自動でセンシティブなメディアを検出し、モデレーションに役立てられます。サーバーの負荷が少し増えます。"

@@ -3,6 +3,11 @@
  *
  * ユーザー操作メニューと、範囲付きミュート設定フォームを組み立てる。
  *
+ * @remarks
+ * NOTE: 「チャットを開始」「グループに招待」は
+ * `defaultStore.state.showUserMenuMessagingAndGroup` が ON のときだけ表示する
+ * （対応サーバが少なく利用も少ないため、デフォルトは非表示）。
+ *
  * @internal
  */
 import * as Acct from "calckey-js/built/acct";
@@ -263,7 +268,8 @@ export function getUserMenu(user, router: Router = mainRouter) {
 				os.post({ specified: user, initialText: `${canonical} ` });
 			},
 		},
-		meId !== user.id
+		// 対応サーバが少ないため、設定ON時のみ表示
+		meId !== user.id && defaultStore.state.showUserMenuMessagingAndGroup
 			? {
 					type: "link",
 					icon: "ph-chats-teardrop ph-bold ph-lg",
@@ -330,7 +336,8 @@ export function getUserMenu(user, router: Router = mainRouter) {
 			text: i18n.ts.addToList,
 			action: pushList,
 		},
-		meId !== user.id
+		// 対応サーバが少ないため、設定ON時のみ表示（チャット開始と同じスイッチ）
+		meId !== user.id && defaultStore.state.showUserMenuMessagingAndGroup
 			? {
 					icon: "ph-users-three ph-bold ph-lg",
 					text: i18n.ts.inviteToGroup,

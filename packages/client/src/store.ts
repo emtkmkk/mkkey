@@ -1789,6 +1789,19 @@ export const defaultStore = markRaw(
 			createdAt: "2024/7/4",
 			page: "behavior",
 		},
+		/**
+		 * ユーザーメニューに「チャットを開始」「グループに招待」を表示するか
+		 *
+		 * @remarks
+		 * NOTE: 対応サーバが少なく利用も少ないため、デフォルトは非表示。
+		 * 必要な場合のみ動作設定からONにする。
+		 */
+		showUserMenuMessagingAndGroup: {
+			where: "device",
+			default: false,
+			createdAt: "2026/7/23",
+			page: "behavior",
+		},
 		enableHotkeyDarkMode: {
 			where: "device",
 			default: false,

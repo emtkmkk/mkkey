@@ -19,6 +19,7 @@ import type { Packed } from "@/misc/schema.js";
 import type { Promiseable } from "@/prelude/await-all.js";
 import { awaitAll } from "@/prelude/await-all.js";
 import { populateEmojis } from "@/misc/populate-emojis.js";
+import { buildAnniversaryBadge } from "@/misc/anniversary-badge.js";
 import {
 	decodeMuteScope,
 	hasMuteScope,
@@ -958,8 +959,14 @@ export const UserRepository = db.getRepository(User).extend({
 				  }
 				: undefined;
 
+		// 周年バッジ（もこきー熟練）。左端・最上位に表示するため配列の先頭に置く。
+		const anniversaryBadge = !user.host
+			? buildAnniversaryBadge(user.notesPostDays) ?? undefined
+			: undefined;
+
 		const badges = !user.host
 			? [
+					anniversaryBadge,
 					profile?.showDonateBadges ? donateBadges : undefined,
 					harborBadges,
 					rankBadges,

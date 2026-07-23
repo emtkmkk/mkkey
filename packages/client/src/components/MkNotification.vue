@@ -17,6 +17,12 @@
 				class="icon"
 				:user="notification.user"
 			/>
+			<div
+				v-else-if="notification.type === 'badge' && notification.icon"
+				class="icon badge-icon"
+			>
+				<MkEmoji :emoji="notification.icon" :normal="true" />
+			</div>
 			<img
 				v-else-if="notification.icon"
 				class="icon"
@@ -90,6 +96,10 @@
 				<i
 					v-else-if="notification.type === 'pollEnded'"
 					class="ph-microphone-stage ph-bold"
+				></i>
+				<i
+					v-else-if="notification.type === 'badge'"
+					class="ph-seal-check ph-bold"
 				></i>
 				<template v-else-if="isDefaultReaction">
 					<i
@@ -423,6 +433,9 @@
 			<span v-if="notification.type === 'app'" class="text">
 				<Mfm :text="notification.body" :nowrap="!full" />
 			</span>
+			<span v-if="notification.type === 'badge'" class="text">
+				{{ notification.body }}
+			</span>
 		</div>
 	</div>
 </template>
@@ -686,6 +699,14 @@ useTooltip(reactionRef, (showing) => {
 			border-radius: 0.375rem;
 			// アバターと同様に引き伸ばさず切り抜いて枠いっぱいに表示する
 			object-fit: cover;
+
+			&.badge-icon {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				font-size: 1.5rem;
+				background: var(--panel);
+			}
 		}
 
 		> .sub-icon {
@@ -771,6 +792,12 @@ useTooltip(reactionRef, (showing) => {
 			&.followedAccountWasDeleted {
 				padding: 0.1875rem;
 				background: #6b6b6b;
+				pointer-events: none;
+			}
+
+			&.badge {
+				padding: 0.1875rem;
+				background: var(--accent);
 				pointer-events: none;
 			}
 

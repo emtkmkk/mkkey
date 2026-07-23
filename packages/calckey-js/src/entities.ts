@@ -60,6 +60,22 @@ export type UserLite = {
 	isUsagePaused: boolean;
 };
 
+/**
+ * プロフィールに表示するバッジ（支援者・港から移住・周年など）。
+ * `emoji`（カスタム絵文字/Unicode絵文字）または `icon`（Phosphor クラス、管理人/モデレーター等）のどちらかを持つ。
+ */
+export type UserBadge = {
+	id?: string;
+	key: string;
+	name: string;
+	emoji?: string;
+	icon?: string;
+	color?: string;
+	/** バッジの説明文（動的な内容を含む場合はサーバー側で埋め込む。例: 周年バッジの現在の年数） */
+	description?: string;
+	showBadgeNote?: boolean;
+};
+
 export type UserDetailed = UserLite & {
 	bannerBlurhash: string | null;
 	bannerColor: string | null;
@@ -106,6 +122,7 @@ export type UserDetailed = UserLite & {
 	updatedAt: DateString | null;
 	uri: string | null;
 	url: string | null;
+	badges?: UserBadge[];
 };
 
 export type UserGroup = TODO;
@@ -310,6 +327,15 @@ export type Notification = {
 			subIcon?: string | null;
 			/** プッシュ通知テスト用フラグ（SW / クライアント内部） */
 			isPushTest?: boolean;
+	  }
+	| {
+			type: "badge";
+			/** バッジ名（例: もこきー熟練（1年）） */
+			header?: string | null;
+			/** バッジの説明文 */
+			body: string;
+			/** バッジのメインアイコン（絵文字。周年は数字絵文字） */
+			icon?: string | null;
 	  }
 );
 

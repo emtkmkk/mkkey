@@ -85,6 +85,7 @@ export class Notification {
 	 * wasBlocked - ブロックされた
 	 * wasUnblocked - ブロック解除された
 	 * followedAccountWasDeleted - フォローしていたユーザーがアカウントを削除した
+	 * badge - バッジを獲得した（周年バッジ等）
 	 */
 	@Index()
 	@Column('enum', {

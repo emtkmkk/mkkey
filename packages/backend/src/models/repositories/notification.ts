@@ -217,6 +217,13 @@ export const NotificationRepository = db.getRepository(Notification).extend({
 						subIcon: notification.customSubIcon || undefined,
 				  }
 				: {}),
+			...(notification.type === "badge"
+				? {
+						body: notification.customBody,
+						header: notification.customHeader,
+						icon: notification.customIcon,
+				  }
+				: {}),
 		});
 	},
 

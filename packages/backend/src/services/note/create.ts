@@ -70,6 +70,10 @@ import {
 import type { IPoll } from "@/models/entities/poll.js";
 import { Poll } from "@/models/entities/poll.js";
 import { createNotification } from "../create-notification.js";
+import {
+	buildAnniversaryBadge,
+	computeAnniversaryLevel,
+} from "@/misc/anniversary-badge.js";
 import { isDuplicateKeyValueError } from "@/misc/is-duplicate-key-value-error.js";
 import { checkHitAntenna } from "@/misc/check-hit-antenna.js";
 import { getWordHardMute } from "@/misc/check-word-mute.js";
@@ -351,6 +355,9 @@ export default async (
 		notesCount: User["notesCount"];
 		onlineStatus: User["onlineStatus"];
 		maxRankPoint: User["maxRankPoint"];
+		notesPostDays: User["notesPostDays"];
+		lastNotePostedAt: User["lastNotePostedAt"];
+		notifiedAnniversaryLevel: User["notifiedAnniversaryLevel"];
 		isPublicLikeList: User["isPublicLikeList"];
 		blockPostPublic: User["blockPostPublic"];
 		blockPostHome: User["blockPostHome"];
@@ -1092,6 +1099,13 @@ export default async (
 		// ノート数（ユーザー）をインクリメント
 		if (data.visibility !== "specified") incNotesCountOfUser(user);
 
+		// 周年バッジ（もこきー熟練）の進捗更新・通知（ローカルユーザーのダイレクト以外の投稿のみ）
+		if (!isRemote && data.visibility !== "specified") {
+			updateAnniversaryProgress(user, data.createdAt).catch((err) => {
+				noteLogger.warn("Failed to update anniversary progress", { e: err });
+			});
+		}
+
 		// リモートユーザまたはbotの投稿時、ユーザの最終更新時刻を更新
 		// 2時間前以上の場合は更新しない
 		// TODO : 更新した時に時刻が戻る可能性あり
@@ -1729,6 +1743,70 @@ function incNotesCountOfUser(user: { id: User["id"] }) {
 		})
 		.where("id = :id", { id: user.id })
 		.execute();
+}
+
+/**
+ * 投稿日が変わっていれば `notesPostDays` を+1し、周年バッジのレベルが
+ * 新たに到達していれば「badge」通知（デフォルトON、ミュート設定で抑止可）を送る。
+ *
+ * @remarks
+ * `users/stats` の都度集計とは独立した単調増加値のため、投稿削除では減らない。
+ * 通知は「現在の最高レベル」のみ・投稿タイミングで1回だけ発生する
+ * （`notifiedAnniversaryLevel` を通知済みレベルとして保持するため、レベルが複数上がっても1通のみ）。
+ *
+ * @internal
+ */
+async function updateAnniversaryProgress(
+	user: {
+		id: User["id"];
+		notesPostDays: User["notesPostDays"];
+		lastNotePostedAt: User["lastNotePostedAt"];
+		notifiedAnniversaryLevel: User["notifiedAnniversaryLevel"];
+	},
+	postedAt: Date,
+): Promise<void> {
+	const isNewDay =
+		user.lastNotePostedAt == null ||
+		user.lastNotePostedAt.toISOString().slice(0, 10) !==
+			postedAt.toISOString().slice(0, 10);
+
+	const notesPostDays = isNewDay
+		? user.notesPostDays + 1
+		: user.notesPostDays;
+
+	const currentLevel = computeAnniversaryLevel(notesPostDays);
+	const shouldNotify =
+		currentLevel >= 1 && currentLevel > user.notifiedAnniversaryLevel;
+
+	if (!isNewDay && !shouldNotify) return;
+
+	const updates: Record<string, unknown> = {};
+	if (isNewDay) {
+		updates.notesPostDays = notesPostDays;
+		updates.lastNotePostedAt = postedAt;
+	}
+	if (shouldNotify) {
+		updates.notifiedAnniversaryLevel = currentLevel;
+	}
+
+	await Users.update(user.id, updates);
+
+	if (shouldNotify) {
+		const profile = await UserProfiles.findOneBy({ userId: user.id });
+		const isBadgeMuted =
+			profile?.mutingNotificationTypes.includes("badge") ?? false;
+
+		if (!isBadgeMuted) {
+			const badge = buildAnniversaryBadge(notesPostDays);
+			if (badge) {
+				await createNotification(user.id, "badge", {
+					customHeader: badge.name,
+					customBody: badge.description,
+					customIcon: badge.emoji,
+				});
+			}
+		}
+	}
 }
 
 /**

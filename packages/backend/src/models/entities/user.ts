@@ -398,6 +398,34 @@ export class User {
 	})
 	public maxRankPoint: number;
 
+	/**
+	 * 周年バッジ判定用の投稿日数（ログインして1投稿以上した日数）。
+	 *
+	 * @remarks
+	 * `users/stats` の `notesPostDays`（現存ノートからの都度集計）とは独立。
+	 * ノート作成時に新しい投稿日を検知するたび +1 する単調増加値で、投稿削除では減らない。
+	 * マイグレーションで現存ノートの distinct 日数を初期バックフィルするのみ。
+	 */
+	@Column('integer', {
+		default: 0,
+		comment: '周年バッジ用の投稿日数（単調増加、削除では減らない）',
+	})
+	public notesPostDays: number;
+
+	/** 直近でノートを作成した日時（`notesPostDays` の「新しい日」判定マーカー） */
+	@Column('timestamp with time zone', {
+		nullable: true,
+		comment: '周年バッジ用の投稿日マーカー',
+	})
+	public lastNotePostedAt: Date | null;
+
+	/** 周年バッジで最後に通知したレベル（年数）。次にこれを超えたら通知する */
+	@Column('integer', {
+		default: 0,
+		comment: '周年バッジで最後に通知したレベル（年数）',
+	})
+	public notifiedAnniversaryLevel: number;
+
 	constructor(data: Partial<User>) {
 		if (data == null) return;
 

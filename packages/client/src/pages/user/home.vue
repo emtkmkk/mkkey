@@ -39,17 +39,6 @@
 										:nowrap="false"
 										:original="true"
 									/>
-									<div>
-										<span
-											v-if="
-												$i &&
-												$i.id != user.id &&
-												user.isFollowed
-											"
-											class="followed"
-											>{{ i18n.ts.followsYou }}</span
-										>
-									</div>
 								</div>
 								<div class="bottom">
 									<span class="username"
@@ -58,9 +47,11 @@
 									<span
 										v-for="badge in mkBadge"
 										:key="'badge-' + badge.key"
-										style="badge"
+										class="badge"
 										:title="badge.name"
 										v-tooltip="badge.name"
+										style="cursor: pointer"
+										@click="showBadges"
 										><MkEmoji
 											class="emoji"
 											:emoji="badge.emoji"
@@ -73,13 +64,15 @@
 									<span
 										v-if="user.isAdmin"
 										:title="i18n.ts.admin"
-										style="color: var(--badge)"
+										style="color: var(--badge); cursor: pointer"
+										@click="showBadges"
 										><i class="ph-wrench ph-fill ph-lg"></i
 									></span>
 									<span
 										v-if="!user.isAdmin && user.isModerator"
 										:title="i18n.ts.moderator"
-										style="color: var(--badge)"
+										style="color: var(--badge); cursor: pointer"
+										@click="showBadges"
 										><i class="ph-wrench ph-bold"></i
 									></span>
 									<span
@@ -128,17 +121,6 @@
 									:nowrap="false"
 									:original="true"
 								/>
-								<div>
-									<span
-										v-if="
-											$i &&
-											$i.id != user.id &&
-											user.isFollowed
-										"
-										class="followed"
-										>{{ i18n.ts.followsYou }}</span
-									>
-								</div>
 							</div>
 							<div class="bottom">
 								<span class="username"
@@ -147,9 +129,11 @@
 								<span
 									v-for="badge in mkBadge"
 									:key="'badge-' + badge.key"
-									style="badge"
+									class="badge"
 									:title="badge.name"
 									v-tooltip="badge.name"
+									style="cursor: pointer"
+									@click="showBadges"
 									><MkEmoji
 										class="emoji"
 										:emoji="badge.emoji"
@@ -162,13 +146,15 @@
 								<span
 									v-if="user.isAdmin"
 									:title="i18n.ts.admin"
-									style="color: var(--badge)"
+									style="color: var(--badge); cursor: pointer"
+									@click="showBadges"
 									><i class="ph-wrench ph-fill ph-lg"></i
 								></span>
 								<span
 									v-if="!user.isAdmin && user.isModerator"
 									:title="i18n.ts.moderator"
-									style="color: var(--badge)"
+									style="color: var(--badge); cursor: pointer"
+									@click="showBadges"
 									><i class="ph-wrench ph-bold"></i
 								></span>
 								<span
@@ -200,6 +186,28 @@
 							</div>
 						</div>
 						<div class="follow-container">
+							<div v-if="relation" class="relation">
+								<span
+									class="chip"
+									:class="{
+										full: !narrow,
+										mutual: relation.mutual,
+									}"
+									v-tooltip="relation.text"
+								>
+									<i
+										:class="relation.icon"
+										:style="
+											relation.flip
+												? { transform: 'scaleX(-1)' }
+												: undefined
+										"
+									></i>
+									<span v-if="!narrow" class="label">{{
+										relation.text
+									}}</span>
+								</span>
+							</div>
 							<div class="actions">
 								<MkFollowButton
 									v-if="
@@ -287,14 +295,7 @@
 													.replaceAll("-0", "-")
 													.replace("-", "/")
 													.replace("-", "/")) +
-										(!props.user.birthday ||
-										props.user.username === "eroflash" ||
-										[":nobuyori_hpb:"].includes(
-											props.user.originalname ||
-												props.user.name
-										)
-											? "?"
-											: "")
+										(!props.user.birthday ? "?" : "")
 									}}
 									{{
 										nextBirthday === 0
@@ -602,6 +603,9 @@ import { useRemoteImageWithProxy } from "@/scripts/use-remote-image-with-proxy";
 
 const XPhotos = defineAsyncComponent(() => import("./index.photos.vue"));
 const XActivity = defineAsyncComponent(() => import("./index.activity.vue"));
+const MkBadgesDialog = defineAsyncComponent(
+	() => import("@/components/MkBadgesDialog.vue")
+);
 
 const props = withDefaults(
 	defineProps<{
@@ -622,7 +626,7 @@ let narrow = $ref<null | boolean>(null);
 let rootEl = $ref<null | HTMLElement>(null);
 let bannerEl = $ref<null | HTMLElement>(null);
 const pinFull = $ref(false);
-const mkBadge = $ref(props.user.badges || []);
+const mkBadge = props.user.badges || [];
 const bannerImageUrl = useRemoteImageWithProxy(
         () => props.user.bannerUrl ?? null,
         () => props.user.host != null,
@@ -631,6 +635,34 @@ const visiblePinnedNotes = $computed(() => {
 	return pinFull
 		? props.user.pinnedNotes
 		: props.user.pinnedNotes.slice(0, 2);
+});
+
+/** 閲覧者（自分）とプロフィール主の関係性。フォローボタンと左右対称の位置に表示する。 */
+const relation = $computed(() => {
+	if ($i == null || $i.id === props.user.id) return null;
+
+	const followed = props.user.isFollowed === true;
+	const following = props.user.isFollowing === true;
+
+	// アイコンはノート（MkNoteHeader）の片思い表記に合わせる。
+	// 相互は塗りハート、相手→自分のみは反転した片思いハート。
+	if (followed && following) {
+		return {
+			text: i18n.ts.mutualFollow,
+			icon: "ph-heart ph-bold",
+			mutual: true,
+			flip: false,
+		};
+	}
+	if (followed) {
+		return {
+			text: i18n.ts.followsYou,
+			icon: "ph-heart-half ph-bold",
+			mutual: false,
+			flip: true,
+		};
+	}
+	return null;
 });
 
 /** 表示用の誕生日。ローカルでは pinnedAge を優先。リモートでは名前・自己紹介から年齢を判定する既存ロジックを使用。 */
@@ -668,22 +700,6 @@ const birthday = $computed(() => {
 		y8date.setHours(0, 0, 0, 0);
 		if (_birthday > y8date) _birthday.setFullYear(_birthday.getFullYear() - 1);
 		return `${String(_birthday.getFullYear()).padStart(4, "0")}-${String(_birthday.getMonth() + 1).padStart(2, "0")}-${String(_birthday.getDate()).padStart(2, "0")}`;
-	}
-
-	if (
-		props.user.username === "eroflash" ||
-		[":nobuyori_hpb:"].includes(props.user.originalname || props.user.name)
-	) {
-		let _birthday = props.user.birthday
-			? new Date(props.user.birthday)
-			: new Date();
-		_birthday.setDate(1);
-		_birthday.setMonth(new Date().getMonth());
-		_birthday.setDate(new Date().getDate());
-		return `${_birthday.getFullYear()}-${(
-			"00" +
-			(_birthday.getMonth() + 1)
-		).slice(-2)}-${("00" + _birthday.getDate()).slice(-2)}`;
 	}
 
 	const pinnedAge = props.user.pinnedAge;
@@ -809,6 +825,35 @@ function menu(ev) {
 	);
 }
 
+function showBadges() {
+	// user.badges には管理人／モデレーターは含まれないため、
+	// プロフィール表示と同じ条件で合成エントリを追加する。
+	const badges = [
+		...mkBadge,
+		...(props.user.isAdmin
+			? [
+					{
+						key: "admin",
+						name: i18n.ts.admin,
+						icon: "ph-wrench ph-fill",
+						color: "var(--badge)",
+					},
+			  ]
+			: []),
+		...(!props.user.isAdmin && props.user.isModerator
+			? [
+					{
+						key: "moderator",
+						name: i18n.ts.moderator,
+						icon: "ph-wrench ph-bold",
+						color: "var(--badge)",
+					},
+			  ]
+			: []),
+	];
+	os.popup(MkBadgesDialog, { badges }, {}, "closed");
+}
+
 function parallaxLoop() {
 	parallaxAnimationId = window.requestAnimationFrame(parallaxLoop);
 	parallax();
@@ -827,6 +872,10 @@ function parallax() {
 	banner.style.backgroundPosition = `center calc(50% - ${pos}px)`;
 }
 
+function onResize() {
+	if (rootEl) narrow = rootEl.clientWidth < 1000;
+}
+
 onMounted(() => {
 	if ($i || props.user.host == null) {
 		os.api("users/stats", {
@@ -836,14 +885,19 @@ onMounted(() => {
 			stats.value = response;
 		});
 	}
-	window.requestAnimationFrame(parallaxLoop);
 	narrow = rootEl!.clientWidth < 1000;
+	// バナーを表示している場合のみパララックス用の requestAnimationFrame ループを開始する
+	if (Object.keys(style).length > 0) {
+		window.requestAnimationFrame(parallaxLoop);
+	}
+	window.addEventListener("resize", onResize);
 });
 
 onUnmounted(() => {
 	if (parallaxAnimationId) {
 		window.cancelAnimationFrame(parallaxAnimationId);
 	}
+	window.removeEventListener("resize", onResize);
 });
 </script>
 
@@ -1013,13 +1067,56 @@ onUnmounted(() => {
 							vertical-align: bottom;
 							height: 1.9375rem;
 							width: 1.9375rem;
-							color: --fg;
+							color: var(--fg);
 							font-size: 1rem;
 						}
 
 						> .koudoku {
 							margin-left: 0.25rem;
 							vertical-align: bottom;
+						}
+					}
+
+					> .relation {
+						position: absolute;
+						top: 1.25rem;
+						left: 8.75rem;
+						pointer-events: auto;
+
+						> .chip {
+							display: inline-flex;
+							align-items: center;
+							justify-content: center;
+							gap: 0.375rem;
+
+							> i {
+								font-size: 1.2em;
+							}
+							height: 1.9375rem;
+							box-sizing: border-box;
+							font-weight: bold;
+							font-size: 0.875rem;
+							color: var(--fg);
+							background: var(--panel);
+							border: solid 0.0625rem var(--divider);
+							border-radius: 2rem;
+
+							&:not(.full) {
+								width: 1.9375rem;
+							}
+
+							&.full {
+								padding: 0 0.75rem;
+							}
+
+							&.mutual {
+								color: var(--accent);
+								border-color: var(--accent);
+							}
+
+							> .label {
+								white-space: nowrap;
+							}
 						}
 					}
 
@@ -1303,6 +1400,10 @@ onUnmounted(() => {
 					> .actions {
 						top: -6.875rem;
 						right: 0;
+					}
+					> .relation {
+						top: -6.875rem;
+						left: 0;
 					}
 				}
 			}

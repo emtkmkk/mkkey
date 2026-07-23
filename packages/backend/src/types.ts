@@ -17,6 +17,7 @@ export const notificationTypes = [
 	"wasBlocked",
 	"wasUnblocked",
 	"followedAccountWasDeleted",
+	"badge",
 ] as const;
 
 export const noteVisibilities = [

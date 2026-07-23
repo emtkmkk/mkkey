@@ -663,6 +663,19 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 					);
 				}
 
+				case "badge":
+					return composeWithDisplayText(
+						data,
+						data.body.header || data.body.body,
+						t,
+						{
+							body: data.body.body,
+							badge: notificationBadgeUrl("star"),
+							tag: `badge:${data.body.id}`,
+							data,
+						},
+					);
+
 				default: {
 					// 未対応種別・古い SW でも汎用通知を出す（compose 失敗を防ぐ）
 					const name = safeUserName(data.body.user);

@@ -1079,8 +1079,11 @@ onUnmounted(() => {
 
 					> .relation {
 						position: absolute;
-						top: 1.25rem;
-						left: 8.75rem;
+						// フォローボタン(.actions)と同じボックスモデル(top + padding)に
+						// 揃えることで、チップとボタンの縦位置を両レイアウトで一致させる。
+						top: 0.75rem;
+						left: 9.125rem;
+						padding: 0.5rem;
 						pointer-events: auto;
 
 						> .chip {

@@ -41,40 +41,43 @@ export async function configureUserMute(
 			label: i18n.ts._muteScopes.all,
 			description: i18n.ts._muteScopes.allDescription,
 		},
-		reaction: {
+		note: {
 			type: "boolean",
-			default: has("reaction"),
-			label: i18n.ts._muteScopes.reaction,
+			default: has("note"),
+			label: i18n.ts._muteScopes.note,
 		},
 		renote: {
 			type: "boolean",
 			default: has("renote"),
 			label: i18n.ts._muteScopes.renote,
 		},
-		push: {
+		reaction: {
 			type: "boolean",
-			default: has("push"),
-			label: i18n.ts._muteScopes.push,
-		},
-		note: {
-			type: "boolean",
-			default: has("note"),
-			label: i18n.ts._muteScopes.note,
-		},
-		notification: {
-			type: "boolean",
-			default: has("notification"),
-			label: i18n.ts._muteScopes.notification,
+			default: has("reaction"),
+			label: i18n.ts._muteScopes.reaction,
 		},
 		message: {
 			type: "boolean",
 			default: has("message"),
 			label: i18n.ts._muteScopes.message,
 		},
+		notification: {
+			type: "boolean",
+			default: has("notification"),
+			label: i18n.ts._muteScopes.notification,
+			description: i18n.ts._muteScopes.notificationDescription,
+		},
+		push: {
+			type: "boolean",
+			default: has("push"),
+			label: i18n.ts._muteScopes.push,
+			description: i18n.ts._muteScopes.pushDescription,
+		},
 		follow: {
 			type: "boolean",
 			default: has("follow"),
 			label: i18n.ts._muteScopes.follow,
+			description: i18n.ts._muteScopes.followDescription,
 		},
 		period: {
 			type: "enum",

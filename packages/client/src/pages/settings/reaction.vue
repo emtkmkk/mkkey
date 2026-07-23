@@ -33,7 +33,9 @@
 			@update:model-value="saveHiddenUserReactionSetting"
 		>
 			{{ i18n.ts.hideMutedAndBlockedUserReactions }}
-			<span class="_beta">{{ i18n.ts.beta }}</span>
+			<span v-if="showMkkeySettingTips" class="_beta">{{
+				i18n.ts.mkkey
+			}}</span>
 			<template #caption>
 				{{ i18n.ts.hideMutedAndBlockedUserReactionsDescription }}
 			</template>

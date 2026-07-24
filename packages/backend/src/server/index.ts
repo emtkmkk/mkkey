@@ -17,6 +17,7 @@ import * as fs from "node:fs";
 import * as http from "node:http";
 import Koa from "koa";
 import Router from "@koa/router";
+import cors from "@koa/cors";
 import mount from "koa-mount";
 import koaLogger from "koa-logger";
 import * as slow from "koa-slow";
@@ -100,6 +101,10 @@ app.use(mount("/proxy", proxyServer));
 // Init router
 const router = new Router();
 const mastoRouter = new Router();
+
+// /oauth/* はブラウザ上のサードパーティクライアントから直接叩かれるため CORS が必要。
+// /api 配下と違いこのルータは apiServer の cors() を経由しない。
+mastoRouter.use("/oauth", cors({ origin: "*" }));
 
 mastoRouter.use(
 	koaBody({

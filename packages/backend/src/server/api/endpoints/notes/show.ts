@@ -60,6 +60,13 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw err;
 	});
 
+	// getNote は showInvisible=true のとき存在しないノートに対して null を返す。
+	// この場合 Notes.pack に null を渡すと `note.user` 参照で TypeError → 500 になるため、
+	// ここで明示的に noSuchNote を返す。
+	if (note == null) {
+		throw new ApiError(meta.errors.noSuchNote);
+	}
+
 	return await Notes.pack(note, user, {
 		// FIXME: 返信またはリノートが非表示の場合、詳細付き pack でエラーになる可能性あり (#8774)
 		detail: true,

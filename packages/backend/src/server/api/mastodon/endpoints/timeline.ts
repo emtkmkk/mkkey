@@ -120,7 +120,7 @@ export function apiTimelineMastodon(router: Router): void {
 			ctx.body = toTextWithReaction(resp, ctx.hostname);
 		} catch (e: any) {
 			mastodonLogger.error("request failed", { e, response: e.response?.data });
-						ctx.status = 401;
+						ctx.status = e.response?.status ?? 500;
 			ctx.body = e.response.data;
 		}
 	});
@@ -139,7 +139,7 @@ export function apiTimelineMastodon(router: Router): void {
 				ctx.body = toTextWithReaction(resp, ctx.hostname);
 			} catch (e: any) {
 				mastodonLogger.error("request failed", { e, response: e.response?.data });
-								ctx.status = 401;
+								ctx.status = e.response?.status ?? 500;
 				ctx.body = e.response.data;
 			}
 		},
@@ -156,7 +156,7 @@ export function apiTimelineMastodon(router: Router): void {
 			ctx.body = toTextWithReaction(resp, ctx.hostname);
 		} catch (e: any) {
 			mastodonLogger.error("request failed", { e, response: e.response?.data });
-						ctx.status = 401;
+						ctx.status = e.response?.status ?? 500;
 			ctx.body = e.response.data;
 		}
 	});
@@ -175,7 +175,7 @@ export function apiTimelineMastodon(router: Router): void {
 				ctx.body = toTextWithReaction(resp, ctx.hostname);
 			} catch (e: any) {
 				mastodonLogger.error("request failed", { e, response: e.response?.data });
-								ctx.status = 401;
+								ctx.status = e.response?.status ?? 500;
 				ctx.body = e.response.data;
 			}
 		},
@@ -191,7 +191,7 @@ export function apiTimelineMastodon(router: Router): void {
 			ctx.body = data.data;
 		} catch (e: any) {
 			mastodonLogger.error("request failed", { e, response: e.response?.data });
-						ctx.status = 401;
+						ctx.status = e.response?.status ?? 500;
 			ctx.body = e.response.data;
 		}
 	});
@@ -204,7 +204,7 @@ export function apiTimelineMastodon(router: Router): void {
 			ctx.body = data.data.map((list) => convertList(list));
 		} catch (e: any) {
 			mastodonLogger.error("request failed", { e, response: e.response?.data });
-						ctx.status = 401;
+						ctx.status = e.response?.status ?? 500;
 			ctx.body = e.response.data;
 		}
 	});
@@ -221,7 +221,7 @@ export function apiTimelineMastodon(router: Router): void {
 				ctx.body = convertList(data.data);
 			} catch (e: any) {
 				mastodonLogger.error("request failed", { e, response: e.response?.data });
-								ctx.status = 401;
+								ctx.status = e.response?.status ?? 500;
 				ctx.body = e.response.data;
 			}
 		},
@@ -235,7 +235,7 @@ export function apiTimelineMastodon(router: Router): void {
 			ctx.body = convertList(data.data);
 		} catch (e: any) {
 			mastodonLogger.error("request failed", { e, response: e.response?.data });
-						ctx.status = 401;
+						ctx.status = e.response?.status ?? 500;
 			ctx.body = e.response.data;
 		}
 	});
@@ -253,7 +253,7 @@ export function apiTimelineMastodon(router: Router): void {
 				ctx.body = convertList(data.data);
 			} catch (e: any) {
 				mastodonLogger.error("request failed", { e, response: e.response?.data });
-								ctx.status = 401;
+								ctx.status = e.response?.status ?? 500;
 				ctx.body = e.response.data;
 			}
 		},
@@ -271,7 +271,7 @@ export function apiTimelineMastodon(router: Router): void {
 				ctx.body = data.data;
 			} catch (e: any) {
 				mastodonLogger.error("request failed", { e, response: e.response?.data });
-								ctx.status = 401;
+								ctx.status = e.response?.status ?? 500;
 				ctx.body = e.response.data;
 			}
 		},
@@ -290,7 +290,7 @@ export function apiTimelineMastodon(router: Router): void {
 				ctx.body = data.data.map((account) => convertAccount(account));
 			} catch (e: any) {
 				mastodonLogger.error("request failed", { e, response: e.response?.data });
-								ctx.status = 401;
+								ctx.status = e.response?.status ?? 500;
 				ctx.body = e.response.data;
 			}
 		},
@@ -311,7 +311,7 @@ export function apiTimelineMastodon(router: Router): void {
 				ctx.body = data.data;
 			} catch (e: any) {
 				mastodonLogger.error("request failed", { e, response: e.response?.data });
-								ctx.status = 401;
+								ctx.status = e.response?.status ?? 500;
 				ctx.body = e.response.data;
 			}
 		},
@@ -332,7 +332,7 @@ export function apiTimelineMastodon(router: Router): void {
 				ctx.body = data.data;
 			} catch (e: any) {
 				mastodonLogger.error("request failed", { e, response: e.response?.data });
-								ctx.status = 401;
+								ctx.status = e.response?.status ?? 500;
 				ctx.body = e.response.data;
 			}
 		},

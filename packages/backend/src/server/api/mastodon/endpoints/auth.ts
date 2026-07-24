@@ -75,7 +75,7 @@ export function apiAuthMastodon(router: Router): void {
 			ctx.body = returns;
 		} catch (e: any) {
 			mastodonLogger.error("request failed", { e });
-			ctx.status = 401;
+			ctx.status = e.response?.status ?? 500;
 			ctx.body = e.response.data;
 		}
 	});

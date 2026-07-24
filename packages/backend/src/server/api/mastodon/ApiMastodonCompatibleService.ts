@@ -45,7 +45,7 @@ export function apiMastodonCompatible(router: Router): void {
 			ctx.body = data.data;
 		} catch (e: any) {
 			mastodonLogger.error("request failed", { e, response: e.response?.data });
-			ctx.status = 401;
+			ctx.status = e.response?.status ?? 500;
 			ctx.body = e.response.data;
 		}
 	});
@@ -60,7 +60,7 @@ export function apiMastodonCompatible(router: Router): void {
 			ctx.body = await getInstance(data.data);
 		} catch (e: any) {
 			mastodonLogger.error("request failed", { e, response: e.response?.data });
-			ctx.status = 401;
+			ctx.status = e.response?.status ?? 500;
 			ctx.body = e.response.data;
 		}
 	});
@@ -76,7 +76,7 @@ export function apiMastodonCompatible(router: Router): void {
 			);
 		} catch (e: any) {
 			mastodonLogger.error("request failed", { e, response: e.response?.data });
-			ctx.status = 401;
+			ctx.status = e.response?.status ?? 500;
 			ctx.body = e.response.data;
 		}
 	});
@@ -94,7 +94,7 @@ export function apiMastodonCompatible(router: Router): void {
 				ctx.body = data.data;
 			} catch (e: any) {
 				mastodonLogger.error("request failed", { e, response: e.response?.data });
-				ctx.status = 401;
+				ctx.status = e.response?.status ?? 500;
 				ctx.body = e.response.data;
 			}
 		},
@@ -110,7 +110,7 @@ export function apiMastodonCompatible(router: Router): void {
 			ctx.body = data.data.map((filter) => convertFilter(filter));
 		} catch (e: any) {
 			mastodonLogger.error("request failed", { e, response: e.response?.data });
-			ctx.status = 401;
+			ctx.status = e.response?.status ?? 500;
 			ctx.body = e.response.data;
 		}
 	});
@@ -125,7 +125,7 @@ export function apiMastodonCompatible(router: Router): void {
 			ctx.body = data.data;
 		} catch (e: any) {
 			mastodonLogger.error("request failed", { e, response: e.response?.data });
-			ctx.status = 401;
+			ctx.status = e.response?.status ?? 500;
 			ctx.body = e.response.data;
 		}
 	});
@@ -140,7 +140,7 @@ export function apiMastodonCompatible(router: Router): void {
 			ctx.body = data.data;
 		} catch (e: any) {
 			mastodonLogger.error("request failed", { e, response: e.response?.data });
-			ctx.status = 401;
+			ctx.status = e.response?.status ?? 500;
 			ctx.body = e.response.data;
 		}
 	});

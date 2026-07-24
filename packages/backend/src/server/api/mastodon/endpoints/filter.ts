@@ -16,7 +16,7 @@ export function apiFilterMastodon(router: Router): void {
 			ctx.body = data.data.map((filter) => convertFilter(filter));
 		} catch (e: any) {
 			mastodonLogger.error("request failed", { e });
-			ctx.status = 401;
+			ctx.status = e.response?.status ?? 500;
 			ctx.body = e.response.data;
 		}
 	});
@@ -33,7 +33,7 @@ export function apiFilterMastodon(router: Router): void {
 			ctx.body = convertFilter(data.data);
 		} catch (e: any) {
 			mastodonLogger.error("request failed", { e });
-			ctx.status = 401;
+			ctx.status = e.response?.status ?? 500;
 			ctx.body = e.response.data;
 		}
 	});
@@ -48,7 +48,7 @@ export function apiFilterMastodon(router: Router): void {
 			ctx.body = convertFilter(data.data);
 		} catch (e: any) {
 			mastodonLogger.error("request failed", { e });
-			ctx.status = 401;
+			ctx.status = e.response?.status ?? 500;
 			ctx.body = e.response.data;
 		}
 	});
@@ -67,7 +67,7 @@ export function apiFilterMastodon(router: Router): void {
 			ctx.body = convertFilter(data.data);
 		} catch (e: any) {
 			mastodonLogger.error("request failed", { e });
-			ctx.status = 401;
+			ctx.status = e.response?.status ?? 500;
 			ctx.body = e.response.data;
 		}
 	});
@@ -84,7 +84,7 @@ export function apiFilterMastodon(router: Router): void {
 			ctx.body = data.data;
 		} catch (e: any) {
 			mastodonLogger.error("request failed", { e });
-			ctx.status = 401;
+			ctx.status = e.response?.status ?? 500;
 			ctx.body = e.response.data;
 		}
 	});

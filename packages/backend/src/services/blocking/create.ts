@@ -6,8 +6,12 @@
  * @remarks
  * - **役割**: ブロック API から呼ばれ、ブロック関係を DB に保存し AP 配信を行う。
  * - ブロック時はフォロー解除が最大 2 件走る。`userWasUnfollowed` / `wasForciblyUnfollowed` / `wasBlocked` をそれぞれ独立して発火する。
+ * - TL からの非表示は従来どおりミュート側の責務のため、ブロック成功後に無期限 `all` ミュートを冪等付与する。
+ *   （Web UI・API・ブロックインポートで差が出ないようにする）
+ * NOTE: 管理人ブロックは API 側で拒否されるため、ここでの管理人向けミュート例外は不要。
  *
  * @see {@link server/api/endpoints/blocking/create} ブロック API
+ * @see {@link services/muting.addMutingScope} ミュート範囲の冪等付与
  * @internal
  */
 
@@ -25,16 +29,16 @@ import renderReject from "@/remote/activitypub/renderer/reject.js";
 import type { Blocking } from "@/models/entities/blocking.js";
 import type { User } from "@/models/entities/user.js";
 import {
-        Blockings,
-        Users,
-        FollowRequests,
-        Followings,
-        UserListJoinings,
-        UserLists,
+	Blockings,
+	Users,
+	FollowRequests,
+	Followings,
+	UserListJoinings,
+	UserLists,
+	NoteWatchings,
 } from "@/models/index.js";
 import { perUserFollowingChart } from "@/services/chart/index.js";
 import { genId } from "@/misc/gen-id.js";
-import { IdentifiableError } from "@/misc/identifiable-error.js";
 import { getActiveWebhooks } from "@/misc/webhook-cache.js";
 import { invalidateListMembersCache } from "@/misc/antenna-members-cache.js";
 import { webhookDeliver } from "@/queue/index.js";
@@ -42,20 +46,29 @@ import { ensureProxyFollowsListedUser } from "../user-list/ensure-proxy-follow.j
 import { setModerationWarningByAdminBlock } from "../moderation-warning-by-admin-block.js";
 import { createNotification } from "@/services/create-notification.js";
 import { invalidateUserShowRelationCache } from "../invalidate-user-show-relation-cache.js";
+import { addMutingScope } from "../muting.js";
 
+/**
+ * ブロック関係を作成し、TL非表示用の all ミュートを付与する。
+ *
+ * @param blocker - ブロックする側
+ * @param blockee - ブロックされる側
+ * @returns 完了を示す Promise
+ * @internal
+ */
 export default async function (blocker: User, blockee: User) {
-        const [, , blockerUnfollowedBlockee, blockeeUnfollowedBlocker] =
-                await Promise.all([
-                        cancelRequest(blocker, blockee),
-                        cancelRequest(blockee, blocker),
-                        unFollow(blocker, blockee),
-                        unFollow(blockee, blocker),
-                        removeFromList(blockee, blocker),
-                ]);
+	const [, , blockerUnfollowedBlockee, blockeeUnfollowedBlocker] =
+		await Promise.all([
+			cancelRequest(blocker, blockee),
+			cancelRequest(blockee, blocker),
+			unFollow(blocker, blockee),
+			unFollow(blockee, blocker),
+			removeFromList(blockee, blocker),
+		]);
 
-        if (Users.isLocalUser(blocker) && Users.isRemoteUser(blockee)) {
-                await ensureProxyFollowsListedUser(blockee);
-        }
+	if (Users.isLocalUser(blocker) && Users.isRemoteUser(blockee)) {
+		await ensureProxyFollowsListedUser(blockee);
+	}
 
 	const blocking = {
 		id: genId(),
@@ -67,6 +80,7 @@ export default async function (blocker: User, blockee: User) {
 	} as Blocking;
 
 	await Blockings.insert(blocking);
+	await ensureAllMuteForBlock(blocker, blockee);
 	await setModerationWarningByAdminBlock(blocker, blockee);
 	if (Users.isLocalUser(blocker)) {
 		publishUserEvent(blocker.id, "blockChange", blockee);
@@ -114,6 +128,31 @@ export default async function (blocker: User, blockee: User) {
 	}
 
 	await invalidateUserShowRelationCache(blocker.id, blockee.id);
+}
+
+/**
+ * ブロックに伴い TL 非表示用の無期限 all ミュートを冪等付与する。
+ *
+ * @param blocker - ブロックする側（ミュートする側）
+ * @param blockee - ブロックされる側（ミュートされる側）
+ * @returns 完了を示す Promise
+ *
+ * @remarks
+ * - `addMutingScope(..., "all")` により既存の個別範囲があっても `all` に揃える。
+ * - ストリームのミュート集合更新のため `mute` ユーザーイベントを発行する。
+ *
+ * @internal
+ */
+async function ensureAllMuteForBlock(
+	blocker: User,
+	blockee: User,
+): Promise<void> {
+	await addMutingScope(blocker.id, blockee.id, "all", null);
+	publishUserEvent(blocker.id, "mute", blockee);
+	await NoteWatchings.delete({
+		userId: blocker.id,
+		noteUserId: blockee.id,
+	});
 }
 
 async function cancelRequest(follower: User, followee: User) {

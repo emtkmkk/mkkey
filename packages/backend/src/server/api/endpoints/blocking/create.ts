@@ -7,6 +7,7 @@
  * - **API パス**: `blocking/create`（POST `/api/blocking/create` で呼び出し）
  * - 認証必須。対象ユーザー（userId）をブロックし、ブロック関係を作成する。
  * - レート制限: 1 時間あたり 100 回（meta.limit）。
+ * - TL 非表示用に無期限 all ミュートも冪等付与する（インポート経路も含む）。
  *
  * @see {@link define} エンドポイント登録
  * @internal
@@ -31,7 +32,7 @@ export const meta = {
 	kind: "write:blocks",
 
 	description:
-		"指定したユーザーをブロックする。ブロックすると相手の投稿がTLに表示されず、DM も不可。ブロック解除は blocking/delete。",
+		"指定したユーザーをブロックする。ブロックすると相手の投稿がTLに表示されず（サーバー側で all ミュートも付与）、DM も不可。ブロック解除は blocking/delete。",
 
 	errors: {
 		noSuchUser: {

@@ -5,6 +5,8 @@
  *
  * @remarks
  * - **役割**: インポートキューで実行し、CSV からブロック対象を解決してブロックを追加する。
+ * - 各行は {@link services/blocking/create} 経由のため、ブロックと同時に all ミュートも付与される。
+ *   （別途 mute を呼ぶ必要はない）
  *
  * @see {@link queue/processors/db/export-blocking} ブロックエクスポート
  * @internal

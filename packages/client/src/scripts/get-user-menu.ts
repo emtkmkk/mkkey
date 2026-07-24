@@ -7,6 +7,7 @@
  * NOTE: 「チャットを開始」「グループに招待」は
  * `defaultStore.state.showUserMenuMessagingAndGroup` が ON のときだけ表示する
  * （対応サーバが少なく利用も少ないため、デフォルトは非表示）。
+ * NOTE: ブロック時の all ミュート付与はサーバー側。解除時のみクライアントから mute/delete する。
  *
  * @internal
  */
@@ -117,6 +118,14 @@ export function getUserMenu(user, router: Router = mainRouter) {
 		});
 	}
 
+	/**
+	 * ブロック／ブロック解除を切り替える。
+	 *
+	 * @remarks
+	 * - ブロック作成時の all ミュート付与はサーバー側（blocking/create）で行う。
+	 *   クライアントから mute/create を重ねると ALREADY_MUTING になるため呼ばない。
+	 * - 解除時は従来どおり mute/delete も呼び、UI 上の「ブロック＝見えない」対称性を保つ。
+	 */
 	async function toggleBlock(): Promise<void> {
 		if (
 			!(await getConfirmed(
@@ -132,15 +141,21 @@ export function getUserMenu(user, router: Router = mainRouter) {
 			},
 		);
 		user.isBlocking = !user.isBlocking;
-		await os.api(user.isBlocking ? "mute/create" : "mute/delete", {
-			userId: user.id,
-		});
-		user.isMuted = user.isBlocking;
 		if (user.isBlocking) {
+			// サーバーが all ミュートを付与済み
+			user.isMuted = true;
 			await os.api("following/delete", {
 				userId: user.id,
 			});
 			user.isFollowing = false;
+		} else if (user.isMuted) {
+			// ミュートが無い場合は呼ばない（NOT_MUTING 回避）
+			await os.api("mute/delete", {
+				userId: user.id,
+			});
+			user.isMuted = false;
+		} else {
+			user.isMuted = false;
 		}
 	}
 

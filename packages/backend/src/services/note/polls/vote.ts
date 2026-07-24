@@ -12,7 +12,7 @@
  */
 import { publishNoteStream } from "@/services/stream.js";
 import type { CacheableUser } from "@/models/entities/user.js";
-import { Users } from "@/models/index.js";
+import { touchLastActiveDate } from "@/services/update-last-active-date.js";
 import type { Note } from "@/models/entities/note.js";
 import { PollVotes, NoteWatchings, Polls, Blockings } from "@/models/index.js";
 import { Not } from "typeorm";
@@ -77,9 +77,7 @@ export default async function (
 	});
 
 	// 投票時、ユーザの最終更新時刻を更新
-	Users.update(user.id, {
-		lastActiveDate: new Date(),
-	});
+	touchLastActiveDate(user.id);
 
 	// 複数回答可では初回の 1 票のみ in-app 通知（REST と揃える）
 	const shouldNotifyPollVote = !poll.multiple || exist.length === 0;

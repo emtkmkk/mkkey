@@ -54,6 +54,7 @@ import {
 	Blockings,
 	NoteThreadMutings,
 } from "@/models/index.js";
+import { touchLastActiveDate } from "@/services/update-last-active-date.js";
 import { canUseEmoji } from "@/models/repositories/emoji.js";
 import { hasMuteScope } from "@/misc/mute-scope.js";
 import type { DriveFile } from "@/models/entities/drive-file.js";
@@ -1113,9 +1114,7 @@ export default async (
 				user.isBot) &&
 			new Date().valueOf() - data.createdAt.valueOf() < 2 * 60 * 60 * 1000
 		) {
-			Users.update(user.id, {
-				lastActiveDate: data.createdAt,
-			});
+			touchLastActiveDate(user.id, data.createdAt);
 		}
 
 		// ワードミュート

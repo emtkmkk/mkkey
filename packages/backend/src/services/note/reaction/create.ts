@@ -31,6 +31,7 @@ import {
 	Instances,
 	UserProfiles,
 } from "@/models/index.js";
+import { touchLastActiveDate } from "@/services/update-last-active-date.js";
 import { IsNull, Not } from "typeorm";
 import { perUserReactionsChart } from "@/services/chart/index.js";
 import { genId } from "@/misc/gen-id.js";
@@ -437,9 +438,7 @@ export default async (
 	perUserReactionsChart.update(user, note);
 
 	// リアクション時、ユーザの最終更新時刻を更新
-	Users.update(user.id, {
-		lastActiveDate: new Date(),
-	});
+	touchLastActiveDate(user.id);
 
 	// カスタム絵文字リアクションだったら絵文字情報も送る
 	const decodedReaction = decodeReaction(reaction);

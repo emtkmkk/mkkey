@@ -102,6 +102,7 @@ export class Notification {
 	})
 	public isRead: boolean;
 
+	@Index()
 	@Column({
 		...id(),
 		nullable: true,

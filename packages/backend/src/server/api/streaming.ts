@@ -18,6 +18,7 @@ import * as websocket from "websocket";
 
 import { subscriber as redisClient } from "@/db/redis.js";
 import { Users } from "@/models/index.js";
+import { touchLastActiveDate } from "@/services/update-last-active-date.js";
 import MainStreamConnection from "./stream/index.js";
 import authenticate from "./authenticate.js";
 import { maybeInvalidateDormantFollowerCacheOnActivity } from "@/remote/activitypub/dormant-follower-check.js";
@@ -101,9 +102,7 @@ export const initializeStreamingServer = (server: http.Server) => {
 				prev?.host ?? user.host ?? null,
 				prev?.lastActiveDate ?? null,
 			);
-			Users.update(user.id, {
-				lastActiveDate: new Date(),
-			});
+			touchLastActiveDate(user.id);
 		}
 
 		connection.once("close", () => {

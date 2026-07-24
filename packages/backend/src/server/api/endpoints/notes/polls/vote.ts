@@ -28,6 +28,7 @@ import {
 	Polls,
 	Blockings,
 } from "@/models/index.js";
+import { touchLastActiveDate } from "@/services/update-last-active-date.js";
 import type { IRemoteUser } from "@/models/entities/user.js";
 import { PollVote } from "@/models/entities/poll-vote.js";
 import { genId } from "@/misc/gen-id.js";
@@ -237,9 +238,7 @@ export default define(meta, paramDef, async (ps, user) => {
 		}
 	});
 
-	Users.update(user.id, {
-		lastActiveDate: new Date(),
-	});
+	touchLastActiveDate(user.id);
 
 	let i = 0;
 	for (const c of choiceIndices) {

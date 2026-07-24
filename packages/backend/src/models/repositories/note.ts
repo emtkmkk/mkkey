@@ -135,9 +135,9 @@ type NotePackHint = {
 	userMap?: Map<User["id"], User>;
 	/** packMany 用: チャンネルを一括取得した Map */
 	channelMap?: Map<string, Channel>;
-	/** packMany 用: reply/renote 用ノートを一括取得した Map */
+	/** packMany 用: reply/renote/references 用ノートを一括取得した Map */
 	noteMap?: Map<Note["id"], Note>;
-	/** packMany 用: ノート添付ファイルを一括 pack した Map */
+	/** packMany 用: ノート添付ファイルを一括 pack した Map（参照ノートの fileIds も含む） */
 	packedFileMap?: Map<DriveFile["id"], Packed<"DriveFile">>;
 	/** packMany 用: リモート投稿の閲覧者可視参照件数 */
 	visibleReferencesCountMap?: Map<Note["id"], number>;
@@ -958,8 +958,9 @@ export const NoteRepository = db.getRepository(Note).extend({
                                                                                                 )
                                                                                                 .map(async (x) => {
                                                                                                         try {
+                                                                                                                // packMany で noteMap に載せた参照ノートがあれば再利用（N+1 と file 解決漏れ防止）
                                                                                                                 return await this.pack(
-                                                                                                                        x,
+                                                                                                                        opts._hint_?.noteMap?.get(x) ?? x,
                                                                                                                         me,
                                                                                                                         {
                                                                                                                                 detail: true,
@@ -1040,7 +1041,7 @@ export const NoteRepository = db.getRepository(Note).extend({
 	 * いずれかのノートで pack が失敗（rejected）した場合、そのノートは戻り値に含まれず、件数が減った配列になる。
 	 * NOTE: ログイン閲覧時は冒頭で getRelationsBulk / UserMemos / UserProfiles を一括取得し packNoteUser の per-note クエリを避ける。
 	 * NOTE: 「純RT → 引用 → 引用先」の2段 renote まで noteMap / packedFileMap に含める（画面に表示され得る範囲）。
-	 * TODO: references（参照）に付いたファイルは未収集。必要な場合は同様に追加する。
+	 * NOTE: references（参照）も top-level / reply / renote から最大2段まで noteMap に載せ、添付を packedFileMap で解決する。
 	 */
         async packMany(
                 notes: Note[],
@@ -1222,8 +1223,6 @@ export const NoteRepository = db.getRepository(Note).extend({
 		// 「純RT → 引用 → 引用先」の2階層目を noteMap/userMap に足し、
 		// 続く packedFileMap 収集で引用先の fileIds も解決できるようにする。
 		// reply は detail:false で pack され renote を展開しないため、renote のみ辿る。
-		// TODO: references（参照）に付いたファイルは別経路で未収集のまま。
-		// 必要な場合は同様に収集対象へ追加する。
 		const secondLevelRenoteIds = [
 			...new Set(
 				[...noteMap.values()]
@@ -1259,6 +1258,80 @@ export const NoteRepository = db.getRepository(Note).extend({
 				}
 			}
 		}
+
+		// #region 参照ノートの事前収集（添付ファイル解決）
+		// references は親と同じ packedFileMap で pack されるため、参照先の fileIds を
+		// noteMap に載せないと files が空になり、クライアントが「削除されたファイル」と誤表示する。
+		// pack 時と同じフィルタ（非英数字 ID・自ノートの renoteId 除外）で最大2段集める。
+		/**
+		 * noteMap に未載の参照 ID を収集する
+		 *
+		 * @param sourceNotes - 参照 ID の収集元ノート
+		 * @returns noteMap にまだ無い参照ノート ID
+		 * @internal
+		 */
+		const collectMissingReferenceIds = (
+			sourceNotes: Iterable<Note>,
+		): Note["id"][] => {
+			const ids = new Set<Note["id"]>();
+			for (const note of sourceNotes) {
+				for (const id of note.referenceIds ?? []) {
+					if (/\W/.test(id)) continue;
+					if (id === note.renoteId) continue;
+					if (noteMap.has(id)) continue;
+					ids.add(id);
+				}
+			}
+			return [...ids];
+		};
+
+		/**
+		 * 参照ノートを取得して noteMap / userMap に載せる
+		 *
+		 * @param referenceIds - 取得する参照ノート ID
+		 * @returns 取得できたノート（ネスト参照の次段収集用）
+		 * @internal
+		 */
+		const absorbReferenceNotes = async (
+			referenceIds: Note["id"][],
+		): Promise<Note[]> => {
+			if (referenceIds.length === 0) return [];
+			const fetched = await this.find({
+				where: { id: In(referenceIds) },
+				relations: ["user"],
+			});
+			for (const n of fetched) {
+				noteMap.set(n.id, n);
+				if (n.user) {
+					userMap.set(n.user.id, n.user);
+					userIds.add(n.user.id);
+				} else if (n.userId) {
+					userIds.add(n.userId);
+				}
+			}
+			const stillMissingUserIds = [...userIds].filter(
+				(id) => !userMap.has(id),
+			);
+			if (stillMissingUserIds.length > 0) {
+				const moreUsers = await Users.find({
+					where: { id: In(stillMissingUserIds) },
+				});
+				for (const u of moreUsers) {
+					userMap.set(u.id, u);
+				}
+			}
+			return fetched;
+		};
+
+		// 1段目: top-level + reply/renote（2段含む）からの参照
+		const firstLevelReferenceNotes = await absorbReferenceNotes(
+			collectMissingReferenceIds([...notes, ...noteMap.values()]),
+		);
+		// 2段目: 参照ノート自身も detail:true でネスト参照を pack するため、もう1段だけ
+		await absorbReferenceNotes(
+			collectMissingReferenceIds(firstLevelReferenceNotes),
+		);
+		// #endregion
 
 		const noteFilesToPackIds = new Set<DriveFile["id"]>();
 		for (const note of notes) {

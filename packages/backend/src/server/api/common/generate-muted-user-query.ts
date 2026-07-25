@@ -5,7 +5,10 @@
  *
  * @remarks
  * - **Muted**: me がミュートしているユーザ（mutee）の投稿を表示しない。さらに UserProfiles.mutedInstances によるインスタンスミュートも考慮する。
- * - generateMutedUserQuery: ノートの userId / replyUserId / renoteUserId がミュート対象でなく、かつ note.userHost 等が mutedInstances に含まれないようにする。
+ * - generateMutedUserQuery:
+ *   - 作者: `all` で除外。`note`（all|note）でも除外するが、本人の純粋RTは例外（`renote` スコープ担当）。
+ *   - 返信先・RT先（引用元）: `note`（all|note）で除外。他人がミュート対象の投稿をRTしても見えないようにする。
+ *   - 加えて note.userHost 等が mutedInstances に含まれないようにする。
  * - generateMutedUserQueryForUsers: ユーザ一覧で、me がミュートしているユーザを除外する。
  */
 import type { SelectQueryBuilder } from "typeorm";
@@ -51,14 +54,15 @@ export function generateMutedUserQuery(
 	const mutingInstanceSubquery = mutingInstanceQuery.getQuery();
 
 	// 投稿の作者をミュートしていない かつ
-	// 投稿の返信先の作者をミュートしていない かつ
-	// 投稿の引用元の作者をミュートしていない
+	// 投稿の返信先の作者を note（all|note）ミュートしていない かつ
+	// 投稿の引用元（RT先）の作者を note（all|note）ミュートしていない
 	q.andWhere(new Brackets((qb) => {
 		qb.where(new Brackets((normalMute) => {
 			normalMute
 				.where(`note.userId NOT IN (${allMutingSubquery})`)
 				.andWhere(new Brackets((noteMute) => {
 					noteMute
+						// 本人の純粋RTは note ミュート対象外（renote スコープで隠す）
 						.where("note.renoteId IS NOT NULL AND note.text IS NULL")
 						.orWhere(`note.userId NOT IN (${noteMutingSubquery})`);
 				}));
@@ -67,14 +71,14 @@ export function generateMutedUserQuery(
 		.andWhere(
 			new Brackets((qb) => {
 				qb.where("note.replyUserId IS NULL").orWhere(
-					`note.replyUserId NOT IN (${allMutingSubquery})`,
+					`note.replyUserId NOT IN (${noteMutingSubquery})`,
 				);
 			}),
 		)
 		.andWhere(
 			new Brackets((qb) => {
 				qb.where("note.renoteUserId IS NULL").orWhere(
-					`note.renoteUserId NOT IN (${allMutingSubquery})`,
+					`note.renoteUserId NOT IN (${noteMutingSubquery})`,
 				);
 			}),
 		)

@@ -57,6 +57,9 @@ export default class extends Channel {
 		if (isUserRelated(note, this.muting)) return;
 		if (!(note.renote && note.text == null) && this.noteMuting.has(note.userId))
 			return;
+		// note ミュート: 返信先・RT先の投稿内容が見える場合も除外
+		if (note.renote && this.noteMuting.has(note.renote.userId)) return;
+		if (note.reply && this.noteMuting.has(note.reply.userId)) return;
 		// 流れてきたNoteがブロックされているユーザーが関わるものだったら無視する
 		if (isUserRelated(note, this.blocking)) return;
 

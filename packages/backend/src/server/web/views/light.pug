@@ -6,6 +6,14 @@ html(lang="ja")
 		meta(name="application-name" content="mkkey")
 		title Light Client - mkkey
 		link(rel="stylesheet" href=`/light/light.css?v=${version}`)
+		//- 描画前にテーマを適用してちらつきを防ぐ（設定は localStorage の light:settings:theme）
+		script.
+			try {
+				var t = localStorage.getItem("light:settings:theme");
+				document.documentElement.setAttribute("data-theme", t ? JSON.parse(t) : "system");
+			} catch (e) {
+				document.documentElement.setAttribute("data-theme", "system");
+			}
 	body
 		div#app
 			header#header
@@ -24,6 +32,12 @@ html(lang="ja")
 						button.header-menu-item(data-action="switch-account") アカウント切り替え
 						button.header-menu-item(data-action="logout") ログアウト
 			div#settings-panel(style="display:none")
+				div.settings-section
+					label テーマ
+					select#setting-theme
+						option(value="system") 端末に合わせる
+						option(value="dark") ダーク
+						option(value="light") ライト
 				div.settings-section
 					label アイコン表示
 					input#setting-show-icons(type="checkbox" checked)

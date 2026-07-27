@@ -10,9 +10,13 @@
 	--lc-error: #f38ba8;
 }
 
-/* ライトテーマ: 端末の配色設定に追従（変数の上書きのみで軽量に対応） */
+/* ライト配色パレット。
+   - 端末に合わせる（system / 未指定）かつ OS がライトのとき
+   - 明示的にライトを選んだとき
+   の両方に適用する。明示ダーク（data-theme="dark"）は :root 既定のダークがそのまま効く。 */
 @media (prefers-color-scheme: light) {
-	:root {
+	:root[data-theme="system"],
+	:root:not([data-theme]) {
 		--lc-bg: #eff1f5;
 		--lc-fg: #4c4f69;
 		--lc-muted: #6c6f85;
@@ -21,6 +25,16 @@
 		--lc-border: #ccd0da;
 		--lc-error: #d20f39;
 	}
+}
+
+:root[data-theme="light"] {
+	--lc-bg: #eff1f5;
+	--lc-fg: #4c4f69;
+	--lc-muted: #6c6f85;
+	--lc-accent: #1e66f5;
+	--lc-surface: #ffffff;
+	--lc-border: #ccd0da;
+	--lc-error: #d20f39;
 }
 
 /* セカンダリボタン（統一デザイン）※プライマリボタン・元ミニマルは除く */
@@ -213,6 +227,15 @@ body {
 	display: block;
 	margin-bottom: 0.25rem;
 	font-size: 0.875rem;
+}
+
+#settings-panel select {
+	background: var(--lc-bg);
+	border: 1px solid var(--lc-border);
+	color: var(--lc-fg);
+	padding: 0.25rem 0.5rem;
+	border-radius: 4px;
+	min-width: 10rem;
 }
 
 #setting-word-mute {

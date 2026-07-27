@@ -880,6 +880,19 @@
 		return {};
 	}
 
+	/**
+	 * 現在のTLがストリーミングで更新中か（＝自分の投稿もWS経由で流れてくるか）。
+	 * true の場合、投稿後の手動差し込みは不要（重複排除もあるため二重にはならないが冗長）。
+	 */
+	function isStreamingCurrentTl() {
+		return !!token
+			&& getSetting("streaming", false)
+			&& !!streamWs
+			&& streamWs.readyState === WebSocket.OPEN
+			&& streamTlChannelId != null
+			&& getStreamChannel() != null;
+	}
+
 	function updateStreamConnection() {
 		if (streamWs) {
 			streamWs.close();
@@ -1052,6 +1065,12 @@
 	function setNotesMessage(msg) {
 		const c = document.getElementById("notes");
 		if (c) c.innerHTML = msg ? `<div class="notes-message">${escapeHtml(msg)}</div>` : "";
+		// 読み込み中/空メッセージ表示中は「もっと読む」を隠す（両方見えるのを防ぐ）。
+		// 取得完了後に loadTimeline/loadNotifications が結果に応じて再表示する。
+		if (msg) {
+			const lm = document.getElementById("load-more");
+			if (lm) lm.style.display = "none";
+		}
 	}
 
 	function getUserLabel(user) {
@@ -1677,27 +1696,29 @@
 			renderPostAttributes();
 			updateCharCount();
 			saveLastVisibility(visibility, localOnly);
-			// 自分の投稿は常に含まれる home/social TL では、TL全体を取り直さず先頭に差し込む（帯域節約＋即時反映）。
-			// それ以外のTL・DM(specified)は表示条件が複雑なため従来どおり再取得する。
+			// 投稿ごとにTL全体を再取得しない。
+			// ストリーミングONなら自分の投稿はWSで流れてくるので何もしない（差し込みは冗長）。
+			// ストリーミングOFFのときだけ、現在のTLに載るはずの投稿を先頭へ楽観的に差し込む。
+			// 載らない投稿（DM・条件に合わないTL）は現在の表示をそのまま維持する（再取得しない）。
 			const canPrepend = created
-				&& body.visibility !== "specified"
-				&& ["home", "social"].includes(currentTl)
+				&& !isStreamingCurrentTl()
+				&& postBelongsToCurrentTl(created)
 				&& !isNoteWordMuted(created)
 				&& !notes.some((n) => n.id === created.id);
 			if (canPrepend) {
 				notes = [created, ...notes];
 				const container = document.getElementById("notes");
 				const showIcons = getSetting("showIcons", true);
-				const frag = document.createRange().createContextualFragment(renderNote(created, showIcons));
-				const newNode = frag.firstChild;
-				if (container && newNode) {
-					container.insertBefore(newNode, container.firstChild);
-					bindNoteEvents(newNode);
-				} else {
-					loadCurrentTl();
+				if (container) {
+					// 「投稿がありません」等のメッセージ表示中はクリアしてから挿入
+					if (container.querySelector(".notes-message")) container.innerHTML = "";
+					const frag = document.createRange().createContextualFragment(renderNote(created, showIcons));
+					const newNode = frag.firstChild;
+					if (newNode) {
+						container.insertBefore(newNode, container.firstChild);
+						bindNoteEvents(newNode);
+					}
 				}
-			} else {
-				loadCurrentTl();
 			}
 		} catch (err) {
 			showError(err?.message || "投稿に失敗しました");
@@ -1792,6 +1813,38 @@
 		else loadCurrentTl();
 	}
 
+	/**
+	 * 指定ユーザーの投稿をTLからローカル除去（ミュート/ブロック時に全体再取得を避ける）。
+	 * renoteOnly=true の場合は、そのユーザーによる純粋なRTのみを対象にする（RTミュート用）。
+	 */
+	function removeNotesByUser(userId, renoteOnly) {
+		if (!userId) return;
+		const isPureRenote = (n) => n.renoteId && !n.text && !(n.files && n.files.length) && !n.poll;
+		const before = notes.length;
+		notes = notes.filter((n) => renoteOnly
+			? !(n.userId === userId && isPureRenote(n))
+			: n.userId !== userId);
+		// 何か消えた場合のみ、通信なしで現在のTLを再描画
+		if (notes.length !== before && currentTl !== "notifications") renderNotes();
+	}
+
+	/** 作成した自分の投稿が現在のTLに載るはずかを判定（楽観的prependの可否） */
+	function postBelongsToCurrentTl(note) {
+		const vis = note.visibility;
+		if (vis === "specified") return false; // DMはTLに出さない
+		switch (currentTl) {
+			case "home":
+			case "social":
+				return true; // 自分の投稿は必ずホーム/ソーシャルに載る
+			case "local":
+			case "global":
+			case "recommended":
+				return vis === "public";
+			default:
+				return false; // antenna/list/channel は判定不能なので prepend しない
+		}
+	}
+
 	// プロフィール・ノート詳細（モーダル）
 	function openProfile(userId) {
 		api("users/show", { userId })
@@ -1808,23 +1861,32 @@
 				if (hasRelation && rel.hasPendingFollowRequestFromYou) {
 					normalActions.push({ label: "フォローリクエスト中", disabled: true });
 				} else if (hasRelation && !rel.isFollowing) {
-					normalActions.push({ label: "フォロー", action: () => api("following/create", { userId }) });
+					// フォローしても現在表示中のノートは変わらないため再取得不要
+					normalActions.push({ label: "フォロー", action: async () => { await api("following/create", { userId }); return { skipReload: true }; } });
 				}
 				if (hasRelation && rel.hasPendingFollowRequestToYou) {
-					normalActions.push({ label: "フォローリクエスト承認", action: () => api("following/requests/accept", { userId }) });
-					normalActions.push({ label: "フォローリクエスト却下", action: () => api("following/requests/reject", { userId }) });
+					normalActions.push({ label: "フォローリクエスト承認", action: async () => { await api("following/requests/accept", { userId }); return { skipReload: true }; } });
+					normalActions.push({ label: "フォローリクエスト却下", action: async () => { await api("following/requests/reject", { userId }); return { skipReload: true }; } });
 				}
 				if (token) {
 					// DM は投稿フォームを準備するだけなので TL 再取得は不要
 					normalActions.push({ label: "DM", action: () => { setDmMode([userId], user); return { skipReload: true }; } });
 				}
 				if (hasRelation) {
-					normalActions.push({ label: rel.isMuted ? "ミュート解除" : "ミュート", action: () => rel.isMuted ? api("mute/delete", { userId }) : api("mute/create", { userId }) });
+					// ミュート: そのユーザーの投稿をローカル除去（全体再取得を避ける）。解除は復帰のため再取得。
+					normalActions.push({ label: rel.isMuted ? "ミュート解除" : "ミュート", action: async () => {
+						if (rel.isMuted) { await api("mute/delete", { userId }); return; }
+						await api("mute/create", { userId });
+						removeNotesByUser(userId);
+						return { skipReload: true };
+					} });
 				}
 				if (token) {
 					normalActions.push({ label: "ニックネーム編集", action: async () => {
 						const name = prompt("ニックネーム", user.name || "");
-						if (name != null) await api("users/update-memo", { userId, customName: name });
+						if (name == null) return { skipReload: true }; // キャンセル時は再取得しない
+						await api("users/update-memo", { userId, customName: name });
+						// 表示名の変更を反映するため再取得（既定動作）
 					} });
 				}
 				normalActions.push({ label: isIconHidden ? "アイコン非表示を解除" : "アイコンを非表示", action: () => {
@@ -1839,14 +1901,39 @@
 					return { skipReload: true };
 				} });
 				if (hasRelation) {
-					normalActions.push({ label: rel.isRenoteMuted ? "RTミュート解除" : "RTだけミュート", action: () => rel.isRenoteMuted ? api("renote-mute/delete", { userId }) : api("renote-mute/create", { userId }) });
+					// RTミュート: そのユーザーの純粋なRTだけローカル除去。解除は復帰のため再取得。
+					normalActions.push({ label: rel.isRenoteMuted ? "RTミュート解除" : "RTだけミュート", action: async () => {
+						if (rel.isRenoteMuted) { await api("renote-mute/delete", { userId }); return; }
+						await api("renote-mute/create", { userId });
+						removeNotesByUser(userId, true);
+						return { skipReload: true };
+					} });
 				}
 
 				const dangerousActions = [];
 				if (hasRelation) {
-					if (rel.isFollowing) dangerousActions.push({ label: "フォロー解除", action: () => { if (confirm("フォローを解除しますか？")) return api("following/delete", { userId }); } });
-					dangerousActions.push({ label: rel.isBlocking ? "ブロック解除" : "ブロック", action: () => { if (confirm(rel.isBlocking ? "ブロックを解除しますか？" : "ブロックしますか？")) return rel.isBlocking ? api("blocking/delete", { userId }) : api("blocking/create", { userId }); } });
-					if (rel.isFollowed) dangerousActions.push({ label: "フォロワー解除", action: () => { if (confirm("フォロワーから削除しますか？")) return api("following/invalidate", { userId }); } });
+					// 各操作はキャンセル時に再取得しないよう skipReload を返す。
+					if (rel.isFollowing) dangerousActions.push({ label: "フォロー解除", action: async () => {
+						if (!confirm("フォローを解除しますか？")) return { skipReload: true };
+						await api("following/delete", { userId });
+						return { skipReload: true }; // 表示中のノートは変わらない
+					} });
+					dangerousActions.push({ label: rel.isBlocking ? "ブロック解除" : "ブロック", action: async () => {
+						if (rel.isBlocking) {
+							if (!confirm("ブロックを解除しますか？")) return { skipReload: true };
+							await api("blocking/delete", { userId });
+							return; // 復帰のため再取得
+						}
+						if (!confirm("ブロックしますか？")) return { skipReload: true };
+						await api("blocking/create", { userId });
+						removeNotesByUser(userId);
+						return { skipReload: true };
+					} });
+					if (rel.isFollowed) dangerousActions.push({ label: "フォロワー解除", action: async () => {
+						if (!confirm("フォロワーから削除しますか？")) return { skipReload: true };
+						await api("following/invalidate", { userId });
+						return { skipReload: true };
+					} });
 				}
 
 				const emojiMap = {};
@@ -2014,7 +2101,16 @@
 		if (loc) loc.style.display = rem ? "none" : "block";
 	}
 
+	/** テーマ設定を <html data-theme> に反映（system=端末に合わせる / dark / light） */
+	function applyTheme() {
+		const t = getSetting("theme", "system");
+		const theme = ["system", "dark", "light"].includes(t) ? t : "system";
+		document.documentElement.setAttribute("data-theme", theme);
+	}
+
 	function initSettings() {
+		const themeSel = document.getElementById("setting-theme");
+		if (themeSel) themeSel.value = getSetting("theme", "system");
 		document.getElementById("setting-show-icons").checked = getSetting("showIcons", true);
 		document.getElementById("setting-notifications").checked = getSetting("notifications", false);
 		document.getElementById("setting-remember-visibility").checked = getSetting("rememberVisibility", true);
@@ -2142,6 +2238,7 @@
 			renderHeader();
 			updateTlTabVisibility();
 		initSettings();
+		applyTheme();
 		initPostForm();
 		updateTlSelectorVisibility();
 		if (token) {
@@ -2239,6 +2336,8 @@
 		});
 		document.getElementById("settings-reload")?.addEventListener("click", () => { location.reload(); });
 		document.getElementById("settings-close")?.addEventListener("click", () => {
+			const themeSel = document.getElementById("setting-theme");
+			if (themeSel) setSetting("theme", themeSel.value);
 			setSetting("showIcons", document.getElementById("setting-show-icons").checked);
 			setSetting("notifications", document.getElementById("setting-notifications").checked);
 			setSetting("rememberVisibility", document.getElementById("setting-remember-visibility").checked);
@@ -2247,10 +2346,16 @@
 			setSetting("wordMute", document.getElementById("setting-word-mute").value || "");
 			document.getElementById("settings-panel").style.display = "none";
 			updateDefaultVisibilitySectionVisibility();
+			applyTheme();
 			// アイコン表示/ワードミュートの変更を通信なしで即時反映（メモリ上のデータを再描画）
 			if (currentTl === "notifications") renderNotifications();
 			else renderNotes();
 			updateStreamConnection();
+		});
+		// テーマは選択と同時に保存＆即時プレビュー（閉じなくても反映）
+		document.getElementById("setting-theme")?.addEventListener("change", (e) => {
+			setSetting("theme", e.target.value);
+			applyTheme();
 		});
 		document.getElementById("setting-remember-visibility")?.addEventListener("change", updateDefaultVisibilitySectionVisibility);
 		document.getElementById("setting-fetch-emojis")?.addEventListener("click", fetchEmojis);

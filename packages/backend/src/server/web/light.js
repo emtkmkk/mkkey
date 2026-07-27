@@ -17,10 +17,22 @@
 	let emojiDisplayedAsImageCache = new Set();
 	/** ストリーミング通知を表示する時間（ミリ秒）。経過後にポップアップから削除する */
 	const STREAMING_NOTIFICATION_DISPLAY_MS = 8000;
+	/** 通知種別ラベル（通知一覧・ストリーミングポップアップで共通利用） */
+	const NOTIFICATION_TYPE_LABELS = {
+		reply: "返信", mention: "メンション", quote: "引用", reaction: "リアクション",
+		renote: "リノート", follow: "フォロー", followRequestAccepted: "フォロー承認",
+		receiveFollowRequest: "フォローリクエスト", groupInvited: "グループ招待", unreadAntenna: "アンテナ",
+	};
+	/** 別TL閲覧中に受信したストリーミング通知があるか（通知タブの未読ドット制御用） */
+	let hasUnreadNotification = false;
+	/** ポップアップにポインタが乗っている間は自動消去を一時停止する */
+	let streamingPaused = false;
 
 	let token = null;
 	let currentAccount = null;
 	let accounts = [];
+	/** 投稿本文の最大文字数。init時に meta から取得して更新（取得失敗時は既定値） */
+	let maxNoteTextLength = 3000;
 	let currentTl = (() => { try { const v = localStorage.getItem("light:lastTl"); return (v && ["home","local","global","social","recommended","antenna","list","channel","notifications"].includes(v)) ? v : "home"; } catch { return "home"; } })();
 	let notes = [];
 	let notifications = [];
@@ -381,6 +393,7 @@
 			</form>
 		`;
 		overlay.style.display = "flex";
+		document.getElementById("login-username")?.focus();
 		let pendingCred = null;
 		document.getElementById("login-form")?.addEventListener("submit", async (e) => {
 			e.preventDefault();
@@ -664,7 +677,7 @@
 		if (isLoading) return;
 		isLoading = true;
 		hideError();
-		if (!untilId) setNotesMessage("読み込み中…");
+		if (!untilId) { setNotesMessage("読み込み中…"); setNotificationUnread(false); }
 		try {
 			const params = { limit: 20 };
 			if (untilId) params.untilId = untilId;
@@ -717,67 +730,85 @@
 		return `<span class="note-emoji-placeholder" data-emoji-url="${escapeHtml(url)}" title="${escapeHtml(r)}">${escapeHtml(r)}</span>`;
 	}
 
+	/** 通知1件のHTMLを生成（一覧描画とライブ挿入で共通利用） */
+	function renderNotificationItemHtml(n, showIcons) {
+		const label = NOTIFICATION_TYPE_LABELS[n.type] || n.type;
+		const who = n.user ? getUserLabel(n.user) : "";
+		const timeRow = renderTimeHtml(n.createdAt, "notification-time");
+		const avatar = showIcons && n.user?.avatarUrl
+			? `<img class="note-avatar" src="${escapeHtml(n.user.avatarUrl)}" alt="" width="40" height="40" loading="lazy" decoding="async">`
+			: "";
+		if (n.note && ["reply", "quote", "mention", "reaction", "renote", "unreadAntenna"].includes(n.type)) {
+			const summary = getNoteSummary(n.note);
+			const reactionPart = n.type === "reaction" && n.reaction ? " " + renderReactionEmojiHtml(n.reaction) : "";
+			const whoPart = n.user
+				? `<span class="note-user" data-user-id="${escapeHtml(n.user.id)}">${escapeHtml(who)}</span>`
+				: "";
+			const actionRow = `${escapeHtml(label)}${reactionPart}`;
+			const summaryShort = summary ? (summary.length > 50 ? summary.slice(0, 50) + "…" : summary) : "";
+			const summaryText = summaryShort ? escapeHtml(summaryShort) : "";
+			const bodyParts = [actionRow, summaryText, whoPart ? `（${whoPart}）` : ""].filter(Boolean);
+			const headerLine = bodyParts.join(" ");
+			const detailBtn = `<button class="note-detail" data-note-id="${n.note.id}">詳細</button>`;
+			return `<div class="note notification-item" data-notification-id="${escapeHtml(String(n.id ?? ""))}" style="margin-bottom:1rem">
+				<div class="note-header" style="align-items:flex-start">
+					${avatar}
+					<div class="notification-body" style="flex:1;min-width:0">
+						<div class="note-meta notification-main-row">${headerLine}</div>
+						${timeRow}
+						<div class="note-actions" style="margin-top:0.25rem">${detailBtn}</div>
+					</div>
+				</div>
+			</div>`;
+		}
+		const actionFirst = escapeHtml(label);
+		const whoPart = n.user
+			? `（<span class="note-user" data-user-id="${escapeHtml(n.user.id)}">${escapeHtml(who)}</span>）`
+			: "";
+		const headerLine = [actionFirst, whoPart].filter(Boolean).join(" ");
+		return `<div class="note notification-item" data-notification-id="${escapeHtml(String(n.id ?? ""))}">
+			<div class="note-header">
+				${avatar}
+				<div class="notification-body" style="flex:1;min-width:0">
+					<div class="note-meta notification-main-row">${headerLine}</div>
+					${timeRow}
+				</div>
+			</div>
+		</div>`;
+	}
+
 	function renderNotifications() {
 		const container = document.getElementById("notes");
 		if (!container) return;
 		const showIcons = getSetting("showIcons", true);
-		const typeLabels = {
-			reply: "返信",
-			mention: "メンション",
-			quote: "引用",
-			reaction: "リアクション",
-			renote: "リノート",
-			follow: "フォロー",
-			followRequestAccepted: "フォロー承認",
-			receiveFollowRequest: "フォローリクエスト",
-			groupInvited: "グループ招待",
-			unreadAntenna: "アンテナ",
-		};
-		container.innerHTML = notifications.filter((n) => !(n.note && isNoteWordMuted(n.note))).map((n) => {
-			const label = typeLabels[n.type] || n.type;
-			const who = n.user ? getUserLabel(n.user) : "";
-			const createdAt = formatDateTime(n.createdAt);
-			if (n.note && ["reply", "quote", "mention", "reaction", "renote", "unreadAntenna"].includes(n.type)) {
-				const summary = getNoteSummary(n.note);
-				const reactionPart = n.type === "reaction" && n.reaction ? " " + renderReactionEmojiHtml(n.reaction) : "";
-				const whoPart = n.user
-					? `<span class="note-user" data-user-id="${escapeHtml(n.user.id)}">${escapeHtml(who)}</span>`
-					: "";
-				const actionRow = `${escapeHtml(label)}${reactionPart}`;
-				const summaryShort = summary ? (summary.length > 50 ? summary.slice(0, 50) + "…" : summary) : "";
-				const summaryText = summaryShort ? escapeHtml(summaryShort) : "";
-				const bodyParts = [actionRow, summaryText, whoPart ? `（${whoPart}）` : ""].filter(Boolean);
-				const headerLine = bodyParts.join(" ");
-				const timeRow = createdAt ? `<div class="notification-time" style="font-size:0.75rem;color:var(--lc-muted);margin-top:0.25rem">${escapeHtml(createdAt)}</div>` : "";
-				const detailBtn = `<button class="note-detail" data-note-id="${n.note.id}">詳細</button>`;
-				return `<div class="note notification-item" data-notification-id="${n.id}" style="margin-bottom:1rem">
-					<div class="note-header" style="align-items:flex-start">
-						${showIcons && n.user?.avatarUrl ? `<img class="note-avatar" src="${escapeHtml(n.user.avatarUrl)}" alt="">` : ""}
-						<div class="notification-body" style="flex:1;min-width:0">
-							<div class="note-meta notification-main-row">${headerLine}</div>
-							${timeRow}
-							<div class="note-actions" style="margin-top:0.25rem">${detailBtn}</div>
-						</div>
-					</div>
-				</div>`;
-			}
-			const actionFirst = escapeHtml(label);
-			const whoPart = n.user
-				? `（<span class="note-user" data-user-id="${escapeHtml(n.user.id)}">${escapeHtml(who)}</span>）`
-				: "";
-			const headerLine = [actionFirst, whoPart].filter(Boolean).join(" ");
-			const timeRow = createdAt ? `<div class="notification-time" style="font-size:0.75rem;color:var(--lc-muted);margin-top:0.25rem">${escapeHtml(createdAt)}</div>` : "";
-			return `<div class="note notification-item" data-notification-id="${n.id}">
-				<div class="note-header">
-					${showIcons && n.user?.avatarUrl ? `<img class="note-avatar" src="${escapeHtml(n.user.avatarUrl)}" alt="">` : ""}
-					<div class="notification-body" style="flex:1;min-width:0">
-						<div class="note-meta notification-main-row">${headerLine}</div>
-						${timeRow}
-					</div>
-				</div>
-			</div>`;
-		}).join("");
+		container.innerHTML = notifications
+			.filter((n) => !(n.note && isNoteWordMuted(n.note)))
+			.map((n) => renderNotificationItemHtml(n, showIcons))
+			.join("");
 		bindNoteEvents(container);
+	}
+
+	/** 通知タブの未読ドットを点灯/消灯 */
+	function setNotificationUnread(v) {
+		hasUnreadNotification = v;
+		document.getElementById("tab-notifications")?.classList.toggle("has-unread", v);
+	}
+
+	/** 通知タブ閲覧中に受信した通知を、TL全体の再取得なしでリスト先頭へ差し込む */
+	function prependNotificationToList(n) {
+		if (currentTl !== "notifications") return;
+		if (n.note && isNoteWordMuted(n.note)) return;
+		const container = document.getElementById("notes");
+		if (!container) return;
+		// 「通知はありません」等のメッセージ表示中はクリアしてから挿入
+		if (container.querySelector(".notes-message")) container.innerHTML = "";
+		if (n.id != null && container.querySelector(`.notification-item[data-notification-id="${n.id}"]`)) return;
+		const frag = document.createRange().createContextualFragment(renderNotificationItemHtml(n, getSetting("showIcons", true)));
+		const node = frag.firstChild;
+		if (node) {
+			container.insertBefore(node, container.firstChild);
+			bindNoteEvents(node);
+		}
 	}
 
 	function renderStreamingNotifications() {
@@ -788,23 +819,18 @@
 			el.style.display = "none";
 			return;
 		}
-		const typeLabels = {
-			reply: "返信", quote: "引用", mention: "メンション", reaction: "リアクション",
-			renote: "リノート", follow: "フォロー", followRequestAccepted: "フォロー承認",
-			receiveFollowRequest: "フォローリクエスト", groupInvited: "グループ招待", unreadAntenna: "アンテナ",
-		};
 		el.innerHTML = streamingNotifications.filter((n) => !(n.note && isNoteWordMuted(n.note))).slice(0, 10).map((n) => {
-			const label = typeLabels[n.type] || n.type || "";
+			const label = NOTIFICATION_TYPE_LABELS[n.type] || n.type || "";
 			const who = n.user ? getUserLabel(n.user) : "";
 			const noteId = n.note?.id || "";
+			const sid = n.id != null ? n.id : n._streamingId;
 			const summary = n.note ? getNoteSummary(n.note) : "";
 			const reactionHtml = n.type === "reaction" && n.reaction ? " " + renderReactionEmojiHtml(n.reaction) : "";
 			const summaryShort = summary ? (summary.length > 40 ? summary.slice(0, 40) + "…" : summary) : "";
 			const bodyParts = [escapeHtml(label), reactionHtml, summaryShort ? escapeHtml(summaryShort) : "", who ? `（${escapeHtml(who)}）` : ""].filter(Boolean);
 			const mainLine = bodyParts.join(" ");
-			const createdAt = formatDateTime(n.createdAt);
-			const timeHtml = createdAt ? `<div class="streaming-notif-time">${escapeHtml(createdAt)}</div>` : "";
-			return `<div class="streaming-notif-item" data-note-id="${noteId}" data-user-id="${n.user?.id || ""}"><div class="streaming-notif-main">${mainLine}</div>${timeHtml}</div>`;
+			const timeHtml = renderTimeHtml(n.createdAt, "streaming-notif-time");
+			return `<div class="streaming-notif-item" data-note-id="${noteId}" data-user-id="${n.user?.id || ""}"><div class="streaming-notif-content"><div class="streaming-notif-main">${mainLine}</div>${timeHtml}</div><button class="streaming-notif-dismiss" data-dismiss-id="${escapeHtml(String(sid ?? ""))}" title="閉じる" aria-label="通知を閉じる">×</button></div>`;
 		}).join("");
 		el.style.display = "block";
 		bindNoteEvents(el);
@@ -812,6 +838,14 @@
 			item.addEventListener("click", () => {
 				if (item.dataset.noteId) openNoteDetail(item.dataset.noteId);
 				else if (item.dataset.userId) openProfile(item.dataset.userId);
+			});
+		});
+		el.querySelectorAll(".streaming-notif-dismiss").forEach((btn) => {
+			btn.addEventListener("click", (e) => {
+				e.stopPropagation();
+				const sid = btn.dataset.dismissId;
+				streamingNotifications = streamingNotifications.filter((n) => String(n.id != null ? n.id : n._streamingId) !== sid);
+				renderStreamingNotifications();
 			});
 		});
 	}
@@ -860,7 +894,9 @@
 		const notificationsStreaming = getSetting("notifications", false);
 		if ((!enabled && !notificationsStreaming) || !token) return;
 		const ch = currentTl === "notifications" ? null : getStreamChannel();
-		if (!ch && !notificationsStreaming) return;
+		// 通知タブでは ⚡（TLストリーミング）でも main に接続し、通知リストをライブ更新する
+		const needMain = notificationsStreaming || (enabled && currentTl === "notifications");
+		if (!ch && !needMain) return;
 		const params = ch ? getStreamParams() : {};
 		if (ch && (ch === "antenna" || ch === "userList" || ch === "channel") && !Object.values(params)[0]) return;
 		const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
@@ -877,7 +913,7 @@
 						body: { channel: ch, id: tlId, params: params },
 					}));
 				}
-				if (notificationsStreaming) {
+				if (needMain) {
 					ws.send(JSON.stringify({
 						type: "connect",
 						body: { channel: "main", id: "light-main-" + Date.now(), params: {} },
@@ -935,16 +971,27 @@
 						const already = notif.id != null && notifications.some((x) => x.id === notif.id);
 						if (!already) {
 							notifications = [notif, ...notifications].slice(0, 100);
+							if (currentTl === "notifications") {
+								// 通知タブ閲覧中はリストへ即時反映（下部ポップアップは出さない）
+								prependNotificationToList(notif);
+							} else {
+								// 別TL閲覧中は通知タブの未読ドットを点灯
+								setNotificationUnread(true);
+							}
 						}
-						if (!already && getSetting("notifications", false)) {
+						// 下部ポップアップは「常時ストリーミング通知」ON かつ通知タブ以外のときだけ表示
+						if (!already && getSetting("notifications", false) && currentTl !== "notifications") {
 							const id = notif.id != null ? notif.id : "n-" + Date.now() + "-" + Math.random();
 							if (notif.id == null) notif._streamingId = id;
 							streamingNotifications = [notif, ...streamingNotifications].slice(0, 20);
 							renderStreamingNotifications();
-							setTimeout(() => {
+							// ホバー中（streamingPaused）は消さず、離れてから消去する
+							const tick = () => {
+								if (streamingPaused) { setTimeout(tick, 1000); return; }
 								streamingNotifications = streamingNotifications.filter((n) => (n.id != null ? n.id : n._streamingId) !== id);
 								renderStreamingNotifications();
-							}, STREAMING_NOTIFICATION_DISPLAY_MS);
+							};
+							setTimeout(tick, STREAMING_NOTIFICATION_DISPLAY_MS);
 						}
 					}
 				} catch (_) {}
@@ -967,13 +1014,38 @@
 		return div.innerHTML;
 	}
 
-	/** createdAt 等の日時文字列を "YYYY/MM/DD HH:mm(:ss)" に整形（3箇所で共通利用） */
+	/** createdAt 等の日時文字列を "YYYY/MM/DD HH:mm(:ss)" に整形（絶対時刻。title 属性等で利用） */
 	function formatDateTime(dateStr, withSeconds) {
 		if (!dateStr) return "";
 		const d = new Date(dateStr);
 		const p = (n) => String(n).padStart(2, "0");
 		const base = `${d.getFullYear()}/${p(d.getMonth() + 1)}/${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
 		return withSeconds ? `${base}:${p(d.getSeconds())}` : base;
+	}
+
+	/** 相対時刻（"3分前" 等）。一覧の視認性向上のため既定はこちらを表示し、絶対時刻は title に入れる */
+	function formatRelativeTime(dateStr) {
+		if (!dateStr) return "";
+		const t = new Date(dateStr).getTime();
+		if (isNaN(t)) return "";
+		const sec = Math.floor((Date.now() - t) / 1000);
+		if (sec < 0) return formatDateTime(dateStr);
+		if (sec < 60) return "たった今";
+		const min = Math.floor(sec / 60);
+		if (min < 60) return `${min}分前`;
+		const hr = Math.floor(min / 60);
+		if (hr < 24) return `${hr}時間前`;
+		const day = Math.floor(hr / 24);
+		if (day < 30) return `${day}日前`;
+		const mon = Math.floor(day / 30);
+		if (mon < 12) return `${mon}ヶ月前`;
+		return `${Math.floor(day / 365)}年前`;
+	}
+
+	/** 日時を「相対表示＋絶対時刻を title」の div HTML に。className でスタイルを分ける */
+	function renderTimeHtml(dateStr, className, withSeconds) {
+		if (!dateStr) return "";
+		return `<div class="${className}" title="${escapeHtml(formatDateTime(dateStr, withSeconds))}">${escapeHtml(formatRelativeTime(dateStr))}</div>`;
 	}
 
 	/** #notes 領域にメッセージ（読み込み中 / 空 など）を表示 */
@@ -983,8 +1055,10 @@
 	}
 
 	function getUserLabel(user) {
-		const name = (user.name || "").trim() || `@${user.username}`;
-		return `${name}@${user.username}${user.host ? `@${user.host}` : ""}`;
+		// 表示名 (@acct) 形式。@ の二重表記を避け読みやすくする。表示名が無ければ acct のみ
+		const acct = getAcct(user);
+		const name = (user.name || "").trim();
+		return name ? `${name} (${acct})` : acct;
 	}
 
 	function getAcct(user) {
@@ -1140,7 +1214,7 @@
 		const targetCwId = target ? `${note.id}-target` : null;
 
 		const avatar = getAvatarUrl(headerUser, showIcons)
-			? `<img class="note-avatar" src="${escapeHtml(getAvatarUrl(headerUser, showIcons))}" alt="" width="40" height="40">`
+			? `<img class="note-avatar" src="${escapeHtml(getAvatarUrl(headerUser, showIcons))}" alt="" width="40" height="40" loading="lazy" decoding="async">`
 			: "";
 
 		// CLI 同様の Unicode 絵文字（localOnly 時は ♥ を前置）
@@ -1175,7 +1249,7 @@
 		if (target) {
 			const targetUser = target.user;
 			const targetAvatar = getAvatarUrl(targetUser, showIcons)
-				? `<img class="note-avatar note-target-avatar" src="${escapeHtml(getAvatarUrl(targetUser, showIcons))}" alt="" width="32" height="32">`
+				? `<img class="note-avatar note-target-avatar" src="${escapeHtml(getAvatarUrl(targetUser, showIcons))}" alt="" width="32" height="32" loading="lazy" decoding="async">`
 				: "";
 			const label = isReply ? `返信先 ${escapeHtml(getAcct(targetUser))}` : `RT ${escapeHtml(getAcct(targetUser))}`;
 			html += `<div class="note-rt-row">${targetAvatar}<span class="note-rt-label">${label}</span></div>`;
@@ -1233,8 +1307,7 @@
 			return `<div class="note-reactions">${parts.join(" ")}</div>`;
 		})();
 		if (reactionsHtml) html += reactionsHtml;
-		const createdAt = formatDateTime(note.createdAt, true);
-		if (createdAt) html += `<div class="note-created-at">${escapeHtml(createdAt)}</div>`;
+		html += renderTimeHtml(note.createdAt, "note-created-at", true);
 
 		const actionNoteId = (isRenote && !isQuote) ? note.renote.id : note.id;
 		const loggedIn = !!token;
@@ -1254,6 +1327,36 @@
 		actionsHtml += `</div></div>`;
 		html += actionsHtml;
 		return html;
+	}
+
+	/**
+	 * TL上の1ノートだけを notes/show で取り直して再描画する（TL全体の再取得を避け帯域を節約）。
+	 * displayedId は TL に実際に表示されている .note の id（RTなら外側ラッパのid）。
+	 * TL上に見つからなければ false を返す（呼び出し側で loadCurrentTl にフォールバック）。
+	 */
+	async function refreshNoteInTl(displayedId) {
+		try {
+			const container = document.getElementById("notes");
+			const el = container?.querySelector(`.note[data-note-id="${displayedId}"]`);
+			if (!container || !el) return false;
+			const fresh = await api("notes/show", { noteId: displayedId });
+			if (!fresh) return false;
+			const idx = notes.findIndex((n) => n.id === displayedId);
+			if (idx >= 0) notes[idx] = fresh;
+			const showIcons = getSetting("showIcons", true);
+			el.outerHTML = renderNote(fresh, showIcons);
+			const newEl = container.querySelector(`.note[data-note-id="${displayedId}"]`);
+			if (newEl) bindNoteEvents(newEl);
+			return true;
+		} catch {
+			return false;
+		}
+	}
+
+	/** actionNoteId（返信/RT対象のid）から、TLに表示されているラッパノートのidを解決 */
+	function resolveDisplayedNoteId(actionNoteId) {
+		const entry = notes.find((n) => n.id === actionNoteId || n.renote?.id === actionNoteId || n.reply?.id === actionNoteId);
+		return entry ? entry.id : actionNoteId;
 	}
 
 	function bindNoteEvents(container) {
@@ -1408,6 +1511,7 @@
 			}
 		}
 		renderPostAttributes();
+		updateCharCount();
 		debounceSaveDraft();
 	}
 
@@ -1509,6 +1613,16 @@
 		draftSaveTimer = setTimeout(saveDraftFromForm, 500);
 	}
 
+	/** 投稿本文の文字数表示を更新。上限超過時は over クラスで警告色に */
+	function updateCharCount() {
+		const el = document.getElementById("post-char-count");
+		const ta = document.getElementById("post-text");
+		if (!el || !ta) return;
+		const len = [...ta.value].length; // コードポイント単位で数える
+		el.textContent = `${len} / ${maxNoteTextLength}`;
+		el.classList.toggle("over", len > maxNoteTextLength);
+	}
+
 	function saveDraftFromForm() {
 		const text = document.getElementById("post-text")?.value || "";
 		const cwEl = document.getElementById("post-cw");
@@ -1553,7 +1667,7 @@
 		}
 		if (submitBtn) submitBtn.disabled = true;
 		try {
-			await api("notes/create", body);
+			const created = (await api("notes/create", body))?.createdNote;
 			clearDraft();
 			document.getElementById("post-text").value = "";
 			document.getElementById("post-cw").value = "";
@@ -1561,8 +1675,30 @@
 			renoteNoteId = null;
 			dmUserIds = null;
 			renderPostAttributes();
+			updateCharCount();
 			saveLastVisibility(visibility, localOnly);
-			loadCurrentTl();
+			// 自分の投稿は常に含まれる home/social TL では、TL全体を取り直さず先頭に差し込む（帯域節約＋即時反映）。
+			// それ以外のTL・DM(specified)は表示条件が複雑なため従来どおり再取得する。
+			const canPrepend = created
+				&& body.visibility !== "specified"
+				&& ["home", "social"].includes(currentTl)
+				&& !isNoteWordMuted(created)
+				&& !notes.some((n) => n.id === created.id);
+			if (canPrepend) {
+				notes = [created, ...notes];
+				const container = document.getElementById("notes");
+				const showIcons = getSetting("showIcons", true);
+				const frag = document.createRange().createContextualFragment(renderNote(created, showIcons));
+				const newNode = frag.firstChild;
+				if (container && newNode) {
+					container.insertBefore(newNode, container.firstChild);
+					bindNoteEvents(newNode);
+				} else {
+					loadCurrentTl();
+				}
+			} else {
+				loadCurrentTl();
+			}
 		} catch (err) {
 			showError(err?.message || "投稿に失敗しました");
 		} finally {
@@ -1588,8 +1724,12 @@
 				if (hasIt) await api("notes/reactions/delete", { noteId });
 				else await api("notes/reactions/create", { noteId, reaction: r });
 				overlay.style.display = "none";
-				loadCurrentTl();
-			} catch (_) {}
+				// TL上の該当ノートだけ更新。TLに無い（詳細モーダル等）場合のみ全体再取得にフォールバック
+				const refreshed = await refreshNoteInTl(resolveDisplayedNoteId(noteId));
+				if (!refreshed) loadCurrentTl();
+			} catch (err) {
+				showError(err?.message || "リアクションに失敗しました");
+			}
 		}
 
 		const existingHtml = Object.keys(reactions).length
@@ -1630,15 +1770,26 @@
 	async function deleteNote(noteId) {
 		const note = getNoteById(noteId);
 		if (!note) return;
-		if (note.renoteId) {
-			const ok = confirm("投稿を削除しますか？アンリノートしますか？\nOK=削除, Cancel=アンリノート");
-			if (ok) await api("notes/delete", { noteId });
-			else await api("notes/unrenote", { noteId });
-		} else {
-			if (!confirm("削除しますか？")) return;
-			await api("notes/delete", { noteId });
+		try {
+			if (note.renoteId) {
+				const ok = confirm("投稿を削除しますか？アンリノートしますか？\nOK=削除, Cancel=アンリノート");
+				if (ok) await api("notes/delete", { noteId });
+				else await api("notes/unrenote", { noteId });
+			} else {
+				if (!confirm("削除しますか？")) return;
+				await api("notes/delete", { noteId });
+			}
+		} catch (err) {
+			showError(err?.message || "削除に失敗しました");
+			return;
 		}
-		loadCurrentTl();
+		// TL全体の再取得を避け、ローカルから該当ノートを除去する
+		const idx = notes.findIndex((n) => n.id === noteId);
+		if (idx >= 0) notes.splice(idx, 1);
+		const container = document.getElementById("notes");
+		const el = container?.querySelector(`.note[data-note-id="${noteId}"]`);
+		if (el) el.remove();
+		else loadCurrentTl();
 	}
 
 	// プロフィール・ノート詳細（モーダル）
@@ -1664,7 +1815,8 @@
 					normalActions.push({ label: "フォローリクエスト却下", action: () => api("following/requests/reject", { userId }) });
 				}
 				if (token) {
-					normalActions.push({ label: "DM", action: () => { setDmMode([userId], user); hideModal(); } });
+					// DM は投稿フォームを準備するだけなので TL 再取得は不要
+					normalActions.push({ label: "DM", action: () => { setDmMode([userId], user); return { skipReload: true }; } });
 				}
 				if (hasRelation) {
 					normalActions.push({ label: rel.isMuted ? "ミュート解除" : "ミュート", action: () => rel.isMuted ? api("mute/delete", { userId }) : api("mute/create", { userId }) });
@@ -1681,8 +1833,10 @@
 					} else {
 						setHiddenIconUserIds([...hiddenIds, userId]);
 					}
-					hideModal();
-					loadCurrentTl();
+					// アイコン表示の切り替えは通信不要。メモリ上のデータを再描画するだけでよい（TL再取得はスキップ）
+					if (currentTl === "notifications") renderNotifications();
+					else renderNotes();
+					return { skipReload: true };
 				} });
 				if (hasRelation) {
 					normalActions.push({ label: rel.isRenoteMuted ? "RTミュート解除" : "RTだけミュート", action: () => rel.isRenoteMuted ? api("renote-mute/delete", { userId }) : api("renote-mute/create", { userId }) });
@@ -1704,7 +1858,7 @@
 				});
 				const showIcons = getSetting("showIcons", true);
 				const avatar = getAvatarUrl(user, showIcons)
-					? `<img class="note-avatar" src="${escapeHtml(getAvatarUrl(user, showIcons))}" alt="" width="40" height="40">`
+					? `<img class="note-avatar" src="${escapeHtml(getAvatarUrl(user, showIcons))}" alt="" width="40" height="40" decoding="async">`
 					: "";
 				const userName = (user.name || "").trim() || (user.username ? `@${user.username}` : "");
 				const userAcct = getAcct(user);
@@ -1741,10 +1895,15 @@
 				const toggleBtn = body.querySelector("[data-dangerous-toggle]");
 				const dangerousSublist = body.querySelector("[data-dangerous-sublist]");
 				const dangerousItems = Array.from(body.querySelectorAll(".profile-dangerous-list li[data-dangerous]"));
+				// action は同期（DM/アイコン非表示）と非同期（API）が混在するため Promise.resolve で包む。
+				// action が { skipReload: true } を返した場合は TL 全体再取得を省略する（帯域節約）。
+				const dispatchAction = (a) => Promise.resolve(a.action())
+					.then((res) => { hideModal(); if (!(res && res.skipReload)) loadCurrentTl(); })
+					.catch(() => {});
 				normalItems.forEach((li, i) => {
 					const a = normalActions[i];
 					if (a && !a.disabled && a.action) {
-						li.addEventListener("click", () => a.action().then(() => { hideModal(); loadCurrentTl(); }).catch(() => {}));
+						li.addEventListener("click", () => dispatchAction(a));
 					}
 				});
 				if (toggleBtn && dangerousSublist) {
@@ -1755,7 +1914,7 @@
 				}
 				dangerousItems.forEach((li, i) => {
 					const a = dangerousActions[i];
-					if (a) li.addEventListener("click", () => a.action().then(() => { hideModal(); loadCurrentTl(); }).catch(() => {}));
+					if (a) li.addEventListener("click", () => dispatchAction(a));
 				});
 				overlay.style.display = "flex";
 			})
@@ -1801,6 +1960,12 @@
 			<div id="search-results"></div>
 		`;
 		overlay.style.display = "flex";
+		const searchInput = document.getElementById("search-query");
+		searchInput?.focus();
+		// Enter でノート検索を実行
+		searchInput?.addEventListener("keydown", (e) => {
+			if (e.key === "Enter") { e.preventDefault(); document.getElementById("search-notes-btn")?.click(); }
+		});
 		document.getElementById("search-notes-btn")?.addEventListener("click", async () => {
 			const q = document.getElementById("search-query")?.value?.trim();
 			if (!q) { showError("キーワードを入力してください"); return; }
@@ -1962,6 +2127,13 @@
 	async function init() {
 		try {
 			await loadAccounts();
+			// 投稿の最大文字数を取得（軽量化のため detail:false）。失敗時は既定値のまま
+			api("meta", { detail: false }).then((m) => {
+				if (m && typeof m.maxNoteTextLength === "number") {
+					maxNoteTextLength = m.maxNoteTextLength;
+					updateCharCount();
+				}
+			}).catch(() => {});
 			// 未ログイン時、初期TLがログイン必須の場合はlocalに切り替え
 			if (!token && !["local", "global"].includes(currentTl)) {
 				currentTl = "local";
@@ -2009,6 +2181,7 @@
 		});
 		document.getElementById("post-submit")?.addEventListener("click", () => submitPost());
 		document.getElementById("post-text")?.addEventListener("input", debounceSaveDraft);
+		document.getElementById("post-text")?.addEventListener("input", updateCharCount);
 		// Ctrl+Enter / Cmd+Enter で投稿
 		document.getElementById("post-text")?.addEventListener("keydown", (e) => {
 			if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
@@ -2085,9 +2258,26 @@
 		document.getElementById("modal-overlay")?.addEventListener("click", (e) => {
 			if (e.target.id === "modal-overlay") hideModal();
 		});
+		// Escape でモーダル / 開いているメニュー・設定を閉じる
+		document.addEventListener("keydown", (e) => {
+			if (e.key !== "Escape") return;
+			const overlay = document.getElementById("modal-overlay");
+			if (overlay && overlay.style.display !== "none") { hideModal(); return; }
+			const menu = document.getElementById("header-menu");
+			if (menu && menu.style.display === "block") { menu.style.display = "none"; return; }
+			const settings = document.getElementById("settings-panel");
+			if (settings && settings.style.display !== "none") settings.style.display = "none";
+		});
 		document.getElementById("error-retry")?.addEventListener("click", () => { hideError(); loadCurrentTl(); });
+		// ストリーミング通知ポップアップ: ポインタが乗っている間は自動消去を止める（読む/クリックの猶予）
+		const streamingNotifEl = document.getElementById("streaming-notifications");
+		streamingNotifEl?.addEventListener("pointerenter", () => { streamingPaused = true; });
+		streamingNotifEl?.addEventListener("pointerleave", () => { streamingPaused = false; });
 		document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
-		document.querySelector(`.tab-btn[data-tl="${currentTl}"]`)?.classList.add("active");
+		const activeTab = document.querySelector(`.tab-btn[data-tl="${currentTl}"]`);
+		activeTab?.classList.add("active");
+		// 横スクロールするタブ列で、選択中タブが画面外にならないよう表示
+		activeTab?.scrollIntoView({ inline: "center", block: "nearest" });
 		updateStreamConnection();
 		} catch (e) {
 			console.error("Light Client init error:", e);

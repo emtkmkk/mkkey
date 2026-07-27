@@ -12,11 +12,11 @@ html(lang="ja")
 				h1#title Light Client
 				div#header-main
 					span#account-name
-					button#header-streaming-btn(style="display:none" title="ストリーミング") ⚡
-					button#header-reload-btn(style="display:none" title="再読込") ↻
-					button#header-menu-btn(style="display:none" title="メニュー") ⋮
+					button#header-streaming-btn(style="display:none" title="ストリーミング" aria-label="ストリーミング切り替え") ⚡
+					button#header-reload-btn(style="display:none" title="再読込" aria-label="タイムラインを再読込") ↻
+					button#header-menu-btn(style="display:none" title="メニュー" aria-label="メニュー" aria-haspopup="true") ⋮
 					button#login-btn(style="display:none") ログイン
-					button#header-guest-reload-btn(style="display:none" title="TL再読込") ↻
+					button#header-guest-reload-btn(style="display:none" title="TL再読込" aria-label="タイムラインを再読込") ↻
 					div#header-menu(style="display:none")
 						button.header-menu-item(data-action="search") 検索
 						button.header-menu-item(data-action="settings") 設定
@@ -85,6 +85,7 @@ html(lang="ja")
 							| mkkeyPublic
 					div#post-emoji-picker(style="display:none")
 					div#post-submit-row
+						span#post-char-count.post-char-count
 						button#post-submit 投稿
 			div#error-banner(style="display:none")
 				span#error-message
@@ -92,7 +93,7 @@ html(lang="ja")
 			div#notes-container
 				div#notes
 				button#load-more(style="display:none") もっと読む
-			div#streaming-notifications
+			div#streaming-notifications(role="status" aria-live="polite")
 			div#modal-overlay(style="display:none")
 				div#modal-content
 					div#modal-body

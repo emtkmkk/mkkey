@@ -10,6 +10,19 @@
 	--lc-error: #f38ba8;
 }
 
+/* ライトテーマ: 端末の配色設定に追従（変数の上書きのみで軽量に対応） */
+@media (prefers-color-scheme: light) {
+	:root {
+		--lc-bg: #eff1f5;
+		--lc-fg: #4c4f69;
+		--lc-muted: #6c6f85;
+		--lc-accent: #1e66f5;
+		--lc-surface: #ffffff;
+		--lc-border: #ccd0da;
+		--lc-error: #d20f39;
+	}
+}
+
 /* セカンダリボタン（統一デザイン）※プライマリボタン・元ミニマルは除く */
 #login-btn,
 .settings-btn, #setting-fetch-emojis.settings-btn, #settings-reload.settings-btn, #settings-close.settings-btn,
@@ -251,6 +264,22 @@ body {
 	border-color: var(--lc-accent);
 }
 
+/* 未読ストリーミング通知あり: 通知タブに赤ドット */
+.tab-btn.has-unread {
+	position: relative;
+}
+
+.tab-btn.has-unread::after {
+	content: "";
+	position: absolute;
+	top: 2px;
+	right: 2px;
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: var(--lc-error);
+}
+
 /* Post form */
 #post-form {
 	background: var(--lc-surface);
@@ -398,8 +427,21 @@ body {
 
 #post-submit-row {
 	display: flex;
+	align-items: center;
 	justify-content: flex-end;
+	gap: 0.5rem;
 	margin-top: 0.5rem;
+}
+
+.post-char-count {
+	margin-right: auto;
+	font-size: 0.8rem;
+	color: var(--lc-muted);
+}
+
+.post-char-count.over {
+	color: var(--lc-error);
+	font-weight: bold;
 }
 
 #post-submit {
@@ -663,12 +705,41 @@ body {
 	white-space: nowrap;
 }
 
+.notification-time {
+	font-size: 0.75rem;
+	color: var(--lc-muted);
+	margin-top: 0.25rem;
+}
+
 .streaming-notif-item {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.5rem;
 	font-size: 0.8rem;
 	padding: 0.25rem 0.5rem;
 	cursor: pointer;
 	border-radius: 4px;
 	min-width: 0;
+}
+
+.streaming-notif-content {
+	flex: 1;
+	min-width: 0;
+}
+
+.streaming-notif-dismiss {
+	flex-shrink: 0;
+	background: none;
+	border: none;
+	color: var(--lc-muted);
+	cursor: pointer;
+	font-size: 1rem;
+	line-height: 1;
+	padding: 0 0.25rem;
+}
+
+.streaming-notif-dismiss:hover {
+	color: var(--lc-fg);
 }
 
 .streaming-notif-main {

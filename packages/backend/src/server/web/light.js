@@ -220,7 +220,37 @@
 		return false;
 	}
 
+	/**
+	 * ノート単位のワードミュート判定。
+	 * 引用RTはコメント（外側の text/cw）と引用先の両方を検査する。
+	 */
+	function isNoteWordMuted(note) {
+		if (!note) return false;
+		const texts = [note.text, note.cw];
+		if (note.renote) texts.push(note.renote.text, note.renote.cw);
+		return texts.some((t) => isWordMuted(t));
+	}
+
 	// ログイン
+	/** サインイン成功後の共通処理。currentAccount / accounts を確定し UI を更新する。 */
+	async function finalizeLogin(t) {
+		token = t;
+		const me = await api("i", {});
+		currentAccount = { id: me.id, token, username: me.username, host: me.host };
+		localStorage.setItem("account", JSON.stringify(currentAccount));
+		const accs = await getAccountsFromStorage();
+		if (!accs.some((a) => a.id === me.id)) {
+			await saveAccounts([...accs, { id: me.id, token, username: me.username, host: me.host }]);
+		}
+		// NOTE: メモリ上の accounts も更新しないと「アカウント切り替え」メニューがリロードまで出ない
+		accounts = await getAccountsFromStorage();
+		renderHeader();
+		hideLoginForm();
+		showPostForm();
+		loadCurrentTl();
+		return me;
+	}
+
 	async function doLogin(username, password, tokenParam) {
 		const body = await api("signin", { username, password, ...(tokenParam ? { token: tokenParam } : {}) });
 		if (body?.challenge && body?.challengeId && body?.securityKeys) {
@@ -229,18 +259,7 @@
 		}
 		const t = body?.i || body?.token;
 		if (body && t) {
-			token = t;
-			const me = await api("i", {});
-			currentAccount = { id: me.id, token, username: me.username, host: me.host };
-			localStorage.setItem("account", JSON.stringify(currentAccount));
-			const accs = await getAccountsFromStorage();
-			if (!accs.some((a) => a.id === me.id)) {
-				await saveAccounts([...accs, { id: me.id, token, username: me.username, host: me.host }]);
-			}
-			renderHeader();
-			hideLoginForm();
-			showPostForm();
-			loadCurrentTl();
+			await finalizeLogin(t);
 			return true;
 		}
 		return false;
@@ -250,18 +269,7 @@
 		const body = await api("signin", { username, password, token: tokenCode });
 		const t = body?.i || body?.token;
 		if (!body || !t) throw new Error("ログインに失敗しました");
-		token = t;
-		const me = await api("i", {});
-		currentAccount = { id: me.id, token, username: me.username, host: me.host };
-		localStorage.setItem("account", JSON.stringify(currentAccount));
-		const accs = await getAccountsFromStorage();
-		if (!accs.some((a) => a.id === me.id)) {
-			await saveAccounts([...accs, { id: me.id, token, username: me.username, host: me.host }]);
-		}
-		renderHeader();
-		hideLoginForm();
-		showPostForm();
-		loadCurrentTl();
+		await finalizeLogin(t);
 	}
 
 	async function doLoginWithPasskey(username, password) {
@@ -303,18 +311,7 @@
 		const t = body?.i || body?.token;
 		if (!body || !t) throw new Error("ログインに失敗しました");
 		window._light2fa = null;
-		token = t;
-		const me = await api("i", {});
-		currentAccount = { id: me.id, token, username: me.username, host: me.host };
-		localStorage.setItem("account", JSON.stringify(currentAccount));
-		const accs = await getAccountsFromStorage();
-		if (!accs.some((a) => a.id === me.id)) {
-			await saveAccounts([...accs, { id: me.id, token, username: me.username, host: me.host }]);
-		}
-		renderHeader();
-		hideLoginForm();
-		showPostForm();
-		loadCurrentTl();
+		await finalizeLogin(t);
 	}
 
 	function doLogout() {
@@ -488,7 +485,7 @@
 		body.innerHTML = `<h3>アカウント切り替え</h3><div class="account-list">${
 			accs.map((a) => `<div class="account-item" data-account-id="${escapeHtml(a.id)}" data-account-token="${escapeHtml(a.token)}" data-account-username="${escapeHtml(a.username || "")}" data-account-host="${escapeHtml(a.host || "")}">${escapeHtml(getAccountLabel(a))}</div>`).join("")
 		}</div>`;
-		overlay.style.display = "block";
+		overlay.style.display = "flex";
 		body.querySelectorAll(".account-item").forEach((el) => {
 			el.addEventListener("click", async () => {
 				const id = el.dataset.accountId;
@@ -628,6 +625,7 @@
 		if (isLoading) return;
 		isLoading = true;
 		hideError();
+		if (!untilId) setNotesMessage("読み込み中…");
 		try {
 			const ep = getTimelineEndpoint();
 			const params = { limit: 20 };
@@ -643,6 +641,7 @@
 			} else {
 				notes = data || [];
 				renderNotes();
+				if (!document.getElementById("notes")?.innerHTML) setNotesMessage("投稿がありません");
 			}
 			const loadMore = document.getElementById("load-more");
 			if (loadMore) {
@@ -654,6 +653,7 @@
 			}
 		} catch (err) {
 			showError(err?.message || "TLの取得に失敗しました");
+			if (!untilId) setNotesMessage("");
 		} finally {
 			isLoading = false;
 		}
@@ -664,6 +664,7 @@
 		if (isLoading) return;
 		isLoading = true;
 		hideError();
+		if (!untilId) setNotesMessage("読み込み中…");
 		try {
 			const params = { limit: 20 };
 			if (untilId) params.untilId = untilId;
@@ -674,6 +675,7 @@
 				notifications = data || [];
 			}
 			renderNotifications();
+			if (!untilId && !document.getElementById("notes")?.innerHTML) setNotesMessage("通知はありません");
 			const loadMore = document.getElementById("load-more");
 			if (loadMore) {
 				loadMore.style.display = (data || []).length >= 20 ? "block" : "none";
@@ -684,6 +686,7 @@
 			}
 		} catch (err) {
 			showError(err?.message || "通知の取得に失敗しました");
+			if (!untilId) setNotesMessage("");
 		} finally {
 			isLoading = false;
 		}
@@ -730,13 +733,10 @@
 			groupInvited: "グループ招待",
 			unreadAntenna: "アンテナ",
 		};
-		container.innerHTML = notifications.map((n) => {
+		container.innerHTML = notifications.filter((n) => !(n.note && isNoteWordMuted(n.note))).map((n) => {
 			const label = typeLabels[n.type] || n.type;
 			const who = n.user ? getUserLabel(n.user) : "";
-			const createdAt = n.createdAt ? (() => {
-				const d = new Date(n.createdAt);
-				return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-			})() : "";
+			const createdAt = formatDateTime(n.createdAt);
 			if (n.note && ["reply", "quote", "mention", "reaction", "renote", "unreadAntenna"].includes(n.type)) {
 				const summary = getNoteSummary(n.note);
 				const reactionPart = n.type === "reaction" && n.reaction ? " " + renderReactionEmojiHtml(n.reaction) : "";
@@ -780,10 +780,6 @@
 		bindNoteEvents(container);
 	}
 
-	function updateNotificationTabVisibility() {
-		// 通知タブは常にTLリストに表示（ホームの左）。表示/非表示は行わない。
-	}
-
 	function renderStreamingNotifications() {
 		const el = document.getElementById("streaming-notifications");
 		if (!el) return;
@@ -797,7 +793,7 @@
 			renote: "リノート", follow: "フォロー", followRequestAccepted: "フォロー承認",
 			receiveFollowRequest: "フォローリクエスト", groupInvited: "グループ招待", unreadAntenna: "アンテナ",
 		};
-		el.innerHTML = streamingNotifications.slice(0, 10).map((n) => {
+		el.innerHTML = streamingNotifications.filter((n) => !(n.note && isNoteWordMuted(n.note))).slice(0, 10).map((n) => {
 			const label = typeLabels[n.type] || n.type || "";
 			const who = n.user ? getUserLabel(n.user) : "";
 			const noteId = n.note?.id || "";
@@ -806,10 +802,7 @@
 			const summaryShort = summary ? (summary.length > 40 ? summary.slice(0, 40) + "…" : summary) : "";
 			const bodyParts = [escapeHtml(label), reactionHtml, summaryShort ? escapeHtml(summaryShort) : "", who ? `（${escapeHtml(who)}）` : ""].filter(Boolean);
 			const mainLine = bodyParts.join(" ");
-			const createdAt = n.createdAt ? (() => {
-				const d = new Date(n.createdAt);
-				return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-			})() : "";
+			const createdAt = formatDateTime(n.createdAt);
 			const timeHtml = createdAt ? `<div class="streaming-notif-time">${escapeHtml(createdAt)}</div>` : "";
 			return `<div class="streaming-notif-item" data-note-id="${noteId}" data-user-id="${n.user?.id || ""}"><div class="streaming-notif-main">${mainLine}</div>${timeHtml}</div>`;
 		}).join("");
@@ -900,12 +893,14 @@
 					const fromActiveTl = chBody?.type === "note" ? chBody?.id === streamTlChannelId : false;
 					if (note && fromActiveTl && !notes.some((n) => n.id === note.id) && currentTl !== "notifications") {
 						const container = document.getElementById("notes");
-						if (container && !isWordMuted((note.renote || note).text || (note.renote || note).cw || "")) {
+						if (container && !isNoteWordMuted(note)) {
 							notes = [note, ...notes];
 							const showIcons = getSetting("showIcons", true);
 							const frag = document.createRange().createContextualFragment(renderNote(note, showIcons));
-							container.insertBefore(frag.firstChild, container.firstChild);
-							bindNoteEvents(container);
+							const newNode = frag.firstChild;
+							container.insertBefore(newNode, container.firstChild);
+							// NOTE: 挿入した新規ノードだけに bind する。container 全体に bind すると既存ノートへ多重登録される
+							bindNoteEvents(newNode);
 						}
 					}
 					const noteUpdated = msg.type === "noteUpdated" ? msg.body : chBody?.type === "noteUpdated" ? chBody?.body : null;
@@ -925,7 +920,9 @@
 									if (el) {
 										const showIcons = getSetting("showIcons", true);
 										el.outerHTML = renderNote(notes[idx], showIcons);
-										bindNoteEvents(container);
+										// outerHTML で差し替わった新ノードだけに bind（container 全体だと多重登録）
+										const newEl = container.querySelector(`.note[data-note-id="${id}"]`);
+										if (newEl) bindNoteEvents(newEl);
 									}
 								}
 							}
@@ -934,8 +931,12 @@
 					const fromChannel = chBody?.type === "notification" || chBody?.type === "unreadNotification";
 					const notif = fromChannel ? chBody?.body : (msg.type === "notification" || msg.type === "unreadNotification" ? (msg.body?.body || msg.body) : null);
 					if (notif) {
-						notifications = [notif, ...notifications];
-						if (getSetting("notifications", false)) {
+						// notification / unreadNotification が両方届くため id で重複排除。配列も無制限に伸びないよう上限を設ける
+						const already = notif.id != null && notifications.some((x) => x.id === notif.id);
+						if (!already) {
+							notifications = [notif, ...notifications].slice(0, 100);
+						}
+						if (!already && getSetting("notifications", false)) {
 							const id = notif.id != null ? notif.id : "n-" + Date.now() + "-" + Math.random();
 							if (notif.id == null) notif._streamingId = id;
 							streamingNotifications = [notif, ...streamingNotifications].slice(0, 20);
@@ -964,6 +965,21 @@
 		const div = document.createElement("div");
 		div.textContent = s;
 		return div.innerHTML;
+	}
+
+	/** createdAt 等の日時文字列を "YYYY/MM/DD HH:mm(:ss)" に整形（3箇所で共通利用） */
+	function formatDateTime(dateStr, withSeconds) {
+		if (!dateStr) return "";
+		const d = new Date(dateStr);
+		const p = (n) => String(n).padStart(2, "0");
+		const base = `${d.getFullYear()}/${p(d.getMonth() + 1)}/${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+		return withSeconds ? `${base}:${p(d.getSeconds())}` : base;
+	}
+
+	/** #notes 領域にメッセージ（読み込み中 / 空 など）を表示 */
+	function setNotesMessage(msg) {
+		const c = document.getElementById("notes");
+		if (c) c.innerHTML = msg ? `<div class="notes-message">${escapeHtml(msg)}</div>` : "";
 	}
 
 	function getUserLabel(user) {
@@ -1094,10 +1110,7 @@
 		const showIcons = getSetting("showIcons", true);
 		const sourceNotes = Array.isArray(additionalNotes) ? additionalNotes : notes;
 		const renderedHtml = sourceNotes
-			.filter((n) => {
-				const text = (n.renote || n).text || (n.renote || n).cw || "";
-				return !isWordMuted(text);
-			})
+			.filter((n) => !isNoteWordMuted(n))
 			.map((note) => renderNote(note, showIcons))
 			.join("");
 
@@ -1220,12 +1233,7 @@
 			return `<div class="note-reactions">${parts.join(" ")}</div>`;
 		})();
 		if (reactionsHtml) html += reactionsHtml;
-		const createdAt = note.createdAt ? (() => {
-			const d = new Date(note.createdAt);
-			const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, "0"), day = String(d.getDate()).padStart(2, "0");
-			const h = String(d.getHours()).padStart(2, "0"), min = String(d.getMinutes()).padStart(2, "0"), sec = String(d.getSeconds()).padStart(2, "0");
-			return `${y}/${m}/${day} ${h}:${min}:${sec}`;
-		})() : "";
+		const createdAt = formatDateTime(note.createdAt, true);
 		if (createdAt) html += `<div class="note-created-at">${escapeHtml(createdAt)}</div>`;
 
 		const actionNoteId = (isRenote && !isQuote) ? note.renote.id : note.id;
@@ -1390,7 +1398,12 @@
 				document.getElementById("post-visibility").value = lv.visibility || "home";
 				document.getElementById("post-local-only").checked = !!lv.localOnly;
 			} else {
-				document.getElementById("post-visibility").value = currentTl === "home" ? "home" : "public";
+				// 公開範囲を記録しない設定時は「デフォルト公開範囲」を採用。
+				// 記録する設定で未保存の初回のみ、TLに応じた既定（ホーム/公開）にフォールバック。
+				const remember = getSetting("rememberVisibility", true);
+				document.getElementById("post-visibility").value = remember
+					? (currentTl === "home" ? "home" : "public")
+					: getSetting("defaultVisibility", "public");
 				document.getElementById("post-local-only").checked = getSetting("defaultLocalOnly", false);
 			}
 		}
@@ -1517,6 +1530,9 @@
 	}
 
 	async function submitPost() {
+		const submitBtn = document.getElementById("post-submit");
+		// 二重送信ガード: 送信中はボタンを無効化し、連打による重複投稿を防ぐ
+		if (submitBtn && submitBtn.disabled) return;
 		const text = document.getElementById("post-text")?.value?.trim() || "";
 		const cwArea = document.getElementById("post-cw-area");
 		const cw = cwArea?.style.display !== "none" ? (document.getElementById("post-cw")?.value?.trim() || "") : "";
@@ -1535,16 +1551,23 @@
 			if (cw) body.cw = cw;
 			if (text) body.text = text;
 		}
-		await api("notes/create", body);
-		clearDraft();
-		document.getElementById("post-text").value = "";
-		document.getElementById("post-cw").value = "";
-		replyNoteId = null;
-		renoteNoteId = null;
-		dmUserIds = null;
-		renderPostAttributes();
-		saveLastVisibility(visibility, localOnly);
-		loadCurrentTl();
+		if (submitBtn) submitBtn.disabled = true;
+		try {
+			await api("notes/create", body);
+			clearDraft();
+			document.getElementById("post-text").value = "";
+			document.getElementById("post-cw").value = "";
+			replyNoteId = null;
+			renoteNoteId = null;
+			dmUserIds = null;
+			renderPostAttributes();
+			saveLastVisibility(visibility, localOnly);
+			loadCurrentTl();
+		} catch (err) {
+			showError(err?.message || "投稿に失敗しました");
+		} finally {
+			if (submitBtn) submitBtn.disabled = false;
+		}
 	}
 
 	// リアクション・削除
@@ -1569,16 +1592,11 @@
 			} catch (_) {}
 		}
 
-		const emojiDisplayAttrs = (str) => {
-			const norm = str && !str.startsWith(":") ? `:${str}:` : str;
-			const url = getEmojiUrl(norm || str);
-			return url ? ` data-emoji-url="${escapeHtml(url)}"` : "";
-		};
 		const existingHtml = Object.keys(reactions).length
 			? `<div class="reaction-existing"><span style="font-size:0.85rem;color:var(--lc-muted)">既存のリアクション</span><div class="emoji-picker-vertical" style="margin-top:0.25rem">${
 				Object.entries(reactions).map(([r, c]) => {
 					const active = myReaction === r ? " active" : "";
-					return `<div class="emoji-picker-row"><span class="emoji-picker-display${active}" data-emoji="${escapeHtml(r)}"${emojiDisplayAttrs(r)}>${escapeHtml(r)}×${c}</span><button type="button" class="emoji-picker-use" data-emoji="${escapeHtml(r)}">使用</button></div>`;
+					return `<div class="emoji-picker-row"><span class="emoji-picker-display${active}" data-emoji="${escapeHtml(r)}"${emojiUrlAttr(r)}>${escapeHtml(r)}×${c}</span><button type="button" class="emoji-picker-use" data-emoji="${escapeHtml(r)}">使用</button></div>`;
 				}).join("")
 			}</div></div>`
 			: "";
@@ -1588,17 +1606,11 @@
 		const emojis = JSON.parse(localStorage.getItem(REACTIONS_KEY) || "[]");
 		const emojiButtons = emojis.length === 0
 			? `<button type="button" id="emoji-fetch-btn">よく使う絵文字を取得</button>`
-			: `<span style="font-size:0.85rem;color:var(--lc-muted)">よく使う絵文字</span><div class="emoji-picker-vertical post-emoji-picker" style="margin-top:0.25rem">${emojis.map((e) => {
-				const s = typeof e === "string" ? e : (e?.name ? `:${e.name}:` : (e?.name || e));
-				return `<div class="emoji-picker-row"><span class="emoji-picker-display" data-emoji="${escapeHtml(s)}"${emojiDisplayAttrs(s)}>${escapeHtml(s)}</span><button type="button" class="emoji-picker-use" data-emoji="${escapeHtml(s)}">使用</button></div>`;
-			}).join("")}</div>`;
+			: `<span style="font-size:0.85rem;color:var(--lc-muted)">よく使う絵文字</span><div class="emoji-picker-vertical post-emoji-picker" style="margin-top:0.25rem">${buildEmojiPickerRowsHtml(emojis)}</div>`;
 
 		body.innerHTML = `<h3>リアクション</h3>${existingHtml}${manualHtml}<div class="reaction-frequent">${emojiButtons}</div>`;
 		overlay.style.display = "flex";
 
-		body.querySelectorAll(".reaction-existing-btn").forEach((btn) => {
-			btn.addEventListener("click", () => toggleReaction(btn.dataset.emoji));
-		});
 		body.querySelector("#reaction-manual-submit")?.addEventListener("click", () => {
 			const v = (body.querySelector("#reaction-manual-input")?.value || "").trim();
 			if (v) { toggleReaction(v); }
@@ -1612,30 +1624,7 @@
 		body.querySelectorAll(".emoji-picker-use[data-emoji]").forEach((btn) => {
 			btn.addEventListener("click", () => toggleReaction(btn.dataset.emoji));
 		});
-		body.querySelectorAll(".emoji-picker-display[data-emoji-url]").forEach((span) => {
-			span.addEventListener("click", (e) => {
-				if (span.querySelector("img")) return;
-				e.stopPropagation();
-				const url = span.dataset.emojiUrl;
-				if (!url) return;
-				const text = span.textContent || "";
-				span.dataset.emojiText = text;
-				const img = document.createElement("img");
-				img.src = url;
-				img.alt = text;
-				img.style.height = "1.25em";
-				img.style.width = "auto";
-				img.style.verticalAlign = "middle";
-				img.style.cursor = "pointer";
-				span.textContent = "";
-				span.appendChild(img);
-				img.addEventListener("click", (ev) => {
-					ev.stopPropagation();
-					img.remove();
-					span.textContent = span.dataset.emojiText || "";
-				});
-			});
-		});
+		bindEmojiPickerDisplayToggle(body);
 	}
 
 	async function deleteNote(noteId) {
@@ -1907,6 +1896,68 @@
 		return url;
 	}
 
+	// --- 絵文字ピッカー共通ヘルパー（リアクション/投稿ピッカーで共有） ---
+
+	/** 絵文字表示スパンに付与する data-emoji-url 属性文字列（URLが解決できない場合は空） */
+	function emojiUrlAttr(str) {
+		const norm = str && !str.startsWith(":") ? `:${str}:` : str;
+		const url = getEmojiUrl(norm || str);
+		return url ? ` data-emoji-url="${escapeHtml(url)}"` : "";
+	}
+
+	/** よく使う絵文字リストから縦並びピッカーの行HTMLを生成 */
+	function buildEmojiPickerRowsHtml(emojis) {
+		return (emojis || []).map((e) => {
+			const s = typeof e === "string" ? e : (e?.name ? `:${e.name}:` : String(e));
+			return `<div class="emoji-picker-row"><span class="emoji-picker-display" data-emoji="${escapeHtml(s)}"${emojiUrlAttr(s)}>${escapeHtml(s)}</span><button type="button" class="emoji-picker-use" data-emoji="${escapeHtml(s)}">使用</button></div>`;
+		}).join("");
+	}
+
+	/** ピッカー内の絵文字スパンに「タップで画像プレビュー ⇔ テキスト」トグルを付与 */
+	function bindEmojiPickerDisplayToggle(root) {
+		root.querySelectorAll(".emoji-picker-display[data-emoji-url]").forEach((span) => {
+			span.addEventListener("click", (e) => {
+				if (span.querySelector("img")) return;
+				e.stopPropagation();
+				const url = span.dataset.emojiUrl;
+				if (!url) return;
+				const text = span.textContent || "";
+				span.dataset.emojiText = text;
+				const img = document.createElement("img");
+				img.src = url;
+				img.alt = text;
+				img.style.height = "1.25em";
+				img.style.width = "auto";
+				img.style.verticalAlign = "middle";
+				img.style.cursor = "pointer";
+				span.textContent = "";
+				span.appendChild(img);
+				img.addEventListener("click", (ev) => {
+					ev.stopPropagation();
+					img.remove();
+					span.textContent = span.dataset.emojiText || "";
+				});
+			});
+		});
+	}
+
+	/** 投稿ピッカーの「使用」ボタンにテキストエリア挿入ハンドラを付与 */
+	function bindPostEmojiPickerUse(root) {
+		root.querySelectorAll(".emoji-picker-use[data-emoji]").forEach((btn) => {
+			btn.addEventListener("click", () => {
+				const textarea = document.getElementById("post-text");
+				const emoji = btn.dataset.emoji;
+				const start = textarea.selectionStart;
+				const end = textarea.selectionEnd;
+				const v = textarea.value;
+				textarea.value = v.slice(0, start) + emoji + v.slice(end);
+				textarea.selectionStart = textarea.selectionEnd = start + emoji.length;
+				textarea.focus();
+				debounceSaveDraft();
+			});
+		});
+	}
+
 	// 初期化
 	async function init() {
 		try {
@@ -1923,14 +1974,12 @@
 		updateTlSelectorVisibility();
 		if (token) {
 			showPostForm();
-			updateNotificationTabVisibility();
 			if (["antenna", "list", "channel"].includes(currentTl)) {
 				await populateTlSelector();
 			}
 			loadCurrentTl();
 		} else {
 			hidePostForm();
-			updateNotificationTabVisibility();
 		}
 		document.querySelectorAll(".tab-btn").forEach((btn) => {
 			btn.addEventListener("click", async () => {
@@ -1960,119 +2009,36 @@
 		});
 		document.getElementById("post-submit")?.addEventListener("click", () => submitPost());
 		document.getElementById("post-text")?.addEventListener("input", debounceSaveDraft);
+		// Ctrl+Enter / Cmd+Enter で投稿
+		document.getElementById("post-text")?.addEventListener("keydown", (e) => {
+			if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+				e.preventDefault();
+				submitPost();
+			}
+		});
 		document.getElementById("post-cw")?.addEventListener("input", debounceSaveDraft);
 		document.getElementById("post-visibility")?.addEventListener("change", debounceSaveDraft);
 		document.getElementById("post-local-only")?.addEventListener("change", debounceSaveDraft);
-		document.getElementById("post-emoji-btn")?.addEventListener("click", async () => {
+		document.getElementById("post-emoji-btn")?.addEventListener("click", () => {
 			const picker = document.getElementById("post-emoji-picker");
 			const show = picker.style.display !== "none";
 			picker.style.display = show ? "none" : "flex";
-			if (!show) {
-				const emojiDisplayAttrs = (str) => {
-					const norm = str && !str.startsWith(":") ? `:${str}:` : str;
-					const url = getEmojiUrl(norm || str);
-					return url ? ` data-emoji-url="${escapeHtml(url)}"` : "";
-				};
+			if (show) return;
+			const renderPicker = () => {
 				const emojis = JSON.parse(localStorage.getItem(REACTIONS_KEY) || "[]");
-				picker.innerHTML = emojis.length ? emojis.map((e) => {
-					const s = typeof e === "string" ? e : (e.name ? `:${e.name}:` : String(e));
-					return `<div class="emoji-picker-row"><span class="emoji-picker-display" data-emoji="${escapeHtml(s)}"${emojiDisplayAttrs(s)}>${escapeHtml(s)}</span><button type="button" class="emoji-picker-use" data-emoji="${escapeHtml(s)}">使用</button></div>`;
-				}).join("") : `<button type="button" id="post-emoji-fetch-btn">取得</button>`;
-				picker.classList.add("emoji-picker-vertical");
 				if (emojis.length) {
-					picker.querySelectorAll(".emoji-picker-use[data-emoji]").forEach((btn) => {
-						btn.addEventListener("click", () => {
-							const textarea = document.getElementById("post-text");
-							const emoji = btn.dataset.emoji;
-							const start = textarea.selectionStart;
-							const end = textarea.selectionEnd;
-							const v = textarea.value;
-							textarea.value = v.slice(0, start) + emoji + v.slice(end);
-							textarea.selectionStart = textarea.selectionEnd = start + emoji.length;
-							textarea.focus();
-							debounceSaveDraft();
-						});
-					});
-					picker.querySelectorAll(".emoji-picker-display[data-emoji-url]").forEach((span) => {
-						span.addEventListener("click", (e) => {
-							if (span.querySelector("img")) return;
-							e.stopPropagation();
-							const url = span.dataset.emojiUrl;
-							if (!url) return;
-							const text = span.textContent || "";
-							span.dataset.emojiText = text;
-							const img = document.createElement("img");
-							img.src = url;
-							img.alt = text;
-							img.style.height = "1.25em";
-							img.style.width = "auto";
-							img.style.verticalAlign = "middle";
-							img.style.cursor = "pointer";
-							span.textContent = "";
-							span.appendChild(img);
-							img.addEventListener("click", (ev) => {
-								ev.stopPropagation();
-								img.remove();
-								span.textContent = span.dataset.emojiText || "";
-							});
-						});
-					});
+					picker.innerHTML = buildEmojiPickerRowsHtml(emojis);
+					picker.classList.add("emoji-picker-vertical");
+					bindPostEmojiPickerUse(picker);
+					bindEmojiPickerDisplayToggle(picker);
 				} else {
+					picker.innerHTML = `<button type="button" id="post-emoji-fetch-btn">取得</button>`;
 					picker.querySelector("#post-emoji-fetch-btn")?.addEventListener("click", async () => {
-						try {
-							await fetchEmojis();
-							const emojiDisplayAttrs2 = (str) => {
-								const norm = str && !str.startsWith(":") ? `:${str}:` : str;
-								const url = getEmojiUrl(norm || str);
-								return url ? ` data-emoji-url="${escapeHtml(url)}"` : "";
-							};
-							const newEmojis = JSON.parse(localStorage.getItem(REACTIONS_KEY) || "[]");
-							picker.innerHTML = newEmojis.map((e) => {
-								const s = typeof e === "string" ? e : (e.name ? `:${e.name}:` : String(e));
-								return `<div class="emoji-picker-row"><span class="emoji-picker-display" data-emoji="${escapeHtml(s)}"${emojiDisplayAttrs2(s)}>${escapeHtml(s)}</span><button type="button" class="emoji-picker-use" data-emoji="${escapeHtml(s)}">使用</button></div>`;
-							}).join("");
-							picker.classList.add("emoji-picker-vertical");
-							picker.querySelectorAll(".emoji-picker-use[data-emoji]").forEach((btn) => {
-								btn.addEventListener("click", () => {
-									const textarea = document.getElementById("post-text");
-									const emoji = btn.dataset.emoji;
-									const start = textarea.selectionStart;
-									const end = textarea.selectionEnd;
-									const v = textarea.value;
-									textarea.value = v.slice(0, start) + emoji + v.slice(end);
-									textarea.selectionStart = textarea.selectionEnd = start + emoji.length;
-									textarea.focus();
-									debounceSaveDraft();
-								});
-							});
-							picker.querySelectorAll(".emoji-picker-display[data-emoji-url]").forEach((span) => {
-								span.addEventListener("click", (e) => {
-									if (span.querySelector("img")) return;
-									e.stopPropagation();
-									const url = span.dataset.emojiUrl;
-									if (!url) return;
-									const text = span.textContent || "";
-									span.dataset.emojiText = text;
-									const img = document.createElement("img");
-									img.src = url;
-									img.alt = text;
-									img.style.height = "1.25em";
-									img.style.width = "auto";
-									img.style.verticalAlign = "middle";
-									img.style.cursor = "pointer";
-									span.textContent = "";
-									span.appendChild(img);
-									img.addEventListener("click", (ev) => {
-										ev.stopPropagation();
-										img.remove();
-										span.textContent = span.dataset.emojiText || "";
-									});
-								});
-							});
-						} catch (_) {}
+						try { await fetchEmojis(); renderPicker(); } catch (_) {}
 					});
 				}
-			}
+			};
+			renderPicker();
 		});
 		document.getElementById("header-menu-btn")?.addEventListener("click", (e) => {
 			e.stopPropagation();
@@ -2108,7 +2074,9 @@
 			setSetting("wordMute", document.getElementById("setting-word-mute").value || "");
 			document.getElementById("settings-panel").style.display = "none";
 			updateDefaultVisibilitySectionVisibility();
-			updateNotificationTabVisibility();
+			// アイコン表示/ワードミュートの変更を通信なしで即時反映（メモリ上のデータを再描画）
+			if (currentTl === "notifications") renderNotifications();
+			else renderNotes();
 			updateStreamConnection();
 		});
 		document.getElementById("setting-remember-visibility")?.addEventListener("change", updateDefaultVisibilitySectionVisibility);

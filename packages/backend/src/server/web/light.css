@@ -11,7 +11,7 @@
 }
 
 /* セカンダリボタン（統一デザイン）※プライマリボタン・元ミニマルは除く */
-#settings-btn, #login-btn, #logout-btn, #search-btn,
+#login-btn,
 .settings-btn, #setting-fetch-emojis.settings-btn, #settings-reload.settings-btn, #settings-close.settings-btn,
 #post-cw-toggle, #post-emoji-btn,
 .emoji-picker-use, #post-emoji-picker #post-emoji-fetch-btn,
@@ -25,12 +25,20 @@
 	cursor: pointer;
 }
 
-#settings-btn:hover, #login-btn:hover, #logout-btn:hover, #search-btn:hover,
+#login-btn:hover,
 .settings-btn:hover, #setting-fetch-emojis.settings-btn:hover, #settings-reload.settings-btn:hover, #settings-close.settings-btn:hover,
 #post-cw-toggle:hover, #post-emoji-btn:hover,
 .emoji-picker-use:hover, #post-emoji-picker #post-emoji-fetch-btn:hover,
 #load-more:hover {
 	background: var(--lc-border);
+}
+
+/* #notes 内メッセージ（読み込み中 / 空） */
+.notes-message {
+	color: var(--lc-muted);
+	text-align: center;
+	padding: 1.5rem 1rem;
+	font-size: 0.9rem;
 }
 
 * {
@@ -150,22 +158,6 @@ body {
 
 .account-item:hover {
 	background: var(--lc-surface);
-}
-
-#header-actions {
-	display: flex;
-	align-items: center;
-	gap: 0.5rem;
-	flex-wrap: wrap;
-}
-
-#cli-link {
-	color: var(--lc-accent);
-	text-decoration: none;
-}
-
-#cli-link:hover {
-	text-decoration: underline;
 }
 
 #tl-selector {

@@ -99,5 +99,8 @@ export default define(meta, paramDef, async (ps, user) => {
 
 	await deleteFollowing(follower, followee);
 
-	return await Users.pack(followee.id, user);
+	// クライアントがボタン表示を即座に更新できるよう relation を含めて返す
+	return await Users.pack(followee.id, user, {
+		relation: true,
+	});
 });

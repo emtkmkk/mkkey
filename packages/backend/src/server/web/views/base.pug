@@ -42,8 +42,12 @@ html
 		//- 既定は summary。ビュー側が locals で twitterCard を渡すとそれを使う。
 		//- ここで固定値を出すと block og 側の指定と二重になり、先に出た summary が
 		//- クローラに採用されて大きく表示されなくなるため。
-		//- twitter:* は仕様上 name 属性。property だと読まないクローラがある。
-		meta(name='twitter:card' content= twitterCard || 'summary')
+		//- NOTE: 属性は property のままにすること。仕様上は name が正しいが、他のビューは
+		//- block og 内で property の twitter:card を自前で出しており、ここだけ name にすると
+		//- 「name には既定の summary、property には summary_large_image」という食い違いが起きる。
+		//- Twitter は name しか読まないため、それをやるとサムネイルが出なくなる。
+		//- 直すなら各ビューを twitterCard 経由へ寄せてから、まとめて name にすること。
+		meta(property='twitter:card' content= twitterCard || 'summary')
 		meta(property='og:site_name' content= instanceName || 'Cluckey')
 		meta(name='viewport' content='width=device-width, initial-scale=1')
 		link(rel='icon' href= icon || `/favicon.ico?${ timestamp }`)

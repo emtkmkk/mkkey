@@ -55,10 +55,21 @@ block meta
 			meta(name='twitter:creator' content=`@${profile.twitter.screenName}`)
 
 		if !sub
-			if !user.host
-				link(rel='alternate' href=`${config.url}/users/${user.id}` type='application/activity+json')
-			if user.uri
-				link(rel='alternate' href=user.uri type='application/activity+json')
+			//- ActivityPub の alternate link は、動的 OGP カードを出すページでは意図的に省く。
+			//- Discord はこの link を見つけると OGP より ActivityPub を優先し、Person には
+			//- og:image に相当するものが無いため「枠は出るが画像が出ない」状態になる。
+			//- 同一インスタンス上で og:image・twitter:card を完全に同一にしたまま
+			//- この link の有無だけを変えて挙動が変わることを確認済み（/@user と /@user/notes）。
+			//- 他所でも同じ現象が報告されている:
+			//-   https://www.kgadams.net/sitenews/sadly-disabling-activitypub-due-to-discord-weirdness
+			//- フェデレーションは WebFinger と Accept によるコンテントネゴシエーションで
+			//- 成立しており（実測済み）、この link は 3 つ目の冗長な経路なので影響はない。
+			//- カードを出さないユーザー（リモート・privateMode 等）では従来どおり出力する。
+			unless ogImageUrl
+				if !user.host
+					link(rel='alternate' href=`${config.url}/users/${user.id}` type='application/activity+json')
+				if user.uri
+					link(rel='alternate' href=user.uri type='application/activity+json')
 			if profile.url
 				link(rel='alternate' href=profile.url type='text/html')
 

@@ -48,6 +48,7 @@ import { queues } from "@/queue/queues.js";
 import { genOpenapiSpec } from "../api/openapi/gen-spec.js";
 import { urlPreviewHandler } from "./url-preview.js";
 import { manifestHandler } from "./manifest.js";
+import { profileCardHandler, buildProfileCardUrl } from "./ogp/index.js";
 import packFeed from "./feed.js";
 import { MINUTE, DAY } from "@/const.js";
 import type { Note } from "@/models/entities/note.js";
@@ -340,6 +341,9 @@ const getFeed = async (acct: string) => {
 	return user && (await packFeed(user));
 };
 
+// プロフィール OGP 画像。reUser は /@user/:sub にもマッチしてしまうので、必ずその前に登録する。
+router.get("/@:user/og.png", profileCardHandler);
+
 // As the /@user[.json|.rss|.atom]/sub endpoint is complicated, we will use a regex to switch between them.
 const reUser = new RegExp(
 	"^/@(?<user>[^/]+?)(?:.(?<feed>json|rss|atom))?(?:/(?<sub>[^/]+))?$",
@@ -551,6 +555,8 @@ const userPage: Router.Middleware = async (ctx, next) => {
 		profile,
 		me,
 		avatarUrl: await Users.getAvatarUrl(user),
+		// 対象外のユーザー（リモート・privateMode 等）では null になり、従来のアイコンが使われる
+		ogImageUrl: buildProfileCardUrl(user, meta),
 		sub: subParam,
 		instanceName: meta.name || "Cluckey",
 		icon: meta.iconUrl,

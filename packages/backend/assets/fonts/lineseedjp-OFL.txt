@@ -11,8 +11,9 @@ mkkey クライアントのカスタムフォント選択肢として同梱す�
   - 配布元             : https://seed.line.me/index_jp.html
   - 取得アーカイブ     : LINE_Seed_JP.zip
                          (App/OTF, App/TTF, Desktop/OTF, Desktop/TTF, Web/{EOT,WOFF,WOFF2} 同梱)
-  - 同梱ウェイト       : Regular (400) のみ
-                         (Web/WOFF2/LINESeedJP_OTF_Rg.woff2 をそのまま採用)
+  - 同梱ウェイト       : Regular (400) / Bold (700)
+                         クライアント配信用 : Web/WOFF2/LINESeedJP_OTF_Rg.woff2
+                         OGP 画像生成用     : Desktop/OTF/LINESeedJP_OTF_{Rg,Bd}.otf
   - ライセンス         : SIL Open Font License 1.1 (詳細は本文末尾)
 
 OFL 1.1 PERMISSION & CONDITIONS 第 2 項に従い、mkkey リポジトリへの
@@ -22,9 +23,21 @@ NOTE: 本バイナリ (LINESeedJP.woff2) は配布物 Web/WOFF2/LINESeedJP_OTF_R
       ファイル名のみ変更してそのまま採用しています。フォント内容に対する
       改変は一切行っていません。
 
-NOTE: Bold / ExtraBold / Thin など他ウェイトも配布物に同梱されています。
-      mkkey 同梱の追加が必要になった場合は、同じ手順で Web/WOFF2/ ディレクトリの
-      対応する woff2 を採用し、本 CSS の @font-face 定義を増やしてください。
+NOTE: LINESeedJP-Regular.otf / LINESeedJP-Bold.otf はサーバ側の OGP 画像生成
+      (satori) 用です。satori は woff2 を読めないため、配布物
+      Desktop/OTF/LINESeedJP_OTF_Rg.otf および同 _Bd.otf を、ファイル名のみ
+      変更してそのまま採用しています。フォント内容に対する改変はありません。
+      クライアント配信には使わないため @font-face 定義は増やしていません。
+
+NOTE: OGP のデザイン仕様はウェイト 700 と 500 を使いますが、LINE Seed JP の
+      ラインナップは Thin / Regular / Bold / ExtraBold で Medium (500) が
+      存在しません。500 指定は satori の近傍ウェイト解決により Regular (400)
+      で描画されます。意図した挙動です。
+
+NOTE: ExtraBold / Thin も配布物に同梱されています。追加が必要になった場合は、
+      同じ手順で Desktop/OTF/ (サーバ用) または Web/WOFF2/ (クライアント用) の
+      対応するファイルを採用してください。後者は本 CSS の @font-face 定義も
+      増やす必要があります。
 
 ==============================================================================
 配布元 OFL.txt 原本 (改変なし)

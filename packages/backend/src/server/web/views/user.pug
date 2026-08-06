@@ -13,7 +13,9 @@ block desc
 
 block og
 	unless privateMode
-		meta(property='og:type'        content='blog')
+		//- 'blog' は OpenGraph に存在しない型。ユーザーページの正しい型は 'profile'
+		meta(property='og:type'        content='profile')
+		meta(property='profile:username' content= user.username)
 		meta(property='og:title'       content= title)
 		meta(property='og:description' content= profile.description)
 		meta(property='og:url'         content= url)

@@ -56,8 +56,6 @@ import {
 	profileCardHandler,
 	buildProfileCardUrl,
 	warmProfileCard,
-	ensureProfileCard,
-	looksLikeCrawler,
 } from "./ogp/index.js";
 import packFeed from "./feed.js";
 import { MINUTE, DAY } from "@/const.js";
@@ -599,15 +597,16 @@ const userPage: Router.Middleware = async (ctx, next) => {
 		privateMode: meta.privateMode,
 	};
 
-	// クローラは HTML の直後に og:image を取りに来る。生成が終わる前に HTML を返すと
-	// 画像リクエストが待たされ、タイムアウトの短いクローラは諦めてしまう。
-	// そこでクローラに対してだけ、カードが出来上がるのを待ってから HTML を返す。
-	// 人間のアクセスは待たせず、裏で生成だけ始めておく。
-	if (looksLikeCrawler(ctx.get("user-agent"))) {
-		await ensureProfileCard(user, meta);
-	} else {
-		warmProfileCard(user, meta);
-	}
+	// クローラは HTML を取得してから og:image を取りに来る。その待ち時間のあいだに
+	// 生成を進めておく。await はしない。
+	//
+	// NOTE: 以前はクローラに対して生成完了まで待ってから HTML を返していたが、
+	// HTML の応答が 0.2〜1.1 秒遅くなり、タイムアウトの短い Twitter のクローラで
+	// かえって不利になっていた。Discord が直った原因は user.pug 側の
+	// ActivityPub alternate link の除去であって、この待ち処理ではない。
+	// 画像リクエストが生成中に来ても、キャッシュの singleflight で進行中の生成に
+	// 合流するだけなので、待たない方が総合的に速い。
+	warmProfileCard(user, meta);
 
 	await ctx.render("user", userDetail);
 	ctx.set("Cache-Control", "public, max-age=15");

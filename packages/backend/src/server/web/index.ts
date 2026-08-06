@@ -42,6 +42,10 @@ import {
 } from "@/models/index.js";
 import { getEffectiveUsageVisibility } from "@/models/repositories/emoji.js";
 import * as Acct from "@/misc/acct.js";
+import {
+	getUserNameForMeta,
+	stripEmojiShortcodes,
+} from "@/misc/user-name.js";
 import { getNoteSummary } from "@/misc/get-note-summary.js";
 import { getSleepsUntilNextNewYearsDay } from "@/misc/motd-oshogatsu-sleeps.js";
 import { queues } from "@/queue/queues.js";
@@ -190,6 +194,7 @@ app.use(
 			getClientEntry: () => resolveClientEntry(),
 			config,
 			oneLine,
+			stripEmojiShortcodes,
 		},
 	}),
 );
@@ -624,10 +629,7 @@ router.get("/notes/:note/references", async (ctx, next) => {
 			const profile = await UserProfiles.findOneByOrFail({
 				userId: note.userId,
 			});
-			const userName = user.name?.replaceAll(/ ?:.*?:/g, "").trim()
-				? `${user.name?.replaceAll(/ ?:.*?:/g, "")}${user.host ? `@${user.host}` : ""
-				}`
-				: `@${user.username}${user.host ? `@${user.host}` : ""}`;
+			const userName = getUserNameForMeta(user);
 
 			const meta = await fetchMeta();
 			if (_note.referenceIds?.length) {
@@ -669,10 +671,7 @@ router.get("/notes/:note/references", async (ctx, next) => {
 				const refProfile = await UserProfiles.findOneByOrFail({
 					userId: referenceNote.userId,
 				});
-				const refUserName = referenceUser.name?.replaceAll(/ ?:.*?:/g, "").trim()
-					? `${referenceUser.name?.replaceAll(/ ?:.*?:/g, "")}${referenceUser.host ? `@${referenceUser.host}` : ""
-					}`
-					: `@${referenceUser.username}${referenceUser.host ? `@${referenceUser.host}` : ""}`;
+				const refUserName = getUserNameForMeta(referenceUser);
 				let summary = ""
 				summary = getNoteSummary(await Notes.pack(referenceNote));
 				summary = [_note.referenceIds.length > 1 ? `他${_note.referenceIds.length - 1}件` : "", summary].filter(Boolean).join(" / ");
@@ -724,10 +723,7 @@ router.get("/notes/:note", async (ctx, next) => {
 				userId: note.userId,
 			});
 			const meta = await fetchMeta();
-			const userName = user.name?.replaceAll(/ ?:.*?:/g, "").trim()
-				? `${user.name?.replaceAll(/ ?:.*?:/g, "")}${user.host ? `@${user.host}` : ""
-				}`
-				: `@${user.username}${user.host ? `@${user.host}` : ""}`;
+			const userName = getUserNameForMeta(user);
 			let summary = "";
 			if (!["public", "home"].includes(note.visibility) || note.localOnly) {
 				summary = `${note.visibility === "followers"
@@ -778,10 +774,7 @@ router.get("/posts/:note", async (ctx, next) => {
 			userId: note.userId,
 		});
 		const meta = await fetchMeta();
-		const userName = user.name?.replaceAll(/ ?:.*?:/g, "").trim()
-			? `${user.name?.replaceAll(/ ?:.*?:/g, "")}${user.host ? `@${user.host}` : ""
-			}`
-			: `@${user.username}${user.host ? `@${user.host}` : ""}`;
+		const userName = getUserNameForMeta(user);
 		let summary = "";
 		if (!["public", "home"].includes(note.visibility) || note.localOnly) {
 			summary = `${note.visibility === "followers"

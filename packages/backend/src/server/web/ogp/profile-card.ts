@@ -527,13 +527,14 @@ export async function renderProfileCard(
 					]),
 				),
 			),
+			// NOTE: 仕様書 14a は左に生成時刻・右に URL だが、左右を入れ替えている
 			text(
 				{ position: "absolute", left: 40, bottom: 36, fontSize: 17, fontWeight: 500, color: FOOT_COLOR },
-				formatJst(now),
+				profileUrl,
 			),
 			text(
 				{ position: "absolute", right: 40, bottom: 36, fontSize: 17, fontWeight: 500, color: FOOT_COLOR },
-				profileUrl,
+				formatJst(now),
 			),
 		],
 	);

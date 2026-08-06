@@ -217,6 +217,167 @@ export async function toSquareDataUri(
 }
 
 /**
+ * 角ごとに半径を持つ角丸矩形の SVG パスを組み立てる。
+ *
+ * @remarks
+ * CSS の `border-radius` と同じく、辺ごとに隣接する半径の和が辺長を超える場合は
+ * 全体を同じ比率で縮小する。
+ *
+ * @param w - 幅
+ * @param h - 高さ
+ * @param radii - 左上・右上・右下・左下の半径
+ * @returns `d` 属性に使えるパス文字列
+ * @internal
+ */
+function roundedRectPath(
+	w: number,
+	h: number,
+	[tl, tr, br, bl]: [number, number, number, number],
+): string {
+	const ratios = [
+		tl + tr > 0 ? w / (tl + tr) : Number.POSITIVE_INFINITY,
+		tr + br > 0 ? h / (tr + br) : Number.POSITIVE_INFINITY,
+		br + bl > 0 ? w / (br + bl) : Number.POSITIVE_INFINITY,
+		bl + tl > 0 ? h / (bl + tl) : Number.POSITIVE_INFINITY,
+	];
+	const f = Math.min(1, ...ratios);
+	const [a, b, c, d] = [tl, tr, br, bl].map((r) => r * f);
+	return [
+		`M ${a} 0`,
+		`H ${w - b}`,
+		b ? `A ${b} ${b} 0 0 1 ${w} ${b}` : `L ${w} 0`,
+		`V ${h - c}`,
+		c ? `A ${c} ${c} 0 0 1 ${w - c} ${h}` : `L ${w} ${h}`,
+		`H ${d}`,
+		d ? `A ${d} ${d} 0 0 1 0 ${h - d}` : `L 0 ${h}`,
+		`V ${a}`,
+		a ? `A ${a} ${a} 0 0 1 ${a} 0` : "L 0 0",
+		"Z",
+	].join(" ");
+}
+
+/** 猫耳がアイコン上端からはみ出す割合 */
+const CAT_EAR_OVERHANG = 0.2;
+
+const BASE83 =
+	"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz#$%*+,-.:;=?@[]^_{|}~";
+
+/**
+ * blurhash から平均色を取り出す。
+ *
+ * @remarks
+ * クライアントの `extract-avg-color-from-blurhash.ts` と同じ計算。blurhash の先頭 2 文字は
+ * 成分数で、続く 4 文字（DC 成分）が平均色を base83 で詰めた 24bit の sRGB 値になっている。
+ * 猫耳の輪郭色はクライアントでこの色を `currentColor` として使っているため、
+ * OGP 側でも同じ色を再現する。
+ *
+ * @param hash - blurhash 文字列
+ * @returns `#rrggbb` 形式の色。取り出せなければ `null`
+ */
+export function avgColorFromBlurhash(
+	hash: string | null | undefined,
+): string | null {
+	if (typeof hash !== "string" || hash.length < 6) return null;
+	let value = 0;
+	for (const ch of hash.slice(2, 6)) {
+		const i = BASE83.indexOf(ch);
+		if (i < 0) return null;
+		value = value * 83 + i;
+	}
+	// DC 成分は 24bit に収まる想定だが、壊れた入力で色として不正にならないよう丸める
+	return `#${(value & 0xffffff).toString(16).padStart(6, "0")}`;
+}
+
+/**
+ * 猫耳付きのアイコンを 1 枚の PNG データ URI として組み立てる。
+ *
+ * @remarks
+ * 形状はクライアントの `MkAvatar.vue` に合わせている。1 辺がアイコンの 50% の正方形に
+ * `border-radius: 0 75% 75%`（右耳は `75% 0 75% 75%`）を当て、`rotate(±37.5deg) skew(±30deg)`
+ * したもの。CSS の `transform-origin` は要素中心なので、SVG では中心へ移動してから変形する。
+ *
+ * 角丸は satori 側の `borderRadius` ではなくこの画像へ焼き込む。satori に丸めさせると
+ * 上へはみ出した耳ごと切り取られてしまうため。
+ *
+ * @param raw - アイコンのバイト列（`null` なら代替画像を使う）
+ * @param size - アイコン本体の一辺(px)
+ * @param cornerRadius - アイコン本体の角丸半径(px)
+ * @param strokeColor - 耳の輪郭色（クライアントの `currentColor` 相当）
+ * @returns データ URI と、耳を含めた実寸
+ */
+export async function buildCatAvatarDataUri(
+	raw: Buffer | null,
+	size: number,
+	cornerRadius: number,
+	strokeColor: string,
+): Promise<{ uri: string; width: number; height: number }> {
+	const squareUri = await toSquareDataUri(raw, size);
+	const square = Buffer.from(squareUri.split(",")[1], "base64");
+
+	const top = Math.round(size * CAT_EAR_OVERHANG);
+	const height = size + top;
+	const ear = size * 0.5;
+	// クライアントの border: solid 0.25rem 相当（アイコン表示幅 172px のとき 4px）
+	const border = Math.max(2, Math.round(size * 0.023));
+
+	// CSS は box-sizing: border-box なので枠線は要素の内側に収まる。
+	// SVG の stroke はパス中央に乗るため、線幅の半分だけ内側へ縮めて外形を一致させる。
+	const inner = ear - border;
+	const r = inner * 0.75;
+	const inset = -ear / 2 + border / 2;
+
+	const shape = (path: string, cx: number, angle: number) => {
+		const skew = angle > 0 ? 30 : -30;
+		const move = `translate(${cx} ${top + ear / 2})`;
+		const spin = `rotate(${angle}) skewX(${skew})`;
+		const origin = `translate(${inset} ${inset})`;
+		const paint = `fill="#ebbcba" stroke="${strokeColor}" stroke-width="${border}"`;
+		return `<g transform="${move} ${spin} ${origin}"><path d="${path}" ${paint}/></g>`;
+	};
+
+	const leftEar = shape(
+		roundedRectPath(inner, inner, [0, r, r, r]),
+		ear / 2,
+		37.5,
+	);
+	const rightEar = shape(
+		roundedRectPath(inner, inner, [r, 0, r, r]),
+		size - ear / 2,
+		-37.5,
+	);
+	const earsSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${height}">${leftEar}${rightEar}</svg>`;
+
+	const maskRect = `<rect width="${size}" height="${size}" rx="${cornerRadius}" ry="${cornerRadius}" fill="#fff"/>`;
+	const maskSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}">${maskRect}</svg>`;
+
+	const masked = await sharp(square)
+		.composite([{ input: Buffer.from(maskSvg), blend: "dest-in" }])
+		.png()
+		.toBuffer();
+
+	const composed = await sharp({
+		create: {
+			width: size,
+			height,
+			channels: 4,
+			background: { r: 0, g: 0, b: 0, alpha: 0 },
+		},
+	})
+		.composite([
+			{ input: await sharp(Buffer.from(earsSvg)).png().toBuffer(), top: 0, left: 0 },
+			{ input: masked, top, left: 0 },
+		])
+		.png()
+		.toBuffer();
+
+	return {
+		uri: `data:image/png;base64,${composed.toString("base64")}`,
+		width: size,
+		height,
+	};
+}
+
+/**
  * カスタム絵文字を「高さ基準でリサイズした PNG」として読み込む。
  *
  * @param url - 絵文字画像の URL

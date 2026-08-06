@@ -9,7 +9,8 @@
  *   幅を実測して 1 行に収め、溢れたら末尾に `…` を出す（{@link metrics} 参照）。
  * - **統計**: `notesPostDays` が 0 のときは投稿数のみを出す。投稿年数は切り上げなので
  *   1 日でも投稿していれば 0.01 年以上になり、「年数だけ 0」という状態は発生しない。
- * - **アイコン形状**: 通常は角丸、`isCat && speakAsCat` のときだけ円形。
+ * - **アイコン形状**: 通常は角丸四角。`isCat` のときは円形にして猫耳を付ける
+ *   （クライアントの `MkAvatar.vue` が isCat で角丸を強制解除しているのに合わせる）。
  * - bio・カスタムフィールドは MFM を含むため使わない。
  *
  * @internal
@@ -28,6 +29,8 @@ import {
 	getTwemojiDataUri,
 	fetchImage,
 	toSquareDataUri,
+	buildCatAvatarDataUri,
+	avgColorFromBlurhash,
 	loadCustomEmoji,
 	type OgpFonts,
 } from "./assets.js";
@@ -46,6 +49,12 @@ const ACCT_COLOR = "rgba(33,31,36,.62)";
 const FOOT_COLOR = "rgba(33,31,36,.4)";
 const NAME_SIZE = 52;
 const ACCT_SIZE = 27;
+/** カード上でのアイコンの一辺 */
+const AVATAR_SIZE = 172;
+/** アイコン画像を作るときの解像度（表示サイズの 2 倍で描いて縮小する） */
+const AVATAR_SRC = 344;
+/** 通常アイコンの角丸半径。にゃんこは円形になるので使わない */
+const AVATAR_CORNER_RADIUS = 28;
 /** 表示名・ユーザー名の 1 行に使える幅 */
 const NAME_BUDGET = 900;
 /** 統計行の区切り線の幅。項目数が減っても骨格を保つため固定する */
@@ -60,11 +69,12 @@ export type ProfileCardParams = {
 		username: string;
 		host: string | null;
 		isCat: boolean;
-		speakAsCat: boolean;
 		notesCount: number;
 		notesPostDays: number;
 	};
 	avatarUrl: string;
+	/** アイコンの blurhash。猫耳の輪郭色をクライアントと合わせるために使う */
+	avatarBlurhash: string | null;
 	instance: {
 		name: string;
 		iconUrl: string | null;
@@ -93,6 +103,23 @@ const image = (src: string, style: Record<string, unknown>): Node => ({
 type Token =
 	| { t: "text"; s: string; w?: number }
 	| { t: "img"; uri: string; w: number; h: number; srcW: number; ratio: number };
+
+/**
+ * 絵文字の前後の空白が消えないようにする。
+ *
+ * @remarks
+ * satori は flex の子になった文字列の前後の空白を詰めるため、素のままだと
+ * `たこ :kawaii: すき` が `たこ[絵文字]すき` と詰まって描画される。連続する空白も
+ * 通常の空白処理で 1 個に潰れる。表示名は 1 行固定で折り返さないので、
+ * 半角スペースをノーブレークスペースへ置き換えて元の見た目を保つ。
+ * LINE Seed JP では U+00A0 の送り幅は U+0020 と同じなので、幅の実測値はずれない。
+ *
+ * @param s - 元の文字列
+ * @returns 半角スペースを U+00A0 に置き換えた文字列
+ * @internal
+ */
+const preserveSpaces = (s: string): string =>
+	s.replace(/\u0020/g, "\u00a0");
 
 /**
  * 表示名を「テキスト」「カスタム絵文字」「Unicode 絵文字」のトークン列へ分解する。
@@ -131,12 +158,14 @@ async function tokenize(
 	const out: Token[] = [];
 	let cur = 0;
 	for (const k of marks) {
-		if (k.s > cur) out.push({ t: "text", s: name.slice(cur, k.s) });
+		if (k.s > cur) {
+			out.push({ t: "text", s: preserveSpaces(name.slice(cur, k.s)) });
+		}
 
 		if (k.kind === "custom") {
 			const img = await resolveCustomEmoji(k.shortcode, emojiHost, size);
 			// 解決できなければショートコードのまま残す
-			out.push(img ?? { t: "text", s: name.slice(k.s, k.e) });
+			out.push(img ?? { t: "text", s: preserveSpaces(name.slice(k.s, k.e)) });
 		} else {
 			const uri = await getTwemojiDataUri(k.text);
 			if (uri) {
@@ -155,7 +184,9 @@ async function tokenize(
 		}
 		cur = k.e;
 	}
-	if (cur < name.length) out.push({ t: "text", s: name.slice(cur) });
+	if (cur < name.length) {
+		out.push({ t: "text", s: preserveSpaces(name.slice(cur)) });
+	}
 	return out;
 }
 
@@ -378,10 +409,28 @@ export async function renderProfileCard(
 		fetchImage(params.avatarUrl),
 		instance.iconUrl ? fetchImage(instance.iconUrl) : Promise.resolve(null),
 	]);
-	const [avatarUri, iconUri] = await Promise.all([
-		toSquareDataUri(avatarRaw, 344),
-		toSquareDataUri(iconRaw, 160),
-	]);
+	const iconUri = await toSquareDataUri(iconRaw, 160);
+
+	// にゃんこは円形＋猫耳。クライアント（MkAvatar.vue）が isCat のとき角丸を強制的に
+	// 解除しているのに合わせる。耳は角丸の外へはみ出すので画像へ焼き込む。
+	// 耳の輪郭色はクライアントと同じくアイコンの平均色。取れなければ文字色へフォールバック
+	// （クライアントも color 未設定時は継承した文字色になる）
+	const earColor = avgColorFromBlurhash(params.avatarBlurhash) ?? INK;
+	const avatar = user.isCat
+		? await buildCatAvatarDataUri(
+				avatarRaw,
+				AVATAR_SRC,
+				AVATAR_SRC / 2,
+				earColor,
+		  )
+		: {
+				uri: await toSquareDataUri(avatarRaw, AVATAR_SRC),
+				width: AVATAR_SRC,
+				height: AVATAR_SRC,
+		  };
+	const avatarHeight = Math.round(
+		(AVATAR_SIZE * avatar.height) / avatar.width,
+	);
 
 	const nameFit = fitToBudget(
 		await tokenize(displayName, NAME_SIZE, user.host),
@@ -428,11 +477,13 @@ export async function renderProfileCard(
 			]),
 			// プロフィール本体
 			box({ alignItems: "center", gap: 32 }, [
-				image(avatarUri, {
-					width: 172,
-					height: 172,
-					// にゃいせが有効なときだけ円形にする
-					borderRadius: user.isCat && user.speakAsCat ? 86 : 28,
+				image(avatar.uri, {
+					width: AVATAR_SIZE,
+					height: avatarHeight,
+					// 猫耳付きは画像側で円形まで済ませてあるので satori では丸めない
+					...(user.isCat
+						? { objectFit: "fill" }
+						: { borderRadius: AVATAR_CORNER_RADIUS }),
 					flex: "none",
 				}),
 				box({ flexDirection: "column", gap: 4, maxWidth: NAME_BUDGET, minWidth: 0 }, [

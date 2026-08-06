@@ -2593,6 +2593,24 @@ function wrap(url?: string): string | null {
   if (url == null) return null;
   // http(s) 以外はサムネイルとして扱わない（スタイルインジェクション対策）
   if (!url.match(/^https?:\/\//)) return null;
+
+  // 自インスタンス宛の URL はプロキシを通さずそのまま返す。
+  // メディアプロキシは自ホスト宛を 400 で拒否する（GHSA-gq5q-c77c-v236 の増幅 DoS 対策）
+  // ため、通すと必ず失敗してサムネイルが空欄になる。
+  // プロキシを経由しないぶん query() によるエスケープが効かなくなるので、
+  // クライアントの `background-image: url('...')` を破壊しうる文字だけ明示的に潰す。
+  // NOTE: encodeURIComponent は ' ( ) を変換しないため使えない。パーセント表記へ自前で置換する。
+  try {
+    if (new URL(url).host === new URL(config.url).host) {
+      return new URL(url).href.replace(
+        /['"()\\]/g,
+        (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`,
+      );
+    }
+  } catch {
+    return null;
+  }
+
   return `${config.url}/proxy/preview.webp?${query({
     url,
     preview: "1",

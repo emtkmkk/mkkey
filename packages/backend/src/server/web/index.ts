@@ -557,6 +557,7 @@ const userPage: Router.Middleware = async (ctx, next) => {
 		avatarUrl: await Users.getAvatarUrl(user),
 		// 対象外のユーザー（リモート・privateMode 等）では null になり、従来のアイコンが使われる
 		ogImageUrl: buildProfileCardUrl(user, meta),
+		twitterCard: "summary_large_image",
 		sub: subParam,
 		instanceName: meta.name || "Cluckey",
 		icon: meta.iconUrl,

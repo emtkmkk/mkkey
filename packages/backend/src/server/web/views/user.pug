@@ -9,7 +9,8 @@ block title
 
 block desc
 	unless privateMode
-		meta(name='description' content= profile.description)
+		//- 生の改行を含めると、行単位で解析するクローラが以降のタグを取りこぼす
+		meta(name='description' content= oneLine(profile.description))
 
 block og
 	unless privateMode
@@ -17,9 +18,12 @@ block og
 		meta(property='og:type'        content='profile')
 		meta(property='profile:username' content= user.username)
 		meta(property='og:title'       content= title)
-		meta(property='og:description' content= profile.description)
+		meta(property='og:description' content= oneLine(profile.description))
 		meta(property='og:url'         content= url)
 		meta(property='og:image'       content= ogImageUrl || avatarUrl)
+		//- summary_large_image を宣言する場合、Twitter Card の仕様では twitter:image が要る。
+		//- og:image だけだと大きい画像を見つけられないクローラがある（GitHub も併記している）。
+		meta(name='twitter:image'      content= ogImageUrl || avatarUrl)
 		if ogImageUrl
 			meta(property='og:image:width'  content='1200')
 			meta(property='og:image:height' content='630')

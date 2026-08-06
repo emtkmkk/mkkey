@@ -99,6 +99,23 @@ const resolveClientEntryScriptPath = (): string => {
 	return `/assets/${rawPath}`;
 };
 
+/**
+ * meta タグの content 用に文字列を 1 行へ潰す。
+ *
+ * @remarks
+ * 属性値に生の改行が入っていると、行単位で HTML を解析するクローラが
+ * そのタグ以降を取りこぼす。実際に Discord では bio の改行によって
+ * `og:description` より後ろにある `og:image` が読まれず、
+ * 「埋め込みの枠は出るが画像だけ出ない」状態になっていた。
+ *
+ * @param s - 元の文字列
+ * @returns 空白を 1 個ずつに潰した 1 行の文字列。中身が無ければ `undefined`
+ */
+const oneLine = (s: string | null | undefined): string | undefined => {
+	if (s == null) return undefined;
+	return s.replace(/\s+/g, " ").trim() || undefined;
+};
+
 // Init app
 const app = new Koa();
 
@@ -172,6 +189,7 @@ app.use(
 			version: config.version,
 			getClientEntry: () => resolveClientEntry(),
 			config,
+			oneLine,
 		},
 	}),
 );
@@ -343,6 +361,9 @@ const getFeed = async (acct: string) => {
 
 // プロフィール OGP 画像。reUser は /@user/:sub にもマッチしてしまうので、必ずその前に登録する。
 router.get("/@:user/og.png", profileCardHandler);
+// `@` を含まない別名。`@` は URL 構文では userinfo の区切りなので、パスに含む画像 URL を
+// うまく扱えないクローラがある。og:image にはこちらを使う。
+router.get("/ogp/user/:user/card.png", profileCardHandler);
 
 // As the /@user[.json|.rss|.atom]/sub endpoint is complicated, we will use a regex to switch between them.
 const reUser = new RegExp(

@@ -28,7 +28,15 @@ block og
 			meta(property='og:image:width'  content='1200')
 			meta(property='og:image:height' content='630')
 			meta(property='og:image:type'   content='image/png')
-		//- twitter:card は base 側で twitterCard として出す（二重指定を避けるため）
+		//- twitter:* は仕様上 name 属性で読まれる。base.pug が出しているのは property なので、
+		//- 仕様に忠実なクローラ（Discord や OGP チェッカー）からは未設定に見えてしまう。
+		//- base.pug 側を name へ変えると、property の自前タグを出している他のビューと
+		//- 食い違って Twitter のサムネイルが消えるため、ここだけで name の分を補う。
+		//- 値は base の twitterCard と同じなので、両方読まれても矛盾しない。
+		meta(name='twitter:card'       content='summary_large_image')
+		//- summary_large_image は twitter:image を参照するカード。og:image しか無いと
+		//- 大きい画像を見つけられないクローラがある（GitHub も併記している）。
+		meta(name='twitter:image'      content= ogImageUrl || avatarUrl)
 		meta(property='note:card'      content='summary_large_image')
 
 block meta

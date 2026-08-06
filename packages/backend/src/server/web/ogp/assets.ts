@@ -140,6 +140,41 @@ const IMAGE_FETCH_TIMEOUT = 5 * 1000;
 const IMAGE_MAX_BYTES = 4 * 1024 * 1024;
 
 /**
+ * 取得済み画像の使い回し。
+ *
+ * @remarks
+ * インスタンスアイコンは全ユーザーのカードで共通、カスタム絵文字も複数ユーザーで重複するのに、
+ * 毎回オブジェクトストレージから取り直していた。キャッシュミス時の生成が遅いと
+ * クローラのタイムアウトに間に合わないため、外部への往復を減らす。
+ * @internal
+ */
+const IMAGE_MEMO_TTL = 10 * 60 * 1000;
+const IMAGE_MEMO_MAX = 128;
+const imageMemo = new Map<string, { at: number; buf: Buffer | null }>();
+
+function readImageMemo(url: string): Buffer | null | undefined {
+	const hit = imageMemo.get(url);
+	if (!hit) return undefined;
+	if (Date.now() - hit.at > IMAGE_MEMO_TTL) {
+		imageMemo.delete(url);
+		return undefined;
+	}
+	// LRU 風に使ったものを末尾へ回す
+	imageMemo.delete(url);
+	imageMemo.set(url, hit);
+	return hit.buf;
+}
+
+function writeImageMemo(url: string, buf: Buffer | null): void {
+	imageMemo.set(url, { at: Date.now(), buf });
+	while (imageMemo.size > IMAGE_MEMO_MAX) {
+		const oldest = imageMemo.keys().next().value;
+		if (oldest === undefined) break;
+		imageMemo.delete(oldest);
+	}
+}
+
+/**
  * アイコン等の画像を取得する。
  *
  * @remarks
@@ -150,6 +185,19 @@ const IMAGE_MAX_BYTES = 4 * 1024 * 1024;
  * @returns 画像のバイト列。取得できなければ `null`
  */
 export async function fetchImage(url: string): Promise<Buffer | null> {
+	const memo = readImageMemo(url);
+	if (memo !== undefined) return memo;
+	const fetched = await fetchImageUncached(url);
+	writeImageMemo(url, fetched);
+	return fetched;
+}
+
+/**
+ * {@link fetchImage} の実処理。キャッシュを挟まずに取得する。
+ *
+ * @internal
+ */
+async function fetchImageUncached(url: string): Promise<Buffer | null> {
 	try {
 		const parsed = new URL(url);
 		const selfOrigin = new URL(config.url).origin;

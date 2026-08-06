@@ -52,7 +52,11 @@ import { queues } from "@/queue/queues.js";
 import { genOpenapiSpec } from "../api/openapi/gen-spec.js";
 import { urlPreviewHandler } from "./url-preview.js";
 import { manifestHandler } from "./manifest.js";
-import { profileCardHandler, buildProfileCardUrl } from "./ogp/index.js";
+import {
+	profileCardHandler,
+	buildProfileCardUrl,
+	warmProfileCard,
+} from "./ogp/index.js";
 import packFeed from "./feed.js";
 import { MINUTE, DAY } from "@/const.js";
 import type { Note } from "@/models/entities/note.js";
@@ -592,6 +596,10 @@ const userPage: Router.Middleware = async (ctx, next) => {
 		themeColor: meta.themeColor,
 		privateMode: meta.privateMode,
 	};
+
+	// クローラは HTML の直後に og:image を取りに来る。その待ち時間のうちにカードを
+	// 作っておき、画像リクエストがキャッシュミスで待たされないようにする（await しない）。
+	warmProfileCard(user, meta);
 
 	await ctx.render("user", userDetail);
 	ctx.set("Cache-Control", "public, max-age=15");

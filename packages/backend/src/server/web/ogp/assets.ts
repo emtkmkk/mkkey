@@ -317,13 +317,17 @@ export async function buildCatAvatarDataUri(
 	const top = Math.round(size * CAT_EAR_OVERHANG);
 	const height = size + top;
 	const ear = size * 0.5;
-	// クライアントの border: solid 0.25rem 相当（アイコン表示幅 172px のとき 4px）
-	const border = Math.max(2, Math.round(size * 0.023));
+	// クライアントの枠線は border: solid 0.25rem = 4px 固定だが、これはアイコンの大きさに
+	// 依存しない絶対値。カードのアイコン(172px)はプロフィールページのアイコン(7.5rem = 120px)
+	// より大きいので、4px のままだと相対的に細く見える。同じ見え方になる比率へ換算する。
+	const border = Math.max(2, Math.round(size * (4 / 120)));
 
 	// CSS は box-sizing: border-box なので枠線は要素の内側に収まる。
 	// SVG の stroke はパス中央に乗るため、線幅の半分だけ内側へ縮めて外形を一致させる。
 	const inner = ear - border;
-	const r = inner * 0.75;
+	// border-radius は border-box 基準。`0 75% 75%` は CSS の縮小規則で 3 隅とも 0.5*ear に
+	// なるので、stroke 中心線の半径はそこから線幅の半分を引いた値になる。
+	const r = ear * 0.5 - border / 2;
 	const inset = -ear / 2 + border / 2;
 
 	const shape = (path: string, cx: number, angle: number) => {

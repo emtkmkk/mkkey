@@ -364,11 +364,13 @@ const getFeed = async (acct: string) => {
 	return user && (await packFeed(user));
 };
 
-// プロフィール OGP 画像。reUser は /@user/:sub にもマッチしてしまうので、必ずその前に登録する。
+// プロフィール OGP 画像。og:image に載せる正規の URL はこちら。
+// `@` を含まず、バージョントークンもクエリではなくパスに置く（GitHub の og:image と同じ形）。
+// トークンは値を検証せず、URL を変えてクローラに再取得させるための目印としてのみ使う。
+router.get("/ogp/user/:user/:token/card.png", profileCardHandler);
+// 旧 URL。既に配られた og:image やクローラのキャッシュのために残す。
+// reUser は /@user/:sub にもマッチしてしまうので、必ずその前に登録する。
 router.get("/@:user/og.png", profileCardHandler);
-// `@` を含まない別名。`@` は URL 構文では userinfo の区切りなので、パスに含む画像 URL を
-// うまく扱えないクローラがある。og:image にはこちらを使う。
-router.get("/ogp/user/:user/card.png", profileCardHandler);
 
 // As the /@user[.json|.rss|.atom]/sub endpoint is complicated, we will use a regex to switch between them.
 const reUser = new RegExp(

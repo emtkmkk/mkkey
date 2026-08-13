@@ -118,6 +118,14 @@ export default async (ctx: Koa.Context) => {
 			return;
 		}
 
+		// 削除はソフト削除で user_profile（パスワード）が残るため、明示的に閉じる
+		if (user.isDeleted) {
+			await fail(securityKey.userId, 403, {
+				id: "b8f1a6c2-3d47-4e59-9a0b-2c7e5d4f8a13",
+			});
+			return;
+		}
+
 		if (body.userHandle != null) {
 			if (typeof body.userHandle !== "string") {
 				await fail(user.id, 400, {
@@ -237,6 +245,14 @@ export default async (ctx: Koa.Context) => {
 	if (user.isUsagePaused) {
 		error(403, {
 			id: "c9a4e2b1-7f3d-4a2e-9e1c-0d5b8a4e6f2a",
+		});
+		return;
+	}
+
+	// 削除はソフト削除で user_profile（パスワード）が残るため、明示的に閉じる
+	if (user.isDeleted) {
+		error(403, {
+			id: "b8f1a6c2-3d47-4e59-9a0b-2c7e5d4f8a13",
 		});
 		return;
 	}

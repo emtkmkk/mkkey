@@ -184,6 +184,7 @@
 import { defineAsyncComponent } from "vue";
 import { toUnicode } from "punycode/";
 import { showSuspendedDialog } from "../scripts/show-suspended-dialog";
+import { showDeletedDialog } from "../scripts/show-deleted-dialog";
 import MkButton from "@/components/MkButton.vue";
 import MkInput from "@/components/form/input.vue";
 import MkInfo from "@/components/MkInfo.vue";
@@ -489,6 +490,11 @@ function showSigninError(
 ) {
 	if (err?.id === "e03a5f46-d309-4865-9b69-56282d94e1eb") {
 		showSuspendedDialog();
+		return;
+	}
+
+	if (err?.id === "b8f1a6c2-3d47-4e59-9a0b-2c7e5d4f8a13") {
+		showDeletedDialog();
 		return;
 	}
 

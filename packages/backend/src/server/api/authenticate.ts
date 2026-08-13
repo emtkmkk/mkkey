@@ -9,6 +9,8 @@
  * - `AUTH_USER_SELECT` はストリーム TL 等でも参照する。列を抜くと `undefined` になり、`!user.flag`（既定 true のフラグ）で誤って制限が掛かる。
  * - 既定 **false** のフラグは `!undefined` が制限側に寄るため事故は起きにくいが、明示比較（`=== false` / `!== true`）の方が安全。
  * - **投稿・設定系**では `movedToUri` / `isMiniSilenced` / `canInvite` / `isLocked` 等も参照する。欠けると移行済みアカウントのブロックや公開制限が効かない。
+ * - **`isDeleted`**: 削除済みアカウントのゲート（{@link call} / {@link streaming}）が参照する。
+ *   アカウント削除はソフト削除でトークン行が残り得るため、この列を抜くと削除済みユーザーが投稿できてしまう。
  * - **`moderationWarningPopupAt`**: `user` 列ではなく `moderation_warning_popup_ack` を `hydrateModerationWarningPopupAtForAuthUser` で注入。当日の警告 ACK 前は API / ストリームを制限するゲートに使う。
  * - **custom-motd**（任意認証）では `createdAt` / `notesCount` / `name` / `isCat` / `speakAsCat` を参照する。`birthday` は {@link UserProfile} 側のため User には無い。
  * - **notes/create** は `services/note/create` の投稿処理へ認証ユーザを渡し、`blockPost*` / `isSilenced` / `maxRankPoint` / `isBot` / `isPublicLikeList` / `avatarId` 等で可視性・スパム系の分岐を行う。
@@ -48,6 +50,9 @@ const AUTH_USER_SELECT = {
 	createdAt: true,
 	isSuspended: true,
 	isUsagePaused: true,
+	// 削除済みアカウントの API / ストリーム拒否（call.ts, streaming.ts）。
+	// 抜くと user.isDeleted が undefined になり、下流のゲートが素通りする
+	isDeleted: true,
 	isModerationWarning: true,
 	isAdmin: true,
 	isModerator: true,

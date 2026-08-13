@@ -17,6 +17,7 @@ import { doPostSuspend } from "@/services/suspend-user.js";
 import { publishUserEvent } from "@/services/stream.js";
 import { createDeleteAccountJob } from "@/queue/index.js";
 import { notifyFollowersAccountWasDeleted } from "@/services/notify-followers-account-was-deleted.js";
+import { revokeCredentialsForDeletedUser } from "@/services/delete-account.js";
 
 export const meta = {
 	tags: ["admin"],
@@ -74,6 +75,9 @@ export default define(meta, paramDef, async (ps, me) => {
 	await Users.update(user.id, {
 		isDeleted: true,
 	});
+
+	// トークンを失効させる（ソフト削除なので明示的に破棄しないと投稿できてしまう）
+	await revokeCredentialsForDeletedUser(user);
 
 	if (Users.isLocalUser(user)) {
 		// ストリーミングを終了する

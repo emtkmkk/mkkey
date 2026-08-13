@@ -6,6 +6,8 @@
  * @remarks
  * - **役割**: api-handler から呼ばれ、エンドポイント名で解決・レート制限チェック・認証済みユーザーで execute を実行する。
  * - モデレーション警告の当日 ACK 前は `isModerationWarningAckPending` が true のユーザーを、ホワイトリスト以外の API で拒否する。
+ * - 凍結・削除済み・利用停止は `requireCredential` の API を一律拒否する。
+ *   いずれも {@link authenticate} の `AUTH_USER_SELECT` に対応する列がある前提（無いと undefined で素通りする）。
  * - レスポンスは define の res スキーマに沿って返却される。
  *
  * @see {@link define} エンドポイント定義
@@ -139,6 +141,16 @@ export default async (
 			message: "アカウントが凍結されています。",
 			code: "YOUR_ACCOUNT_SUSPENDED",
 			id: "a8c724b3-6e9c-4b46-b1a8-bc3ed6258370",
+			httpStatusCode: 403,
+		});
+	}
+
+	// 削除済み（削除進行中を含む）アカウントは、トークンが生き残っていても操作させない
+	if (ep.meta.requireCredential && user!.isDeleted) {
+		throw new ApiError({
+			message: "アカウントが削除されています。",
+			code: "YOUR_ACCOUNT_DELETED",
+			id: "b8f1a6c2-3d47-4e59-9a0b-2c7e5d4f8a13",
 			httpStatusCode: 403,
 		});
 	}

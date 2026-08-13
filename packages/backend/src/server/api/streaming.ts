@@ -47,7 +47,7 @@ export const initializeStreamingServer = (server: http.Server) => {
 			return;
 		}
 
-		if (user?.isSuspended || user?.isUsagePaused) {
+		if (user?.isSuspended || user?.isUsagePaused || user?.isDeleted) {
 			request.reject(400);
 			return;
 		}

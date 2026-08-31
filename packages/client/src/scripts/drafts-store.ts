@@ -85,12 +85,15 @@ let flushQueue: Promise<void> = Promise.resolve();
  * @remarks
  * getDraftsMap() の戻り値はキャッシュ参照のため、フラッシュ用スナップショットは
  * 必ず複製する。参照のままキューに載せると、書き込み前の変更が反映されてしまう。
+ * 旧 localStorage 時代と同様に JSON 経由で複製する。Vue の reactive Proxy や
+ * 添付ファイル等で structuredClone が失敗し、保存処理全体が中断されるのを避ける。
  *
+ * @param map - 複製元の下書きマップ
  * @returns キャッシュの複製
  * @internal
  */
 function cloneDraftsMap(map: DraftsMap): DraftsMap {
-	return structuredClone(map);
+	return JSON.parse(JSON.stringify(map)) as DraftsMap;
 }
 
 /**

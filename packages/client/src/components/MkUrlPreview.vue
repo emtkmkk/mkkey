@@ -501,9 +501,40 @@ function truncateByGrapheme(
   const showThumbnailArea = computed(
     () => defaultStore.state.linkPreviewThumbnailSize !== "none",
   );
-  // 「常に表示しない」のときはサムネイルなしと同じ表示にするため、legacyStyle（コンパクト用余白）は使わない
+  /**
+   * センシティブサムネ非表示時にコンパクト表示を強制するか。
+   *
+   * @remarks
+   * NOTE: `linkPreviewThumbnailSize === "none"` のときは対象外（「常に表示しない」を優先）。
+   * NOTE: Steam / Amazon は専用レイアウトのため例外とし、大表示を維持する。
+   * 通常プレビュー（`!isSteam && !isAmazon`）のみ対象。
+   *
+   * @public
+   */
+  const forceCompactSensitiveThumbnail = computed(
+    () =>
+      // 「常に表示しない」はセンシティブ強制コンパクトより優先する
+      defaultStore.state.linkPreviewThumbnailSize !== "none" &&
+      isSensitive &&
+      !isSteam &&
+      !isAmazon &&
+      !defaultStore.state.showSensitiveLinkPreviewThumbnail,
+  );
+  /**
+   * リンクプレビューをコンパクト（legacyStyle）で表示するか。
+   *
+   * @remarks
+   * NOTE: `linkPreviewThumbnailSize === "none"` のときはサムネイル領域を出さないため、
+   * 他のルールより優先して `false` を返す。
+   * NOTE: センシティブ非表示時は通常プレビューのみ {@link forceCompactSensitiveThumbnail} で強制コンパクト。
+   *
+   * @public
+   */
   const useLegacyStyle = computed(() => {
     const s = defaultStore.state.linkPreviewThumbnailSize;
+    // 「常に表示しない」は他のサムネイル表示ルールより優先する
+    if (s === "none") return false;
+    if (forceCompactSensitiveThumbnail.value) return true;
     return s === "compact" || (s === "auto" && !preferLargeThumbnail);
   });
   const thumbnailImageVisible = computed(
@@ -515,7 +546,8 @@ function truncateByGrapheme(
   );
   const thumbnailPlaceholderVisible = computed(
     () =>
-      showThumbnailArea.value &&
+      // 「常に表示しない」はセンシティブプレースホルダーより優先する
+      defaultStore.state.linkPreviewThumbnailSize !== "none" &&
       isSensitive &&
       !defaultStore.state.showSensitiveLinkPreviewThumbnail,
   );

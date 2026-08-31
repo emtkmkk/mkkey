@@ -5,7 +5,7 @@
  *
  * @remarks
  * - **役割**: deliver / inbox キューで遅延中のジョブを、障害の発生元が相手先かローカルか分かるように分類する。
- * - NOTE: ここで remote に分類する証明書エラーは、相手サーバーの TLS 設定不備として扱う。
+ * - NOTE: ここで remote に分類する証明書エラー（期限切れ・SAN 不一致など）は、相手サーバーの TLS 設定不備として扱う。
  *
  * @see {@link markDelayedRetry} ジョブ失敗時の分類登録
  * @see {@link syncDelayedRetryStateFromJobs} 起動後や定期同期時の分類復元
@@ -80,6 +80,7 @@ const remoteErrorMessagePatterns = [
 	"Gateway Time-out",
 	"Gateway Timeout",
 	"Hostname/IP does not match certificate's altnames",
+	"certificate has expired",
 	"self-signed certificate in certificate chain",
 	"alert handshake failure",
 	"EPROTO",

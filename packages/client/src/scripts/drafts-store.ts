@@ -11,6 +11,9 @@
  *   IndexedDB への書き戻しはバックグラウンドで直列に行う。
  * - {@link draftsReady} を待ってから {@link getDraftsMap} を呼ぶこと。待たずに呼んだ場合、
  *   初期ロード完了前は空のマップを返す（＝既存下書きを見失う）ので注意。
+ * - IndexedDB への書き戻しは {@link scheduleFlush} でキューイングする。キャッシュは呼び出し側が
+ *   参照ごと直接変更するため、スナップショットは必ずディープコピーする（参照のままだと、
+ *   非同期書き込み前の delete 等で空オブジェクトが永続化される）。
  *
  * @public
  */
@@ -76,8 +79,28 @@ export async function draftsReady(): Promise<void> {
 // IndexedDB への書き戻しを直列化するためのキュー
 let flushQueue: Promise<void> = Promise.resolve();
 
+/**
+ * キャッシュのディープコピーを作成する。
+ *
+ * @remarks
+ * getDraftsMap() の戻り値はキャッシュ参照のため、フラッシュ用スナップショットは
+ * 必ず複製する。参照のままキューに載せると、書き込み前の変更が反映されてしまう。
+ *
+ * @returns キャッシュの複製
+ * @internal
+ */
+function cloneDraftsMap(map: DraftsMap): DraftsMap {
+	return structuredClone(map);
+}
+
+/**
+ * キャッシュを IndexedDB へ非同期に書き戻す。
+ *
+ * @internal
+ */
 function scheduleFlush(): void {
-	const snapshot = cache;
+	// NOTE: cache は getDraftsMap 経由でインプレース変更されるため、参照ではなく複製を渡す
+	const snapshot = cloneDraftsMap(cache);
 	flushQueue = flushQueue
 		.catch(() => {
 			// 前回の書き込み失敗はここで握りつぶし、最新状態の書き込みは継続する
@@ -86,6 +109,18 @@ function scheduleFlush(): void {
 		.catch((err) => {
 			console.error("Failed to persist drafts to IndexedDB", err);
 		});
+}
+
+/**
+ * キューに積まれた IndexedDB への書き戻しが完了するまで待つ。
+ *
+ * @remarks
+ * ページ離脱前やコンポーネントのアンマウント時に、直前の変更を確実に永続化したい場合に使う。
+ *
+ * @public
+ */
+export async function flushDrafts(): Promise<void> {
+	await flushQueue;
 }
 
 /**

@@ -475,6 +475,7 @@ import {
 	watch,
 	nextTick,
 	onMounted,
+	onBeforeUnmount,
 	onUnmounted,
 	defineAsyncComponent,
 	computed,
@@ -514,6 +515,7 @@ import type { UploadFileOptions } from "@/scripts/upload";
 import { deepClone } from "@/scripts/clone";
 import {
 	draftsReady,
+	flushDrafts,
 	getDraftsMap,
 	setDraftsMap,
 	type DraftEntry,
@@ -3260,6 +3262,12 @@ onMounted(() => {
 
 		nextTick(() => watchForDraft());
 	});
+});
+
+onBeforeUnmount(() => {
+	// NOTE: デバウンス待ちの保存を即時実行し、IndexedDB への書き戻し完了を待つ
+	debouncedSaveDraft.flush();
+	void flushDrafts();
 });
 
 onUnmounted(() => {

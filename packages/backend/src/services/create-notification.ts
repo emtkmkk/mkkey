@@ -123,7 +123,8 @@ export async function createNotification(
 	});
 
 	// フォローブロック等で pack が null のときは配信しない（DB には残る）
-	if (packed != null) {
+	// 種別ミュート時は即時ストリームも送らない（音・トーストのトリガーを抑止）
+	if (packed != null && !isMuted) {
 		publishMainStream(notifieeId, "notification", packed);
 	}
 

@@ -1448,7 +1448,10 @@ const initializeStream = () => {
 
 	main.on("unreadAntenna", () => {
 		updateAccount({ hasUnreadAntenna: true });
-		sound.play("antenna");
+		// 種別ミュート時はアンテナ用サウンドも鳴らさない（notification ストリームとは別経路）
+		if (!$i.mutingNotificationTypes.includes("unreadAntenna")) {
+			sound.play("antenna");
+		}
 	});
 
 	main.on("readAllAnnouncements", () => {

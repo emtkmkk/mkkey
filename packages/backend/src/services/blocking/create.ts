@@ -47,6 +47,7 @@ import { setModerationWarningByAdminBlock } from "../moderation-warning-by-admin
 import { createNotification } from "@/services/create-notification.js";
 import { invalidateUserShowRelationCache } from "../invalidate-user-show-relation-cache.js";
 import { addMutingScope } from "../muting.js";
+import { notifyWasForciblyUnfollowed } from "../following/notify-forcibly-unfollowed.js";
 
 /**
  * ブロック関係を作成し、TL非表示用の all ミュートを付与する。
@@ -103,14 +104,7 @@ export default async function (blocker: User, blockee: User) {
 		}
 		// ブロックされた側が相手へのフォローを外された → 強制解除
 		if (blockeeUnfollowedBlocker) {
-			await createNotification(
-				blockee.id,
-				"wasForciblyUnfollowed",
-				{
-					notifierId: blocker.id,
-				},
-				{ notifier: blocker },
-			);
+			await notifyWasForciblyUnfollowed(blockee, blocker);
 		}
 		await createNotification(
 			blockee.id,

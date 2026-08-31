@@ -98,6 +98,7 @@ const TYPE_LABELS: Record<string, string> = {
 	app: "連携アプリからの通知",
 	userWasUnfollowed: "フォロー解除",
 	wasForciblyUnfollowed: "フォローの強制解除",
+	followRequestRejected: "フォロー申請の拒否",
 	wasBlocked: "ブロック",
 	wasUnblocked: "ブロック解除",
 	followedAccountWasDeleted: "フォロー中アカウントの削除",
@@ -107,6 +108,7 @@ const TYPE_LABELS: Record<string, string> = {
 const COUNT_ONLY_TYPES = new Set([
 	"userWasUnfollowed",
 	"wasForciblyUnfollowed",
+	"followRequestRejected",
 	"wasBlocked",
 	"wasUnblocked",
 ]);

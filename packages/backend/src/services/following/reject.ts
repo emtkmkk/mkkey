@@ -21,6 +21,10 @@ import { Users, FollowRequests, Followings } from "@/models/index.js";
 import { decrementFollowing } from "./delete.js";
 import { getActiveWebhooks } from "@/misc/webhook-cache.js";
 import { notifyWasForciblyUnfollowed } from "./notify-forcibly-unfollowed.js";
+import {
+	notifyFollowRequestRejected,
+	upsertFollowReconfirm,
+} from "./follow-reconfirm.js";
 import { invalidateUserShowRelationCache } from "../invalidate-user-show-relation-cache.js";
 
 type Local =
@@ -48,9 +52,17 @@ export async function rejectFollowRequest(user: Local, follower: Both) {
 		deliverReject(user, follower);
 	}
 
-	await removeFollowRequest(user, follower);
+	const removed = await removeFollowRequest(user, follower);
 
-	if (Users.isLocalUser(follower)) {
+	if (removed && Users.isLocalUser(follower)) {
+		await notifyFollowRequestRejected(follower, user);
+		await upsertFollowReconfirm(
+			follower.id,
+			user.id,
+			"followRequestRejected",
+		);
+		publishUnfollow(user, follower);
+	} else if (Users.isLocalUser(follower)) {
 		publishUnfollow(user, follower);
 	}
 }
@@ -77,10 +89,22 @@ export async function rejectFollow(user: Local, follower: Both) {
  * AP Reject/Follow（リモートがローカルのフォロー／申請を拒否）
  */
 export async function remoteReject(actor: Remote, follower: Local) {
-	await removeFollowRequest(actor, follower);
+	const requestRemoved = await removeFollowRequest(actor, follower);
 	const removed = await removeFollow(actor, follower);
-	if (removed) {
+	if (requestRemoved) {
+		await notifyFollowRequestRejected(follower, actor);
+		await upsertFollowReconfirm(
+			follower.id,
+			actor.id,
+			"followRequestRejected",
+		);
+	} else if (removed) {
 		await notifyWasForciblyUnfollowed(follower, actor);
+		await upsertFollowReconfirm(
+			follower.id,
+			actor.id,
+			"wasForciblyUnfollowed",
+		);
 	}
 	publishUnfollow(actor, follower);
 }
@@ -88,16 +112,17 @@ export async function remoteReject(actor: Remote, follower: Local) {
 /**
  * Remove follow request record
  */
-async function removeFollowRequest(followee: Both, follower: Both) {
+async function removeFollowRequest(followee: Both, follower: Both): Promise<boolean> {
 	const request = await FollowRequests.findOneBy({
 		followeeId: followee.id,
 		followerId: follower.id,
 	});
 
-	if (!request) return;
+	if (!request) return false;
 
 	await FollowRequests.delete(request.id);
 	await invalidateUserShowRelationCache(followee.id, follower.id);
+	return true;
 }
 
 /**

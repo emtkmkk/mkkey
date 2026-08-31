@@ -40,6 +40,7 @@ const R4_NOTIFICATION_TYPES = new Set([
 	"followRequestAccepted",
 	"userWasUnfollowed",
 	"wasForciblyUnfollowed",
+	"followRequestRejected",
 	"wasBlocked",
 	"wasUnblocked",
 	"followedAccountWasDeleted",

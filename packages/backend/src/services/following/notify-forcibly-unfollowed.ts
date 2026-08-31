@@ -13,6 +13,7 @@
 import type { User } from "@/models/entities/user.js";
 import { Users } from "@/models/index.js";
 import { createNotification } from "@/services/create-notification.js";
+import { upsertFollowReconfirm } from "./follow-reconfirm.js";
 
 /**
  * ローカルフォロワーに「フォローが強制解除された」通知を送る。
@@ -41,5 +42,11 @@ export async function notifyWasForciblyUnfollowed(
 			notifierId: followee.id,
 		},
 		{ notifier },
+	);
+
+	await upsertFollowReconfirm(
+		follower.id,
+		followee.id,
+		"wasForciblyUnfollowed",
 	);
 }

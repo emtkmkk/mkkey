@@ -64,6 +64,11 @@ import { stream } from "@/stream";
 import { i18n } from "@/i18n";
 import { $i } from "@/account";
 import * as config from "@/config";
+import {
+	ackFollowReconfirmAfterFollow,
+	clearFollowReconfirmFlags,
+	confirmFollowReconfirmIfNeeded,
+} from "@/scripts/follow-reconfirm";
 
 /** users/show 等から受け取る relation 更新用フィールド */
 type UserRelationPatch = Pick<
@@ -74,6 +79,8 @@ type UserRelationPatch = Pick<
 	| "hasPendingFollowRequestFromYou"
 	| "isBlocking"
 	| "isMuted"
+	| "needsFollowReconfirm"
+	| "followReconfirmReason"
 >;
 
 const props = withDefaults(
@@ -134,6 +141,12 @@ function applyRelationFromPacked(packed: UserRelationPatch): void {
 	}
 	if (packed.isMuted != null) {
 		props.user.isMuted = packed.isMuted;
+	}
+	if (packed.needsFollowReconfirm != null) {
+		props.user.needsFollowReconfirm = packed.needsFollowReconfirm;
+	}
+	if (packed.followReconfirmReason !== undefined) {
+		props.user.followReconfirmReason = packed.followReconfirmReason;
 	}
 }
 
@@ -228,6 +241,12 @@ async function onClick() {
 			});
 			applyRelationFromPacked(packed);
 		} else {
+			const hadFollowReconfirm = props.user.needsFollowReconfirm === true;
+
+			if (!(await confirmFollowReconfirmIfNeeded(props.user))) {
+				return;
+			}
+
 			if (props.user.isSilenced) {
 				const { canceled } = await os.confirm({
 					type: "warning",
@@ -251,6 +270,14 @@ async function onClick() {
 				userId: props.user.id,
 			});
 			applyRelationFromPacked(packed);
+			if (hadFollowReconfirm) {
+				const acked = await ackFollowReconfirmAfterFollow(props.user.id);
+				if (acked != null) {
+					applyRelationFromPacked(acked);
+				} else {
+					clearFollowReconfirmFlags(props.user);
+				}
+			}
 		}
 	} catch (err) {
 		console.error(err);

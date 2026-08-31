@@ -91,6 +91,8 @@ export type UserDetailed = UserLite & {
 	followingCount: number;
 	hasPendingFollowRequestFromYou: boolean;
 	hasPendingFollowRequestToYou: boolean;
+	needsFollowReconfirm?: boolean;
+	followReconfirmReason?: "followRequestRejected" | "wasForciblyUnfollowed";
 	isAdmin: boolean;
 	isBlocked: boolean;
 	isBlocking: boolean;

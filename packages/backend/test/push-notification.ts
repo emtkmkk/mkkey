@@ -273,6 +273,17 @@ describe("notification-display-text", () => {
 		);
 	});
 
+	it("正常系: followRequestRejected の displayTitle を解決する", () => {
+		const resolved = resolveNotificationDisplayText({
+			type: "followRequestRejected",
+			user: { username: "bob", name: "Bob", host: "example.com" },
+		});
+		assert.strictEqual(
+			resolved?.displayTitle,
+			"Bob (bob@example.com) への フォローが拒否されました",
+		);
+	});
+
 	it("境界値: attachDisplayTextToNotification が displayTitle を付与する", () => {
 		const out = attachDisplayTextToNotification(
 			{

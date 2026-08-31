@@ -30,6 +30,8 @@ function formatInAppNotificationToast(body: {
 			return withName(i18n.ts._notification.youWereUnfollowed);
 		case "wasForciblyUnfollowed":
 			return withName(i18n.ts._notification.youWereForciblyUnfollowed);
+		case "followRequestRejected":
+			return withName(i18n.ts._notification.youWereFollowRequestRejected);
 		case "wasBlocked":
 			return withName(i18n.ts._notification.youWereBlocked);
 		case "wasUnblocked":

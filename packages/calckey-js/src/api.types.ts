@@ -574,6 +574,7 @@ export type Endpoints = {
 	"following/delete": { req: { userId: User["id"] }; res: User };
 	"following/requests/accept": { req: { userId: User["id"] }; res: null };
 	"following/requests/cancel": { req: { userId: User["id"] }; res: User };
+	"following/ack-reconfirm": { req: { userId: User["id"] }; res: User };
 	"following/requests/list": { req: NoParams; res: FollowRequest[] };
 	"following/requests/reject": { req: { userId: User["id"] }; res: null };
 

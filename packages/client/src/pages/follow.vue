@@ -8,6 +8,11 @@ import * as os from "@/os";
 import { mainRouter } from "@/router";
 import { i18n } from "@/i18n";
 import { resolveUserFromAcct } from "@/scripts/resolve-user-from-acct";
+import {
+	ackFollowReconfirmAfterFollow,
+	clearFollowReconfirmFlags,
+	confirmFollowReconfirmIfNeeded,
+} from "@/scripts/follow-reconfirm";
 
 async function follow(user): Promise<void> {
 	const { canceled } = await os.confirm({
@@ -16,6 +21,13 @@ async function follow(user): Promise<void> {
 	});
 
 	if (canceled) {
+		window.close();
+		return;
+	}
+
+	const hadFollowReconfirm = user.needsFollowReconfirm === true;
+
+	if (!(await confirmFollowReconfirmIfNeeded(user))) {
 		window.close();
 		return;
 	}
@@ -45,6 +57,13 @@ async function follow(user): Promise<void> {
 
 	os.apiWithDialog("following/create", {
 		userId: user.id,
+	}).then(async () => {
+		if (hadFollowReconfirm) {
+			const acked = await ackFollowReconfirmAfterFollow(user.id);
+			if (acked == null) {
+				clearFollowReconfirmFlags(user);
+			}
+		}
 	});
 }
 

@@ -249,6 +249,27 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 					);
 				}
 
+				case "followRequestRejected": {
+					const name = safeUserName(data.body.user);
+					return composeWithDisplayText(
+						data,
+						t("_notification.youWereFollowRequestRejected"),
+						t,
+						{
+							body: name || undefined,
+							icon: data.body.user?.avatarUrl,
+							badge: notificationBadgeUrl("clock"),
+							tag: `follow-request-rejected:${data.body.userId}`,
+							data,
+							actions: r4Actions(
+								t,
+								hasValidNotificationUser(data.body.user),
+							),
+							actionRule: "r4",
+						},
+					);
+				}
+
 				case "wasBlocked": {
 					const name = safeUserName(data.body.user);
 					return composeWithDisplayText(

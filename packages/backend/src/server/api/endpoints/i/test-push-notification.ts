@@ -22,6 +22,7 @@ import type { Packed } from "@/misc/schema.js";
 const DEV_TEST_NOTIFICATION_TYPES = [
 	"userWasUnfollowed",
 	"wasForciblyUnfollowed",
+	"followRequestRejected",
 	"wasBlocked",
 	"wasUnblocked",
 	"followedAccountWasDeleted",

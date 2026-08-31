@@ -14,6 +14,7 @@ export const notificationTypes = [
 	"app",
 	"userWasUnfollowed",
 	"wasForciblyUnfollowed",
+	"followRequestRejected",
 	"wasBlocked",
 	"wasUnblocked",
 	"followedAccountWasDeleted",

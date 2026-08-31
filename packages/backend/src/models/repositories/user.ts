@@ -58,6 +58,7 @@ import {
 	DriveFiles,
 	Followings,
 	FollowRequests,
+	FollowReconfirms,
 	GalleryPosts,
 	Instances,
 	MessagingMessages,
@@ -122,6 +123,8 @@ export type UserRelation = {
         muteTypes: MuteType[];
         muteExpiresAt: string | null;
         isInviter: boolean;
+        needsFollowReconfirm: boolean;
+        followReconfirmReason: "followRequestRejected" | "wasForciblyUnfollowed" | null;
 };
 
 export type MeDetailedVolatile = {
@@ -232,6 +235,8 @@ export const UserRepository = db.getRepository(User).extend({
                                 muteTypes: [],
                                 muteExpiresAt: null,
                                 isInviter: false,
+                                needsFollowReconfirm: false,
+                                followReconfirmReason: null,
                         } as UserRelation;
                 }
 
@@ -282,6 +287,8 @@ export const UserRepository = db.getRepository(User).extend({
                                 muteTypes: [],
                                 muteExpiresAt: null,
                                 isInviter: false,
+                                needsFollowReconfirm: false,
+                                followReconfirmReason: null,
                         });
                 }
 
@@ -294,6 +301,7 @@ export const UserRepository = db.getRepository(User).extend({
                         blockedBy,
                         mutings,
                         invitees,
+                        followReconfirms,
                 ] = await Promise.all([
                         Followings.findBy({
                                 followerId: meId,
@@ -341,6 +349,10 @@ export const UserRepository = db.getRepository(User).extend({
                                         },
                                 });
                         })(),
+                        FollowReconfirms.findBy({
+                                userId: meId,
+                                targetUserId: In(uniqueTargetIds),
+                        }),
                 ]);
 
                 for (const following of followings) {
@@ -396,6 +408,14 @@ export const UserRepository = db.getRepository(User).extend({
                 for (const invitee of invitees) {
                         const relation = relationsMap.get(invitee.id);
                         if (relation) relation.isInviter = true;
+                }
+
+                for (const reconfirm of followReconfirms) {
+                        const relation = relationsMap.get(reconfirm.targetUserId);
+                        if (relation) {
+                                relation.needsFollowReconfirm = true;
+                                relation.followReconfirmReason = reconfirm.reason;
+                        }
                 }
 
                 return relationsMap;
@@ -1333,6 +1353,12 @@ export const UserRepository = db.getRepository(User).extend({
 								: undefined,
 						muteExpiresAt: relation.muteExpiresAt,
 						isInviter: relation.isInviter ? true : undefined,
+						needsFollowReconfirm: relation.needsFollowReconfirm
+							? true
+							: undefined,
+						followReconfirmReason: relation.needsFollowReconfirm
+							? relation.followReconfirmReason ?? undefined
+							: undefined,
 						followedMessage: relation.isFollowing && profile ? profile.followedMessage : undefined,
 				  }
 				: {}),

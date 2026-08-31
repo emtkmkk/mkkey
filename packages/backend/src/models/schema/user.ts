@@ -376,6 +376,17 @@ export const packedUserDetailedNotMeOnlySchema = {
 			nullable: false,
 			optional: true,
 		},
+		needsFollowReconfirm: {
+			type: "boolean",
+			nullable: false,
+			optional: true,
+		},
+		followReconfirmReason: {
+			type: "string",
+			nullable: true,
+			optional: true,
+			enum: ["followRequestRejected", "wasForciblyUnfollowed"],
+		},
 		hasPendingFollowRequestToYou: {
 			type: "boolean",
 			nullable: false,

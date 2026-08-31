@@ -248,6 +248,10 @@ export function resolveNotificationDisplayText(params: {
 			return {
 				displayTitle: `${fullUsername ?? name} への フォローを解除させられました`,
 			};
+		case "followRequestRejected":
+			return {
+				displayTitle: `${fullUsername ?? name} への フォローが拒否されました`,
+			};
 		case "wasBlocked":
 			return {
 				displayTitle: `${fullUsername ?? name} から ブロックされました`,

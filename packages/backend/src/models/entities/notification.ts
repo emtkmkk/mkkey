@@ -82,6 +82,7 @@ export class Notification {
 	 * app - アプリ通知
 	 * userWasUnfollowed - フォロワーにフォローを外された
 	 * wasForciblyUnfollowed - 相手の操作により自分のフォローが解除された
+	 * followRequestRejected - フォロー申請が拒否された
 	 * wasBlocked - ブロックされた
 	 * wasUnblocked - ブロック解除された
 	 * followedAccountWasDeleted - フォローしていたユーザーがアカウントを削除した

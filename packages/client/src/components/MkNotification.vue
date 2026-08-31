@@ -43,6 +43,10 @@
 					class="ph-user-switch ph-bold"
 				></i>
 				<i
+					v-else-if="notification.type === 'followRequestRejected'"
+					class="ph-user-switch ph-bold"
+				></i>
+				<i
 					v-else-if="notification.type === 'wasBlocked'"
 					class="ph-prohibit ph-bold"
 				></i>
@@ -339,6 +343,12 @@
 				class="text"
 				style="opacity: 0.6"
 				>{{ i18n.ts._notification.youWereForciblyUnfollowed }}</span
+			>
+			<span
+				v-if="notification.type === 'followRequestRejected'"
+				class="text"
+				style="opacity: 0.6"
+				>{{ i18n.ts._notification.youWereFollowRequestRejected }}</span
 			>
 			<span
 				v-if="notification.type === 'wasBlocked'"
@@ -782,6 +792,7 @@ useTooltip(reactionRef, (showing) => {
 
 			&.userWasUnfollowed,
 			&.wasForciblyUnfollowed,
+			&.followRequestRejected,
 			&.wasBlocked,
 			&.wasUnblocked {
 				padding: 0.1875rem;

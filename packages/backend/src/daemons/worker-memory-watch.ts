@@ -12,18 +12,18 @@
  *   (2) Xev で `workerMemory` を流して master 側で集計できるようにする。
  * - **段階通知**: `STEP_MB` ごとの階段を上がったときだけログする。下がったら閾値も戻すので、
  *   膨張と回復が1往復につき数行に収まる。
- * - **RSS の取得元**: `/proc/self/statm` を優先する。本番で
- *   `process.memoryUsage().rss` が実際の RSS と桁違いの値を返す事象を観測したため
- *   （`heapUsed` 等は正常だった）。`/proc` が読めない環境では `memoryUsage()` に落ちる。
- *   どちらの経路でも、物理メモリ量から見て有り得ない値はサンプルごと捨てる。
+ * - **RSS の取得元**: `process.memoryUsage().rss` は使えない。`process.title` の
+ *   括弧が `/proc/self/stat` の comm フィールドを壊し、libuv がフィールドを読み違える
+ *   （詳細は {@link misc/process-rss}）。`/proc/self/statm` から読む。
+ *   `heapUsed` 等 V8 内部の値は影響を受けないのでそのまま使う。
  *
  * @see {@link daemons/health-stats} master 側の集計
  * @internal
  */
-import fs from "node:fs";
 import os from "node:os";
 import Xev from "xev";
 import Logger from "@/services/logger.js";
+import { readProcRssBytes } from "@/misc/process-rss.js";
 
 const ev = new Xev();
 const logger = new Logger("worker-memory", "yellow");
@@ -38,25 +38,6 @@ const STEP_MB = 250;
 const SANITY_FACTOR = 2;
 
 const toMb = (bytes: number): number => Math.round(bytes / 1048576);
-
-/**
- * `/proc/self/statm` から RSS をバイト単位で読む。
- *
- * @returns RSS（バイト）。読めない・解釈できない場合は null
- * @internal
- */
-function readProcRssBytes(): number | null {
-	try {
-		// statm: size resident shared text lib data dt （単位はページ）
-		const fields = fs.readFileSync("/proc/self/statm", "utf8").split(" ");
-		const residentPages = Number(fields[1]);
-		if (!Number.isFinite(residentPages) || residentPages <= 0) return null;
-		return residentPages * 4096;
-	} catch {
-		// Linux 以外、または /proc が無い環境
-		return null;
-	}
-}
 
 /**
  * ワーカーのメモリ監視を開始する。

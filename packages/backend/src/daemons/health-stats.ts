@@ -13,6 +13,7 @@ import Xev from "xev";
 import { db } from "@/db/postgre.js";
 import { redisClient } from "@/db/redis.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
+import { resolveRssBytes } from "@/misc/process-rss.js";
 
 type ServerStats = {
 	cpu: number;
@@ -547,7 +548,8 @@ export default function () {
 		const mem = process.memoryUsage();
 		const heapUsedMb = mem.heapUsed / 1e6;
 		const heapTotalMb = mem.heapTotal / 1e6;
-		const rssMb = mem.rss / 1e6;
+		// mem.rss は process.title の括弧のせいで壊れた値になる。@see misc/process-rss
+		const rssMb = (resolveRssBytes(mem.rss) ?? 0) / 1e6;
 		const externalMb = (mem.external ?? 0) / 1e6;
 		const arrayBuffersMb = (mem.arrayBuffers ?? 0) / 1e6;
 		const heapUsagePercent = heapTotalMb > 0 ? (heapUsedMb / heapTotalMb) * 100 : 0;

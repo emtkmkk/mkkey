@@ -8,14 +8,20 @@
  *   `process.memoryUsage()` しか見ていない。実際にリクエストを捌く web ワーカーが
  *   膨張しても master は平常値のままで、記録に何も残らなかった。
  * - **やること**: 各ワーカーで定期サンプリングし、(1) RSS が段になるたびに WARN を出す
- *   （増加量つき。何が増えているのか＝ヒープ内かヒープ外かを切り分けられる）、
+ *   （増加量つき。ヒープ内かヒープ外かを切り分けられる）、
  *   (2) Xev で `workerMemory` を流して master 側で集計できるようにする。
  * - **段階通知**: `STEP_MB` ごとの階段を上がったときだけログする。下がったら閾値も戻すので、
  *   膨張と回復が1往復につき数行に収まる。
+ * - **RSS の取得元**: `/proc/self/statm` を優先する。本番で
+ *   `process.memoryUsage().rss` が実際の RSS と桁違いの値を返す事象を観測したため
+ *   （`heapUsed` 等は正常だった）。`/proc` が読めない環境では `memoryUsage()` に落ちる。
+ *   どちらの経路でも、物理メモリ量から見て有り得ない値はサンプルごと捨てる。
  *
  * @see {@link daemons/health-stats} master 側の集計
  * @internal
  */
+import fs from "node:fs";
+import os from "node:os";
 import Xev from "xev";
 import Logger from "@/services/logger.js";
 
@@ -28,8 +34,29 @@ const SAMPLE_INTERVAL_MS = 5_000;
 const WARN_FLOOR_MB = 600;
 /** 何 MB 上がるごとに通知するか。 */
 const STEP_MB = 250;
+/** 物理メモリの何倍までを「有り得る RSS」とみなすか（スワップ込みでも超えない値）。 */
+const SANITY_FACTOR = 2;
 
 const toMb = (bytes: number): number => Math.round(bytes / 1048576);
+
+/**
+ * `/proc/self/statm` から RSS をバイト単位で読む。
+ *
+ * @returns RSS（バイト）。読めない・解釈できない場合は null
+ * @internal
+ */
+function readProcRssBytes(): number | null {
+	try {
+		// statm: size resident shared text lib data dt （単位はページ）
+		const fields = fs.readFileSync("/proc/self/statm", "utf8").split(" ");
+		const residentPages = Number(fields[1]);
+		if (!Number.isFinite(residentPages) || residentPages <= 0) return null;
+		return residentPages * 4096;
+	} catch {
+		// Linux 以外、または /proc が無い環境
+		return null;
+	}
+}
 
 /**
  * ワーカーのメモリ監視を開始する。
@@ -41,21 +68,52 @@ const toMb = (bytes: number): number => Math.round(bytes / 1048576);
 export default function (): void {
 	const index = process.env.index ?? "?";
 	const mode = process.env.mode ?? "?";
+	const sanityCeilingBytes = os.totalmem() * SANITY_FACTOR;
 
 	/** 直近に通知した段（MB）。0 は「まだ床を超えていない」 */
 	let notifiedStepMb = 0;
 	let prevRssMb = 0;
 	let peakRssMb = 0;
+	/** `memoryUsage().rss` と `/proc` の食い違いは一度だけ報告する */
+	let reportedRssMismatch = false;
+	/** 異常値を捨てたことも一度だけ報告する */
+	let reportedInsaneRss = false;
 
 	function tick(): void {
 		const mem = process.memoryUsage();
-		const rssMb = toMb(mem.rss);
 		const heapUsedMb = toMb(mem.heapUsed);
 		const heapTotalMb = toMb(mem.heapTotal);
 		const externalMb = toMb(mem.external ?? 0);
 		const arrayBuffersMb = toMb(mem.arrayBuffers ?? 0);
-		const deltaMb = prevRssMb === 0 ? 0 : rssMb - prevRssMb;
 
+		const procRssBytes = readProcRssBytes();
+		const rssBytes = procRssBytes ?? mem.rss;
+
+		// 有り得ない値はこのサンプルごと捨てる（誤検知でインシデントを汚さない）
+		if (!Number.isFinite(rssBytes) || rssBytes <= 0 || rssBytes > sanityCeilingBytes) {
+			if (!reportedInsaneRss) {
+				reportedInsaneRss = true;
+				logger.warn(
+					`worker ${mode}<${index}> got an implausible RSS and is skipping samples: proc=${procRssBytes} memoryUsage=${mem.rss} totalmem=${os.totalmem()}`,
+				);
+			}
+			return;
+		}
+
+		// 取得経路の食い違いを一度だけ記録しておく（原因調査用）
+		if (
+			!reportedRssMismatch &&
+			procRssBytes != null &&
+			Math.abs(procRssBytes - mem.rss) > procRssBytes * 0.5
+		) {
+			reportedRssMismatch = true;
+			logger.warn(
+				`worker ${mode}<${index}> RSS source mismatch: /proc=${procRssBytes} memoryUsage().rss=${mem.rss} (using /proc)`,
+			);
+		}
+
+		const rssMb = toMb(rssBytes);
+		const deltaMb = prevRssMb === 0 ? 0 : rssMb - prevRssMb;
 		if (rssMb > peakRssMb) peakRssMb = rssMb;
 
 		// master 側の集計用。受け手が居なくても害はない。

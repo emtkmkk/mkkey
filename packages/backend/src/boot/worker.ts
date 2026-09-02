@@ -21,6 +21,11 @@ import os from "node:os";
 export async function workerMain() {
 	await initDb();
 
+	// ワーカー自身のメモリ監視（master の health-stats はワーカーを見られないため）
+	if (cluster.isWorker) {
+		import("../daemons/worker-memory-watch.js").then((x) => x.default());
+	}
+
 	if (!process.env.mode || process.env.mode === "web") {
 		// start server
 		await import("../server/index.js").then((x) => x.default());

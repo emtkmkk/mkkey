@@ -25,6 +25,7 @@ import type { Config } from "@/config/types.js";
 import { envOption } from "../env.js";
 import { showMachineInfo } from "@/misc/show-machine-info.js";
 import { db, initDb } from "../db/postgre.js";
+import { registerWorker } from "./worker-registry.js";
 
 const _filename = fileURLToPath(import.meta.url);
 const _dirname = dirname(_filename);
@@ -204,13 +205,14 @@ async function spawnWorkers(clusterLimits: ResolvedClusterLimits): Promise<void>
 }
 
 function spawnWorker(mode: "web" | "queue" | "proxyweb", index = "?"): Promise<void> {
-	let proxy = "0";
-	if (mode === "proxyweb") {
-		mode = "web";
-		proxy = "1";
-	}
+	// "proxyweb" は web の一種。ここで実際に渡す mode / proxy に解決しておく
+	// （let を書き換えるとクロージャ内で型が広がるため const で確定させる）
+	const proxy = mode === "proxyweb" ? "1" : "0";
+	const resolvedMode: "web" | "queue" = mode === "proxyweb" ? "web" : mode;
 	return new Promise((res) => {
-		const worker = cluster.fork({ mode, index, proxy });
+		const worker = cluster.fork({ mode: resolvedMode, index, proxy });
+		// worker.process から env は読めないため、役割はプライマリ側で覚えておく
+		registerWorker(worker.id, { mode: resolvedMode, index, proxy });
 		worker.on("message", (message) => {
 			if (message === "listenFailed") {
 				bootLogger.error("The server listen failed due to the previous error.");

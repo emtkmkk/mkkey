@@ -63,6 +63,28 @@ type SlowQuerySample = {
 	waitEventType: string | null;
 	query: string;
 };
+
+/**
+ * ワーカーから届くメモリ報告。
+ *
+ * @remarks
+ * このデーモンは master で動くため `process.memoryUsage()` では master しか測れない。
+ * 実際に膨らむのは web ワーカーなので、各ワーカーが Xev で送ってくる値を集計する。
+ * @see {@link daemons/worker-memory-watch} 送り手
+ */
+type WorkerMemory = {
+	index: string;
+	mode: string;
+	pid: number;
+	rssMb: number;
+	heapUsedMb: number;
+	heapTotalMb: number;
+	externalMb: number;
+	arrayBuffersMb: number;
+	peakRssMb: number;
+	at: number;
+};
+
 const ev = new Xev();
 
 const interval = 5000;
@@ -77,6 +99,11 @@ const longRunningQueryLimit = 5;
 const slowCallThresholdMs = 1000;
 const recentSlowCallsLimit = 10;
 const slowestEndpointsTopN = 5;
+/** ワーカーのメモリ報告をどれだけ古くなるまで有効とみなすか（死んだワーカーを落とす） */
+const workerMemoryStaleMs = 60_000;
+/** ワーカー RSS のインシデント閾値（MB）。通常運用は 250-450MB 程度。 */
+const workerRssWarnMb = 800;
+const workerRssCriticalMb = 1200;
 
 const round = (num: number) => Math.round(num * 100) / 100;
 
@@ -107,6 +134,7 @@ type StatsForDiagnosis = {
 	activeApiRequests: number;
 	slowestEndpoints?: Array< { endpoint: string; avgMs: number; p95Ms: number; count: number } >;
 	heapStats?: { heapUsagePercent: number };
+	workerMemory?: { maxRssMb: number; maxRssWorker: string | null };
 	federationStats?: {
 		notRespondingCount: number;
 		deliverDelayed: { remote: number; local: number; unknown: number; pending: number };
@@ -154,6 +182,15 @@ function generateDiagnosis(s: StatsForDiagnosis): DiagnosisItem[] {
 				severity: "warn",
 				message: `Node.jsのヒープメモリ使用量が高くなっています（${s.heapStats.heapUsagePercent}%）。GCによる一時停止が発生している可能性があります。`,
 				suggestion: "メモリリークや大きなオブジェクトの保持がないか確認してください。",
+			});
+		}
+		if (s.workerMemory && s.workerMemory.maxRssMb >= workerRssWarnMb) {
+			out.push({
+				severity:
+					s.workerMemory.maxRssMb >= workerRssCriticalMb ? "critical" : "warn",
+				message: `ワーカー ${s.workerMemory.maxRssWorker ?? "?"} のメモリが ${s.workerMemory.maxRssMb}MB まで増加しています。放置するとOOMでプロセスが停止する可能性があります。`,
+				suggestion:
+					"該当ワーカーのヒープスナップショットを取得し、保持されているオブジェクトを確認してください。",
 			});
 		}
 	}
@@ -276,6 +313,14 @@ export default function () {
 	});
 	ev.on("apiRequestEnd", () => {
 		activeApiRequests = Math.max(0, activeApiRequests - 1);
+	});
+
+	/** ワーカー pid -> 直近のメモリ報告 */
+	const workerMemoryByPid = new Map<number, WorkerMemory>();
+
+	ev.on("workerMemory", (m: WorkerMemory) => {
+		if (m?.pid == null) return;
+		workerMemoryByPid.set(m.pid, m);
 	});
 
 	ev.on("serverStats", (stats: ServerStats) => {
@@ -527,6 +572,33 @@ export default function () {
 			heapUsagePercentMax: round(maxHeapUsagePercent),
 		};
 
+		// ワーカーのメモリ集計。heapStats は master のものなので、膨張はこちらでしか見えない。
+		const nowMs = Date.now();
+		for (const [pid, m] of workerMemoryByPid) {
+			if (nowMs - m.at > workerMemoryStaleMs) workerMemoryByPid.delete(pid);
+		}
+		const liveWorkers = [...workerMemoryByPid.values()].sort(
+			(a, b) => b.rssMb - a.rssMb,
+		);
+		const worstWorker = liveWorkers[0];
+		const workerMemory = {
+			count: liveWorkers.length,
+			maxRssMb: worstWorker?.rssMb ?? 0,
+			maxRssWorker: worstWorker
+				? `${worstWorker.mode}<${worstWorker.index}>`
+				: null,
+			totalRssMb: liveWorkers.reduce((sum, w) => sum + w.rssMb, 0),
+			workers: liveWorkers.map((w) => ({
+				worker: `${w.mode}<${w.index}>`,
+				pid: w.pid,
+				rssMb: w.rssMb,
+				heapUsedMb: w.heapUsedMb,
+				externalMb: w.externalMb,
+				arrayBuffersMb: w.arrayBuffersMb,
+				peakRssMb: w.peakRssMb,
+			})),
+		};
+
 		const federationStats = {
 			notRespondingCount: federationNotRespondingCount,
 			deliverDelayed: latestQueueStats?.deliver.delayedByReason ?? {
@@ -560,6 +632,7 @@ export default function () {
 			slowestEndpoints,
 			recentSlowCalls: [...recentSlowCalls],
 			heapStats,
+			workerMemory,
 			dbPoolStats,
 			federationStats,
 			longRunningQueryCount: slowQueries.length,
@@ -615,6 +688,35 @@ export default function () {
 					"warn",
 					"dbLongRunningQueryCount",
 					stats.longRunningQueryCount,
+					stats,
+				);
+			}
+
+			// ワーカーの膨張は OOM に直結するため、必ず記録に残す
+			if (
+				shouldRecordIncident(
+					"workerRssMb",
+					workerMemory.maxRssMb,
+					workerRssCriticalMb,
+				)
+			) {
+				await recordIncident(
+					"critical",
+					"workerRssMb",
+					workerMemory.maxRssMb,
+					stats,
+				);
+			} else if (
+				shouldRecordIncident(
+					"workerRssMbWarn",
+					workerMemory.maxRssMb,
+					workerRssWarnMb,
+				)
+			) {
+				await recordIncident(
+					"warn",
+					"workerRssMb",
+					workerMemory.maxRssMb,
 					stats,
 				);
 			}

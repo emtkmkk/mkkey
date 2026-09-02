@@ -23,6 +23,11 @@ import { envOption } from "../env.js";
 import "reflect-metadata";
 import { masterMain } from "./master.js";
 import { workerMain } from "./worker.js";
+import {
+	getWorkerInfo,
+	registerWorker,
+	unregisterWorker,
+} from "./worker-registry.js";
 import os from "node:os";
 
 const logger = new Logger("core", "cyan");
@@ -135,17 +140,16 @@ function setupClusterPrimaryHandlers(): void {
 			return;
 		}
 
-		// cluster の子プロセスには fork 時の環境が載るが、型定義上は env が省略されがちなので明示する
-		const env = (worker.process as { env?: NodeJS.ProcessEnv } | null | undefined)
-			?.env;
-		const mode = env?.mode;
-		const index = env?.index ?? "?";
-		const proxy = env?.proxy ?? "0";
+		// NOTE: `worker.process` は ChildProcess で、fork 時に渡した env は読み出せない
+		// （`ChildProcess.env` は存在せず常に undefined）。役割は fork 時に登録した
+		// レジストリから引く。 @see boot/worker-registry
+		const info = getWorkerInfo(worker.id);
+		unregisterWorker(worker.id);
 
-		if (!mode || !["web", "queue"].includes(mode)) {
+		if (info == null) {
 			clusterLogger.error(
 				chalk.red(
-					`[${worker.id}] died without valid mode (code=${code}, signal=${signal ?? "none"}); cannot respawn safely.`,
+					`[${worker.id}] died but was never registered (code=${code}, signal=${signal ?? "none"}); cannot respawn safely.`,
 				),
 			);
 			clusterLogger.error(
@@ -155,6 +159,8 @@ function setupClusterPrimaryHandlers(): void {
 			);
 			process.exit(1);
 		}
+
+		const { mode, index, proxy } = info;
 
 		const slotKey = `${mode}:${index}`;
 
@@ -179,7 +185,9 @@ function setupClusterPrimaryHandlers(): void {
 
 		setTimeout(() => {
 			if (isShuttingDown) return;
-			cluster.fork({ mode, index, proxy });
+			const replacement = cluster.fork({ mode, index, proxy });
+			// 置き換え後のワーカーも役割を引けるようにする（次回の exit のため）
+			registerWorker(replacement.id, { mode, index, proxy });
 		}, delayMs);
 	});
 

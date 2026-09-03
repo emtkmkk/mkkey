@@ -98,6 +98,8 @@ async function fetchRemoteEmoji(name: string, host: string) {
 		isBasedOnUrl: remote.isBasedOnUrl ?? null,
 		license: remote.license ?? null,
 		sensitive: remote.sensitive ?? false,
+		// リモート絵文字は常に public（カラムのデフォルトが private のため明示する）
+		usageVisibility: "public",
 	};
 
 	if (exists) {
@@ -108,7 +110,6 @@ async function fetchRemoteEmoji(name: string, host: string) {
 	const inserted = await Emojis.insert({
 		id: genId(),
 		createdAt: now,
-		usageVisibility: "public",
 		...updateData,
 	});
 

@@ -1036,6 +1036,8 @@ export async function extractEmojis(
 				publicUrl: tag.icon!.url,
 				createdAt: new Date(),
 				updatedAt: new Date(),
+				// カラムのデフォルトが private のため、リモート絵文字は明示的に public を入れる
+				usageVisibility: "public",
 				category,
 				aliases,
 				copyPermission: toStoredCopyPermission(licenseData.copyPermission ?? null),

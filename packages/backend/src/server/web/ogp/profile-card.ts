@@ -195,6 +195,7 @@ async function tokenize(
  *
  * @remarks
  * `usageVisibility` が private のものは `/emoji/:path` と同様に扱わない（ショートコードのまま残る）。
+ * リモート絵文字は usageVisibility の対象外（常に public）。
  *
  * @internal
  */

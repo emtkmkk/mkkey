@@ -6,6 +6,7 @@
  * @remarks
  * - **役割**: `/`（SSR）・静的ファイル・`/emoji/:path`・管理画面・OpenAPI・url-preview・manifest 等のルートを登録。メインサーバから mount される。
  * - /emoji/:path の 404 は usageVisibility===private と既存 ngEmoji（ホストブロック・copyPermission deny）のみ。owner/follow/ブロックでは 404 にしない。
+ * - usageVisibility はローカル絵文字のみの概念で、リモート絵文字は常に public 扱い（getEffectiveUsageVisibility 参照）。
  *
  * @see {@link url-preview} URL プレビュー
  * @see {@link manifest} PWA Manifest

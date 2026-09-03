@@ -5,6 +5,7 @@
  *
  * @remarks
  * pack では isTextOnly のとき copyPermission / licenseName / creator を固定値で返す。DB の copyPermission（a/d/c/n）は API 用に完全形に変換して返す。
+ * usageVisibility はローカル絵文字のみの概念で、リモート絵文字（host != null）は DB の値によらず常に public として扱う。
  * 返却前に新規項目の falsy 削除とデフォルト値キー削除を適用する（キーが無い場合はクライアントでデフォルト扱い）。
  */
 import config from "@/config/index.js";
@@ -65,13 +66,18 @@ function stripDefaultEmojiFields(obj: Record<string, unknown>): Record<string, u
 
 /**
  * エンティティから実効的な usageVisibility を返す。
+ * リモート絵文字（host != null）は常に public。usageVisibility は自インスタンスの絵文字の
+ * 使用可否を表すものなので、連合で取り込んだ絵文字には適用しない。
  * 後方互換: usageVisibility 未設定時は category が ! で始まれば private、それ以外は public。
  *
  * @param emoji - 絵文字エンティティ
  * @returns 'public' | 'limited' | 'user' | 'private'
  * @internal
  */
-export function getEffectiveUsageVisibility(emoji: Emoji): string {
+export function getEffectiveUsageVisibility(
+	emoji: Pick<Emoji, "usageVisibility" | "category" | "host">,
+): string {
+	if (emoji.host != null) return "public";
 	return emoji.usageVisibility != null
 		? emoji.usageVisibility
 		: emoji.category?.startsWith("!")
@@ -83,7 +89,7 @@ export function getEffectiveUsageVisibility(emoji: Emoji): string {
  * 指定ユーザがその絵文字を使用できるか（usageVisibility とモチーフで判定）。
  * リアクション・ノート投稿時の権限チェックに利用する。
  *
- * @param emoji - 絵文字エンティティ（usageVisibility, allowedUserIds, motifUserId, motifUserMode を含むこと）
+ * @param emoji - 絵文字エンティティ（host, usageVisibility, allowedUserIds, motifUserId, motifUserMode を含むこと）
  * @param me - 利用者（未認証の場合は null）
  * @param followeeIds - 利用者がフォローしているユーザ ID の集合（モチーフ follow 判定用）
  * @returns 使用可能なら true
@@ -92,12 +98,17 @@ export function getEffectiveUsageVisibility(emoji: Emoji): string {
 export function canUseEmoji(
 	emoji: Pick<
 		Emoji,
-		"usageVisibility" | "allowedUserIds" | "motifUserId" | "motifUserMode" | "category"
+		| "usageVisibility"
+		| "allowedUserIds"
+		| "motifUserId"
+		| "motifUserMode"
+		| "category"
+		| "host"
 	>,
 	me: { id: string } | null,
 	followeeIds: Set<string>,
 ): boolean {
-	const visibility = getEffectiveUsageVisibility(emoji as Emoji);
+	const visibility = getEffectiveUsageVisibility(emoji);
 	if (visibility === "private") return false;
 	if (!me) {
 		if (visibility !== "public" && visibility !== "limited") return false;
@@ -128,13 +139,8 @@ export const EmojiRepository = db.getRepository(Emoji).extend({
 			: emoji.licenseName;
 		const effectiveCreator = emoji.isTextOnly ? config.host : emoji.creator;
 
-		// 後方互換: usageVisibility 未設定時は category が ! で始まれば private、それ以外は public
-		const effectiveUsageVisibility =
-			emoji.usageVisibility != null
-				? emoji.usageVisibility
-				: emoji.category?.startsWith("!")
-					? "private"
-					: "public";
+		// リモートは常に public。後方互換: 未設定時は category が ! で始まれば private、それ以外は public
+		const effectiveUsageVisibility = getEffectiveUsageVisibility(emoji);
 
 		const raw: Record<string, unknown> = {
 			id: emoji.id,

@@ -36,7 +36,7 @@
 			>
 			<MkSwitch
 				style="margin-bottom: 0.375rem"
-				v-for="kind in initialPermissions || kinds"
+				v-for="kind in initialPermissions || availableKinds"
 				:key="kind"
 				v-model="permissions[kind]"
 				>{{ i18n.t(`_permissions.${kind}`) }}</MkSwitch
@@ -54,6 +54,28 @@ import MkButton from "./MkButton.vue";
 import MkInfo from "./MkInfo.vue";
 import XModalWindow from "@/components/MkModalWindow.vue";
 import { i18n } from "@/i18n";
+import { iAmModerator } from "@/account";
+
+/**
+ * 自分で選べるスコープ。
+ *
+ * 管理系（`read:admin:*` / `write:admin:*`）はエンドポイント側の
+ * `requireModerator` / `requireAdmin` も通らないと使えないため、
+ * 権限の無いユーザーに見せても選ぶ意味がない。一覧が長くなるだけなので隠す。
+ *
+ * なお `initialPermissions` が渡されている場合（アプリが要求しているスコープを
+ * 確認する画面）は、要求内容をそのまま見せる必要があるのでこの絞り込みはしない。
+ *
+ * @remarks
+ * 本家 Misskey も同じ絞り込みを行っているが、条件は `iAmAdmin` のみ。
+ * mkkey が付与している管理系スコープはほとんどが `requireModerator` で、
+ * モデレーターが実際に使えるため、こちらは `iAmModerator`（管理者を含む）で判定する。
+ */
+const availableKinds = iAmModerator
+	? kinds
+	: kinds.filter(
+			(kind) => !kind.startsWith("read:admin") && !kind.startsWith("write:admin"),
+	  );
 
 const props = withDefaults(
 	defineProps<{
@@ -84,7 +106,7 @@ if (props.initialPermissions) {
 		permissions[kind] = true;
 	}
 } else {
-	for (const kind of kinds) {
+	for (const kind of availableKinds) {
 		permissions[kind] = false;
 	}
 }

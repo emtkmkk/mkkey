@@ -91,7 +91,9 @@ export default define(meta, paramDef, async (ps, me) => {
 		usernameLower: In(usernames),
 		host: IsNull(),
 	});
-	const userByName = new Map(users.map((u) => [u.usernameLower, u]));
+	// `usernameLower` は select: false なので、絞り込みには使えても取得結果には入らない。
+	// 突き合わせは取得できる `username` を小文字化して行う。
+	const userByName = new Map(users.map((u) => [u.username.toLowerCase(), u]));
 
 	// その月にすでに記録がある人は対象から外す（二重適用の防止）
 	const alreadyApplied = new Set(

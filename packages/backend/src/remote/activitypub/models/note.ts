@@ -1230,7 +1230,7 @@ export async function updateNote(value: string | IObject, resolver?: Resolver) {
 				userId: actor.id,
 				userHost: actor.host,
 			});
-			updating = true;
+			publishing = true;
 		} else if (
 			dbPoll.multiple !== poll.multiple ||
 			dbPoll.expiresAt !== poll.expiresAt ||
@@ -1248,7 +1248,7 @@ export async function updateNote(value: string | IObject, resolver?: Resolver) {
 						note.visibility === "hidden" ? "home" : note.visibility,
 				},
 			);
-			updating = true;
+			publishing = true;
 		} else {
 			for (let i = 0; i < poll.choices.length; i++) {
 				if (dbPoll.votes[i] !== poll.votes?.[i]) {

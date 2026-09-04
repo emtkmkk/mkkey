@@ -109,7 +109,7 @@ export default define(
 			name = null;
 		}
 
-		const meta = await fetchMeta();
+		const m = await fetchMeta();
 
 		try {
 			// ファイルを作成する
@@ -121,8 +121,8 @@ export default define(
 				folderId: ps.folderId,
 				force: ps.force,
 				sensitive: ps.isSensitive,
-				requestIp: meta.enableIpLogging ? ip : null,
-				requestHeaders: meta.enableIpLogging ? headers : null,
+				requestIp: m.enableIpLogging ? ip : null,
+				requestHeaders: m.enableIpLogging ? headers : null,
 			});
 			return await DriveFiles.pack(driveFile, { self: true });
 		} catch (e) {

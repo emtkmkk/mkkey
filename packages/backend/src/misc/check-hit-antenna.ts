@@ -88,7 +88,8 @@ export async function checkHitAntenna(
 	const textComponents = [
 		note.cw,
 		note.text,
-		...(note.files?.map((x) => x?.comment || "") || []),
+		// files は pack 済みノートにしか無い（DB のノートは fileIds のみ持つ）
+		...("files" in note ? note.files?.map((x) => x?.comment || "") ?? [] : []),
 		...(note.poll?.choices?.map(
 			(x) => (typeof x === "object" ? x?.text : x) || "",
 		) || []),

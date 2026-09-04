@@ -1,0 +1,763 @@
+{
+	"generatedAt": "2026-09-04T00:36:28.998Z",
+	"note": "型エラーの既知一覧。scripts/typecheck.js が「増えていないか」を判定するために使う。減ったときは --update で更新する。",
+	"total": 898,
+	"packages": {
+		"backend": {
+			"total": 588,
+			"files": {
+				"node_modules/.pnpm/@bull-board+api@4.6.4/node_modules/@bull-board/api/dist/typings/app.d.ts": {
+					"TS7016": 1
+				},
+				"node_modules/.pnpm/@tensorflow+tfjs-core@3.21.0/node_modules/@tensorflow/tfjs-core/dist/hash_util.d.ts": {
+					"TS2304": 2
+				},
+				"node_modules/.pnpm/@tensorflow+tfjs-core@3.21.0/node_modules/@tensorflow/tfjs-core/dist/tensor.d.ts": {
+					"TS4090": 1
+				},
+				"node_modules/.pnpm/@tensorflow+tfjs-core@4.2.0/node_modules/@tensorflow/tfjs-core/dist/hash_util.d.ts": {
+					"TS2304": 2
+				},
+				"node_modules/.pnpm/@tensorflow+tfjs-layers@3.21.0_@tensorflow+tfjs-core@3.21.0/node_modules/@tensorflow/tfjs-layers/dist/engine/training.d.ts": {
+					"TS2420": 1
+				},
+				"node_modules/.pnpm/@tensorflow+tfjs-layers@3.21.0_@tensorflow+tfjs-core@3.21.0/node_modules/@tensorflow/tfjs-layers/dist/keras_format/topology_config.d.ts": {
+					"TS2411": 8
+				},
+				"node_modules/.pnpm/@tensorflow+tfjs-layers@3.21.0_@tensorflow+tfjs-core@3.21.0/node_modules/@tensorflow/tfjs-layers/dist/keras_format/training_config.d.ts": {
+					"TS2411": 4
+				},
+				"node_modules/.pnpm/@tensorflow+tfjs-layers@3.21.0_@tensorflow+tfjs-core@3.21.0/node_modules/@tensorflow/tfjs-layers/dist/keras_format/types.d.ts": {
+					"TS2411": 1
+				},
+				"node_modules/.pnpm/@tensorflow+tfjs-layers@3.21.0_@tensorflow+tfjs-core@3.21.0/node_modules/@tensorflow/tfjs-layers/dist/layers/core.d.ts": {
+					"TS2411": 1
+				},
+				"node_modules/.pnpm/@tensorflow+tfjs-layers@4.2.0_@tensorflow+tfjs-core@4.2.0/node_modules/@tensorflow/tfjs-layers/dist/engine/training.d.ts": {
+					"TS2420": 1
+				},
+				"node_modules/.pnpm/@tensorflow+tfjs-layers@4.2.0_@tensorflow+tfjs-core@4.2.0/node_modules/@tensorflow/tfjs-layers/dist/keras_format/topology_config.d.ts": {
+					"TS2411": 8
+				},
+				"node_modules/.pnpm/@tensorflow+tfjs-layers@4.2.0_@tensorflow+tfjs-core@4.2.0/node_modules/@tensorflow/tfjs-layers/dist/keras_format/training_config.d.ts": {
+					"TS2411": 4
+				},
+				"node_modules/.pnpm/@tensorflow+tfjs-layers@4.2.0_@tensorflow+tfjs-core@4.2.0/node_modules/@tensorflow/tfjs-layers/dist/keras_format/types.d.ts": {
+					"TS2411": 1
+				},
+				"node_modules/.pnpm/@tensorflow+tfjs-layers@4.2.0_@tensorflow+tfjs-core@4.2.0/node_modules/@tensorflow/tfjs-layers/dist/layers/core.d.ts": {
+					"TS2411": 1
+				},
+				"node_modules/.pnpm/@types+koa__multer@2.0.4/node_modules/@types/koa__multer/index.d.ts": {
+					"TS2687": 1
+				},
+				"node_modules/.pnpm/cacheable-request@10.2.14/node_modules/cacheable-request/dist/types.d.ts": {
+					"TS1452": 4
+				},
+				"node_modules/.pnpm/got@12.5.3/node_modules/got/dist/source/as-promise/types.d.ts": {
+					"TS1452": 1
+				},
+				"node_modules/.pnpm/got@12.5.3/node_modules/got/dist/source/core/errors.d.ts": {
+					"TS1452": 1
+				},
+				"node_modules/.pnpm/got@12.5.3/node_modules/got/dist/source/core/index.d.ts": {
+					"TS1452": 5
+				},
+				"node_modules/.pnpm/got@12.5.3/node_modules/got/dist/source/core/options.d.ts": {
+					"TS1452": 9
+				},
+				"node_modules/.pnpm/got@12.5.3/node_modules/got/dist/source/core/response.d.ts": {
+					"TS1452": 2
+				},
+				"node_modules/.pnpm/got@12.5.3/node_modules/got/dist/source/types.d.ts": {
+					"TS1452": 2
+				},
+				"node_modules/.pnpm/ip-address@7.1.0/node_modules/ip-address/dist/lib/ipv4.d.ts": {
+					"TS7016": 1
+				},
+				"node_modules/.pnpm/ip-address@7.1.0/node_modules/ip-address/dist/lib/ipv6.d.ts": {
+					"TS7016": 1
+				},
+				"node_modules/.pnpm/ip-cidr@3.0.11/node_modules/ip-cidr/index.d.ts": {
+					"TS7016": 1
+				},
+				"node_modules/.pnpm/koa-body@6.0.1/node_modules/koa-body/lib/index.d.ts": {
+					"TS2717": 2,
+					"TS2687": 1
+				},
+				"node_modules/.pnpm/koa-compress@5.2.0/node_modules/koa-compress/lib/index.d.ts": {
+					"TS2305": 1,
+					"TS2371": 1,
+					"TS2309": 1
+				},
+				"node_modules/.pnpm/pureimage@0.3.15/node_modules/pureimage/types/text.d.ts": {
+					"TS7016": 1
+				},
+				"node_modules/.pnpm/rss-parser@3.12.0/node_modules/rss-parser/index.d.ts": {
+					"TS7016": 1
+				},
+				"packages/backend/src/daemons/health-stats.ts": {
+					"TS7006": 1
+				},
+				"packages/backend/src/db/postgre.ts": {
+					"TS7016": 1
+				},
+				"packages/backend/src/misc/check-hit-antenna.ts": {
+					"TS2339": 1,
+					"TS7006": 1
+				},
+				"packages/backend/src/misc/check-word-mute.ts": {
+					"TS2345": 2
+				},
+				"packages/backend/src/misc/content-disposition.ts": {
+					"TS7016": 1
+				},
+				"packages/backend/src/misc/emoji-regex.ts": {
+					"TS7016": 1
+				},
+				"packages/backend/src/misc/extract-custom-emojis-from-mfm.ts": {
+					"TS18048": 1,
+					"TS2339": 1
+				},
+				"packages/backend/src/misc/extract-hashtags.ts": {
+					"TS18048": 1,
+					"TS2339": 1
+				},
+				"packages/backend/src/misc/extract-mentions.ts": {
+					"TS2322": 1
+				},
+				"packages/backend/src/misc/fetch.ts": {
+					"TS2345": 1,
+					"TS2339": 4
+				},
+				"packages/backend/src/misc/gen-identicon.ts": {
+					"TS2322": 1
+				},
+				"packages/backend/src/misc/i18n.ts": {
+					"TS2352": 1
+				},
+				"packages/backend/src/models/entities/emoji-import-request.ts": {
+					"TS2769": 2
+				},
+				"packages/backend/src/models/repositories/antenna.ts": {
+					"TS2322": 1
+				},
+				"packages/backend/src/models/repositories/blocking.ts": {
+					"TS2322": 1
+				},
+				"packages/backend/src/models/repositories/channel.ts": {
+					"TS2322": 1
+				},
+				"packages/backend/src/models/repositories/instance.ts": {
+					"TS2322": 1
+				},
+				"packages/backend/src/models/repositories/muting.ts": {
+					"TS2322": 1
+				},
+				"packages/backend/src/models/repositories/note.ts": {
+					"TS2339": 18,
+					"TS2322": 2,
+					"TS18047": 9,
+					"TS2345": 1
+				},
+				"packages/backend/src/models/repositories/notification.ts": {
+					"TS2322": 1,
+					"TS2345": 1
+				},
+				"packages/backend/src/models/repositories/user.ts": {
+					"TS18047": 4,
+					"TS18048": 6,
+					"TS2322": 2
+				},
+				"packages/backend/src/queue/index.ts": {
+					"TS2345": 4
+				},
+				"packages/backend/src/queue/processors/background/index-all-notes.ts": {
+					"TS2554": 1
+				},
+				"packages/backend/src/queue/processors/db/export-custom-emojis.ts": {
+					"TS7016": 2,
+					"TS2358": 1,
+					"TS2345": 1
+				},
+				"packages/backend/src/queue/processors/db/import-posts.ts": {
+					"TS2345": 2
+				},
+				"packages/backend/src/queue/processors/db/import-user-lists.ts": {
+					"TS2345": 4,
+					"TS18048": 1
+				},
+				"packages/backend/src/queue/processors/inbox.ts": {
+					"TS2339": 1
+				},
+				"packages/backend/src/queue/processors/system/clean.ts": {
+					"TS7022": 1
+				},
+				"packages/backend/src/queue/processors/webhook-deliver.ts": {
+					"TS2322": 1
+				},
+				"packages/backend/src/remote/activitypub/check-fetch.ts": {
+					"TS2322": 4
+				},
+				"packages/backend/src/remote/activitypub/db-resolver.ts": {
+					"TS2554": 1
+				},
+				"packages/backend/src/remote/activitypub/deliver-manager.ts": {
+					"TS18047": 1
+				},
+				"packages/backend/src/remote/activitypub/kernel/announce/note.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/remote/activitypub/kernel/create/note.ts": {
+					"TS2339": 1
+				},
+				"packages/backend/src/remote/activitypub/kernel/like.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/remote/activitypub/kernel/update/index.ts": {
+					"TS2339": 1
+				},
+				"packages/backend/src/remote/activitypub/models/image.ts": {
+					"TS2322": 7,
+					"TS2339": 2
+				},
+				"packages/backend/src/remote/activitypub/models/note.ts": {
+					"TS2352": 2,
+					"TS2345": 6,
+					"TS2454": 1,
+					"TS2531": 1,
+					"TS18047": 1,
+					"TS2571": 1,
+					"TS7006": 1,
+					"TS18046": 12,
+					"TS2740": 1,
+					"TS2322": 1,
+					"TS7030": 1
+				},
+				"packages/backend/src/remote/activitypub/models/person.ts": {
+					"TS2345": 2
+				},
+				"packages/backend/src/remote/activitypub/renderer/like.ts": {
+					"TS18047": 3
+				},
+				"packages/backend/src/remote/activitypub/resolver.ts": {
+					"TS7006": 1,
+					"TS2345": 2,
+					"TS2554": 1,
+					"TS2322": 3
+				},
+				"packages/backend/src/server/activitypub.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/server/activitypub/featured.ts": {
+					"TS2339": 3
+				},
+				"packages/backend/src/server/api/2fa.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/authenticate.ts": {
+					"TS2554": 1,
+					"TS2322": 1
+				},
+				"packages/backend/src/server/api/call.ts": {
+					"TS2540": 1
+				},
+				"packages/backend/src/server/api/common/make-pagination-query.ts": {
+					"TS2344": 1
+				},
+				"packages/backend/src/server/api/common/read-notification.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/common/rethrow-timeline-query-error.ts": {
+					"TS2352": 2
+				},
+				"packages/backend/src/server/api/common/signin.ts": {
+					"TS2322": 1
+				},
+				"packages/backend/src/server/api/common/signup.ts": {
+					"TS2322": 1
+				},
+				"packages/backend/src/server/api/common/timeline-pagination-cursor.ts": {
+					"TS2344": 1
+				},
+				"packages/backend/src/server/api/compatibility.ts": {
+					"TS2339": 3
+				},
+				"packages/backend/src/server/api/endpoints/admin/drive/show-file.ts": {
+					"TS2345": 1,
+					"TS2322": 2
+				},
+				"packages/backend/src/server/api/endpoints/admin/emoji/add-aliases-bulk.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/endpoints/admin/emoji/copy.ts": {
+					"TS18047": 2
+				},
+				"packages/backend/src/server/api/endpoints/admin/emoji/delete-bulk.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/endpoints/admin/emoji/delete.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/endpoints/admin/emoji/list.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/endpoints/admin/emoji/remove-aliases-bulk.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/endpoints/admin/emoji/reparse-license.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/endpoints/admin/emoji/set-aliases-bulk.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/endpoints/admin/emoji/set-category-bulk.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/endpoints/admin/emoji/set-license-bulk.ts": {
+					"TS2322": 1,
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/endpoints/admin/emoji/update.ts": {
+					"TS2345": 2
+				},
+				"packages/backend/src/server/api/endpoints/admin/meta.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/endpoints/admin/promo/create.ts": {
+					"TS18047": 3
+				},
+				"packages/backend/src/server/api/endpoints/admin/silence-user.ts": {
+					"TS2339": 1,
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/endpoints/admin/unsilence-user.ts": {
+					"TS2339": 1,
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/endpoints/admin/update-meta.ts": {
+					"TS2322": 1
+				},
+				"packages/backend/src/server/api/endpoints/announcements.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/endpoints/antennas/list.ts": {
+					"TS2339": 1
+				},
+				"packages/backend/src/server/api/endpoints/blocking/create.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/endpoints/blocking/delete.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/endpoints/categories/show.ts": {
+					"TS7006": 1
+				},
+				"packages/backend/src/server/api/endpoints/channels/timeline.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/endpoints/charts/hashtag.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/endpoints/clips/add-note.ts": {
+					"TS18047": 2
+				},
+				"packages/backend/src/server/api/endpoints/compatibility/instance-info.ts": {
+					"TS2339": 6
+				},
+				"packages/backend/src/server/api/endpoints/custom-motd.ts": {
+					"TS2339": 2
+				},
+				"packages/backend/src/server/api/endpoints/emoji-import-request/approve.ts": {
+					"TS18047": 1
+				},
+				"packages/backend/src/server/api/endpoints/emoji.ts": {
+					"TS2345": 2
+				},
+				"packages/backend/src/server/api/endpoints/emoji/set-motif-mode.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/endpoints/emojis.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/endpoints/endpoint.ts": {
+					"TS18048": 2
+				},
+				"packages/backend/src/server/api/endpoints/health/backend.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/endpoints/i.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/endpoints/i/authorized-apps.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/endpoints/i/import-posts.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/endpoints/i/known-as.ts": {
+					"TS2305": 1
+				},
+				"packages/backend/src/server/api/endpoints/i/notifications.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/endpoints/i/swarm/update-settings.ts": {
+					"TS2322": 1
+				},
+				"packages/backend/src/server/api/endpoints/i/update.ts": {
+					"TS2345": 1,
+					"TS7006": 7
+				},
+				"packages/backend/src/server/api/endpoints/i/webhooks/update.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/endpoints/messaging/messages.ts": {
+					"TS2345": 1,
+					"TS7030": 1
+				},
+				"packages/backend/src/server/api/endpoints/messaging/messages/create.ts": {
+					"TS2339": 5
+				},
+				"packages/backend/src/server/api/endpoints/meta.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/endpoints/notes/children.ts": {
+					"TS2345": 1,
+					"TS2339": 1
+				},
+				"packages/backend/src/server/api/endpoints/notes/clips.ts": {
+					"TS18047": 1
+				},
+				"packages/backend/src/server/api/endpoints/notes/conversation.ts": {
+					"TS18047": 2
+				},
+				"packages/backend/src/server/api/endpoints/notes/create.ts": {
+					"TS2339": 7,
+					"TS2345": 2
+				},
+				"packages/backend/src/server/api/endpoints/notes/delete.ts": {
+					"TS18047": 3,
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/endpoints/notes/favorites/create.ts": {
+					"TS18047": 3
+				},
+				"packages/backend/src/server/api/endpoints/notes/global-timeline.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/endpoints/notes/hybrid-timeline.ts": {
+					"TS18047": 6,
+					"TS2345": 6
+				},
+				"packages/backend/src/server/api/endpoints/notes/local-timeline.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/endpoints/notes/reactions/create.ts": {
+					"TS2345": 1,
+					"TS18047": 1
+				},
+				"packages/backend/src/server/api/endpoints/notes/reactions/delete.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/endpoints/notes/renotes.ts": {
+					"TS18047": 2
+				},
+				"packages/backend/src/server/api/endpoints/notes/search-by-tag.ts": {
+					"TS2339": 9
+				},
+				"packages/backend/src/server/api/endpoints/notes/search.ts": {
+					"TS2322": 1,
+					"TS18047": 1
+				},
+				"packages/backend/src/server/api/endpoints/notes/state.ts": {
+					"TS18047": 4
+				},
+				"packages/backend/src/server/api/endpoints/notes/thread-muting/create.ts": {
+					"TS18047": 6
+				},
+				"packages/backend/src/server/api/endpoints/notes/thread-muting/delete.ts": {
+					"TS18047": 2
+				},
+				"packages/backend/src/server/api/endpoints/notes/translate.ts": {
+					"TS18047": 3
+				},
+				"packages/backend/src/server/api/endpoints/notes/unrenote.ts": {
+					"TS18047": 1
+				},
+				"packages/backend/src/server/api/endpoints/notes/watching/create.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/endpoints/notes/watching/delete.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/endpoints/patrons.ts": {
+					"TS18046": 1,
+					"TS7006": 1
+				},
+				"packages/backend/src/server/api/endpoints/promo/read.ts": {
+					"TS18047": 2
+				},
+				"packages/backend/src/server/api/endpoints/users/emoji-stats.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/endpoints/users/followers.ts": {
+					"TS2339": 4
+				},
+				"packages/backend/src/server/api/endpoints/users/following.ts": {
+					"TS2339": 4
+				},
+				"packages/backend/src/server/api/endpoints/users/show.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/endpoints/users/stats.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/endpoints/users/update-memo.ts": {
+					"TS7053": 4,
+					"TS2322": 4
+				},
+				"packages/backend/src/server/api/index.ts": {
+					"TS2307": 1,
+					"TS2339": 2,
+					"TS7006": 3,
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/openapi/gen-spec.ts": {
+					"TS18048": 2,
+					"TS2339": 4,
+					"TS2345": 1,
+					"TS7006": 1
+				},
+				"packages/backend/src/server/api/private/signin.ts": {
+					"TS2322": 1
+				},
+				"packages/backend/src/server/api/private/signup-pending.ts": {
+					"TS18046": 1,
+					"TS2345": 1,
+					"TS2769": 1
+				},
+				"packages/backend/src/server/api/private/signup.ts": {
+					"TS18046": 7,
+					"TS2769": 2
+				},
+				"packages/backend/src/server/api/private/verify-email.ts": {
+					"TS18046": 1
+				},
+				"packages/backend/src/server/api/service/discord.ts": {
+					"TS2345": 2,
+					"TS2322": 2
+				},
+				"packages/backend/src/server/api/service/github.ts": {
+					"TS2345": 1,
+					"TS2322": 1
+				},
+				"packages/backend/src/server/api/service/google.ts": {
+					"TS2345": 1,
+					"TS2322": 2
+				},
+				"packages/backend/src/server/api/service/swarm.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/service/twitter.ts": {
+					"TS2345": 3,
+					"TS2322": 1
+				},
+				"packages/backend/src/server/api/stream/channel.ts": {
+					"TS7051": 1,
+					"TS2322": 4,
+					"TS2339": 1
+				},
+				"packages/backend/src/server/api/stream/channels/channel.ts": {
+					"TS2322": 1,
+					"TS2769": 1
+				},
+				"packages/backend/src/server/api/stream/channels/global-timeline.ts": {
+					"TS2322": 1,
+					"TS2769": 1,
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/stream/channels/hashtag.ts": {
+					"TS2322": 1,
+					"TS2769": 1
+				},
+				"packages/backend/src/server/api/stream/channels/home-timeline.ts": {
+					"TS2322": 1,
+					"TS2769": 1,
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/stream/channels/hybrid-timeline.ts": {
+					"TS2322": 1,
+					"TS2769": 1,
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/stream/channels/local-timeline.ts": {
+					"TS2322": 1,
+					"TS2769": 1,
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/stream/channels/recommended-timeline.ts": {
+					"TS2322": 1,
+					"TS2769": 1,
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/stream/channels/spotlight-timeline.ts": {
+					"TS7006": 1,
+					"TS2322": 1,
+					"TS2769": 1,
+					"TS2339": 3,
+					"TS2345": 1
+				},
+				"packages/backend/src/server/api/stream/channels/user-list.ts": {
+					"TS2322": 1,
+					"TS2769": 1
+				},
+				"packages/backend/src/server/api/stream/index.ts": {
+					"TS2551": 1
+				},
+				"packages/backend/src/server/api/streaming.ts": {
+					"TS2554": 1
+				},
+				"packages/backend/src/server/web/feed.ts": {
+					"TS18047": 1
+				},
+				"packages/backend/src/server/web/index.ts": {
+					"TS2322": 1,
+					"TS2345": 2,
+					"TS7034": 2,
+					"TS7005": 7
+				},
+				"packages/backend/src/server/web/manifest.ts": {
+					"TS2821": 1
+				},
+				"packages/backend/src/server/web/url-preview.ts": {
+					"TS7016": 1,
+					"TS18047": 2,
+					"TS7006": 2,
+					"TS2345": 8
+				},
+				"packages/backend/src/services/blocking/create.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/services/chart/core.ts": {
+					"TS2322": 1,
+					"TS2731": 6,
+					"TS2339": 2,
+					"TS2488": 6
+				},
+				"packages/backend/src/services/drive/add-file.ts": {
+					"TS2345": 1,
+					"TS18047": 3
+				},
+				"packages/backend/src/services/drive/upload-from-url.ts": {
+					"TS2322": 1
+				},
+				"packages/backend/src/services/fetch-instance-metadata.ts": {
+					"TS2339": 7,
+					"TS18046": 1
+				},
+				"packages/backend/src/services/following/create.ts": {
+					"TS2740": 2
+				},
+				"packages/backend/src/services/following/delete.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/services/following/reject.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/services/following/requests/create.ts": {
+					"TS2740": 1
+				},
+				"packages/backend/src/services/logger.ts": {
+					"TS7016": 2,
+					"TS18048": 1,
+					"TS2556": 1
+				},
+				"packages/backend/src/services/messages/create.ts": {
+					"TS2345": 2
+				},
+				"packages/backend/src/services/note/ap-deliver.ts": {
+					"TS2345": 2
+				},
+				"packages/backend/src/services/note/create.ts": {
+					"TS2339": 1,
+					"TS2345": 6,
+					"TS2322": 1,
+					"TS7006": 2
+				},
+				"packages/backend/src/services/note/delete.ts": {
+					"TS2322": 4
+				},
+				"packages/backend/src/services/note/reaction/create.ts": {
+					"TS2339": 1,
+					"TS2345": 1,
+					"TS2322": 2
+				},
+				"packages/backend/src/services/note/reaction/delete.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/services/note/remote-references.ts": {
+					"TS2345": 1,
+					"TS2352": 2
+				},
+				"packages/backend/src/services/notify-followers-account-was-deleted.ts": {
+					"TS7022": 2
+				},
+				"packages/backend/src/services/push-notification.ts": {
+					"TS2352": 1,
+					"TS2638": 1
+				},
+				"packages/backend/src/services/user-cache.ts": {
+					"TS2345": 4
+				},
+				"packages/backend/src/services/user-stats/fetch-aggregates.ts": {
+					"TS2345": 1
+				},
+				"packages/backend/src/services/validate-email-for-account.ts": {
+					"TS2339": 4
+				}
+			}
+		},
+		"sw": {
+			"total": 309,
+			"files": {
+				"packages/sw/src/scripts/app-badge-counter.ts": {
+					"TS2552": 1
+				},
+				"packages/sw/src/scripts/create-notification.ts": {
+					"TS2352": 1,
+					"TS2322": 1,
+					"TS2345": 31,
+					"TS18048": 120,
+					"TS2339": 122,
+					"TS2304": 1
+				},
+				"packages/sw/src/scripts/lang.ts": {
+					"TS2304": 3
+				},
+				"packages/sw/src/scripts/notification-click.ts": {
+					"TS2352": 1
+				},
+				"packages/sw/src/scripts/notification-read.ts": {
+					"TS18048": 1,
+					"TS2339": 1,
+					"TS2345": 2
+				},
+				"packages/sw/src/sw.ts": {
+					"TS2304": 10,
+					"TS2488": 1,
+					"TS2339": 5,
+					"TS2345": 3,
+					"TS18048": 5
+				}
+			}
+		},
+		"calckey-js": {
+			"total": 1,
+			"files": {
+				"node_modules/.pnpm/@types+node@17.0.5/node_modules/@types/node/globals.d.ts": {
+					"TS2403": 1
+				}
+			}
+		}
+	}
+}

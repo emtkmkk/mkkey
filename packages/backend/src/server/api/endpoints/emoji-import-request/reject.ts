@@ -70,12 +70,12 @@ export default define(meta, paramDef, async (ps, me) => {
 	const body =
 		`:${request.emojiName}@${request.emojiHost}: の申請は見送られました。` +
 		(reason ? `\n\n理由: ${reason}` : "");
-	const meta = await fetchMeta();
+	const m = await fetchMeta();
 	const iconUrl =
-		meta?.iconUrl != null
-			? meta.iconUrl.startsWith("http")
-				? meta.iconUrl
-				: `${config.url}${meta.iconUrl.startsWith("/") ? "" : "/"}${meta.iconUrl}`
+		m?.iconUrl != null
+			? m.iconUrl.startsWith("http")
+				? m.iconUrl
+				: `${config.url}${m.iconUrl.startsWith("/") ? "" : "/"}${m.iconUrl}`
 			: undefined;
 	createNotification(request.requesterId, "app", {
 		customHeader: "絵文字インポート申請が見送られました",

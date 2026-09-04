@@ -439,32 +439,59 @@ VSCode を前提環境として想定し、次の機能が活きる書き方を�
 
 ### 11.2 構成
 
-| 項目             | 内容                                       |
-| ---------------- | ------------------------------------------ |
-| パッケージ管理   | （例）pnpm ワークスペース                  |
-| 主なディレクトリ | （例）`packages/backend`、`packages/client` |
-| 言語・主要技術   | （例）TypeScript / Vue 3 / PostgreSQL      |
+| 項目             | 内容                                                                              |
+| ---------------- | --------------------------------------------------------------------------------- |
+| パッケージ管理   | pnpm ワークスペース（pnpm 8.4.0）                                                 |
+| 主なディレクトリ | `packages/backend`、`packages/client`、`packages/sw`、`packages/calckey-js`       |
+| 言語・主要技術   | TypeScript / Vue 3 / PostgreSQL / Redis（Firefish 系のフォーク）                  |
+| ビルド方式       | backend は swc、client は Vite、sw は webpack、静的ファイルの配置は gulp          |
+| 生成物の置き場   | `packages/*/built` と、リポジトリ直下の `built`                                   |
 
 ### 11.3 よく使うコマンド
 
 ```sh
 # 依存関係の導入
-# 例: pnpm install
+pnpm install
 
-# ビルド
-# 例: pnpm build
+# ビルド（全パッケージ + gulp）
+pnpm build
+
+# 古い生成物を消してからビルドし直す
+pnpm run rebuild
 
 # 開発サーバー
-# 例: pnpm dev
+pnpm dev
 
-# lint / フォーマット
-# 例: pnpm lint
+# lint
+pnpm lint
 
-# テスト
-# 例: pnpm test
+# 型チェック（既知のエラーと比較し、増えていたら失敗する）
+pnpm run typecheck
+
+# 型エラーが減ったとき、既知の一覧を更新する
+pnpm run typecheck:update
+
+# テスト（PostgreSQL / Redis と .config/test.yml が必要）
+pnpm test
 ```
 
 ### 11.4 注意点
 
-- （例）`built/` 以下は生成物なので直接編集しない
-- （例）マイグレーションを追加したら必ず上下両方向を確認する
+- **型チェックはビルドに含まれない。** swc も Vite も型を見ないため、型エラーがあってもビルドは通ってしまう。
+  そのため型は `pnpm run typecheck` で別途確認する。既知のエラーは `dev/typecheck-baseline.json` に記録してあり、
+  「これ以上増やさない」ことを最低ラインとする。減らしたときは `pnpm run typecheck:update` で更新する。
+- `packages/client` は `.vue` を含むため `tsc` だけでは検査できず、型チェックの対象外にしている。
+  検査するには vue-tsc の導入が必要。
+- **Windows では backend をビルドできない。** swc 1.3.50 が `.swcrc` の `"baseUrl": "."` を解決できず、
+  `failed to canonicalize base url` で全ファイルが失敗する。backend の動作確認は WSL か Docker で行う。
+  なお `tsc` は Windows でも動くので、型チェックだけならそのまま実行できる。
+- backend のビルドには Rust ツールチェーン（`cargo`）が必要。`native-utils` を napi でビルドするため。
+- **Windows では `pnpm lint` が動かない。** rome にグロブ（`"src/**/*.ts"`）がそのまま渡るため。
+  対応しない方針なので、lint は Linux 側で実行する。
+- **`built/` は掃除されない。** ビルドしても古い生成物は残り続け、放置すると数百 MB まで膨らむ。
+  ときどき `pnpm run clean` か `pnpm run rebuild` を使う。
+- `built/` 以下は生成物なので直接編集しない。
+- NB: swc は「値として使われていない import」を出力から削除する。
+  そのため存在しないモジュールを import していても、実行時には落ちず型エラーとしてだけ現れることがある。
+  逆に言えば、型エラーを「実行時に落ちるもの」と「落ちないもの」に分けて考える必要がある。
+- マイグレーションを追加したら必ず上下両方向を確認する。

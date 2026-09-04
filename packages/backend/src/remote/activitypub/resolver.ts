@@ -217,7 +217,7 @@ export default class Resolver {
 					renderActivity(renderFollow(follower, followee, url)),
 				);*/
 			default:
-				throw new Error(`resolveLocal: type ${type} unhandled`);
+				throw new Error(`resolveLocal: type ${parsed.type} unhandled`);
 		}
 	}
 }

@@ -203,12 +203,12 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	await EmojiImportDenieds.delete({ name: request.emojiName }).catch(() => {});
 
-	const meta = await fetchMeta();
+	const m = await fetchMeta();
 	const iconUrl =
-		meta?.iconUrl != null
-			? meta.iconUrl.startsWith("http")
-				? meta.iconUrl
-				: `${config.url}${meta.iconUrl.startsWith("/") ? "" : "/"}${meta.iconUrl}`
+		m?.iconUrl != null
+			? m.iconUrl.startsWith("http")
+				? m.iconUrl
+				: `${config.url}${m.iconUrl.startsWith("/") ? "" : "/"}${m.iconUrl}`
 			: undefined;
 	createNotification(request.requesterId, "app", {
 		customHeader: "絵文字インポート申請が承認されました",

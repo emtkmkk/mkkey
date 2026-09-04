@@ -1,5 +1,5 @@
 import config from "@/config/index.js";
-import type { Note } from "@/models/entities/note.js";
+import type { Note, IMentionedRemoteUsers } from "@/models/entities/note.js";
 import { apLogger } from "../logger.js";
 
 export default (object: any, note: Note) => {

@@ -107,8 +107,9 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
-	let recipientUser: User | null;
-	let recipientGroup: UserGroup | null;
+	// createMessage が undefined を期待しているため、null ではなく undefined で扱う
+	let recipientUser: User | undefined;
+	let recipientGroup: UserGroup | undefined;
 
 	if (ps.userId != null) {
 		// 自分自身
@@ -133,7 +134,8 @@ export default define(meta, paramDef, async (ps, user) => {
 		}
 	} else if (ps.groupId != null) {
 		// 宛先（グループ）を取得する
-		recipientGroup = await UserGroups.findOneBy({ id: ps.groupId! });
+		recipientGroup =
+			(await UserGroups.findOneBy({ id: ps.groupId! })) ?? undefined;
 
 		if (recipientGroup == null) {
 			throw new ApiError(meta.errors.noSuchGroup);

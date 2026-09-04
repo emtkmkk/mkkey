@@ -15,8 +15,10 @@ import type * as http from "node:http";
 import { EventEmitter } from "events";
 import type { ParsedUrlQuery } from "querystring";
 import * as websocket from "websocket";
+import { LessThan } from "typeorm";
 
 import { subscriber as redisClient } from "@/db/redis.js";
+import { USER_ONLINE_THRESHOLD } from "@/const.js";
 import { Users } from "@/models/index.js";
 import { touchLastActiveDate } from "@/services/update-last-active-date.js";
 import MainStreamConnection from "./stream/index.js";
@@ -83,13 +85,13 @@ export const initializeStreamingServer = (server: http.Server) => {
 
 		const intervalId = user
 			? setInterval(() => {
-					if (user.onlineStatus !== "online") {
-						const now = new Date();
-						now.setSeconds(now.getSeconds() - 300);
-						Users.update(user.id, {
-							lastActiveDate: now,
-						});
-					}
+					// 接続が続いている間は「オンライン判定が切れる直前」の状態を保つ。
+					// 実際の操作で更新された、より新しい lastActiveDate は巻き戻さない。
+					const threshold = new Date(Date.now() - USER_ONLINE_THRESHOLD);
+					void Users.update(
+						{ id: user.id, lastActiveDate: LessThan(threshold) },
+						{ lastActiveDate: threshold },
+					).catch(() => {});
 			  }, 1000 * 60 * 2.5)
 			: null;
 		if (user) {

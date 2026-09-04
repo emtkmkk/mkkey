@@ -239,6 +239,24 @@ function initLightbox(): void {
 			pswpModule: PhotoSwipe,
 		});
 
+		// Safari は decode() 完了まで本画像を DOM に追加しない（appendImage が遅れる）一方、
+		// PhotoSwipe は load 完了の 1 秒後にプレースホルダを破棄する。
+		// iOS 実機写真の原寸など巨大な画像はデコードが 1 秒を超えるため、
+		// その間だけ何も表示されない。本画像が DOM に入るまでは破棄しない。
+		// （isDecoding を見るだけでは、開くアニメーション中に load が終わって
+		//   decode 開始前にタイマーが走るケースを取りこぼす）
+		lightbox.addFilter(
+			"isKeepingPlaceholder",
+			(keep, content) => keep || content.element?.parentNode == null,
+		);
+
+		// 既定では 1 枚目のスライドしかサムネイルをプレースホルダに使わず、
+		// スワイプした先が同じく空白になるため、全スライドで msrc を使う。
+		lightbox.addFilter(
+			"placeholderSrc",
+			(placeholderSrc, content) => placeholderSrc || content.data.msrc || false,
+		);
+
 		lightbox.on("itemData", (ev) => {
 			try {
 				const { itemData } = ev;

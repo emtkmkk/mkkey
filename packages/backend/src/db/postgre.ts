@@ -89,6 +89,7 @@ import { Webhook } from "@/models/entities/webhook.js";
 import { UserIp } from "@/models/entities/user-ip.js";
 import { NoteEdit } from "@/models/entities/note-edit.js";
 import { UserMemo } from "@/models/entities/user-memo.js";
+import { UserSupport } from "@/models/entities/user-support.js";
 import { PasskeyLoginChallenge } from "@/models/entities/passkey-login-challenge.js";
 import { EmojiImportRequest } from "@/models/entities/emoji-import-request.js";
 import { EmojiImportDenied } from "@/models/entities/emoji-import-denied.js";
@@ -156,6 +157,7 @@ export const entities = [
 	UserNotePining,
 	UserSecurityKey,
 	UserMemo,
+	UserSupport,
 	UsedUsername,
 	AttestationChallenge,
 	PasskeyLoginChallenge,

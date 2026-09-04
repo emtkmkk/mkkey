@@ -20,6 +20,7 @@ import type { Promiseable } from "@/prelude/await-all.js";
 import { awaitAll } from "@/prelude/await-all.js";
 import { populateEmojis } from "@/misc/populate-emojis.js";
 import { buildAnniversaryBadge } from "@/misc/anniversary-badge.js";
+import { isMonthlySupporter } from "@/misc/support-month.js";
 import {
 	decodeMuteScope,
 	hasMuteScope,
@@ -31,6 +32,8 @@ import {
 	MB,
 	DEFAULT_DRIVE_SIZE,
 	MAX_DRIVE_SIZE,
+	EMOJI_DRIVE_GRANT_MB,
+	MAX_EMOJI_DRIVE_GRANTS,
 	USER_ACTIVE_THRESHOLD,
 	USER_ACTIVE2_THRESHOLD,
 	USER_HALFONLINE_THRESHOLD,
@@ -1102,6 +1105,10 @@ export const UserRepository = db.getRepository(User).extend({
 				? undefined
 				: (user.driveCapacityOverrideMb ?? DEFAULT_DRIVE_SIZE / MB) >
 				  DEFAULT_DRIVE_SIZE / MB,
+			// 「今月の支援者か」。lastSupportedMonth は admin/grant-support が更新する。
+			monthlySupporter: user.host
+				? undefined
+				: isMonthlySupporter(user.lastSupportedMonth),
 			badgeRoles:
 				user.host == null
 					? roles.map((x) => ({
@@ -1258,6 +1265,16 @@ export const UserRepository = db.getRepository(User).extend({
 
 			...(opts.detail && isMe
 				? {
+						// 自作絵文字ボーナスの残り回数。本人にだけ見せる。
+						emojiDriveGrant: {
+							used: user.emojiDriveGrantCount,
+							max: MAX_EMOJI_DRIVE_GRANTS,
+							remaining: Math.max(
+								0,
+								MAX_EMOJI_DRIVE_GRANTS - user.emojiDriveGrantCount,
+							),
+							grantMb: EMOJI_DRIVE_GRANT_MB,
+						},
 						hideMutedAndBlockedUserReactions:
 							profile!.hideMutedAndBlockedUserReactions,
 						...(profile!.showWarnedUsersInPublicTimeline

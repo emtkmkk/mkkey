@@ -23,6 +23,11 @@ export const GB = 1024 * MB;
 export const DEFAULT_DRIVE_SIZE = 5 * GB;
 export const MAX_DRIVE_SIZE = 100 * GB;
 
+/** 自作絵文字1件あたりに付与するドライブ容量（MB）。 */
+export const EMOJI_DRIVE_GRANT_MB = 1500;
+/** 自作絵文字による付与の上限回数。 */
+export const MAX_EMOJI_DRIVE_GRANTS = 5;
+
 export const SECOND = 1000;
 /** 1秒のミリ秒（SEC は SECOND の別名） */
 export const SEC = 1000;

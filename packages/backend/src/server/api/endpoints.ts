@@ -412,6 +412,10 @@ import * as ep___users_updateMemo from "./endpoints/users/update-memo.js";
 import * as ep___users_emoji_stats from "./endpoints/users/emoji-stats.js";
 import * as ep___fetchRss from "./endpoints/fetch-rss.js";
 import * as ep___admin_driveCapOverride from "./endpoints/admin/drive-capacity-override.js";
+import * as ep___admin_grantSupport from "./endpoints/admin/grant-support.js";
+import * as ep___admin_showSupports from "./endpoints/admin/show-supports.js";
+import * as ep___admin_grantEmojiBonus from "./endpoints/admin/grant-emoji-bonus.js";
+import * as ep___admin_setEmojiGrantCount from "./endpoints/admin/set-emoji-grant-count.js";
 
 // アカウント移行・known-as 用
 import * as ep___i_move from "./endpoints/i/move.js";
@@ -816,6 +820,10 @@ const eps = [
 	["users/update-memo", ep___users_updateMemo],
 	["users/emoji-stats", ep___users_emoji_stats],
 	["admin/drive-capacity-override", ep___admin_driveCapOverride],
+	["admin/grant-support", ep___admin_grantSupport],
+	["admin/show-supports", ep___admin_showSupports],
+	["admin/grant-emoji-bonus", ep___admin_grantEmojiBonus],
+	["admin/set-emoji-grant-count", ep___admin_setEmojiGrantCount],
 	["health/live", ep___health_live],
 	["health/db", ep___health_db],
 	["health/redis", ep___health_redis],

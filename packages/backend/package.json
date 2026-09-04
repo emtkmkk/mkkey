@@ -15,7 +15,8 @@
 		"typecheck": "pnpm tsc --noEmit",
 		"audit:endpoint-kinds": "node ./scripts/audit-endpoint-kinds.mjs",
 		"mocha": "cross-env NODE_ENV=test TS_NODE_FILES=true TS_NODE_TRANSPILE_ONLY=true TS_NODE_PROJECT=\"./test/tsconfig.json\" mocha",
-		"test": "pnpm run mocha"
+		"test": "pnpm run mocha",
+		"backfill:emoji-grant-count": "node ./scripts/backfill-emoji-grant-count.mjs"
 	},
 	"resolutions": {
 		"chokidar": "^3.3.1"

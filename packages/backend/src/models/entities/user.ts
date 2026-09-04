@@ -376,6 +376,34 @@ export class User {
 	})
 	public driveCapacityOverrideMb: number | null;
 
+	/**
+	 * 最後に支援を受けた月（`YYYY-MM`）。
+	 *
+	 * @remarks
+	 * - 「今月の支援者か」の判定に使う。`user_support` の最新行と同じ値を非正規化したもの。
+	 * - user のパックは頻繁に走るため、履歴テーブルを引かずに済むようここに持たせている。
+	 */
+	@Index()
+	@Column('varchar', {
+		length: 7,
+		nullable: true,
+		comment: 'The last month (YYYY-MM) the user was a supporter.',
+	})
+	public lastSupportedMonth: string | null;
+
+	/**
+	 * 自作絵文字によるドライブ容量付与を適用した回数。
+	 *
+	 * @remarks
+	 * - 1回あたり `EMOJI_DRIVE_GRANT_MB`、`MAX_EMOJI_DRIVE_GRANTS` 回まで。
+	 * - 残り回数は本人向けのパック結果に載る。
+	 */
+	@Column('integer', {
+		default: 0,
+		comment: 'How many times the self-made-emoji drive bonus has been granted.',
+	})
+	public emojiDriveGrantCount: number;
+
 	@Column('varchar', {
 		length: 10,
 		nullable: true

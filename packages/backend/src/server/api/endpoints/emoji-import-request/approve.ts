@@ -26,6 +26,7 @@ export const meta = {
 	tags: ["emoji-import-request", "admin"],
 	requireCredential: true,
 	requireModerator: true,
+	kind: "write:admin:emoji",
 	errors: {
 		noSuchRequest: {
 			message: "その申請は存在しません。",

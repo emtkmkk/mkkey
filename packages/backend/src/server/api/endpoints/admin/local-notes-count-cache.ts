@@ -7,6 +7,7 @@ import {
 export const meta = {
 	requireCredential: true,
 	requireModerator: true,
+	kind: "write:admin:maintenance",
 
 	tags: ["admin", "meta"],
 

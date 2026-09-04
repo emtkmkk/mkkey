@@ -8,6 +8,7 @@ export const meta = {
 
 	requireCredential: true,
 	requireModerator: true,
+	kind: "write:admin:promo",
 
 	errors: {
 		noSuchNote: {

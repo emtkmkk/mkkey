@@ -12,6 +12,7 @@ export const meta = {
 	tags: ["admin"],
 	requireCredential: true,
 	requireAdmin: true,
+	kind: "write:admin:meta",
 	description: "Web Push 用の VAPID 鍵ペアを新規生成する（管理画面から設定にコピーする用途）。",
 } as const;
 

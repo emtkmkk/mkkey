@@ -7,6 +7,7 @@ export const meta = {
 
 	requireCredential: true,
 	requireModerator: true,
+	kind: "write:admin:delete-all-files-of-a-user",
 } as const;
 
 export const paramDef = {

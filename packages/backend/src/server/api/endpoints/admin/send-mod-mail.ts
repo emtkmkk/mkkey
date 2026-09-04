@@ -10,6 +10,7 @@ export const meta = {
 
 	requireCredential: true,
 	requireModerator: true,
+	kind: "write:admin:send-email",
 
 	description: "モデレーション通知（モデメール）を送信します。",
 

@@ -20,6 +20,7 @@ export const meta = {
 	tags: ["notes"],
 
 	requireCredential: true,
+	kind: "read:account",
 
 	description:
 		"リモート投稿の参照一覧を取得する。初回は origin へ署名付き取得し、以降は閲覧者別キャッシュを使う。",

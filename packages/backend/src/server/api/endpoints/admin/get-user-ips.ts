@@ -6,6 +6,7 @@ export const meta = {
 
 	requireCredential: true,
 	requireAdmin: true,
+	kind: "read:admin:user-ips",
 } as const;
 
 export const paramDef = {

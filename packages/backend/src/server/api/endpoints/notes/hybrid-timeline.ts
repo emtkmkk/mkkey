@@ -34,6 +34,7 @@ export const meta = {
 	tags: ["notes"],
 	// フォロー先を含むタイムラインなので、ログイン必須（未指定だと未ログイン時に user が null になる）
 	requireCredential: true,
+	kind: "read:account",
 
 	description:
 		"ハイブリッドタイムラインを取得する。フォロー先の投稿とグローバルの投稿を混在させた時系列で返す。sinceId/untilId/limit でページネーション可能。",

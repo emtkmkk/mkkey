@@ -14,6 +14,7 @@ import define from "../../define.js";
 export const meta = {
 	requireCredential: true,
 	requireModerator: true,
+	kind: "read:admin:table-stats",
 
 	tags: ["admin"],
 

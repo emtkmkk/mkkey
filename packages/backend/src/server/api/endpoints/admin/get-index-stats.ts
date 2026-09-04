@@ -14,6 +14,7 @@ import { db } from "@/db/postgre.js";
 export const meta = {
 	requireCredential: true,
 	requireModerator: true,
+	kind: "read:admin:index-stats",
 
 	tags: ["admin"],
 } as const;

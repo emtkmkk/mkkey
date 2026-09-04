@@ -15,6 +15,7 @@ import { getPerformanceIncidentPrompt } from "@/services/performance/ai-analysis
 export const meta = {
 	requireCredential: true,
 	requireModerator: true,
+	kind: "read:admin:performance",
 
 	tags: ["admin"],
 

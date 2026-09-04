@@ -7,6 +7,7 @@ export const meta = {
 
 	requireCredential: true,
 	requireAdmin: true,
+	kind: "read:federation",
 	requireCredentialPrivateMode: true,
 
 	res: {

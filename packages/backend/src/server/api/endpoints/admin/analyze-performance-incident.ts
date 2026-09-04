@@ -15,6 +15,7 @@ import { analyzePerformanceIncident } from "@/services/performance/ai-analysis.j
 export const meta = {
 	requireCredential: true,
 	requireModerator: true,
+	kind: "write:admin:performance",
 
 	tags: ["admin"],
 

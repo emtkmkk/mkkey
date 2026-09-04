@@ -26,6 +26,7 @@ export const meta = {
 
 	requireCredential: true,
 	requireModerator: true,
+	kind: "write:admin:invite-codes",
 
 	res: {
 		type: "object",

@@ -11,6 +11,7 @@ export const meta = {
 
 	requireCredential: true,
 	requireModerator: true,
+	kind: "write:admin:support",
 
 	description:
 		"月ごとの支援をまとめて反映する。ドライブ容量を加算し、その月の支援実績を記録する。",

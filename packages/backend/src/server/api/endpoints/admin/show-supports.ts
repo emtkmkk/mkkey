@@ -7,6 +7,7 @@ export const meta = {
 
 	requireCredential: true,
 	requireModerator: true,
+	kind: "read:admin:support",
 
 	description:
 		"支援実績を取得する。month を指定するとその月の一覧、username を指定するとそのユーザーの履歴。",

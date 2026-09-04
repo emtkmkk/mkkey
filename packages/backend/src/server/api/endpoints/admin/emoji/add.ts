@@ -27,6 +27,7 @@ export const meta = {
 
 	requireCredential: true,
 	requireModerator: true,
+	kind: "write:admin:emoji",
 
 	errors: {
 		noSuchFile: {

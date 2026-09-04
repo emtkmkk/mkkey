@@ -10,6 +10,7 @@ export const meta = {
 
 	requireCredential: true,
 	requireModerator: true,
+	kind: "write:admin:support",
 
 	description:
 		"自作絵文字ボーナスの適用回数を直接設定する。ドライブ容量は変更しない。過去分の取り込みと訂正用。",

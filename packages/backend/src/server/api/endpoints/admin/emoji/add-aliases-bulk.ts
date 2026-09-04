@@ -11,6 +11,7 @@ export const meta = {
 
 	requireCredential: true,
 	requireModerator: true,
+	kind: "write:admin:emoji",
 } as const;
 
 export const paramDef = {

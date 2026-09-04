@@ -7,6 +7,7 @@ export const meta = {
 
 	requireCredential: false,
 	requireModerator: true,
+	kind: "write:admin:drive",
 
 	res: {
 		type: "array",

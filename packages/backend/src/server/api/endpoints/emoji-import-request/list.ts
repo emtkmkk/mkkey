@@ -10,6 +10,7 @@ export const meta = {
 	tags: ["emoji-import-request", "admin"],
 	requireCredential: true,
 	requireModerator: true,
+	kind: "read:admin:emoji",
 	res: {
 		type: "object",
 		optional: false,

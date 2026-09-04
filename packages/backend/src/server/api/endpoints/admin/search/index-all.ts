@@ -6,6 +6,7 @@ export const meta = {
 
 	requireCredential: true,
 	requireModerator: true,
+	kind: "write:admin:maintenance",
 } as const;
 
 export const paramDef = {

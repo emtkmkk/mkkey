@@ -10,6 +10,7 @@ export const meta = {
 	tags: ["admin"],
 
 	requireCredential: true,
+	kind: "write:admin:invite-codes",
 	requireModerator: false,
 
 	res: {

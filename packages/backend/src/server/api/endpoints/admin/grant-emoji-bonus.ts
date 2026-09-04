@@ -16,6 +16,7 @@ export const meta = {
 
 	requireCredential: true,
 	requireModerator: true,
+	kind: "write:admin:support",
 
 	description:
 		"自作絵文字ボーナスを1回分適用する。ドライブ容量を加算し、適用回数を1つ進める。",

@@ -57,6 +57,7 @@
 						:text="user.description"
 						:author="user"
 						:i="$i"
+						:is-note="false"
 						:custom-emojis="user.emojis"
 					/>
 				</div>
@@ -83,6 +84,7 @@
 								:text="field.value"
 								:author="user"
 								:i="$i"
+								:is-note="false"
 								:custom-emojis="user.emojis"
 								:colored="false"
 							/>

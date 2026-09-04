@@ -2051,6 +2051,8 @@ _permissions:
   write:gallery-likes: "Edit your list of liked gallery posts"
   write:report-abuse: "Report users for abuse"
   read:federation: "View federation information"
+  read:categories: "View emoji categories"
+  write:categories: "Manage emoji categories"
   read:admin:abuse-user-reports: "View abuse reports"
   read:admin:ad: "View ads"
   read:admin:announcements: "View announcements"

@@ -109,6 +109,50 @@ const knownKinds = new Set(
 	].map((m) => m[1]),
 );
 
+/**
+ * スコープ一覧は4箇所に重複している。どれか1つでもズレると
+ * 「エンドポイントは要求するのにトークンに付与できない」「トークン発行画面に
+ * 選択肢が出ない」「権限名が翻訳されない」といった形で壊れるため、突き合わせる。
+ *
+ * @returns {string[]} 不整合の説明。空なら一致。
+ */
+function checkPermissionSourcesInSync() {
+	const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "../../..");
+	const problems = [];
+
+	// クライアントのトークン発行画面はこちらを読む
+	const constsPath = join(repoRoot, "packages/calckey-js/src/consts.ts");
+	const consts = readFileSync(constsPath, "utf8");
+	const start = consts.indexOf("export const permissions = [");
+	const end = consts.indexOf("];", start);
+	const jsKinds =
+		start < 0 || end < 0
+			? []
+			: [...consts.slice(start, end).matchAll(/"([^"]+)"/g)].map((m) => m[1]);
+
+	for (const k of knownKinds) {
+		if (!jsKinds.includes(k)) problems.push(`calckey-js/src/consts.ts に無い: ${k}`);
+	}
+	for (const k of jsKinds) {
+		if (!knownKinds.has(k)) problems.push(`api-permissions.ts に無い: ${k}`);
+	}
+
+	// 権限名の翻訳
+	for (const locale of ["ja-JP", "en-US"]) {
+		const yml = readFileSync(join(repoRoot, `locales/${locale}.yml`), "utf8");
+		const section = yml.slice(yml.indexOf("\n_permissions:"));
+		const body = section.slice(0, section.indexOf("\n_", 1));
+		for (const k of knownKinds) {
+			// `"key":` と `key:` の両方の書き方がある
+			if (!body.includes(`"${k}":`) && !body.includes(`\n  ${k}:`)) {
+				problems.push(`locales/${locale}.yml の _permissions に無い: ${k}`);
+			}
+		}
+	}
+
+	return problems;
+}
+
 /** @type {string[]} */
 const violations = [];
 /** 権限一覧に存在しない kind を指しているエンドポイント。付与不能なので必ず 403 になる。 */
@@ -152,8 +196,17 @@ if (unknownKinds.length > 0) {
 	}
 }
 
+const outOfSync = checkPermissionSourcesInSync();
+if (outOfSync.length > 0) {
+	failed = true;
+	console.error("スコープ一覧が同期していません:");
+	for (const line of outOfSync.sort()) {
+		console.error(`  - ${line}`);
+	}
+}
+
 if (failed) process.exit(1);
 
 console.log(
-	"audit-endpoint-kinds: OK（対象エンドポイントはすべて meta.kind が設定済み、かつ全 kind が api-permissions.ts に存在）",
+	"audit-endpoint-kinds: OK（全 kind が設定済み・api-permissions.ts に存在・calckey-js とロケールも同期）",
 );

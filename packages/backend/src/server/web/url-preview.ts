@@ -512,9 +512,9 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
 	const steamBundleId = isSteamBundleUrl(effectiveUrl);
   const VRCWorldId = isVRCUrl(effectiveUrl);
   let amazonFetchUrl = effectiveUrl;
-  let amazonProduct = isAmazonProductUrl(effectiveUrl);
+  let resolvedAmazonProduct = isAmazonProductUrl(effectiveUrl);
 
-  if (!amazonProduct) {
+  if (!resolvedAmazonProduct) {
     try {
       const resolvedAmazonUrl = await withUrlPreviewSpecialInflight(
         buildUrlPreviewSpecialInflightKey(["amazon-short-resolve", effectiveUrl]),
@@ -522,7 +522,7 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
       );
       if (resolvedAmazonUrl) {
         amazonFetchUrl = resolvedAmazonUrl;
-        amazonProduct = isAmazonProductUrl(amazonFetchUrl);
+        resolvedAmazonProduct = isAmazonProductUrl(amazonFetchUrl);
         // NOTE: Amazon 専用カードが失敗して Summaly フォールバックに回ったときに、
         //       短縮 URL のまま Summaly へ流すと Amazon 本体のリダイレクトを通った先での
         //       Content-Type / anti-bot 応答により `CancelError: Promise was canceled` を
@@ -545,6 +545,9 @@ export const urlPreviewHandler = async (ctx: Koa.Context) => {
       logger.warn(`Amazon short URL resolution failed unexpectedly for ${effectiveUrl}: ${err}`);
     }
   }
+
+  // 以降は再代入しないため const に確定させる（コールバック内で null 絞り込みが効くようにするため）
+  const amazonProduct = resolvedAmazonProduct;
 
   // Summaly が扱いやすい URL（例: music.youtube.com → www.youtube.com、ハッシュ除去）
   // NOTE: Amazon 短縮 URL の解決後 URL を拾うため、Amazon 専用解決ブロックの後で確定させる。

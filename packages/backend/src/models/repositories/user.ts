@@ -933,11 +933,13 @@ export const UserRepository = db.getRepository(User).extend({
 				  }
 				: undefined;
 
+		// 未設定（null）は 0 として扱い、どのバッジにも当てはまらないようにする
+		const driveCapacityMb = user.driveCapacityOverrideMb ?? 0;
 		const donateBadges =
-			user.driveCapacityOverrideMb > DEFAULT_DRIVE_SIZE / MB
-				? user.driveCapacityOverrideMb >= DEFAULT_DRIVE_SIZE / MB + 15000
-					? user.driveCapacityOverrideMb >= MAX_DRIVE_SIZE / 2 / MB
-						? user.driveCapacityOverrideMb >= MAX_DRIVE_SIZE / MB
+			driveCapacityMb > DEFAULT_DRIVE_SIZE / MB
+				? driveCapacityMb >= DEFAULT_DRIVE_SIZE / MB + 15000
+					? driveCapacityMb >= MAX_DRIVE_SIZE / 2 / MB
+						? driveCapacityMb >= MAX_DRIVE_SIZE / MB
 							? {
 									id: "3000000014",
 									key: "mkb4",
@@ -990,7 +992,10 @@ export const UserRepository = db.getRepository(User).extend({
 					profile?.showDonateBadges ? donateBadges : undefined,
 					harborBadges,
 					rankBadges,
-			  ].filter((x) => x !== undefined && (opts.detail || x.showBadgeNote))
+			  ].filter(
+					(x): x is NonNullable<typeof x> =>
+						x !== undefined && (opts.detail || x.showBadgeNote),
+			  )
 			: rankBadges
 			? [rankBadges]
 			: undefined;

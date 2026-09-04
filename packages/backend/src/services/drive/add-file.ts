@@ -609,8 +609,8 @@ export async function addFile({
 	const detectedName =
 		name ||
 		(info.type.ext
-			? `${user.username}${
-					user.host ? `-${user.host.replaceAll(/\W+/, "_")}` : ""
+			? `${user?.username ?? "untitled"}${
+					user?.host ? `-${user.host.replaceAll(/\W+/, "_")}` : ""
 			  }-${uuid()}.${info.type.ext}`
 			: "untitled");
 

@@ -742,13 +742,16 @@ export async function extractEmojis(
 				beforeD7Date.setDate(beforeD7Date.getDate() - 7);
 				if (
 					!exists ||
-					(exists.updatedAt || exists.createdAt) < beforeD7Date
+					// 日時が両方とも無い場合は「古い」とみなして取得しに行く
+					(exists.updatedAt || exists.createdAt || new Date(0)) <
+						beforeD7Date
 				) {
 					emojiInfoFlg = true;
 
 					const instance = await Instances.findOneBy({ host: host });
 
-					if (instance.maxReactionsPerAccount !== 128) {
+					// 未知のインスタンス（レコードが無い）の場合は Misskey 系として扱う
+					if (instance?.maxReactionsPerAccount !== 128) {
 						const apiurl = `https://${host}/api/emoji?name=${name}`;
 
 						try {
@@ -764,8 +767,13 @@ export async function extractEmojis(
 						const apiurl = `https://${host}/api/v1/pleroma/emoji`;
 
 						try {
+							// Pleroma 系の /api/v1/pleroma/emoji は「絵文字名 → 情報」の形で返る
 							const emojiJson = (
-								await getJson(apiurl, "application/json, */*", 5000)
+								(await getJson(
+									apiurl,
+									"application/json, */*",
+									5000,
+								)) as Record<string, { tags: string[] }>
 							)[name];
 
 							const pack = emojiJson.tags
@@ -773,11 +781,21 @@ export async function extractEmojis(
 								?.replace("pack:", "");
 							if (pack) {
 								const apiurl = `https://${host}/api/v1/pleroma/emoji/pack?name=${pack}`;
-								const packJson = await getJson(
+								const packJson = (await getJson(
 									apiurl,
 									"application/json, */*",
 									5000,
-								);
+								)) as {
+									pack: {
+										"can-download"?: boolean;
+										"share-flies"?: boolean;
+										license?: string;
+										description?: string;
+										homepage?: string;
+										"fallback-src"?: string;
+									};
+									files_count?: number;
+								};
 								licenseData.copyPermission = licenseData.copyPermission
 									? licenseData.copyPermission
 									: packJson.pack["can-download"] &&

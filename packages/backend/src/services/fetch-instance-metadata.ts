@@ -245,7 +245,11 @@ async function fetchNodeinfo(instance: Instance): Promise<NodeInfo> {
 
 		return info as NodeInfo;
 	} catch (e) {
-		logger.error(`Failed to fetch nodeinfo of ${instance.host}: ${e.message}`);
+		logger.error(
+			`Failed to fetch nodeinfo of ${instance.host}: ${
+				e instanceof Error ? e.message : e
+			}`,
+		);
 
 		throw e;
 	}

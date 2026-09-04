@@ -1776,12 +1776,16 @@ export function genOpenapiSpec() {
 		const schema = endpoint.params;
 
 		if (endpoint.meta.requireFile) {
-			schema.properties.file = {
-				type: "string",
-				format: "binary",
-				description: "ファイル内容。",
-			};
-			schema.required.push("file");
+			if (schema.properties != null) {
+				schema.properties.file = {
+					type: "string",
+					format: "binary",
+					description: "ファイル内容。",
+				};
+			}
+			if (schema.required != null) {
+				schema.required.push("file");
+			}
 		}
 
 		const security = [

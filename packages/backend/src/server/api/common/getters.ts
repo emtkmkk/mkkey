@@ -18,16 +18,31 @@ import { generateVisibilityQuery } from "./generate-visibility-query.js";
 /**
  * API 処理用にノートを取得する。可視性を考慮する。
  *
+ * @remarks
+ * `showInvisible` が false（既定）のときは、見つからなければ例外を投げるので必ずノートが返る。
+ * true のときだけ null が返りうるため、戻り値の型をオーバーロードで分けている。
+ *
  * @param noteId - ノート ID
  * @param me - 自分（null の場合は未ログイン）
  * @param showInvisible - 非表示ノートも返すか
  * @returns ノート
+ * @throws IdentifiableError `showInvisible` が false で、ノートが見つからない場合
  */
 export async function getNote(
 	noteId: Note["id"],
 	me: { id: User["id"] } | null,
+	showInvisible?: false,
+): Promise<Note>;
+export async function getNote(
+	noteId: Note["id"],
+	me: { id: User["id"] } | null,
+	showInvisible: boolean,
+): Promise<Note | null>;
+export async function getNote(
+	noteId: Note["id"],
+	me: { id: User["id"] } | null,
 	showInvisible = false,
-) {
+): Promise<Note | null> {
 	const query = Notes.createQueryBuilder("note").where("note.id = :id", {
 		id: noteId,
 	});

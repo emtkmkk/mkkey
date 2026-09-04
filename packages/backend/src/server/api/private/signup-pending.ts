@@ -4,7 +4,8 @@ import { signup } from "../common/signup.js";
 import signin from "../common/signin.js";
 
 export default async (ctx: Koa.Context) => {
-	const body = ctx.request.body;
+	// koa の型では body が unknown のため、フォーム値として扱えるようにする
+	const body = ctx.request.body as Record<string, string>;
 
 	const code = body["code"];
 

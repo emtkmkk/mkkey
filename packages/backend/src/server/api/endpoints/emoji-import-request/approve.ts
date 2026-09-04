@@ -140,7 +140,7 @@ export default define(meta, paramDef, async (ps, me) => {
 	const finalName = newName
 		? newName
 		: emojiSearchName
-		? `${emoji.name}_${emoji.host.replaceAll(/[^\w]/gi, "_")}`
+		? `${emoji.name}_${request.emojiHost.replaceAll(/[^\w]/gi, "_")}`
 		: emoji.name;
 
 	const existingWithFinalName = await Emojis.findOneBy({

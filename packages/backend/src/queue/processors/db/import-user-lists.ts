@@ -127,13 +127,14 @@ export async function importUserLists(
 		try {
 			let list = listByName.get(row.listName);
 			if (list == null) {
-				list = await UserLists.insert({
+				const created: UserList = await UserLists.insert({
 					id: genId(),
 					createdAt: new Date(),
 					userId: user.id,
 					name: row.listName,
 				}).then((x) => UserLists.findOneByOrFail(x.identifiers[0]));
-				listByName.set(row.listName, list);
+				listByName.set(row.listName, created);
+				list = created;
 			}
 
 			const key = userMapKey(row.username, row.host);

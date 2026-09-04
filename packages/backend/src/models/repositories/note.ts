@@ -276,7 +276,7 @@ function isUsableNotePackedUserProfile(user: Packed<"User">): boolean {
  * @internal
  */
 async function getFixedPackedUserForNote(
-	src: Note["user"] | User["id"],
+	src: NonNullable<Note["user"]> | User["id"],
 ): Promise<Packed<"User">> {
 	const userId = typeof src === "object" ? src.id : src;
 	const localCached = notePackUserProfileCache.get(userId);
@@ -329,7 +329,7 @@ async function getFixedPackedUserForNote(
  * @internal
  */
 async function packNoteUser(
-	src: Note["user"] | User["id"],
+	src: NonNullable<Note["user"]> | User["id"],
 	me?: { id: User["id"] } | null,
 	hint?: PackNoteUserHint,
 ): Promise<Packed<"User">> {

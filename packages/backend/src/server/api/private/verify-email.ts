@@ -3,7 +3,8 @@ import { Users, UserProfiles } from "@/models/index.js";
 import { publishMainStream } from "@/services/stream.js";
 
 export default async (ctx: Koa.Context) => {
-	const body = ctx.request.body;
+	// koa の型では body が unknown のため、フォーム値として扱えるようにする
+	const body = ctx.request.body as Record<string, string>;
 
 	const code = body["code"];
 

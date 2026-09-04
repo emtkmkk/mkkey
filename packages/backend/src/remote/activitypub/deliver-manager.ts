@@ -232,7 +232,9 @@ export default class DeliverManager {
 				this.recipes.filter(
 					(r) => isFollowers(r) && r.union && Users.isLocalUser(r.union),
 				) as IFollowersRecipe[]
-			).map((r) => r.union);
+			)
+				.map((r) => r.union)
+				.filter((u): u is NonNullable<typeof u> => u != null);
 			const batchedInboxes = await collectRemoteFollowerInboxesByActorIds(
 				[this.actor.id],
 				union.length > 0

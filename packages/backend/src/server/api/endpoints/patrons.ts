@@ -117,7 +117,7 @@ export default define(meta, paramDef, async (ps) => {
       }
 
       const commitsData = await commitsResponse.json() as CommitData[];
-      const statsData = await statsResponse.json();
+      const statsData = await statsResponse.json() as {author: {login: string}; total: number}[];
       const participationData = await participationResponse.json() as {owner: number[]};
 
       const latestCommit = commitsData[0];

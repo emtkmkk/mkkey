@@ -5,7 +5,8 @@ import type { User } from "@/models/entities/user.js";
 import { Notes, DriveFiles, UserProfiles, Users } from "@/models/index.js";
 
 export default async function (user: User) {
-	const username = user.name.replace(/ ?:.*?:/, "") || user.username;
+	// 表示名が未設定のユーザーもいるため、無い場合はユーザー名を使う
+	const username = user.name?.replace(/ ?:.*?:/, "") || user.username;
 
 	const author = {
 		link: `${config.url}/@${user.username}`,

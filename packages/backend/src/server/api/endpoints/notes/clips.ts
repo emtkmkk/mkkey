@@ -50,6 +50,11 @@ export default define(meta, paramDef, async (ps, me) => {
 		throw err;
 	});
 
+	// showInvisible: true のときは例外ではなく null が返る
+	if (note == null) {
+		throw new ApiError(meta.errors.noSuchNote);
+	}
+
 	const clipNotes = await ClipNotes.findBy({
 		noteId: note.id,
 	});

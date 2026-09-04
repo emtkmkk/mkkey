@@ -29,7 +29,8 @@ export const renderLike = async (noteReaction: NoteReaction, note: Note) => {
 			: {}),
 	} as any;
 
-	if (reaction.startsWith(":")) {
+	// カスタム絵文字の形（:name: / :name@host:）に一致したときだけ tag を付ける
+	if (custom) {
 		const name = custom[1];
 		const host = custom[2] == "." ? IsNull() : custom[2] || IsNull();
 		const emoji = await Emojis.findOneBy({

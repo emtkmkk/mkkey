@@ -605,6 +605,11 @@ export default define(meta, paramDef, async (ps, me) => {
 
                 return packed;
         } else {
+                // ここに来るのは Elasticsearch が設定されている場合のみ（上の分岐で es も sonic も無い場合を処理済み）
+                if (es == null) {
+                	throw new Error("search: elasticsearch client is not available");
+                }
+
                 const must: any[] = [
                         {
                                 simple_query_string: {

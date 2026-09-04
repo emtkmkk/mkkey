@@ -74,7 +74,7 @@ export default class Logger {
 		}
 
 		const time = dateFormat(new Date(), "HH:mm:ss");
-		const worker = cluster.isPrimary ? "*" : cluster.worker.id;
+		const worker = cluster.isPrimary ? "*" : cluster.worker?.id ?? "?";
 		const l =
 			level === "error"
 				? important

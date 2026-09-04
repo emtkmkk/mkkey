@@ -77,6 +77,11 @@ export default define(meta, paramDef, async (ps, me) => {
 		throw new ApiError(meta.errors.noSuchEmoji);
 	}
 
+	// リモート絵文字を取り込むための API なので、ローカル絵文字は対象外
+	if (emoji.host == null) {
+		throw new ApiError(meta.errors.noSuchEmoji);
+	}
+
 	let driveFile: DriveFile;
 
 	try {

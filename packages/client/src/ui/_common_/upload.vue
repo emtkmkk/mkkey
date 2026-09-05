@@ -14,10 +14,18 @@
           </p>
           <p class="status">
             <span
-              v-if="ctx.progressValue === undefined"
+              v-if="ctx.phase === 'processing'"
+              class="phase"
+            >{{ serverStatusText(ctx) }}<MkEllipsis /></span>
+            <span
+              v-else-if="ctx.phase === 'compressing'"
+              class="phase"
+            >{{ i18n.ts.compressing }}<MkEllipsis /></span>
+            <span
+              v-else-if="ctx.progressValue === undefined"
               class="initing"
             >{{ i18n.ts.waiting }}<MkEllipsis /></span>
-            <span v-if="ctx.progressValue !== undefined" class="kb"
+            <span v-if="ctx.phase !== 'processing' && ctx.phase !== 'compressing' && ctx.progressValue !== undefined" class="kb"
             >{{
               String(Math.floor(ctx.progressValue / 1024))
                 .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")
@@ -26,13 +34,18 @@
               String(Math.floor(ctx.progressMax / 1024))
                 .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")
             }}<i>KB</i></span>
+            <!--
+              NOTE: 100.0% まで出す。以前は 100% のまま待たされるのを避けるため 99.9% で
+              頭打ちにしていたが、送信完了と同時にサーバ側の処理段階の表示へ切り替わるので、
+              100% で止まって見えることはない。
+            -->
             <span
-              v-if="ctx.progressValue !== undefined"
+              v-if="ctx.phase !== 'processing' && ctx.phase !== 'compressing' && ctx.progressValue !== undefined"
               class="percentage"
             >{{
               (
                 Math.floor(
-                  (ctx.progressValue / ctx.progressMax) * 999.9
+                  (ctx.progressValue / ctx.progressMax) * 1000
                 ) / 10
               ).toFixed(1)
             }}</span>
@@ -40,13 +53,11 @@
         </div>
         <progress
           v-if="ctx.progressValue !== undefined && ctx.progressMax !== undefined"
-          :value="ctx.progressValue || 0"
-          :max="ctx.progressMax || 0"
+          :value="barValue(ctx)"
+          :max="barMax(ctx)"
           :class="{
             initing: ctx.progressValue === undefined,
-            waiting:
-              ctx.progressValue !== undefined &&
-              ctx.progressValue === ctx.progressMax,
+            waiting: isIndeterminate(ctx),
           }"
         ></progress>
       </li>
@@ -64,7 +75,11 @@ const zIndex = os.claimZIndex("high");
 
 const queueDatas = ref(os.queueDatas.value);
 
+// サーバ処理待ちの経過秒を出すための現在時刻。updateQueueDatas と同じ間隔で更新する。
+const now = ref(Date.now());
+
 const updateQueueDatas = () => {
+  now.value = Date.now();
   queueDatas.value = os.queueDatas.value.filter((x) => {
     if (x.date instanceof Date) {
       return Date.now() - x.date.getTime() > 1950;
@@ -80,8 +95,66 @@ const queueDataUploads = computed(() => {
     progressValue: undefined,
     progressMax: undefined,
     img: null,
+    phase: undefined,
+    processingSince: null,
   }));
 });
+
+/**
+ * サーバ処理待ちに入ってからの経過時間。
+ * 進捗が止まって見える区間で、止まっているのか進んでいるのかを判別できるようにする。
+ */
+const elapsedText = (ctx: { processingSince?: number | null }) => {
+  if (!ctx.processingSince) return "";
+  const seconds = Math.floor((now.value - ctx.processingSince) / 1000);
+  return seconds > 0 ? "(" + seconds + "s)" : "";
+};
+
+/** サーバ側の処理段階のラベル。 */
+const stageLabels: Record<string, string> = {
+  analyzing: i18n.ts.driveProcessAnalyzing,
+  detecting: i18n.ts.driveProcessDetecting,
+  generating: i18n.ts.driveProcessGenerating,
+  storing: i18n.ts.driveProcessStoring,
+  saving: i18n.ts.driveProcessSaving,
+};
+
+/**
+ * 送信完了後に出す「サーバが今やっていること」の文言。
+ * 段階がまだ届いていない間は汎用の表記にフォールバックする。
+ */
+const serverStatusText = (ctx: {
+  stage?: string | null;
+  stageProgress?: number | null;
+  processingSince?: number | null;
+}) => {
+  const label = (ctx.stage && stageLabels[ctx.stage]) || i18n.ts.processing;
+  const progress = ctx.stageProgress != null ? ` ${ctx.stageProgress}%` : "";
+  const elapsed = elapsedText(ctx);
+  return `${label}${progress}${elapsed ? ` ${elapsed}` : ""}`;
+};
+
+/** サーバ処理中で段階進捗が取れないときは、進捗バーを不定表示にする。 */
+const isIndeterminate = (ctx: { phase?: string; stageProgress?: number | null }) =>
+  ctx.phase === "processing" && ctx.stageProgress == null;
+
+const barValue = (ctx: {
+  phase?: string;
+  stageProgress?: number | null;
+  progressValue?: number;
+}) =>
+  ctx.phase === "processing" && ctx.stageProgress != null
+    ? ctx.stageProgress
+    : ctx.progressValue || 0;
+
+const barMax = (ctx: {
+  phase?: string;
+  stageProgress?: number | null;
+  progressMax?: number;
+}) =>
+  ctx.phase === "processing" && ctx.stageProgress != null
+    ? 100
+    : ctx.progressMax || 0;
 
 const allUploads = computed(() => {
   return [...queueDataUploads.value, ...uploads.value];
@@ -224,5 +297,18 @@ onUnmounted(() => {
 }
 .mk-uploader > ol > li > progress::-webkit-progress-bar {
   background: transparent;
+}
+/* 送信完了後（サーバ処理待ち）は、固まっていないことが分かるように点滅させる */
+.mk-uploader > ol > li > progress.waiting::-webkit-progress-value {
+  animation: mk-uploader-pulse 1.2s ease-in-out infinite;
+}
+@keyframes mk-uploader-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
 }
 </style>

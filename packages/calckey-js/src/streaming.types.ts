@@ -27,6 +27,16 @@ export type Channels = {
 			meUpdated: (payload: MeDetailed) => void;
 			pageEvent: (payload: PageEvent) => void;
 			urlUploadFinished: (payload: { marker: string; file: DriveFile }) => void;
+			driveFileProgress: (payload: {
+				marker: string;
+				stage:
+					| "analyzing"
+					| "detecting"
+					| "generating"
+					| "storing"
+					| "saving";
+				progress: number | null;
+			}) => void;
 			readAllNotifications: () => void;
 			unreadNotification: (payload: Notification) => void;
 			unreadMention: (payload: Note["id"]) => void;

@@ -1,4 +1,5 @@
 import { reactive, ref } from "vue";
+import { v4 as uuid } from "uuid";
 import * as Misskey from "calckey-js";
 import * as os from "@/os";
 import { readAndCompressImage } from "@misskey-dev/browser-image-resizer";
@@ -8,14 +9,75 @@ import { applyMkkeyClientHeadersToXhr } from "@/scripts/mkkey-api-client-headers
 import { $i } from "@/account";
 import { alert } from "@/os";
 import { i18n } from "@/i18n";
+import { stream } from "@/stream";
 
-type Uploading = {
+/**
+ * アップロードの進行段階。
+ *
+ * - waiting: 読み込み・確認ダイアログなど、送信前の準備中
+ * - compressing: 画像の圧縮・リサイズ中
+ * - sending: リクエストボディを送信中（進捗率が出るのはここだけ）
+ * - processing: 送信完了。サーバ側の処理（ハッシュ計算・サムネイル生成・保存）待ち
+ */
+export type UploadPhase = "waiting" | "compressing" | "sending" | "processing";
+
+/**
+ * processing 中にサーバが行っている処理。main ストリームの driveFileProgress で受け取る。
+ * 詳細は backend の misc/drive-file-progress を参照。
+ */
+export type UploadServerStage =
+	| "analyzing"
+	| "detecting"
+	| "generating"
+	| "storing"
+	| "saving";
+
+export type Uploading = {
 	id: string;
 	name: string;
 	progressMax: number | undefined;
 	progressValue: number | undefined;
 	img: string;
+	/** 現在の処理段階。 */
+	phase: UploadPhase;
+	/** processing に入った時刻（経過時間の表示用）。 */
+	processingSince: number | null;
+	/** サーバ側の処理段階。未受信なら null。 */
+	stage: UploadServerStage | null;
+	/** 段階内の進捗（0-100）。算出できない段階では null。 */
+	stageProgress: number | null;
 };
+
+/**
+ * サーバ側の処理段階をストリームで購読し、ctx に反映する。
+ *
+ * @remarks
+ * ボディの送信が終わってからレスポンスが返るまでの間、クライアントからは進捗を
+ * 取得できない。その区間で「今サーバが何をしているか」を見せるために使う。
+ *
+ * @param marker - drive/files/create に渡した識別子
+ * @param ctx - 反映先
+ * @returns 購読を解除する関数
+ * @internal
+ */
+function watchServerProgress(marker: string, ctx: Uploading): () => void {
+	// NOTE: main チャンネルは要認証。未ログイン時は何もしない。
+	if ($i == null) return () => {};
+
+	const connection = stream.useChannel("main");
+
+	connection.on("driveFileProgress", (payload) => {
+		if (payload.marker !== marker) return;
+		// NOTE: サーバが動き始めている以上、送信は完了している。
+		// upload.onload を取りこぼした場合もここで processing に倒す。
+		ctx.phase = "processing";
+		if (ctx.processingSince == null) ctx.processingSince = Date.now();
+		ctx.stage = payload.stage;
+		ctx.stageProgress = payload.progress ?? null;
+	});
+
+	return () => connection.dispose();
+}
 
 export const uploads = ref<Uploading[]>([]);
 
@@ -64,9 +126,17 @@ export function uploadFile(
 		progressMax: undefined,
 		progressValue: undefined,
 		img: window.URL.createObjectURL(file),
+		phase: "waiting",
+		processingSince: null,
+		stage: null,
+		stageProgress: null,
 	});
 
 	uploads.value.push(ctx);
+
+	// サーバ側の処理段階を受け取るための識別子。送信完了後の表示に使う。
+	const marker = uuid();
+	let disposeProgressWatch: (() => void) | null = null;
 
 	return new Promise<Misskey.entities.DriveFile>((resolve, reject) => {
 		const reader = new FileReader();
@@ -133,6 +203,7 @@ export function uploadFile(
 					};
 
 					try {
+						ctx.phase = "compressing";
 						resizedImage = await readAndCompressImage(file, config);
 						ctx.name =
 							file.type !== imgConfig.mimeType
@@ -142,6 +213,8 @@ export function uploadFile(
 								: ctx.name;
 					} catch (err) {
 						console.error("Failed to resize image", err);
+					} finally {
+						ctx.phase = "waiting";
 					}
 				}
 
@@ -149,6 +222,7 @@ export function uploadFile(
                                 if (options?.force) {
                                         formData.append("force", "true");
                                 }
+				formData.append("marker", marker);
 				formData.append("file", resizedImage || file);
 				formData.append("name", ctx.name);
 				if (folder) formData.append("folderId", folder);
@@ -218,6 +292,13 @@ export function uploadFile(
 					}
 				};
 
+				// NOTE: ボディの送信完了。ここから先はサーバ側の処理待ちで、
+				// クライアントからは進捗を取得できない（進捗率が止まって見える区間）。
+				xhr.upload.onload = () => {
+					ctx.phase = "processing";
+					ctx.processingSince = Date.now();
+				};
+
 				xhr.onerror = () => {
 					alert({
 						type: "error",
@@ -227,6 +308,8 @@ export function uploadFile(
 					reject(new Error("Network error"));
 				};
 
+				ctx.phase = "sending";
+				disposeProgressWatch = watchServerProgress(marker, ctx);
 				xhr.send(formData);
 			} catch (error) {
 				reject(error);
@@ -235,8 +318,10 @@ export function uploadFile(
 		reader.onerror = () => reject(new Error("File reading failed"));
 		reader.readAsArrayBuffer(file);
 	}).finally(() => {
-		// NOTE: 中断・失敗を含めどの経路で終わっても、進行中一覧に残さない。
+		// NOTE: 中断・失敗を含めどの経路で終わっても、進行中一覧とストリーム購読を残さない。
 		// ここが残ると投稿フォームが「アップロード進行中」と誤認し続ける。
+		disposeProgressWatch?.();
+		disposeProgressWatch = null;
 		uploads.value = uploads.value.filter((x) => x.id !== id);
 		window.URL.revokeObjectURL(ctx.img);
 	});
@@ -276,11 +361,20 @@ export function uploadBlob(
 			progressMax: undefined,
 			progressValue: undefined,
 			img: window.URL.createObjectURL(blob),
+			phase: "sending",
+			processingSince: null,
+			stage: null,
+			stageProgress: null,
 		});
 
 		uploads.value.push(ctx);
 
+		// サーバ側の処理段階を受け取るための識別子。送信完了後の表示に使う。
+		const marker = uuid();
+		const disposeProgressWatch = watchServerProgress(marker, ctx);
+
 		const finish = () => {
+			disposeProgressWatch();
 			uploads.value = uploads.value.filter((x) => x.id !== id);
 			window.URL.revokeObjectURL(ctx.img);
 		};
@@ -288,6 +382,7 @@ export function uploadBlob(
 		const formData = new FormData();
 		formData.append("file", blob, name);
 		formData.append("name", name);
+		formData.append("marker", marker);
 		if (options.force) formData.append("force", "true");
 		if (options.folderId) formData.append("folderId", options.folderId);
 		if (options.isSensitive != null) {
@@ -320,6 +415,11 @@ export function uploadBlob(
 				ctx.progressMax = ev.total;
 				ctx.progressValue = ev.loaded;
 			}
+		};
+		xhr.upload.onload = () => {
+			// NOTE: 以降はサーバ側の処理待ち。uploadFile と同じ扱いにする。
+			ctx.phase = "processing";
+			ctx.processingSince = Date.now();
 		};
 		xhr.onerror = () => {
 			finish();

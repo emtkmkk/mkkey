@@ -14,6 +14,7 @@ import type { AbuseUserReport } from "@/models/entities/abuse-user-report.js";
 import type { Signin } from "@/models/entities/signin.js";
 import type { Page } from "@/models/entities/page.js";
 import type { Packed } from "@/misc/schema.js";
+import type { DriveFileProcessStage } from "@/misc/drive-file-progress.js";
 import type { Webhook } from "@/models/entities/webhook";
 
 /**
@@ -113,6 +114,16 @@ export interface MainStreamTypes {
 	urlUploadFinished: {
 		marker?: string | null;
 		file: Packed<"DriveFile">;
+	};
+	/**
+	 * ドライブへのアップロード後、サーバ側の処理がどの段階にいるかの通知。
+	 * 送信完了から作成完了までの間、クライアントに進捗を見せるために使う。
+	 */
+	driveFileProgress: {
+		marker: string;
+		stage: DriveFileProcessStage;
+		/** 段階内の進捗（0-100）。算出できない段階では null。 */
+		progress: number | null;
 	};
 	readAllNotifications: undefined;
 	unreadNotification: Packed<"Notification">;

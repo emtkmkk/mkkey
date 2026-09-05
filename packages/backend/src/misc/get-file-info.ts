@@ -68,6 +68,14 @@ export async function getFileInfo(
 		sensitiveThreshold?: number;
 		sensitiveThresholdForPorn?: number;
 		enableSensitiveMediaDetectionForVideos?: boolean;
+		/**
+		 * 処理段階の通知先。センシティブ判定は動画だと特に時間がかかるため、
+		 * 解析中とは別の段階として報告する。
+		 */
+		onProgress?: (
+			stage: "analyzing" | "detecting",
+			progress?: number | null,
+		) => void;
 	},
 ): Promise<FileInfo> {
 	const warnings = [] as string[];
@@ -143,6 +151,7 @@ export async function getFileInfo(
 	let porn = false;
 
 	if (!opts.skipSensitiveDetection) {
+		opts.onProgress?.("detecting");
 		await detectSensitivity(
 			path,
 			type.mime,

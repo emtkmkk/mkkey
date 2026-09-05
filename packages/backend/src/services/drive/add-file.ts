@@ -40,6 +40,7 @@ import { genId } from "@/misc/gen-id.js";
 import { isDuplicateKeyValueError } from "@/misc/is-duplicate-key-value-error.js";
 import { FILE_TYPE_BROWSERSAFE } from "@/const.js";
 import { IdentifiableError } from "@/misc/identifiable-error.js";
+import type { DriveFileProgressReporter } from "@/misc/drive-file-progress.js";
 import { getS3 } from "./s3.js";
 import { InternalStorage } from "./internal-storage.js";
 import type { IImage } from "./image-processor.js";
@@ -90,11 +91,32 @@ async function save(
 	type: string,
 	hash: string,
 	size: number,
+	report: DriveFileProgressReporter,
 ): Promise<DriveFile> {
 	// thunbnail, webpublic を必要なら生成
+	report("generating");
 	const alts = await generateAlts(path, type, !file.uri);
 
 	const meta = await fetchMeta();
+
+	// NOTE: 保存するバイト数の合計。オブジェクトストレージへの転送量を
+	// ひとつの進捗としてまとめるために使う。
+	const totalBytes =
+		size +
+		(alts.webpublic?.data.length ?? 0) +
+		(alts.thumbnail?.data.length ?? 0);
+	const loadedByKey = new Map<string, number>();
+	const reportStoring = (uploadKey: string) => (loaded: number) => {
+		loadedByKey.set(uploadKey, loaded);
+		let loadedAll = 0;
+		for (const value of loadedByKey.values()) loadedAll += value;
+		report(
+			"storing",
+			totalBytes > 0
+				? Math.min(100, Math.floor((loadedAll / totalBytes) * 100))
+				: null,
+		);
+	};
 
 	if (meta.useObjectStorage) {
 		//#region ObjectStorage パラメータ
@@ -135,8 +157,11 @@ async function save(
 		//#endregion
 
 		//#region アップロード
+		report("storing", 0);
 		logger.info(`uploading original: ${key}`);
-		const uploads = [upload(key, fs.createReadStream(path), type, name)];
+		const uploads = [
+			upload(key, fs.createReadStream(path), type, name, reportStoring(key)),
+		];
 
 		if (alts.webpublic) {
 			webpublicKey = urlPathJoin([
@@ -147,7 +172,13 @@ async function save(
 
 			logger.info(`uploading webpublic: ${webpublicKey}`);
 			uploads.push(
-				upload(webpublicKey, alts.webpublic.data, alts.webpublic.type, name),
+				upload(
+					webpublicKey,
+					alts.webpublic.data,
+					alts.webpublic.type,
+					name,
+					reportStoring(webpublicKey),
+				),
 			);
 		}
 
@@ -160,7 +191,13 @@ async function save(
 
 			logger.info(`uploading thumbnail: ${thumbnailKey}`);
 			uploads.push(
-				upload(thumbnailKey, alts.thumbnail.data, alts.thumbnail.type),
+				upload(
+					thumbnailKey,
+					alts.thumbnail.data,
+					alts.thumbnail.type,
+					undefined,
+					reportStoring(thumbnailKey),
+				),
 			);
 			if (!file.blurhash) {
 				// もしBlurhashがまだ生成されていない場合は、サムネイル画像を用いて再度生成する
@@ -189,11 +226,13 @@ async function save(
 		file.size = size;
 		file.storedInternal = false;
 
+		report("saving");
 		return await DriveFiles.insert(file).then((x) =>
 			DriveFiles.findOneByOrFail(x.identifiers[0]),
 		);
 	} else {
 		// 内部ストレージを使用
+		report("storing");
 		const accessKey = uuid();
 		const thumbnailAccessKey = `thumbnail-${uuid()}`;
 		const webpublicAccessKey = `webpublic-${uuid()}`;
@@ -232,6 +271,7 @@ async function save(
 		file.md5 = hash;
 		file.size = size;
 
+		report("saving");
 		return await DriveFiles.insert(file).then((x) =>
 			DriveFiles.findOneByOrFail(x.identifiers[0]),
 		);
@@ -444,12 +484,15 @@ export async function generateAlts(
 
 /**
  * Upload to ObjectStorage
+ *
+ * @param onProgress - 送信済みバイト数の通知先。マルチパート送信の途中経過を受け取る
  */
 async function upload(
 	key: string,
 	stream: fs.ReadStream | Buffer,
 	type: string,
 	filename?: string,
+	onProgress?: (loaded: number) => void,
 ) {
 	if (type === "image/apng") type = "image/png";
 	if (!FILE_TYPE_BROWSERSAFE.includes(type)) type = "application/octet-stream";
@@ -476,6 +519,12 @@ async function upload(
 				? 500 * 1024 * 1024
 				: 8 * 1024 * 1024,
 	});
+
+	if (onProgress) {
+		upload.on("httpUploadProgress", (ev) => {
+			onProgress(ev.loaded ?? 0);
+		});
+	}
 
 	const result = await upload.promise();
 	if (result)
@@ -545,6 +594,11 @@ type AddFileArgs = {
 
 	requestIp?: string | null;
 	requestHeaders?: Record<string, string> | null;
+	/**
+	 * サーバ側の処理段階の通知先。
+	 * 送信完了後もクライアントは待たされるため、進捗を見せたい場合に渡す。
+	 */
+	onProgress?: DriveFileProgressReporter | null;
 };
 
 /**
@@ -564,7 +618,19 @@ export async function addFile({
 	sensitive = null,
 	requestIp = null,
 	requestHeaders = null,
+	onProgress = null,
 }: AddFileArgs): Promise<DriveFile> {
+	/**
+	 * 進捗通知。通知の失敗でアップロードそのものを壊さないよう握り潰す。
+	 */
+	const report: DriveFileProgressReporter = (stage, progress) => {
+		try {
+			onProgress?.(stage, progress);
+		} catch (err) {
+			logger.warn(`failed to report drive file progress: ${err}`);
+		}
+	};
+
 	let skipNsfwCheck = false;
 	const instance = await fetchMeta();
 	if (user == null) skipNsfwCheck = true;
@@ -582,7 +648,9 @@ export async function addFile({
 	)
 		skipNsfwCheck = true;
 
+	report("analyzing");
 	const info = await getFileInfo(path, {
+		onProgress: report,
 		skipSensitiveDetection: skipNsfwCheck,
 		sensitiveThreshold: // 感度が高いほどしきい値は低くすることになる
 			instance.sensitiveMediaDetectionSensitivity === "veryHigh"
@@ -780,6 +848,7 @@ export async function addFile({
 			info.type.mime,
 			info.md5,
 			info.size,
+			report,
 		);
 	}
 

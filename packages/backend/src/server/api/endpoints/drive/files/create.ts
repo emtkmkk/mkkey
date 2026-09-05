@@ -11,6 +11,11 @@
  * @internal
  */
 import { addFile } from "@/services/drive/add-file.js";
+import { publishMainStream } from "@/services/stream.js";
+import type {
+	DriveFileProcessStage,
+	DriveFileProgressReporter,
+} from "@/misc/drive-file-progress.js";
 import { DriveFiles } from "@/models/index.js";
 import { DB_MAX_IMAGE_COMMENT_LENGTH } from "@/misc/hard-limits.js";
 import { IdentifiableError } from "@/misc/identifiable-error.js";
@@ -86,6 +91,13 @@ export const paramDef = {
 		},
 		isSensitive: { type: "boolean", default: false },
 		force: { type: "boolean", default: false },
+		marker: {
+			type: "string",
+			nullable: true,
+			default: null,
+			description:
+				"サーバ側の処理進捗を main ストリームの driveFileProgress で受け取るための識別子。",
+		},
 	},
 	required: [],
 } as const;
@@ -111,6 +123,27 @@ export default define(
 
 		const m = await fetchMeta();
 
+		// NOTE: ボディの送信が終わってからファイル作成が終わるまでの間、クライアントには
+		// 進捗が出せない。marker が指定されている場合は、その間の処理段階をストリームで通知する。
+		// 通知が過剰にならないよう、同じ段階の更新は一定間隔に間引く。
+		const marker = ps.marker;
+		let lastStage: DriveFileProcessStage | null = null;
+		let lastPublishedAt = 0;
+		const onProgress: DriveFileProgressReporter | null =
+			marker && user
+				? (stage, progress) => {
+						const now = Date.now();
+						if (stage === lastStage && now - lastPublishedAt < 200) return;
+						lastStage = stage;
+						lastPublishedAt = now;
+						publishMainStream(user.id, "driveFileProgress", {
+							marker,
+							stage,
+							progress: progress ?? null,
+						});
+				  }
+				: null;
+
 		try {
 			// ファイルを作成する
 			const driveFile = await addFile({
@@ -123,6 +156,7 @@ export default define(
 				sensitive: ps.isSensitive,
 				requestIp: m.enableIpLogging ? ip : null,
 				requestHeaders: m.enableIpLogging ? headers : null,
+				onProgress,
 			});
 			return await DriveFiles.pack(driveFile, { self: true });
 		} catch (e) {

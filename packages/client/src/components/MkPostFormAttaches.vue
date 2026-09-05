@@ -23,6 +23,9 @@
 					<div v-if="element.isSensitive" class="sensitive">
 						<i class="ph-warning ph-bold ph-lg icon"></i>
 					</div>
+					<div v-if="replacingIds.includes(element.id)" class="replacing">
+						<MkLoading class="icon" :mini="true" />
+					</div>
 				</div>
 			</template>
 		</XDraggable>
@@ -52,6 +55,12 @@ export default defineComponent({
 		detachMediaFn: {
 			type: Function,
 			required: false,
+		},
+		/** 差し替え待ち（クロップ結果をバックグラウンドでアップロード中）のファイル ID。 */
+		replacingIds: {
+			type: Array,
+			required: false,
+			default: () => [],
 		},
 	},
 
@@ -107,13 +116,22 @@ export default defineComponent({
 			});
 		},
 
-		/** 添付画像をクロップし、元を外してクロップ済み画像で差し替える。元画像と同じ Drive フォルダに保存する。 */
-		async cropFile(file) {
-			const cropped = await os.cropImage(file, {
+		/**
+		 * 添付画像をクロップする。元画像と同じ Drive フォルダに保存する。
+		 * アップロードはバックグラウンドで進むため、OK を押した時点でダイアログは閉じる。
+		 * 完了時の差し替えと失敗時の扱いは、Promise を受け取った親側で行う。
+		 */
+		cropFile(file) {
+			os.cropImage(file, {
 				aspectRatio: 0,
 				uploadFolder: file.folderId ?? undefined,
+				background: true,
+				onUploadStart: (promise) => {
+					this.$emit("replaceFile", { oldId: file.id, promise });
+				},
+			}).catch(() => {
+				// noop: 失敗の通知はクロップダイアログ側で行う
 			});
-			this.$emit("replaceFile", { oldId: file.id, newFile: cropped });
 		},
 
 		async describe(file) {
@@ -158,7 +176,8 @@ export default defineComponent({
 								this.describe(file);
 							},
 						},
-						...(file.type?.startsWith("image/")
+						...(file.type?.startsWith("image/") &&
+						!this.replacingIds.includes(file.id)
 							? [
 									{
 										text: i18n.ts.cropImage,
@@ -239,6 +258,22 @@ export default defineComponent({
 				top: 0;
 				left: 0;
 				z-index: 2;
+				background: rgba(17, 17, 17, 0.7);
+				color: #fff;
+
+				> .icon {
+					margin: auto;
+				}
+			}
+
+			> .replacing {
+				display: flex;
+				position: absolute;
+				width: 4rem;
+				height: 4rem;
+				top: 0;
+				left: 0;
+				z-index: 3;
 				background: rgba(17, 17, 17, 0.7);
 				color: #fff;
 

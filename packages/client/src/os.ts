@@ -875,6 +875,8 @@ export async function pickEmoji(src: HTMLElement | null, opts) {
  * @param image - クロップ対象の Drive ファイル
  * @param options.aspectRatio - 0 で自由比、正の数で固定比
  * @param options.uploadFolder - クロップ画像の保存先フォルダ ID（省略時は MkCropperDialog の既定）
+ * @param options.background - true でアップロード完了を待たずにダイアログを閉じる
+ * @param options.onUploadStart - background 時、アップロード開始直後に進行中の Promise を受け取る
  */
 export async function cropImage(
 	image: Misskey.entities.DriveFile,
@@ -882,6 +884,8 @@ export async function cropImage(
 		aspectRatio: number;
 		to?: string;
 		uploadFolder?: string | null;
+		background?: boolean;
+		onUploadStart?: (promise: Promise<Misskey.entities.DriveFile>) => void;
 	},
 ): Promise<Misskey.entities.DriveFile> {
 	return new Promise((resolve, reject) => {
@@ -892,10 +896,17 @@ export async function cropImage(
 				aspectRatio: options.aspectRatio,
 				to: options.to,
 				uploadFolder: options.uploadFolder ?? undefined,
+				background: options.background,
 			},
 			{
 				ok: (x) => {
 					resolve(x);
+				},
+				// NOTE: background 時はアップロード完了前にダイアログが閉じるため ok は発火しない。
+				// 進行中の Promise で resolve することで、待てば結果を得られる点は変わらない。
+				uploadStart: (promise: Promise<Misskey.entities.DriveFile>) => {
+					options.onUploadStart?.(promise);
+					resolve(promise);
 				},
 			},
 			"closed",

@@ -55,10 +55,9 @@ import type { CropperCanvas, CropperImage, CropperSelection } from "cropperjs";
 import tinycolor from "tinycolor2";
 import XModalWindow from "@/components/MkModalWindow.vue";
 import * as os from "@/os";
-import { $i } from "@/account";
 import { defaultStore } from "@/store";
-import { apiUrl, url } from "@/config";
-import { mergeMkkeyApiClientHeaders } from "@/scripts/mkkey-api-client-headers";
+import { url } from "@/config";
+import { uploadBlob } from "@/scripts/upload";
 import { query } from "@/scripts/url";
 import { i18n } from "@/i18n";
 
@@ -88,6 +87,7 @@ const MIN_SELECTION_SIZE = 0.001;
 
 const emit = defineEmits<{
 	(ev: "ok", cropped: misskey.entities.DriveFile): void;
+	(ev: "uploadStart", promise: Promise<misskey.entities.DriveFile>): void;
 	(ev: "cancel"): void;
 	(ev: "closed"): void;
 }>();
@@ -97,6 +97,11 @@ const props = defineProps<{
 	aspectRatio: number;
 	uploadFolder?: string | null;
 	to?: string | null;
+	/**
+	 * true の場合、アップロード完了を待たずにダイアログを閉じ、
+	 * 進行中の Promise を uploadStart イベントで通知する。
+	 */
+	background?: boolean;
 }>();
 
 const imgUrl = `${url}/proxy/image.webp?${query({
@@ -502,126 +507,143 @@ function initializeSelectionAndImage(): void {
 
 // #region クロップ実行とダイアログ操作
 
+/** クロップ結果のファイル名。@internal */
+const croppedFileName = `cropped_${props.file.name}`;
+
 /**
- * 現在の選択範囲でクロップし、Drive にアップロードしてからダイアログを閉じて結果を返す。
+ * クロップ失敗をユーザに通知する。多重表示は行わない。
+ * @internal
+ */
+let failureNotified = false;
+function notifyFailure(): void {
+	if (failureNotified) return;
+	failureNotified = true;
+	os.alert({
+		type: "error",
+		text: i18n.ts.somethingHappened,
+	});
+}
+
+/**
+ * 現在の選択範囲をキャンバスに描画し、アップロード用の Blob を生成する。
+ * 生成できなかった場合は null を返す。
+ * @internal
+ */
+async function renderCroppedBlob(): Promise<Blob | null> {
+	const croppedImage = cropper?.getCropperImage();
+	const croppedSection = cropper?.getCropperSelection();
+	if (!croppedImage || !croppedSection) return null;
+
+	// 拡大率を計算し、(ほぼ)元の大きさに戻す
+	const zoomedRate =
+		croppedImage.getBoundingClientRect().width / croppedImage.clientWidth;
+	const widthToRender =
+		croppedSection.getBoundingClientRect().width / zoomedRate;
+	const croppedCanvas = await croppedSection.$toCanvas({
+		width: widthToRender,
+	});
+	if (!croppedCanvas) return null;
+
+	const preferredMime = (() => {
+		const extension = props.file.name?.split(".").pop()?.toLowerCase();
+		switch (extension) {
+			case "webp":
+				return "image/webp";
+			case "png":
+			case "apng":
+				return "image/png";
+			case "avif":
+				return "image/avif";
+			default:
+				return "image/png";
+		}
+	})();
+
+	const triedTypes = Array.from(new Set([preferredMime, "image/png"]));
+	for (const type of triedTypes) {
+		const blob = await new Promise<Blob | null>((resolve) => {
+			croppedCanvas.toBlob((canvasBlob) => {
+				resolve(canvasBlob);
+			}, type);
+		});
+		if (blob) return blob;
+	}
+	return null;
+}
+
+/**
+ * クロップ結果の保存先フォルダ ID を解決する。
+ * @internal
+ */
+function resolveUploadFolderId(): string | null | undefined {
+	return props.uploadFolder
+		? props.uploadFolder
+		: defaultStore.state.uploadFolderAvatar && props.to === "avatar"
+		? defaultStore.state.uploadFolderAvatar
+		: defaultStore.state.uploadFolderBanner && props.to === "banner"
+		? defaultStore.state.uploadFolderBanner
+		: defaultStore.state.uploadFolderEmoji && props.to === "emoji"
+		? defaultStore.state.uploadFolderEmoji
+		: defaultStore.state.uploadFolder;
+}
+
+/**
+ * クロップ結果を Drive にアップロードする Promise を開始する。
+ * @internal
+ */
+function startUpload(blob: Blob): Promise<misskey.entities.DriveFile> {
+	return uploadBlob(blob, croppedFileName, {
+		folderId: resolveUploadFolderId(),
+		isSensitive: props.file.isSensitive,
+		comment: props.file.comment,
+	});
+}
+
+/**
+ * 現在の選択範囲でクロップし、Drive にアップロードする。
+ *
+ * background が指定されている場合はアップロードの完了を待たずにダイアログを閉じ、
+ * 進行中の Promise を uploadStart イベントで呼び出し元に渡す。
+ * 指定が無い場合は従来どおり、待機ダイアログを出してアップロード完了まで閉じない。
  * @internal
  */
 const ok = async () => {
-        const promise = new Promise<misskey.entities.DriveFile>(async (res, rej) => {
-                const croppedImage = await cropper?.getCropperImage();
-                const croppedSection = await cropper?.getCropperSelection();
-                let failureNotified = false;
-                const failed = () => {
-                        if (failureNotified) return;
-                        failureNotified = true;
-                        os.alert({
-                                type: "error",
-                                text: i18n.ts.somethingHappened,
-                        });
-                        rej(new Error("failed to crop image"));
-                };
-                if (!croppedImage || !croppedSection) {
-                        failed();
-                        return;
-                }
-                // 拡大率を計算し、(ほぼ)元の大きさに戻す
-                const zoomedRate =
-                        croppedImage.getBoundingClientRect().width /
-                        croppedImage.clientWidth;
-                const widthToRender =
-                        croppedSection.getBoundingClientRect().width / zoomedRate;
-                const croppedCanvas = await croppedSection.$toCanvas({
-                        width: widthToRender,
-                });
-                if (!croppedCanvas) {
-                        failed();
-                        return;
-                }
+	loading = true;
+	let blob: Blob | null = null;
+	try {
+		blob = await renderCroppedBlob();
+	} catch (err) {
+		console.error("Failed to render cropped image", err);
+	} finally {
+		loading = false;
+	}
 
-                const preferredMime = (() => {
-                        const extension = props.file.name?.split(".").pop()?.toLowerCase();
-                        switch (extension) {
-                                case "webp":
-                                        return "image/webp";
-                                case "png":
-                                case "apng":
-                                        return "image/png";
-                                case "avif":
-                                        return "image/avif";
-                                default:
-                                        return "image/png";
-                        }
-                })();
+	if (!blob) {
+		notifyFailure();
+		return;
+	}
 
-                const triedTypes = Array.from(
-                        new Set([preferredMime, "image/png"]),
-                );
-                let blob: Blob | null = null;
-                for (const type of triedTypes) {
-                        blob = await new Promise<Blob | null>((resolve) => {
-                                croppedCanvas.toBlob((canvasBlob) => {
-                                        resolve(canvasBlob);
-                                }, type);
-                        });
-                        if (blob) break;
-                }
+	if (props.background) {
+		const promise = startUpload(blob);
+		// NOTE: 呼び出し元でも購読されるが、ここで catch しておかないと
+		// 未処理の rejection になるため、通知役はダイアログ側が担う。
+		promise.catch(() => notifyFailure());
+		emit("uploadStart", promise);
+		dialogEl.close();
+		return;
+	}
 
-                if (!blob) {
-                        failed();
-                        return;
-                }
+	const promise = startUpload(blob);
+	os.promiseDialog(promise, null, () => notifyFailure());
 
-                const formData = new FormData();
-                formData.append("file", blob, `cropped_${props.file.name}`);
-                formData.append("name", `cropped_${props.file.name}`);
-                formData.append(
-                        "isSensitive",
-                        props.file.isSensitive ? "true" : "false"
-                );
-                if (props.file.comment) {
-                        formData.append("comment", props.file.comment);
-                }
+	try {
+		const f = await promise;
 
-                const folderId = props.uploadFolder
-                        ? props.uploadFolder
-                        : defaultStore.state.uploadFolderAvatar && props.to === "avatar"
-                        ? defaultStore.state.uploadFolderAvatar
-                        : defaultStore.state.uploadFolderBanner && props.to === "banner"
-                        ? defaultStore.state.uploadFolderBanner
-                        : defaultStore.state.uploadFolderEmoji && props.to === "emoji"
-                        ? defaultStore.state.uploadFolderEmoji
-                        : defaultStore.state.uploadFolder;
-
-                if (folderId) {
-                        formData.append("folderId", folderId);
-                }
-
-                fetch(`${apiUrl}/drive/files/create`, {
-                        method: "POST",
-                        body: formData,
-                        headers: mergeMkkeyApiClientHeaders({
-                                authorization: `Bearer ${$i.token}`,
-                        }),
-                })
-                        .then((response) => response.json())
-                        .then((f) => {
-                                res(f);
-                        })
-                        .catch(() => {
-                                failed();
-                        });
-        });
-
-        os.promiseDialog(promise);
-
-        try {
-                const f = await promise;
-
-                emit("ok", f);
-                dialogEl.close();
-        } catch {
-                // noop: エラーはすでに通知済み
-        }
+		emit("ok", f);
+		dialogEl.close();
+	} catch {
+		// noop: エラーはすでに通知済み
+	}
 };
 
 /**

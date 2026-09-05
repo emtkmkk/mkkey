@@ -236,3 +236,90 @@ export function uploadFile(
 		reader.readAsArrayBuffer(file);
 	});
 }
+
+export type UploadBlobOptions = {
+	folderId?: string | null;
+	isSensitive?: boolean;
+	comment?: string | null;
+	force?: boolean;
+};
+
+/**
+ * 加工済みの Blob をそのまま Drive にアップロードする。
+ *
+ * uploadFile と異なり、圧縮確認やファイル名入力などのダイアログを挟まない。
+ * クロップ結果のように「すでに内容もファイル名も確定しているデータ」を送る用途で使う。
+ * 進行状況は uploads に登録するため、共通のアップロードインジケータに表示され、
+ * 投稿フォームのアップロード待機判定（進行中タスクの有無）とも整合する。
+ *
+ * @param blob - アップロードする内容
+ * @param name - Drive 上のファイル名
+ * @param options - 保存先フォルダやセンシティブフラグなど
+ * @returns 作成された DriveFile
+ */
+export function uploadBlob(
+	blob: Blob,
+	name: string,
+	options: UploadBlobOptions = {},
+): Promise<Misskey.entities.DriveFile> {
+	return new Promise((resolve, reject) => {
+		const id = Math.random().toString();
+
+		const ctx = reactive<Uploading>({
+			id,
+			name,
+			progressMax: undefined,
+			progressValue: undefined,
+			img: window.URL.createObjectURL(blob),
+		});
+
+		uploads.value.push(ctx);
+
+		const finish = () => {
+			uploads.value = uploads.value.filter((x) => x.id !== id);
+			window.URL.revokeObjectURL(ctx.img);
+		};
+
+		const formData = new FormData();
+		formData.append("file", blob, name);
+		formData.append("name", name);
+		if (options.force) formData.append("force", "true");
+		if (options.folderId) formData.append("folderId", options.folderId);
+		if (options.isSensitive != null) {
+			formData.append("isSensitive", options.isSensitive ? "true" : "false");
+		}
+		if (options.comment) formData.append("comment", options.comment);
+
+		const xhr = new XMLHttpRequest();
+		xhr.open("POST", `${apiUrl}/drive/files/create`, true);
+		xhr.setRequestHeader("Authorization", `Bearer ${$i.token}`);
+		applyMkkeyClientHeadersToXhr(xhr);
+		xhr.onload = (ev) => {
+			finish();
+			if (
+				xhr.status !== 200 ||
+				ev.target == null ||
+				ev.target.response == null
+			) {
+				reject(new Error("Failed to upload"));
+				return;
+			}
+			try {
+				resolve(JSON.parse(ev.target.response));
+			} catch (err) {
+				reject(err);
+			}
+		};
+		xhr.upload.onprogress = (ev) => {
+			if (ev.lengthComputable) {
+				ctx.progressMax = ev.total;
+				ctx.progressValue = ev.loaded;
+			}
+		};
+		xhr.onerror = () => {
+			finish();
+			reject(new Error("Network error"));
+		};
+		xhr.send(formData);
+	});
+}

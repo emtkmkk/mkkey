@@ -294,6 +294,7 @@
 			<XPostFormAttaches
 				class="attaches"
 				:files="files"
+				:replacing-ids="replacingFileIds"
 				@updated="updateFiles"
 				@detach="detachFile"
 				@replaceFile="replaceFile"
@@ -738,6 +739,8 @@ let imeText = $ref("");
 let shortcutKeyValue = $ref(0);
 let filePromises = $ref<Promise<void>[]>([]);
 let fileError = $ref(false);
+/** クロップ結果のアップロード待ちで、まだ差し替わっていない添付の ID。 */
+let replacingFileIds = $ref<string[]>([]);
 let referencesFlg = $ref(true);
 
 //#region 投稿重複抑止
@@ -1831,11 +1834,38 @@ function detachFile(id) {
 	files = files.filter((x) => x.id !== id);
 }
 
-/** 添付をクロップ済み画像で差し替える（同じ並び順を維持）。 */
-function replaceFile(payload: { oldId: string; newFile: misskey.entities.DriveFile }) {
-	files = files.map((f) =>
-		f.id === payload.oldId ? payload.newFile : f,
-	);
+/**
+ * 添付をクロップ済み画像で差し替える（同じ並び順を維持）。
+ *
+ * クロップ結果のアップロードはバックグラウンドで進むため、その Promise を
+ * filePromises で追跡する。投稿時は waitForFileSelectingToBeFalse がこれを待つので、
+ * 差し替え前のファイルのまま投稿されることはない。
+ */
+function replaceFile(payload: {
+	oldId: string;
+	promise: Promise<misskey.entities.DriveFile>;
+}) {
+	fileError = false;
+	replacingFileIds = [...replacingFileIds, payload.oldId];
+
+	const trackedPromise = payload.promise
+		.then((newFile) => {
+			files = files.map((f) => (f.id === payload.oldId ? newFile : f));
+		})
+		.catch((err) => {
+			// NOTE: 失敗時は元の添付を残したまま「安全側」に倒し、
+			// 同時に走っている投稿はアップロード失敗として中止させる。
+			fileError = true;
+			throw err;
+		})
+		.finally(() => {
+			replacingFileIds = replacingFileIds.filter((id) => id !== payload.oldId);
+			filePromises = filePromises.filter((p) => p !== trackedPromise);
+		});
+
+	filePromises.push(trackedPromise);
+	// NOTE: 未処理の rejection を避けるための catch。通知はクロップダイアログ側で行う。
+	trackedPromise.catch(() => {});
 }
 
 function updateFiles(_files) {

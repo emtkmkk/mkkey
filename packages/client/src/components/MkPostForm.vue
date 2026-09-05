@@ -510,7 +510,7 @@ import {
 	getAccounts,
 	openAccountMenu as openAccountMenu_,
 } from "@/account";
-import { uploadFile, uploads } from "@/scripts/upload";
+import { uploadFile, uploadFromUrl, uploads } from "@/scripts/upload";
 import type { UploadFileOptions } from "@/scripts/upload";
 import { deepClone } from "@/scripts/clone";
 import {
@@ -2793,18 +2793,9 @@ async function waitForFileSelectingToBeFalse(backupDraftData) {
 				throw new Error("ファイルのアップロード待機がタイムアウトしました。");
 			}
 
-			// NOTE: URL からのアップロードは uploads ではなくキューで進行状況を持つ。
-			// ここで数え漏らすと、サーバがダウンロード中なだけの状態を
-			// 「異常」と誤判定して投稿を中止してしまう。
-			const activeUploadCount =
-				uploads.value.length +
-				os.queueDatas.value.filter(
-					(x) => x.endpoint === "drive/files/upload-from-url",
-				).length;
-
 			const waitState = evaluateUploadWaitState({
 				pendingPromiseCount: filePromises.length,
-				activeUploadCount,
+				activeUploadCount: uploads.value.length,
 				now: Date.now(),
 				noActiveUploadsSince,
 				staleUploadWaitMs,
@@ -2819,7 +2810,7 @@ async function waitForFileSelectingToBeFalse(backupDraftData) {
 					"[MkPostForm] Detected stale upload wait promises; aborting post to avoid inconsistent attachment state",
 					{
 						pendingPromiseCount: filePromises.length,
-						activeUploadCount,
+						activeUploadCount: uploads.value.length,
 						staleUploadWaitMs,
 					},
 				);
@@ -2892,49 +2883,12 @@ async function uploadSwarmPhoto(photoUrl: string | null): Promise<void> {
 				return Promise.resolve([]);
 			}
 
-			const marker = Math.random().toString();
-			const connection = stream.useChannel("main");
-
-			const uploadPromise = new Promise<misskey.entities.DriveFile>((resolve, reject) => {
-				let settled = false;
-				const timeoutId = setTimeout(() => {
-					if (settled) return;
-					settled = true;
-					connection.dispose();
-					reject(new Error("Swarmの写真アップロードがタイムアウトしました。"));
-				}, 30_000);
-
-				connection.on("urlUploadFinished", (urlResponse) => {
-					if (urlResponse.marker !== marker || settled) return;
-
-					clearTimeout(timeoutId);
-					settled = true;
-
-					if (!urlResponse.file) {
-						connection.dispose();
-						reject(new Error("アップロード結果が不正です。"));
-						return;
-					}
-
-					connection.dispose();
-					resolve(urlResponse.file);
-				});
-
+			// NOTE: 取得と登録の進捗はアップロードインジケータに出る。uploads にも登録されるため、
+			// 投稿時のアップロード待機判定（進行中タスクの有無）とも整合する。
+			return uploadFromUrl(photoUrl, {
 				// デフォルトのアップロード先フォルダを指定（未設定の場合はルート）
-				os.api("drive/files/upload-from-url", {
-					url: photoUrl,
-					folderId: defaultStore.state.uploadFolder ?? undefined,
-					marker,
-				}).catch((err) => {
-					if (settled) return;
-					settled = true;
-					clearTimeout(timeoutId);
-					connection.dispose();
-					reject(err);
-				});
+				folderId: defaultStore.state.uploadFolder ?? undefined,
 			});
-
-			return uploadPromise;
 		});
 	} catch {
 		// NOTE: Swarm 写真アップロードに失敗した場合は投稿フォーム自体は継続しつつ、ユーザにはトーストで通知する。

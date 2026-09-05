@@ -113,7 +113,8 @@ export interface MainStreamTypes {
 	};
 	urlUploadFinished: {
 		marker?: string | null;
-		file: Packed<"DriveFile">;
+		/** 失敗した場合は null。依頼したクライアントを待たせ続けないために通知する。 */
+		file: Packed<"DriveFile"> | null;
 	};
 	/**
 	 * ドライブへのアップロード後、サーバ側の処理がどの段階にいるかの通知。

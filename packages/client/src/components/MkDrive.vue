@@ -149,7 +149,7 @@ import * as os from "@/os";
 import { stream } from "@/stream";
 import { defaultStore } from "@/store";
 import { i18n } from "@/i18n";
-import { uploadFile, uploads } from "@/scripts/upload";
+import { uploadFile, uploadFromUrl, uploads } from "@/scripts/upload";
 import type { UploadFileOptions } from "@/scripts/upload";
 import {
         isVirtualDriveFolder,
@@ -663,37 +663,21 @@ function urlUpload() {
                 placeholder: i18n.ts.uploadFromUrlDescription,
         }).then(({ canceled, result: url }) => {
                 if (canceled || !url) return;
-                const marker = Math.random().toString(); // TODO: UUIDとか使う
-                const queueData = os.addQueue({
-                        endpoint: "drive/files/upload-from-url",
-                        comment: i18n.ts.uploadFromUrl,
-                });
 
-                const mainConnection = stream.useChannel("main");
-                mainConnection.on("urlUploadFinished", (urlResponse) => {
-                        if (urlResponse.marker === marker) {
-                                os.removeQueue(queueData.id);
-                                mainConnection.dispose();
-                        }
-                });
-
-                os.api("drive/files/upload-from-url", {
-                        url: url,
+                // NOTE: 取得と登録の進捗はアップロードインジケータに出る。
+                // 後始末（完了・失敗・タイムアウト）は uploadFromUrl 側が行う。
+                uploadFromUrl(url, {
                         folderId:
                                 !isVirtualDriveFolder(folder.value) && folder.value
                                         ? folder.value.id
                                         : undefined,
-                        marker,
                 }).catch(() => {
-                        os.removeQueue(queueData.id);
-                        mainConnection.dispose();
+                        os.alert({
+                                type: "error",
+                                text: i18n.ts.somethingHappened,
+                        });
                 });
-
-                os.alert({
-                        title: i18n.ts.uploadFromUrlRequested,
-                        text: i18n.ts.uploadFromUrlMayTakeTime,
-		});
-	});
+        });
 }
 
 function createFolder() {

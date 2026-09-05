@@ -13,6 +13,7 @@ import { URL } from "node:url";
 import type { User } from "@/models/entities/user.js";
 import { createTemp } from "@/misc/create-temp.js";
 import { downloadUrl, isPrivateIp } from "@/misc/download-url.js";
+import type { DriveFileProgressReporter } from "@/misc/drive-file-progress.js";
 import type { DriveFolder } from "@/models/entities/drive-folder.js";
 import type { DriveFile } from "@/models/entities/drive-file.js";
 import { DriveFiles } from "@/models/index.js";
@@ -32,6 +33,10 @@ type Args = {
 	comment?: string | null;
 	requestIp?: string | null;
 	requestHeaders?: Record<string, string> | null;
+	/**
+	 * 処理段階の通知先。ダウンロードとその後のドライブ登録の進捗を報告する。
+	 */
+	onProgress?: DriveFileProgressReporter | null;
 };
 
 export async function uploadFromUrl({
@@ -45,6 +50,7 @@ export async function uploadFromUrl({
 	comment = null,
 	requestIp = null,
 	requestHeaders = null,
+	onProgress = null,
 }: Args): Promise<DriveFile> {
 	const parsedUrl = new URL(url);
 	if (
@@ -69,7 +75,15 @@ export async function uploadFromUrl({
 
 	try {
 		// URL の内容を一時ファイルに書き出す
-		await downloadUrl(url, path);
+		// NOTE: 依頼したクライアントから見ると、ここは何も起きていないように見える区間。
+		// 総サイズが分かるときだけ割合を出し、分からないときは段階だけ知らせる。
+		onProgress?.("downloading", null);
+		await downloadUrl(url, path, ({ transferred, total }) => {
+			onProgress?.(
+				"downloading",
+				total ? Math.min(100, Math.floor((transferred / total) * 100)) : null,
+			);
+		});
 
 		const driveFile = await addFile({
 			user,
@@ -84,6 +98,7 @@ export async function uploadFromUrl({
 			sensitive,
 			requestIp,
 			requestHeaders,
+			onProgress,
 		});
 		logger.succ(`Got: ${driveFile.id}`);
 		return driveFile!;

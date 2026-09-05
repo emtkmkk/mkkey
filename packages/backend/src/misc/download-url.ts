@@ -13,7 +13,16 @@ export { isPrivateIp };
 
 const pipeline = util.promisify(stream.pipeline);
 
-export async function downloadUrl(url: string, path: string): Promise<void> {
+/**
+ * URL の内容をローカルの一時ファイルに書き出す。
+ *
+ * @param onProgress - 受信バイト数の通知先。総サイズが不明な場合 total は undefined
+ */
+export async function downloadUrl(
+	url: string,
+	path: string,
+	onProgress?: (progress: { transferred: number; total?: number }) => void,
+): Promise<void> {
 	const logger = new Logger("download");
 
 	logger.info(`Downloading ${chalk.cyan(url)} ...`);
@@ -69,6 +78,10 @@ export async function downloadUrl(url: string, path: string): Promise<void> {
 			}
 		})
 		.on("downloadProgress", (progress: Got.Progress) => {
+			onProgress?.({
+				transferred: progress.transferred,
+				total: progress.total,
+			});
 			if (progress.transferred > maxSize) {
 				logger.warn(
 					`maxSize exceeded (${progress.transferred} > ${maxSize}) on downloadProgress`,

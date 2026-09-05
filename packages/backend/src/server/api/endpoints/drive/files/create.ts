@@ -11,11 +11,7 @@
  * @internal
  */
 import { addFile } from "@/services/drive/add-file.js";
-import { publishMainStream } from "@/services/stream.js";
-import type {
-	DriveFileProcessStage,
-	DriveFileProgressReporter,
-} from "@/misc/drive-file-progress.js";
+import { createDriveFileProgressPublisher } from "@/services/drive/progress-publisher.js";
 import { DriveFiles } from "@/models/index.js";
 import { DB_MAX_IMAGE_COMMENT_LENGTH } from "@/misc/hard-limits.js";
 import { IdentifiableError } from "@/misc/identifiable-error.js";
@@ -125,24 +121,7 @@ export default define(
 
 		// NOTE: ボディの送信が終わってからファイル作成が終わるまでの間、クライアントには
 		// 進捗が出せない。marker が指定されている場合は、その間の処理段階をストリームで通知する。
-		// 通知が過剰にならないよう、同じ段階の更新は一定間隔に間引く。
-		const marker = ps.marker;
-		let lastStage: DriveFileProcessStage | null = null;
-		let lastPublishedAt = 0;
-		const onProgress: DriveFileProgressReporter | null =
-			marker && user
-				? (stage, progress) => {
-						const now = Date.now();
-						if (stage === lastStage && now - lastPublishedAt < 200) return;
-						lastStage = stage;
-						lastPublishedAt = now;
-						publishMainStream(user.id, "driveFileProgress", {
-							marker,
-							stage,
-							progress: progress ?? null,
-						});
-				  }
-				: null;
+		const onProgress = createDriveFileProgressPublisher(user.id, ps.marker);
 
 		try {
 			// ファイルを作成する

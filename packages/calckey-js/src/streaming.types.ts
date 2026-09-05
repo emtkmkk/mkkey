@@ -26,10 +26,14 @@ export type Channels = {
 			unfollow: (payload: User) => void; // 自分が他人をフォロー解除したとき
 			meUpdated: (payload: MeDetailed) => void;
 			pageEvent: (payload: PageEvent) => void;
-			urlUploadFinished: (payload: { marker: string; file: DriveFile }) => void;
+			urlUploadFinished: (payload: {
+				marker: string;
+				file: DriveFile | null;
+			}) => void;
 			driveFileProgress: (payload: {
 				marker: string;
 				stage:
+					| "downloading"
 					| "analyzing"
 					| "detecting"
 					| "generating"

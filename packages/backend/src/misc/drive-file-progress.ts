@@ -16,6 +16,7 @@
  * リクエストボディの送信が終わってからファイルが作成されるまでの間、
  * クライアントに「今サーバが何をしているか」を伝えるために使う。
  *
+ * - downloading: URL からのアップロード時、元ファイルの取得
  * - analyzing: ハッシュ計算・種別判定・画像情報の取得
  * - detecting: センシティブ判定
  * - generating: webpublic / サムネイルの生成
@@ -23,6 +24,7 @@
  * - saving: DB への登録
  */
 export type DriveFileProcessStage =
+	| "downloading"
 	| "analyzing"
 	| "detecting"
 	| "generating"

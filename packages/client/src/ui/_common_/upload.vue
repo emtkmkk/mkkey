@@ -112,6 +112,7 @@ const elapsedText = (ctx: { processingSince?: number | null }) => {
 
 /** サーバ側の処理段階のラベル。 */
 const stageLabels: Record<string, string> = {
+  downloading: i18n.ts.driveProcessDownloading,
   analyzing: i18n.ts.driveProcessAnalyzing,
   detecting: i18n.ts.driveProcessDetecting,
   generating: i18n.ts.driveProcessGenerating,

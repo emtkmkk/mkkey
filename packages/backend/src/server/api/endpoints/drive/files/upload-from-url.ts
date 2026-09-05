@@ -2,6 +2,7 @@ import { uploadFromUrl } from "@/services/drive/upload-from-url.js";
 import define from "../../../define.js";
 import { DriveFiles } from "@/models/index.js";
 import { publishMainStream } from "@/services/stream.js";
+import { createDriveFileProgressPublisher } from "@/services/drive/progress-publisher.js";
 import { HOUR } from "@/const.js";
 
 export const meta = {
@@ -39,6 +40,10 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
+	// NOTE: この API は即座に返り、実際の取得と登録は裏で走る。その間クライアントには
+	// 何も見えないため、marker が指定されている場合は処理段階をストリームで通知する。
+	const onProgress = createDriveFileProgressPublisher(user.id, ps.marker);
+
 	uploadFromUrl({
 		url: ps.url,
 		user,
@@ -46,12 +51,22 @@ export default define(meta, paramDef, async (ps, user) => {
 		sensitive: ps.isSensitive,
 		force: ps.force,
 		comment: ps.comment,
-	}).then((file) => {
-		DriveFiles.pack(file, { self: true }).then((packedFile) => {
+		onProgress,
+	})
+		.then((file) => {
+			DriveFiles.pack(file, { self: true }).then((packedFile) => {
+				publishMainStream(user.id, "urlUploadFinished", {
+					marker: ps.marker,
+					file: packedFile,
+				});
+			});
+		})
+		.catch(() => {
+			// NOTE: 失敗も通知しないと、完了を待っているクライアントが
+			// タイムアウトするまで待たされ続ける。
 			publishMainStream(user.id, "urlUploadFinished", {
 				marker: ps.marker,
-				file: packedFile,
+				file: null,
 			});
 		});
-	});
 });

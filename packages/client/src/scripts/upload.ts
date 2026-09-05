@@ -26,6 +26,7 @@ export type UploadPhase = "waiting" | "compressing" | "sending" | "processing";
  * 詳細は backend の misc/drive-file-progress を参照。
  */
 export type UploadServerStage =
+	| "downloading"
 	| "analyzing"
 	| "detecting"
 	| "generating"
@@ -37,7 +38,8 @@ export type Uploading = {
 	name: string;
 	progressMax: number | undefined;
 	progressValue: number | undefined;
-	img: string;
+	/** サムネイル用の URL。手元にファイルが無い（URL からの取り込み等）場合は null。 */
+	img: string | null;
 	/** 現在の処理段階。 */
 	phase: UploadPhase;
 	/** processing に入った時刻（経過時間の表示用）。 */
@@ -323,7 +325,7 @@ export function uploadFile(
 		disposeProgressWatch?.();
 		disposeProgressWatch = null;
 		uploads.value = uploads.value.filter((x) => x.id !== id);
-		window.URL.revokeObjectURL(ctx.img);
+		if (ctx.img) window.URL.revokeObjectURL(ctx.img);
 	});
 }
 
@@ -376,7 +378,7 @@ export function uploadBlob(
 		const finish = () => {
 			disposeProgressWatch();
 			uploads.value = uploads.value.filter((x) => x.id !== id);
-			window.URL.revokeObjectURL(ctx.img);
+			if (ctx.img) window.URL.revokeObjectURL(ctx.img);
 		};
 
 		const formData = new FormData();
@@ -426,5 +428,132 @@ export function uploadBlob(
 			reject(new Error("Network error"));
 		};
 		xhr.send(formData);
+	});
+}
+
+export type UploadFromUrlOptions = {
+	folderId?: string | null;
+	isSensitive?: boolean;
+	comment?: string | null;
+	force?: boolean;
+	/** 進捗が途絶えてから失敗とみなすまでの時間（ミリ秒）。 */
+	idleTimeoutMs?: number;
+};
+
+/** 進捗が途絶えてから諦めるまでの既定時間。 */
+const URL_UPLOAD_IDLE_TIMEOUT_MS = 2 * 60 * 1000;
+
+/**
+ * URL を渡してサーバ側にダウンロードさせ、ドライブに登録する。
+ *
+ * @remarks
+ * この API は受け付けた時点で返り、実際の取得と登録は裏で走る。完了は main ストリームの
+ * urlUploadFinished で、その間の処理段階は driveFileProgress で受け取る。
+ * 進行中は他のアップロードと同じインジケータに出るので、
+ * 投稿フォームのアップロード待機判定（進行中タスクの有無）とも整合する。
+ *
+ * 待ち時間の上限は「最後に進捗が届いてからの経過時間」で見る。
+ * 大きなファイルでも進んでいる限り待ち、本当に音沙汰が無くなったときだけ諦める。
+ *
+ * @param url - 取得元の URL
+ * @param options - 保存先フォルダやセンシティブフラグなど
+ * @returns 作成された DriveFile
+ */
+export function uploadFromUrl(
+	url: string,
+	options: UploadFromUrlOptions = {},
+): Promise<Misskey.entities.DriveFile> {
+	const id = Math.random().toString();
+	const marker = uuid();
+
+	/** URL の末尾をファイル名として表示に使う。取れなければ URL をそのまま出す。 */
+	const displayName = (() => {
+		try {
+			return decodeURIComponent(
+				new URL(url).pathname.split("/").pop() || "",
+			) || url;
+		} catch {
+			return url;
+		}
+	})();
+
+	const ctx = reactive<Uploading>({
+		id,
+		name: displayName,
+		progressMax: undefined,
+		progressValue: undefined,
+		// 手元のファイルを送るわけではないのでサムネイルは出せない
+		img: null,
+		// クライアントからは送信するものが無く、最初からサーバ側の処理待ち
+		phase: "processing",
+		processingSince: Date.now(),
+		stage: null,
+		stageProgress: null,
+	});
+
+	uploads.value.push(ctx);
+
+	return new Promise<Misskey.entities.DriveFile>((resolve, reject) => {
+		const connection = stream.useChannel("main");
+		let idleTimer: number | null = null;
+		let settled = false;
+
+		const finish = () => {
+			if (idleTimer != null) window.clearTimeout(idleTimer);
+			idleTimer = null;
+			connection.dispose();
+			uploads.value = uploads.value.filter((x) => x.id !== id);
+		};
+
+		const succeed = (file: Misskey.entities.DriveFile) => {
+			if (settled) return;
+			settled = true;
+			finish();
+			resolve(file);
+		};
+
+		const fail = (err: unknown) => {
+			if (settled) return;
+			settled = true;
+			finish();
+			reject(err instanceof Error ? err : new Error(String(err)));
+		};
+
+		/** 進捗が届くたびに、諦めるまでの時計を延長する。 */
+		const extendIdleTimeout = () => {
+			if (settled) return;
+			if (idleTimer != null) window.clearTimeout(idleTimer);
+			idleTimer = window.setTimeout(() => {
+				fail(new Error("URL からのアップロードがタイムアウトしました。"));
+			}, options.idleTimeoutMs ?? URL_UPLOAD_IDLE_TIMEOUT_MS);
+		};
+
+		connection.on("driveFileProgress", (payload) => {
+			if (payload.marker !== marker) return;
+			ctx.stage = payload.stage;
+			ctx.stageProgress = payload.progress ?? null;
+			extendIdleTimeout();
+		});
+
+		connection.on("urlUploadFinished", (payload) => {
+			if (payload.marker !== marker) return;
+			// NOTE: サーバ側で取得・登録に失敗した場合は file が null で届く。
+			if (!payload.file) {
+				fail(new Error("URL からのアップロードに失敗しました。"));
+				return;
+			}
+			succeed(payload.file);
+		});
+
+		extendIdleTimeout();
+
+		os.api("drive/files/upload-from-url", {
+			url,
+			marker,
+			folderId: options.folderId ?? undefined,
+			isSensitive: options.isSensitive ?? false,
+			comment: options.comment ?? undefined,
+			force: options.force ?? false,
+		}).catch(fail);
 	});
 }

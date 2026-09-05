@@ -1,14 +1,11 @@
 import { ref } from "vue";
 import { DriveFile } from "calckey-js/built/entities";
 import * as os from "@/os";
-import { stream } from "@/stream";
 import { i18n } from "@/i18n";
 import { defaultStore } from "@/store";
-import { uploadFile } from "@/scripts/upload";
+import { uploadFile, uploadFromUrl } from "@/scripts/upload";
 import type { UploadFileOptions } from "@/scripts/upload";
 
-/** URL からのアップロード完了通知を待つ上限時間。これを超えたら諦めて settle する。 */
-const URL_UPLOAD_TIMEOUT_MS = 5 * 60 * 1000;
 
 /** ファイル選択がユーザ操作でキャンセルされたことを表すエラー。 */
 export class FileSelectCanceledError extends Error {
@@ -173,47 +170,15 @@ function select(
 					return;
 				}
 
-				const marker = Math.random().toString(); // TODO: UUIDとか使う
-				const queueData = os.addQueue({
-					endpoint: "drive/files/upload-from-url",
-					comment: i18n.ts.uploadFromUrl,
-				});
-
-				const connection = stream.useChannel("main");
-
-				// NOTE: 完了通知が届かないまま放置されると、キューの表示も Promise も
-				// 残り続けるため、上限時間を設けて必ず後始末する。
-				let timeoutId: number | null = null;
-				const cleanup = () => {
-					if (timeoutId != null) window.clearTimeout(timeoutId);
-					timeoutId = null;
-					os.removeQueue(queueData.id);
-					connection.dispose();
-				};
-				timeoutId = window.setTimeout(() => {
-					cleanup();
-					fail(new Error("URL からのアップロードがタイムアウトしました。"));
-				}, URL_UPLOAD_TIMEOUT_MS);
-
-				connection.on("urlUploadFinished", (urlResponse) => {
-					if (urlResponse.marker !== marker) return;
-					cleanup();
-					done(multiple ? [urlResponse.file] : urlResponse.file);
-				});
-
-				os.api("drive/files/upload-from-url", {
-					url: url,
-					folderId,
-					marker,
-				}).catch((err) => {
-					cleanup();
-					fail(err); // エラー発生時にリジェクト
-				});
-
-				os.alert({
-					title: i18n.ts.uploadFromUrlRequested,
-					text: i18n.ts.uploadFromUrlMayTakeTime,
-				});
+				// NOTE: 取得と登録の進捗はアップロードインジケータに出る。
+				// 完了・失敗・タイムアウトの後始末は uploadFromUrl 側が行う。
+				uploadFromUrl(url, { folderId })
+					.then((file) => {
+						done(multiple ? [file] : file);
+					})
+					.catch((err) => {
+						fail(err); // エラー発生時にリジェクト
+					});
 			}).catch((err) => {
 				fail(err); // エラー発生時にリジェクト
 			});

@@ -806,7 +806,17 @@ export async function selectInstance(): Promise<Misskey.entities.Instance> {
 	});
 }
 
-export async function selectDriveFile(multiple: boolean) {
+/**
+ * ドライブからファイルを選択するダイアログを開く。
+ *
+ * @param multiple - 複数選択を許可するか
+ * @param onCanceled - 選択せずに閉じられたときに呼ばれる。
+ *   従来の呼び出し元との互換のため、キャンセル時に Promise は解決しない。
+ */
+export async function selectDriveFile(
+	multiple: boolean,
+	onCanceled?: () => void,
+) {
 	return new Promise((resolve, reject) => {
 		popup(
 			defineAsyncComponent(
@@ -820,6 +830,9 @@ export async function selectDriveFile(multiple: boolean) {
 				done: (files) => {
 					if (files) {
 						resolve(multiple ? files : files[0]);
+					} else {
+						// NOTE: キャンセル時は done が引数無しで呼ばれる。
+						onCanceled?.();
 					}
 				},
 			},

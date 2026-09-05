@@ -47,9 +47,28 @@ export function uploadFile(
 ): Promise<Misskey.entities.DriveFile> {
 	if (folder && typeof folder === "object") folder = folder.id;
 
-	return new Promise((resolve, reject) => {
-		const id = Math.random().toString();
+	const id = Math.random().toString();
+	const ext = /\.\w+$/.exec(file.name) ?? "";
 
+	// NOTE: 圧縮確認やファイル名入力を挟んでいる間も「アップロード進行中」として
+	// 扱えるよう、XHR の開始時ではなくここで登録する。投稿フォームはこの件数を見て
+	// 「待機中の Promise だけが残っている異常状態」を判定するため、通常の前処理中に
+	// 空になっていると投稿が中止されてしまう。
+	const ctx = reactive<Uploading>({
+		id,
+		name:
+			name ||
+			(keepFileName
+				? file.name
+				: `${$i?.username}-${id.replaceAll(".", "")}${ext}`),
+		progressMax: undefined,
+		progressValue: undefined,
+		img: window.URL.createObjectURL(file),
+	});
+
+	uploads.value.push(ctx);
+
+	return new Promise<Misskey.entities.DriveFile>((resolve, reject) => {
 		const reader = new FileReader();
 		reader.onload = async (ev) => {
 			try {
@@ -75,8 +94,6 @@ export function uploadFile(
 					return;
 				}
 
-				const ext = /\.\w+$/.exec(file.name) ?? "";
-
 				let inputName: string | undefined;
 
 				if (requiredFilename || defaultStore.state.alwaysInputFilename) {
@@ -101,20 +118,8 @@ export function uploadFile(
 						return;
 					}
 					inputName = inputName + ext;
+					ctx.name = inputName;
 				}
-
-				const ctx = reactive<Uploading>({
-					id: id,
-					name:
-						inputName ||
-						name ||
-						(keepFileName ? file.name : `${$i?.username}-${id.replaceAll(".", "")}${ext}`),
-					progressMax: undefined,
-					progressValue: undefined,
-					img: window.URL.createObjectURL(file),
-				});
-
-				uploads.value.push(ctx);
 
 				let resizedImage: File | undefined;
 				if (!keepOriginal && file.type in compressTypeMap) {
@@ -158,8 +163,6 @@ export function uploadFile(
 						ev.target == null ||
 						ev.target.response == null
 					) {
-						uploads.value = uploads.value.filter((x) => x.id !== id);
-
 						if (xhr.status === 413) {
 							alert({
 								type: "error",
@@ -206,8 +209,6 @@ export function uploadFile(
 					const driveFile = JSON.parse(ev.target.response);
 
 					resolve(driveFile);
-
-					uploads.value = uploads.value.filter((x) => x.id !== id);
 				};
 
 				xhr.upload.onprogress = (ev) => {
@@ -218,7 +219,6 @@ export function uploadFile(
 				};
 
 				xhr.onerror = () => {
-						uploads.value = uploads.value.filter((x) => x.id !== id);
 					alert({
 						type: "error",
 						title: i18n.ts.failedToUpload,
@@ -234,6 +234,11 @@ export function uploadFile(
 		};
 		reader.onerror = () => reject(new Error("File reading failed"));
 		reader.readAsArrayBuffer(file);
+	}).finally(() => {
+		// NOTE: 中断・失敗を含めどの経路で終わっても、進行中一覧に残さない。
+		// ここが残ると投稿フォームが「アップロード進行中」と誤認し続ける。
+		uploads.value = uploads.value.filter((x) => x.id !== id);
+		window.URL.revokeObjectURL(ctx.img);
 	});
 }
 

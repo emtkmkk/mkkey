@@ -499,7 +499,7 @@ import { formatTimeString } from "@/scripts/format-time-string";
 import { Autocomplete } from "@/scripts/autocomplete";
 import * as os from "@/os";
 import { stream } from "@/stream";
-import { selectFiles } from "@/scripts/select-file";
+import { selectFilesOrNull } from "@/scripts/select-file";
 import { defaultStore, notePostInterruptors, postFormActions } from "@/store";
 import MkInfo from "@/components/MkInfo.vue";
 import { i18n } from "@/i18n";
@@ -1821,13 +1821,17 @@ function focus() {
 }
 
 function chooseFileFrom(ev) {
+        // NOTE: キャンセルされた場合は null が返る。ここで [] に畳んでおかないと、
+        // 追跡中の Promise が settle せずアップロード待機が終わらなくなる。
         enqueueUpload(() =>
-                selectFiles(
+                selectFilesOrNull(
                         ev.currentTarget ?? ev.target,
                         i18n.ts.attachFile,
                         requiredFilename,
-                ),
-        );
+                ).then((selected) => selected ?? []),
+        ).catch(() => {
+                // noop: 失敗はアップロード側で通知済み
+        });
 }
 
 function detachFile(id) {
@@ -2752,9 +2756,15 @@ async function resolvePostAccountToken(
 }
 
 async function waitForFileSelectingToBeFalse(backupDraftData) {
+	// NOTE: fileError は enqueueUpload の開始時にしかリセットされないため、
+	// 過去のキャンセル等で立ったフラグを引きずったまま次の投稿を止めてしまう。
+	// この待機で発生した失敗だけを見たいので、ここで一度クリアする。
+	fileError = false;
+
 	if (filePromises.length === 0) return;
 
 	const staleUploadWaitMs = 1000;
+	const pollIntervalMs = 200;
 	const overallTimeoutMs = 60 * 1000;
 	const startedAt = Date.now();
 	let noActiveUploadsSince: number | null = null;
@@ -2769,9 +2779,13 @@ async function waitForFileSelectingToBeFalse(backupDraftData) {
 	try {
 		while (filePromises.length > 0) {
 			// NOTE: filePromises にぶら下がっている全てのアップロード処理が settle するまで待機する。
-			// どれか 1 つでも resolve/reject されない場合は、ここでブロックされ続けるため、
-			// 呼び出し元での overallTimeoutMs によるガードと組み合わせてハングを防ぐ。
-			await Promise.allSettled([...filePromises]);
+			// どれか 1 つでも resolve/reject されない場合、allSettled は永久に解決しない。
+			// 単純に await すると以降のタイムアウト判定・スタール検出まで到達できなくなるため、
+			// ポーリング用の sleep と race させ、必ず下のガードを通るようにする。
+			await Promise.race([
+				Promise.allSettled([...filePromises]),
+				sleepMs(pollIntervalMs),
+			]);
 
 			if (Date.now() - startedAt >= overallTimeoutMs) {
 				// NOTE: アップロード待機が一定時間を超えた場合は「安全側」に倒して投稿自体を中止する。
@@ -2779,9 +2793,18 @@ async function waitForFileSelectingToBeFalse(backupDraftData) {
 				throw new Error("ファイルのアップロード待機がタイムアウトしました。");
 			}
 
+			// NOTE: URL からのアップロードは uploads ではなくキューで進行状況を持つ。
+			// ここで数え漏らすと、サーバがダウンロード中なだけの状態を
+			// 「異常」と誤判定して投稿を中止してしまう。
+			const activeUploadCount =
+				uploads.value.length +
+				os.queueDatas.value.filter(
+					(x) => x.endpoint === "drive/files/upload-from-url",
+				).length;
+
 			const waitState = evaluateUploadWaitState({
 				pendingPromiseCount: filePromises.length,
-				activeUploadCount: uploads.value.length,
+				activeUploadCount,
 				now: Date.now(),
 				noActiveUploadsSince,
 				staleUploadWaitMs,
@@ -2796,7 +2819,7 @@ async function waitForFileSelectingToBeFalse(backupDraftData) {
 					"[MkPostForm] Detected stale upload wait promises; aborting post to avoid inconsistent attachment state",
 					{
 						pendingPromiseCount: filePromises.length,
-						activeUploadCount: uploads.value.length,
+						activeUploadCount,
 						staleUploadWaitMs,
 					},
 				);
@@ -2809,7 +2832,11 @@ async function waitForFileSelectingToBeFalse(backupDraftData) {
 			}
 		}
 	} catch (err) {
-		throw new Error("アップロードに失敗しました。");
+		// NOTE: ここに来るのは上で明示的に throw したケースのみ（allSettled は reject しない）。
+		// 中止理由が分かるようメッセージを保持する。
+		throw err instanceof Error
+			? err
+			: new Error("アップロードに失敗しました。");
 	} finally {
 		if (addData) {
 			os.removeQueue(addData.id);

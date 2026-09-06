@@ -83,6 +83,203 @@ function watchServerProgress(marker: string, ctx: Uploading): () => void {
 
 export const uploads = ref<Uploading[]>([]);
 
+/** Cloudflare の 100 MB 制限より手前で分割アップロードへ切り替える。 */
+const CHUNKED_UPLOAD_THRESHOLD = 90 * 1024 * 1024;
+
+/** 分割アップロード開始 API の応答。 */
+type ChunkedUploadSession = {
+	uploadId: string;
+	chunkSize: number;
+	totalParts: number;
+	expiresAt: string;
+};
+
+/** `os.api` の通知抑止引数を分割アップロードから使うための型。 */
+type SilentApiCall = (
+	endpoint: string,
+	data: Record<string, unknown>,
+	token?: string | null,
+	suppressToast?: boolean,
+) => Promise<unknown>;
+
+/** 複数 API を使う処理でエラー通知を 1 回にまとめる。 */
+const callApiWithoutToast = os.api as unknown as SilentApiCall;
+
+/** 分割アップロードのパート送信失敗。 */
+class ChunkedUploadPartError extends Error {
+	/** HTTP ステータス。通信自体に失敗した場合は 0。 */
+	public readonly status: number;
+
+	/**
+	 * パート送信失敗を生成する。
+	 *
+	 * @param status - HTTP ステータス
+	 * @internal
+	 */
+	public constructor(status: number) {
+		super(`Chunked upload part failed with status ${status}`);
+		this.name = "ChunkedUploadPartError";
+		this.status = status;
+	}
+}
+
+/**
+ * 分割経路の失敗理由を既存アップロードと同じ利用者向け文言へ変換する。
+ *
+ * @param error - API またはパート送信のエラー
+ * @returns ダイアログに表示する文言
+ * @internal
+ */
+function chunkedUploadErrorMessage(error: unknown): string {
+	const apiError = error as {
+		id?: string;
+		info?: { reason?: string };
+	};
+	if (apiError.id === "bec5bd69-fba3-43c9-b4fb-2894b66ad5d2") {
+		return i18n.ts.cannotUploadBecauseInappropriate;
+	}
+	if (apiError.id === "d08dbc37-a6a9-463a-8c47-96c32ab5f064") {
+		return i18n.ts.cannotUploadBecauseNoFreeSpace;
+	}
+	if (
+		apiError.info?.reason === "INVALID_FILE_SIZE" ||
+		(error instanceof ChunkedUploadPartError && error.status === 413)
+	) {
+		return i18n.ts.cannotUploadBecauseExceedsFileSizeLimit;
+	}
+	return i18n.ts.chunkedUploadFailed;
+}
+
+/**
+ * 1 パートを送信し、ファイル全体に対する進捗を反映する。
+ *
+ * @remarks
+ * NOTE: 現行アップロードと挙動を揃えるため、自動再送は行わない。
+ *
+ * @param session - 分割アップロードセッション
+ * @param file - 送信対象ファイル
+ * @param fileName - パートの multipart ファイル名に使う名前
+ * @param partNumber - 1 始まりのパート番号
+ * @param ctx - 進捗の反映先
+ * @returns パート受領時に解決する Promise
+ * @internal
+ */
+function sendChunkedUploadPart(
+	session: ChunkedUploadSession,
+	file: Blob,
+	fileName: string,
+	partNumber: number,
+	ctx: Uploading,
+): Promise<void> {
+	const offset = (partNumber - 1) * session.chunkSize;
+	const end = Math.min(offset + session.chunkSize, file.size);
+	const formData = new FormData();
+	formData.append("uploadId", session.uploadId);
+	formData.append("partNumber", String(partNumber));
+	formData.append(
+		"file",
+		file.slice(offset, end),
+		`${fileName}.part${partNumber}`,
+	);
+
+	return new Promise((resolve, reject) => {
+		const xhr = new XMLHttpRequest();
+		xhr.open("POST", `${apiUrl}/drive/files/upload/part`, true);
+		if ($i?.token) xhr.setRequestHeader("Authorization", `Bearer ${$i.token}`);
+		applyMkkeyClientHeadersToXhr(xhr);
+		xhr.onload = () => {
+			if (xhr.status !== 200) {
+				reject(new ChunkedUploadPartError(xhr.status));
+				return;
+			}
+			ctx.progressValue = end;
+			resolve();
+		};
+		xhr.upload.onprogress = (event) => {
+			if (!event.lengthComputable) return;
+			ctx.progressMax = file.size;
+			ctx.progressValue = Math.min(offset + event.loaded, file.size);
+		};
+		xhr.onerror = () => reject(new ChunkedUploadPartError(0));
+		xhr.onabort = () => reject(new ChunkedUploadPartError(0));
+		xhr.send(formData);
+	});
+}
+
+/**
+ * 大きなファイルを直列に分割送信して DriveFile として確定する。
+ *
+ * @remarks
+ * 途中で失敗した場合はセッションを破棄し、その場で終了する。自動再送と
+ * ページ再読み込み後の再開は行わない。中止 API 自体に失敗した一時データは
+ * サーバーの期限切れ削除へ任せる。
+ *
+ * @param file - 送信対象ファイル
+ * @param folderId - 保存先フォルダ ID
+ * @param name - Drive 上のファイル名
+ * @param marker - サーバー側処理進捗との対応用 ID
+ * @param force - 同一ハッシュの既存ファイルを再利用しないか
+ * @param ctx - 進捗の反映先
+ * @returns 作成された DriveFile
+ * @internal
+ */
+async function uploadFileInChunks(
+	file: Blob,
+	folderId: string | null,
+	name: string,
+	marker: string,
+	force: boolean,
+	ctx: Uploading,
+): Promise<Misskey.entities.DriveFile> {
+	let uploadId: string | null = null;
+	try {
+		const session = (await callApiWithoutToast(
+			"drive/files/upload/init",
+			{
+				name,
+				size: file.size,
+				folderId,
+				force,
+				marker,
+			},
+			undefined,
+			true,
+		)) as ChunkedUploadSession;
+		uploadId = session.uploadId;
+		ctx.phase = "sending";
+		ctx.progressMax = file.size;
+		ctx.progressValue = 0;
+
+		for (let partNumber = 1; partNumber <= session.totalParts; partNumber++) {
+			await sendChunkedUploadPart(session, file, name, partNumber, ctx);
+		}
+
+		ctx.phase = "processing";
+		ctx.processingSince = Date.now();
+		return (await callApiWithoutToast(
+			"drive/files/upload/complete",
+			{ uploadId: session.uploadId },
+			undefined,
+			true,
+		)) as Misskey.entities.DriveFile;
+	} catch (error) {
+		if (uploadId != null) {
+			await callApiWithoutToast(
+				"drive/files/upload/abort",
+				{ uploadId },
+				undefined,
+				true,
+			).catch(() => {});
+		}
+		alert({
+			type: "error",
+			title: i18n.ts.failedToUpload,
+			text: chunkedUploadErrorMessage(error),
+		});
+		throw error;
+	}
+}
+
 const compressTypeMap = {
 	"image/jpeg": { quality: 0.85, mimeType: "image/jpeg" },
 	"image/webp": { quality: 0.85, mimeType: "image/png" },
@@ -142,9 +339,12 @@ export function uploadFile(
 
 	return new Promise<Misskey.entities.DriveFile>((resolve, reject) => {
 		const reader = new FileReader();
-		reader.onload = async (ev) => {
+		reader.onload = async () => {
 			try {
-				if (!defaultStore.state.confirmImgCompress && file.type in compressTypeMap) {
+				if (
+					!defaultStore.state.confirmImgCompress &&
+					file.type in compressTypeMap
+				) {
 					const { canceled } = await os.yesno({
 						type: "question",
 						text: i18n.ts.compressImageConfirm,
@@ -193,7 +393,7 @@ export function uploadFile(
 					ctx.name = inputName;
 				}
 
-				let resizedImage: File | undefined;
+				let resizedImage: Blob | undefined;
 				if (!keepOriginal && file.type in compressTypeMap) {
 					const imgConfig = compressTypeMap[file.type];
 
@@ -220,10 +420,26 @@ export function uploadFile(
 					}
 				}
 
-                                const formData = new FormData();
-                                if (options?.force) {
-                                        formData.append("force", "true");
-                                }
+				const uploadTarget = resizedImage || file;
+				if (uploadTarget.size >= CHUNKED_UPLOAD_THRESHOLD) {
+					disposeProgressWatch = watchServerProgress(marker, ctx);
+					resolve(
+						await uploadFileInChunks(
+							uploadTarget,
+							folder ?? null,
+							ctx.name,
+							marker,
+							options?.force ?? false,
+							ctx,
+						),
+					);
+					return;
+				}
+
+				const formData = new FormData();
+				if (options?.force) {
+					formData.append("force", "true");
+				}
 				formData.append("marker", marker);
 				formData.append("file", resizedImage || file);
 				formData.append("name", ctx.name);
@@ -318,7 +534,9 @@ export function uploadFile(
 			}
 		};
 		reader.onerror = () => reject(new Error("File reading failed"));
-		reader.readAsArrayBuffer(file);
+		// NOTE: ファイル全体をメモリへ読む必要はない。FileReader による読取可否の
+		// 既存チェックだけを残し、巨大動画でも先頭 1 byte のみに抑える。
+		reader.readAsArrayBuffer(file.slice(0, 1));
 	}).finally(() => {
 		// NOTE: 中断・失敗を含めどの経路で終わっても、進行中一覧とストリーム購読を残さない。
 		// ここが残ると投稿フォームが「アップロード進行中」と誤認し続ける。

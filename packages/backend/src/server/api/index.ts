@@ -151,31 +151,57 @@ mastoRouter.use(async (ctx, next) => {
 
 apiMastodonCompatible(mastoRouter);
 
-const uploadFile = async (ctx, next) => {
-	if (ctx.req.headers['content-disposition'] && !ctx.req.headers['content-disposition'].includes("filename")) {
-		const newHeaders = {
-			...ctx.req.headers,
-			'content-disposition': `${ctx.req.headers['content-disposition']}; filename="${uuid()}"`,
+const uploadFile = (fileSizeLimit?: number) => {
+	const receiveFile = multer({
+		storage: multer.diskStorage({}),
+		limits: {
+			fileSize: fileSizeLimit ?? config.maxFileSize ?? 262144000,
+			files: 1,
+		},
+	}).any();
+
+	return async (ctx, next) => {
+		/** 認証・検証で API 本体まで到達しなかった場合も受信済み一時ファイルを残さない。 */
+		const cleanupReceivedFiles = () => {
+			for (const file of ctx.files ?? []) {
+				if (file?.path) fs.unlink(file.path, () => {});
+			}
 		};
-		ctx.request.headers = newHeaders;
-		ctx.req.headers = newHeaders;
-	}
-	await new Promise((resolve, reject) => {
-		upload.any()(ctx, (err) => {
-			if (err) return reject(err);
-			resolve("");
-		});
-	});
 
-	if (ctx.files && ctx.files.length === 1) {
-		apiLogger.debug(`${ctx.files.length} Files Found.`);
-		ctx.file = ctx.files[0];
-	} else {
-		apiLogger.debug(`${ctx.files?.length ?? 0} Files Found.`);
-	}
+		if (
+			ctx.req.headers["content-disposition"] &&
+			!ctx.req.headers["content-disposition"].includes("filename")
+		) {
+			const newHeaders = {
+				...ctx.req.headers,
+				"content-disposition": `${
+					ctx.req.headers["content-disposition"]
+				}; filename="${uuid()}"`,
+			};
+			ctx.request.headers = newHeaders;
+			ctx.req.headers = newHeaders;
+		}
+		try {
+			await new Promise((resolve, reject) => {
+				receiveFile(ctx, (err) => {
+					if (err) return reject(err);
+					resolve("");
+				});
+			});
 
-	await next();
-}
+			if (ctx.files && ctx.files.length === 1) {
+				apiLogger.debug(`${ctx.files.length} Files Found.`);
+				ctx.file = ctx.files[0];
+			} else {
+				apiLogger.debug(`${ctx.files?.length ?? 0} Files Found.`);
+			}
+
+			await next();
+		} finally {
+			cleanupReceivedFiles();
+		}
+	};
+};
 
 /**
  * エンドポイントハンドラを登録
@@ -184,7 +210,7 @@ for (const endpoint of [...endpoints, ...compatibility]) {
 	if (endpoint.meta.requireFile) {
 		router.post(
 			`/${endpoint.name}`,
-			uploadFile,
+			uploadFile(endpoint.meta.fileSizeLimit),
 			handler.bind(null, endpoint),
 		);
 	} else {

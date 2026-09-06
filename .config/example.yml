@@ -202,6 +202,8 @@ reservedUsernames: [
 #  sha256CertFingerprints: ['AB:CD:EF']
 
 # Upload or download file size limits (bytes)
+# NOTE: 公式 Web クライアントは 90 MiB 以上を分割し、OS の一時ディレクトリで
+# 完成ファイルを組み立てる。進行中のファイル分だけ一時ディスク容量が必要になる。
 #maxFileSize: 262144000
 
 # Managed hosting settings

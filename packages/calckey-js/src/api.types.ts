@@ -436,6 +436,35 @@ export type Endpoints = {
 		};
 		res: DriveFile;
 	};
+	"drive/files/upload/abort": {
+		req: { uploadId: string };
+		res: null;
+	};
+	"drive/files/upload/complete": {
+		req: { uploadId: string };
+		res: DriveFile;
+	};
+	"drive/files/upload/init": {
+		req: {
+			name?: string | null;
+			size: number;
+			folderId?: DriveFolder["id"] | null;
+			comment?: string | null;
+			isSensitive?: boolean;
+			force?: boolean;
+			marker?: string | null;
+		};
+		res: {
+			uploadId: string;
+			chunkSize: number;
+			totalParts: number;
+			expiresAt: string;
+		};
+	};
+	"drive/files/upload/part": {
+		req: { uploadId: string; partNumber: number };
+		res: { receivedBytes: number };
+	};
 	"drive/files/upload-from-url": {
 		req: {
 			url: string;

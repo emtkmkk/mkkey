@@ -156,6 +156,10 @@ import * as ep___drive_files_findByHash from "./endpoints/drive/files/find-by-ha
 import * as ep___drive_files_find from "./endpoints/drive/files/find.js";
 import * as ep___drive_files_show from "./endpoints/drive/files/show.js";
 import * as ep___drive_files_update from "./endpoints/drive/files/update.js";
+import * as ep___drive_files_upload_abort from "./endpoints/drive/files/upload/abort.js";
+import * as ep___drive_files_upload_complete from "./endpoints/drive/files/upload/complete.js";
+import * as ep___drive_files_upload_init from "./endpoints/drive/files/upload/init.js";
+import * as ep___drive_files_upload_part from "./endpoints/drive/files/upload/part.js";
 import * as ep___drive_files_uploadFromUrl from "./endpoints/drive/files/upload-from-url.js";
 import * as ep___drive_folders from "./endpoints/drive/folders.js";
 import * as ep___drive_folders_create from "./endpoints/drive/folders/create.js";
@@ -571,6 +575,10 @@ const eps = [
 	["drive/files/find", ep___drive_files_find],
 	["drive/files/show", ep___drive_files_show],
 	["drive/files/update", ep___drive_files_update],
+	["drive/files/upload/abort", ep___drive_files_upload_abort],
+	["drive/files/upload/complete", ep___drive_files_upload_complete],
+	["drive/files/upload/init", ep___drive_files_upload_init],
+	["drive/files/upload/part", ep___drive_files_upload_part],
 	["drive/files/upload-from-url", ep___drive_files_uploadFromUrl],
 	["drive/folders", ep___drive_folders],
 	["drive/folders/create", ep___drive_folders_create],
@@ -901,6 +909,15 @@ export interface IEndpointMeta {
 	 * 省略した場合は false として解釈されます。
 	 */
 	readonly requireFile?: boolean;
+
+	/**
+	 * 添付ファイル 1 件の受信上限（bytes）。
+	 *
+	 * @remarks
+	 * 未指定時はインスタンス全体の `maxFileSize` を使う。分割アップロードの
+	 * パートなど、用途ごとに小さい上限を Multer で強制したい場合に指定する。
+	 */
+	readonly fileSizeLimit?: number;
 
 	/**
 	 * サードパーティアプリからはリクエストすることができないか否か

@@ -8,12 +8,13 @@
  *
  * @internal
  */
-import { monitorEventLoopDelay } from "perf_hooks";
+import si from "systeminformation";
 import Xev from "xev";
 import { db } from "@/db/postgre.js";
 import { redisClient } from "@/db/redis.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import { resolveRssBytes } from "@/misc/process-rss.js";
+import { calculateHealthScore } from "@/services/health-score.js";
 
 type ServerStats = {
 	cpu: number;
@@ -28,12 +29,15 @@ type ApiLatencySample = {
 	responseMs: number;
 	/** エンドポイント名（例: notes/timeline） */
 	endpoint: string;
+	/** HTTP 5xx 相当の内部エラーで完了したか。 */
+	serverError?: boolean;
 };
 
 type QueueStats = {
 	deliver: {
 		activeSincePrevTick: number;
 		waiting: number;
+		oldestWaitingMs: number;
 		delayed: number;
 		delayedByReason: {
 			remote: number;
@@ -45,6 +49,7 @@ type QueueStats = {
 	inbox: {
 		activeSincePrevTick: number;
 		waiting: number;
+		oldestWaitingMs: number;
 		delayed: number;
 		delayedByReason: {
 			remote: number;
@@ -54,8 +59,6 @@ type QueueStats = {
 		};
 	};
 };
-
-
 
 type SlowQuerySample = {
 	pid: number;
@@ -83,7 +86,21 @@ type WorkerMemory = {
 	externalMb: number;
 	arrayBuffersMb: number;
 	peakRssMb: number;
+	eventLoopLagMs: number | null;
 	at: number;
+};
+
+/** master が通知する予期しないワーカー終了。 */
+type WorkerRestart = {
+	mode: "web" | "queue";
+	index: string;
+	at: number;
+};
+
+/** 起動構成から渡される期待ワーカー数。 */
+type HealthStatsOptions = {
+	expectedWebWorkers: number;
+	expectedQueueWorkers: number;
 };
 
 const ev = new Xev();
@@ -91,8 +108,10 @@ const ev = new Xev();
 const interval = 5000;
 const dbProbeInterval = 30000;
 const redisProbeInterval = 30000;
+const diskProbeInterval = 60000;
 const queueStatsIntervalSec = 10;
 const apiLatencyWindowMs = 5 * 60 * 1000;
+const workerRestartWindowMs = 10 * 60 * 1000;
 const minApiSampleCount = 5;
 const incidentCooldownMs = 5 * 60 * 1000;
 const longRunningQueryThresholdMs = 5000;
@@ -102,6 +121,8 @@ const recentSlowCallsLimit = 10;
 const slowestEndpointsTopN = 5;
 /** ワーカーのメモリ報告をどれだけ古くなるまで有効とみなすか（死んだワーカーを落とす） */
 const workerMemoryStaleMs = 60_000;
+/** これより新しい報告だけを応答中ワーカーとして数える。 */
+const workerHeartbeatFreshMs = 15_000;
 /** ワーカー RSS のインシデント閾値（MB）。通常運用は 250-450MB 程度。 */
 const workerRssWarnMb = 800;
 const workerRssCriticalMb = 1200;
@@ -273,21 +294,31 @@ function generateDiagnosis(s: StatsForDiagnosis): DiagnosisItem[] {
 }
 
 /**
- * Report health score source stats regularly
+ * ヘルス統計の収集と固定スコアの配信を開始する。
+ *
+ * @param options - 起動構成上の期待ワーカー数
+ * @returns 戻り値なし
+ * @internal
  */
-export default function () {
-	const log = [] as any[];
-	const eventLoopDelay = monitorEventLoopDelay({ resolution: 20 });
-	eventLoopDelay.enable();
+export default function (options: HealthStatsOptions): void {
+	const log: unknown[] = [];
+	/** 起動直後のワーカーハートビート未着を障害として扱わないための基準時刻。 */
+	const startedAt = Date.now();
 
 	let latestServerStats: ServerStats | null = null;
 	let latestQueueStats: QueueStats | null = null;
-	let dbLatencyMs = 0;
-	let redisLatencyMs = 0;
+	let dbLatencyMs: number | null = null;
+	let redisLatencyMs: number | null = null;
+	let dbAvailable: boolean | null = null;
+	let redisAvailable: boolean | null = null;
+	let diskAvailablePercent: number | null = null;
+	let diskAvailableBytes: number | null = null;
 	let dbLatencyMeasuredAt: number | null = null;
 	let redisLatencyMeasuredAt: number | null = null;
+	let diskMeasuredAt: number | null = null;
 	let isDbProbeRunning = false;
 	let isRedisProbeRunning = false;
+	let isDiskProbeRunning = false;
 	type RecentSlowCall = { endpoint: string; responseMs: number; at: number };
 	let apiLatencySamples: ApiLatencySample[] = [];
 	let recentSlowCalls: RecentSlowCall[] = [];
@@ -300,6 +331,7 @@ export default function () {
 		idleInTransaction: 0,
 	};
 	let federationNotRespondingCount = 0;
+	let workerRestarts: WorkerRestart[] = [];
 	const lastIncidentAtByMetric = new Map<string, number>();
 
 	/** プロセス起動以降のヒープ等の最大値（障害ログ用） */
@@ -316,12 +348,17 @@ export default function () {
 		activeApiRequests = Math.max(0, activeApiRequests - 1);
 	});
 
-	/** ワーカー pid -> 直近のメモリ報告 */
-	const workerMemoryByPid = new Map<number, WorkerMemory>();
+	/** ワーカースロット（mode:index） -> 直近のハートビート兼メモリ報告 */
+	const workerMemoryBySlot = new Map<string, WorkerMemory>();
 
 	ev.on("workerMemory", (m: WorkerMemory) => {
 		if (m?.pid == null) return;
-		workerMemoryByPid.set(m.pid, m);
+		workerMemoryBySlot.set(`${m.mode}:${m.index}`, m);
+	});
+
+	ev.on("workerRestart", (restart: WorkerRestart) => {
+		if (!(restart?.mode && Number.isFinite(restart.at))) return;
+		workerRestarts.push(restart);
 	});
 
 	ev.on("serverStats", (stats: ServerStats) => {
@@ -362,8 +399,10 @@ export default function () {
 		try {
 			await db.query("SELECT 1");
 			dbLatencyMs = Date.now() - startedAt;
+			dbAvailable = true;
 		} catch {
 			dbLatencyMs = dbProbeInterval;
+			dbAvailable = false;
 		} finally {
 			dbLatencyMeasuredAt = Date.now();
 			isDbProbeRunning = false;
@@ -381,11 +420,41 @@ export default function () {
 		try {
 			await redisClient.ping();
 			redisLatencyMs = Date.now() - startedAt;
+			redisAvailable = true;
 		} catch {
 			redisLatencyMs = redisProbeInterval;
+			redisAvailable = false;
 		} finally {
 			redisLatencyMeasuredAt = Date.now();
 			isRedisProbeRunning = false;
+		}
+	};
+
+	/** 低頻度でアプリサーバーのルートファイルシステム空き容量を更新する。 */
+	const maybeProbeDisk = async (): Promise<void> => {
+		const now = Date.now();
+		if (isDiskProbeRunning) return;
+		if (diskMeasuredAt && now - diskMeasuredAt < diskProbeInterval) return;
+
+		isDiskProbeRunning = true;
+		try {
+			const fileSystems = await si.fsSize();
+			const root =
+				fileSystems.find((fileSystem) => fileSystem.mount === "/") ??
+				[...fileSystems].sort((a, b) => b.size - a.size)[0];
+			if (root && root.size > 0) {
+				diskAvailableBytes = root.available;
+				diskAvailablePercent = (root.available / root.size) * 100;
+			} else {
+				diskAvailableBytes = null;
+				diskAvailablePercent = null;
+			}
+		} catch {
+			diskAvailableBytes = null;
+			diskAvailablePercent = null;
+		} finally {
+			diskMeasuredAt = Date.now();
+			isDiskProbeRunning = false;
 		}
 	};
 
@@ -472,6 +541,7 @@ export default function () {
 		await Promise.all([
 			maybeProbeDb(),
 			maybeProbeRedis(),
+			maybeProbeDisk(),
 			maybeCollectLongRunningQueries(),
 			maybeCollectDbPoolStats(),
 			maybeCollectFederationStats(),
@@ -503,7 +573,13 @@ export default function () {
 		const queueThroughputPerSec = queueThroughputPerTick / queueStatsIntervalSec;
 		const queuePressure = queueWaiting / Math.max(queueThroughputPerTick, 1);
 
+		const apiCutoff = Date.now() - apiLatencyWindowMs;
+		apiLatencySamples = apiLatencySamples.filter((sample) => sample.at >= apiCutoff);
+		recentSlowCalls = recentSlowCalls.filter((sample) => sample.at >= apiCutoff);
 		const apiLatencyCount = apiLatencySamples.length;
+		const apiServerErrorCount = apiLatencySamples.filter(
+			(sample) => sample.serverError === true,
+		).length;
 		const apiLatencyAverageMs =
 			apiLatencyCount > 0
 				? apiLatencySamples.reduce((sum, sample) => sum + sample.responseMs, 0) /
@@ -574,13 +650,36 @@ export default function () {
 			heapUsagePercentMax: round(maxHeapUsagePercent),
 		};
 
-		// ワーカーのメモリ集計。heapStats は master のものなので、膨張はこちらでしか見えない。
+		// ワーカーのメモリと応答性を集計する。古いスロット報告は欠損判定後に破棄する。
 		const nowMs = Date.now();
-		for (const [pid, m] of workerMemoryByPid) {
-			if (nowMs - m.at > workerMemoryStaleMs) workerMemoryByPid.delete(pid);
+		for (const [slot, worker] of workerMemoryBySlot) {
+			if (nowMs - worker.at > workerMemoryStaleMs) {
+				workerMemoryBySlot.delete(slot);
+			}
 		}
-		const liveWorkers = [...workerMemoryByPid.values()].sort(
+		const liveWorkers = [...workerMemoryBySlot.values()]
+			.filter((worker) => nowMs - worker.at <= workerHeartbeatFreshMs)
+			.sort(
 			(a, b) => b.rssMb - a.rssMb,
+			);
+		const liveWebWorkers = liveWorkers.filter((worker) => worker.mode === "web");
+		const liveQueueWorkers = liveWorkers.filter(
+			(worker) => worker.mode === "queue",
+		);
+		const workerEventLoopLagMs = liveWebWorkers.reduce<number | null>(
+			(max, worker) => {
+				if (
+					worker.eventLoopLagMs == null ||
+					!Number.isFinite(worker.eventLoopLagMs)
+				) {
+					return max;
+				}
+				return max == null ? worker.eventLoopLagMs : Math.max(max, worker.eventLoopLagMs);
+			},
+			null,
+		);
+		workerRestarts = workerRestarts.filter(
+			(restart) => restart.at >= nowMs - workerRestartWindowMs,
 		);
 		const worstWorker = liveWorkers[0];
 		const workerMemory = {
@@ -598,7 +697,16 @@ export default function () {
 				externalMb: w.externalMb,
 				arrayBuffersMb: w.arrayBuffersMb,
 				peakRssMb: w.peakRssMb,
+				eventLoopLagMs: w.eventLoopLagMs,
 			})),
+		};
+		const workerHealth = {
+			expectedWebWorkers: options.expectedWebWorkers,
+			respondingWebWorkers: liveWebWorkers.length,
+			expectedQueueWorkers: options.expectedQueueWorkers,
+			respondingQueueWorkers: liveQueueWorkers.length,
+			restartCount10m: workerRestarts.length,
+			maxEventLoopLagMs: workerEventLoopLagMs,
 		};
 
 		const federationStats = {
@@ -616,6 +724,41 @@ export default function () {
 				pending: 0,
 			},
 		};
+		// 全ワーカーが最初の報告を送るまでの短い猶予中は、生存率とキュー実行系を評価しない。
+		const workerExpectationsReady =
+			nowMs - startedAt >= workerHeartbeatFreshMs;
+		const calculatedHealthScore = calculateHealthScore({
+			apiLatencyP95Ms:
+				apiLatencyCount >= minApiSampleCount ? round(apiLatencyP95Ms) : null,
+			apiLatencySampleCount: apiLatencyCount,
+			apiServerErrorCount,
+			expectedWebWorkers: workerExpectationsReady
+				? options.expectedWebWorkers
+				: 0,
+			respondingWebWorkers: liveWebWorkers.length,
+			expectedQueueWorkers: workerExpectationsReady
+				? options.expectedQueueWorkers
+				: 0,
+			respondingQueueWorkers: liveQueueWorkers.length,
+			workerRestartCount10m: workerRestarts.length,
+			workerEventLoopLagMs,
+			inboxOldestWaitingMs: latestQueueStats?.inbox.oldestWaitingMs ?? null,
+			deliverOldestWaitingMs: latestQueueStats?.deliver.oldestWaitingMs ?? null,
+			dbLatencyMs,
+			dbAvailable,
+			redisLatencyMs,
+			redisAvailable,
+			workerMaxRssMb: worstWorker?.rssMb ?? null,
+			diskAvailablePercent,
+			diskAvailableBytes,
+		});
+		const healthScore = workerExpectationsReady
+			? calculatedHealthScore
+			: {
+					...calculatedHealthScore,
+					score: null,
+					status: "unknown" as const,
+				};
 
 		const stats = {
 			cpuUsage: round(cpuUsage * 100),
@@ -623,22 +766,36 @@ export default function () {
 			queuePressure: round(queuePressure),
 			queueWaiting,
 			queueThroughputPerSec: round(queueThroughputPerSec),
-			eventLoopLagMs: round(eventLoopDelay.mean / 1e6),
-			dbLatencyMs,
-			redisLatencyMs,
+			eventLoopLagMs: round(workerEventLoopLagMs ?? 0),
+			dbLatencyMs: dbLatencyMs ?? 0,
+			redisLatencyMs: redisLatencyMs ?? 0,
+			dbAvailable,
+			redisAvailable,
+			diskAvailablePercent:
+				diskAvailablePercent == null ? null : round(diskAvailablePercent),
+			diskAvailableBytes,
 			activeApiRequests,
 			apiLatencyAvgMs: round(apiLatencyAverageMs),
 			apiLatencyP50Ms,
 			apiLatencyP95Ms: round(apiLatencyP95Ms),
 			apiLatencySampleCount: apiLatencyCount,
+			apiServerErrorCount,
+			apiServerErrorRate:
+				apiLatencyCount > 0
+					? round((apiServerErrorCount / apiLatencyCount) * 100)
+					: null,
+			inboxOldestWaitingMs: latestQueueStats?.inbox.oldestWaitingMs ?? null,
+			deliverOldestWaitingMs: latestQueueStats?.deliver.oldestWaitingMs ?? null,
 			slowestEndpoints,
 			recentSlowCalls: [...recentSlowCalls],
 			heapStats,
 			workerMemory,
+			workerHealth,
 			dbPoolStats,
 			federationStats,
 			longRunningQueryCount: slowQueries.length,
 			longRunningQueries: slowQueries,
+			healthScore,
 		};
 
 		(stats as Record<string, unknown>).diagnosis = generateDiagnosis(

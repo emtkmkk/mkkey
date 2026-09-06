@@ -161,6 +161,13 @@ function setupClusterPrimaryHandlers(): void {
 		}
 
 		const { mode, index, proxy } = info;
+		ev.emit("workerRestart", {
+			mode,
+			index,
+			code,
+			signal,
+			at: Date.now(),
+		});
 
 		const slotKey = `${mode}:${index}`;
 

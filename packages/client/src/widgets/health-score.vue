@@ -11,7 +11,7 @@
 
 		<div class="panel">
 			<div class="score">
-				<div class="value">{{ score }}</div>
+				<div class="value">{{ scoreText }}</div>
 				<div class="meta">
 					<div class="status" :class="statusClass">{{ statusLabel }}</div>
 					<div class="timestamp">{{ i18n.ts.updatedAt }}: {{ lastUpdatedText }}</div>
@@ -19,7 +19,7 @@
 			</div>
 
 			<div class="bar">
-				<div class="fill" :style="{ width: `${score}%` }"></div>
+				<div class="fill" :style="{ width: `${score ?? 0}%` }"></div>
 			</div>
 
 			<details class="details">
@@ -32,11 +32,8 @@
 					>
 						<div class="name">{{ item.label }}</div>
 						<div class="value">{{ item.valueText }}</div>
-						<div
-							class="penalty"
-							:class="{ danger: item.penalty > 0 }"
-						>
-							{{ item.penalty > 0 ? `-${item.penalty.toFixed(1)}` : "OK" }}
+						<div class="penalty" :class="{ danger: item.penalty > 0 }">
+							{{ item.penaltyText }}
 						</div>
 					</li>
 				</ul>
@@ -46,6 +43,17 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * バックエンドが共通ポリシーで計算したインスタンスのヘルススコアを表示する。
+ *
+ * @remarks
+ * 重みや閾値は利用者ごとに変更させず、ウィジェットは表示だけを担当する。
+ * 受信が30秒以上止まった場合は、最後の点数を健康状態として見せず不明へ切り替える。
+ *
+ * @public
+ */
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import type { GetFormResultType } from "@/scripts/form";
 import type { Widget, WidgetComponentExpose } from "./widget";
@@ -55,6 +63,7 @@ import { stream } from "@/stream";
 import { i18n } from "@/i18n";
 
 const name = "healthScore";
+const streamStaleMs = 30_000;
 
 const widgetPropsDef = {
 	showHeader: {
@@ -65,214 +74,46 @@ const widgetPropsDef = {
 		type: "boolean" as const,
 		default: false,
 	},
-	cpuWeight: {
-		type: "number" as const,
-		default: 20,
-		min: 0,
-		max: 100,
-	},
-	memoryWeight: {
-		type: "number" as const,
-		default: 20,
-		min: 0,
-		max: 100,
-	},
-	queueWeight: {
-		type: "number" as const,
-		default: 25,
-		min: 0,
-		max: 100,
-	},
-	eventLoopLagWeight: {
-		type: "number" as const,
-		default: 15,
-		min: 0,
-		max: 100,
-	},
-	dbLatencyWeight: {
-		type: "number" as const,
-		default: 10,
-		min: 0,
-		max: 100,
-	},
-	redisLatencyWeight: {
-		type: "number" as const,
-		default: 10,
-		min: 0,
-		max: 100,
-	},
-	apiLatencyWeight: {
-		type: "number" as const,
-		default: 10,
-		min: 0,
-		max: 100,
-	},
-	cpuWarn: {
-		type: "number" as const,
-		default: 70,
-		min: 0,
-		max: 100,
-	},
-	cpuCritical: {
-		type: "number" as const,
-		default: 90,
-		min: 0,
-		max: 100,
-	},
-	memoryWarn: {
-		type: "number" as const,
-		default: 70,
-		min: 0,
-		max: 100,
-	},
-	memoryCritical: {
-		type: "number" as const,
-		default: 90,
-		min: 0,
-		max: 100,
-	},
-	queueWarn: {
-		type: "number" as const,
-		default: 3,
-		min: 0,
-		max: 30,
-	},
-	queueCritical: {
-		type: "number" as const,
-		default: 8,
-		min: 0,
-		max: 50,
-	},
-	eventLoopLagWarn: {
-		type: "number" as const,
-		default: 80,
-		min: 0,
-		max: 2000,
-	},
-	eventLoopLagCritical: {
-		type: "number" as const,
-		default: 200,
-		min: 0,
-		max: 5000,
-	},
-	dbLatencyWarn: {
-		type: "number" as const,
-		default: 80,
-		min: 0,
-		max: 30000,
-	},
-	dbLatencyCritical: {
-		type: "number" as const,
-		default: 300,
-		min: 0,
-		max: 30000,
-	},
-	redisLatencyWarn: {
-		type: "number" as const,
-		default: 40,
-		min: 0,
-		max: 30000,
-	},
-	redisLatencyCritical: {
-		type: "number" as const,
-		default: 150,
-		min: 0,
-		max: 30000,
-	},
-	apiLatencyWarn: {
-		type: "number" as const,
-		default: 300,
-		min: 0,
-		max: 30000,
-	},
-	apiLatencyCritical: {
-		type: "number" as const,
-		default: 1000,
-		min: 0,
-		max: 30000,
-	},
-	apiLatencyP95Warn: {
-		type: "number" as const,
-		default: 600,
-		min: 0,
-		max: 30000,
-	},
-	apiLatencyP95Critical: {
-		type: "number" as const,
-		default: 2000,
-		min: 0,
-		max: 30000,
-	},
-	queueThroughputWarn: {
-		type: "number" as const,
-		default: 0.5,
-		min: 0,
-		max: 200,
-		step: 0.1,
-	},
-	queueThroughputCritical: {
-		type: "number" as const,
-		default: 0.1,
-		min: 0,
-		max: 200,
-		step: 0.1,
-	},
-	throughputPenaltyWeight: {
-		type: "number" as const,
-		default: 8,
-		min: 0,
-		max: 100,
-	},
-	statsStaleWarnSec: {
-		type: "number" as const,
-		default: 30,
-		min: 5,
-		max: 300,
-	},
-	statsStaleCriticalSec: {
-		type: "number" as const,
-		default: 90,
-		min: 10,
-		max: 600,
-	},
-	stalePenaltyWeight: {
-		type: "number" as const,
-		default: 10,
-		min: 0,
-		max: 100,
-	},
-	scoreWarn: {
-		type: "number" as const,
-		default: 70,
-		min: 0,
-		max: 100,
-	},
-	scoreCritical: {
-		type: "number" as const,
-		default: 40,
-		min: 0,
-		max: 100,
-	},
 };
 
 type WidgetProps = GetFormResultType<typeof widgetPropsDef>;
-
+type HealthMetricStatus = "ok" | "warn" | "critical" | "unknown";
+type HealthMetricKey =
+	| "apiErrors"
+	| "webWorkers"
+	| "workerRestarts"
+	| "workerEventLoop"
+	| "apiLatency"
+	| "inboxQueue"
+	| "deliverQueue"
+	| "db"
+	| "redis"
+	| "workerMemory"
+	| "diskFree";
+type HealthMetricUnit =
+	| "percent"
+	| "count"
+	| "milliseconds"
+	| "seconds"
+	| "megabytes";
+type HealthMetricResult = {
+	key: HealthMetricKey;
+	status: HealthMetricStatus;
+	value: number | null;
+	unit: HealthMetricUnit;
+	penalty: number;
+	maxPenalty: number;
+};
 type HealthStats = {
-	cpuUsage: number;
-	memoryUsage: number;
-	queuePressure: number;
-	queueWaiting: number;
-	queueThroughputPerSec: number;
-	eventLoopLagMs: number;
-	dbLatencyMs: number;
-	redisLatencyMs: number;
-	apiLatencyAvgMs: number;
-	apiLatencyP95Ms: number;
-	apiLatencySampleCount: number;
+	healthScore?: {
+		score: number | null;
+		status: HealthMetricStatus;
+		components: HealthMetricResult[];
+	};
 };
 
 const props = defineProps<{ widget?: Widget<WidgetProps> }>();
-const emit = defineEmits<{ (ev: "updateProps", props: WidgetProps) }>();
+const emit = defineEmits<{ (ev: "updateProps", props: WidgetProps): void }>();
 
 const { widgetProps, configure } = useWidgetPropsManager(
 	name,
@@ -281,239 +122,89 @@ const { widgetProps, configure } = useWidgetPropsManager(
 	emit,
 );
 
-const stats = ref<HealthStats>({
-	cpuUsage: 0,
-	memoryUsage: 0,
-	queuePressure: 0,
-	queueWaiting: 0,
-	queueThroughputPerSec: 0,
-	eventLoopLagMs: 0,
-	dbLatencyMs: 0,
-	redisLatencyMs: 0,
-	apiLatencyAvgMs: 0,
-	apiLatencyP95Ms: 0,
-	apiLatencySampleCount: 0,
-});
+const stats = ref<HealthStats>({});
 const lastUpdatedAt = ref<Date | null>(null);
+const now = ref(Date.now());
+let clockTimer: ReturnType<typeof setInterval> | null = null;
 
 const healthConnection = stream.useChannel("healthStats");
 
-const applyStats = (nextStats: HealthStats) => {
+/** 受信した最新統計を反映する。 */
+const applyStats = (nextStats: HealthStats): void => {
 	stats.value = nextStats;
 	lastUpdatedAt.value = new Date();
 };
 
-const onStatsLog = (statsLog: HealthStats[]) => {
+/** 履歴応答の最新値だけを初期表示へ使う。 */
+const onStatsLog = (statsLog: HealthStats[]): void => {
 	const latest = statsLog[0];
 	if (latest) applyStats(latest);
 };
 
-const metricRiskHigh = (
-	value: number,
-	warnThreshold: number,
-	criticalThreshold: number,
-) => {
-	if (criticalThreshold <= warnThreshold) {
-		return value >= criticalThreshold ? 1 : 0;
-	}
-	if (value <= warnThreshold) return 0;
-	if (value >= criticalThreshold) return 1;
-	return (value - warnThreshold) / (criticalThreshold - warnThreshold);
-};
-
-const metricRiskLow = (
-	value: number,
-	warnThreshold: number,
-	criticalThreshold: number,
-) => {
-	if (warnThreshold <= criticalThreshold) {
-		return value <= criticalThreshold ? 1 : 0;
-	}
-	if (value >= warnThreshold) return 0;
-	if (value <= criticalThreshold) return 1;
-	return (warnThreshold - value) / (warnThreshold - criticalThreshold);
-};
-
-const staleSeconds = computed(() => {
-	if (!lastUpdatedAt.value) return Number.POSITIVE_INFINITY;
-	return (Date.now() - lastUpdatedAt.value.getTime()) / 1000;
-});
-
-const totalWeight = computed(() => {
-	const sum =
-		widgetProps.cpuWeight +
-		widgetProps.memoryWeight +
-		widgetProps.queueWeight +
-		widgetProps.eventLoopLagWeight +
-		widgetProps.dbLatencyWeight +
-		widgetProps.redisLatencyWeight +
-		widgetProps.apiLatencyWeight +
-		widgetProps.throughputPenaltyWeight +
-		widgetProps.stalePenaltyWeight;
-	return Math.max(1, sum);
-});
-
-const metrics = computed(() => {
-	const current = stats.value;
-	return [
-		{
-			key: "cpu",
-			label: i18n.ts._widgets._healthScore.cpu,
-			weight: widgetProps.cpuWeight,
-			risk: metricRiskHigh(
-				current.cpuUsage,
-				widgetProps.cpuWarn,
-				widgetProps.cpuCritical,
-			),
-			valueText: `${current.cpuUsage.toFixed(1)}%`,
-			tooltip: `warn=${widgetProps.cpuWarn}% critical=${widgetProps.cpuCritical}%`,
-		},
-		{
-			key: "memory",
-			label: i18n.ts._widgets._healthScore.memory,
-			weight: widgetProps.memoryWeight,
-			risk: metricRiskHigh(
-				current.memoryUsage,
-				widgetProps.memoryWarn,
-				widgetProps.memoryCritical,
-			),
-			valueText: `${current.memoryUsage.toFixed(1)}%`,
-			tooltip: `warn=${widgetProps.memoryWarn}% critical=${widgetProps.memoryCritical}%`,
-		},
-		{
-			key: "queueThroughput",
-			label: i18n.ts._widgets._healthScore.queueThroughput,
-			weight: widgetProps.throughputPenaltyWeight,
-			risk: metricRiskLow(
-				current.queueThroughputPerSec,
-				widgetProps.queueThroughputWarn,
-				widgetProps.queueThroughputCritical,
-			),
-			valueText: `${current.queueThroughputPerSec.toFixed(2)} job/s`,
-			tooltip: `warn>=${widgetProps.queueThroughputWarn} critical<=${widgetProps.queueThroughputCritical}`,
-		},
-		{
-			key: "queue",
-			label: i18n.ts._widgets._healthScore.queue,
-			weight: widgetProps.queueWeight,
-			risk: metricRiskHigh(
-				current.queuePressure,
-				widgetProps.queueWarn,
-				widgetProps.queueCritical,
-			),
-			valueText:
-				current.queueWaiting > 0
-					? `${current.queuePressure.toFixed(2)}x (waiting=${current.queueWaiting})`
-					: `${current.queuePressure.toFixed(2)}x`,
-			tooltip: `warn=${widgetProps.queueWarn} critical=${widgetProps.queueCritical}`,
-		},
-		{
-			key: "eventLoopLag",
-			label: i18n.ts._widgets._healthScore.eventLoop,
-			weight: widgetProps.eventLoopLagWeight,
-			risk: metricRiskHigh(
-				current.eventLoopLagMs,
-				widgetProps.eventLoopLagWarn,
-				widgetProps.eventLoopLagCritical,
-			),
-			valueText: `${current.eventLoopLagMs.toFixed(1)}ms`,
-			tooltip: `warn=${widgetProps.eventLoopLagWarn}ms critical=${widgetProps.eventLoopLagCritical}ms`,
-		},
-		{
-			key: "dbLatency",
-			label: i18n.ts._widgets._healthScore.dbLatency,
-			weight: widgetProps.dbLatencyWeight,
-			risk: metricRiskHigh(
-				current.dbLatencyMs,
-				widgetProps.dbLatencyWarn,
-				widgetProps.dbLatencyCritical,
-			),
-			valueText: `${current.dbLatencyMs.toFixed(0)}ms`,
-			tooltip: `warn=${widgetProps.dbLatencyWarn}ms critical=${widgetProps.dbLatencyCritical}ms`,
-		},
-		{
-			key: "redisLatency",
-			label: i18n.ts._widgets._healthScore.redisLatency,
-			weight: widgetProps.redisLatencyWeight,
-			risk: metricRiskHigh(
-				current.redisLatencyMs,
-				widgetProps.redisLatencyWarn,
-				widgetProps.redisLatencyCritical,
-			),
-			valueText: `${current.redisLatencyMs.toFixed(0)}ms`,
-			tooltip: `warn=${widgetProps.redisLatencyWarn}ms critical=${widgetProps.redisLatencyCritical}ms`,
-		},
-		{
-			key: "apiLatency",
-			label: i18n.ts._widgets._healthScore.apiLatency,
-			weight: widgetProps.apiLatencyWeight,
-			risk:
-				current.apiLatencySampleCount >= 5
-					? metricRiskHigh(
-						current.apiLatencyP95Ms,
-						widgetProps.apiLatencyP95Warn,
-						widgetProps.apiLatencyP95Critical,
-					)
-					: metricRiskHigh(
-						current.apiLatencyAvgMs,
-						widgetProps.apiLatencyWarn,
-						widgetProps.apiLatencyCritical,
-					),
-			valueText:
-				current.apiLatencySampleCount > 0
-					? `${current.apiLatencyAvgMs.toFixed(1)}ms avg / ${current.apiLatencyP95Ms.toFixed(1)}ms p95 (n=${current.apiLatencySampleCount})`
-					: "no samples",
-			tooltip: `avg(warn=${widgetProps.apiLatencyWarn}ms critical=${widgetProps.apiLatencyCritical}ms) p95(warn=${widgetProps.apiLatencyP95Warn}ms critical=${widgetProps.apiLatencyP95Critical}ms)`,
-		},
-		{
-			key: "stale",
-			label: i18n.ts._widgets._healthScore.streamStale,
-			weight: widgetProps.stalePenaltyWeight,
-			risk: metricRiskHigh(
-				staleSeconds.value,
-				widgetProps.statsStaleWarnSec,
-				widgetProps.statsStaleCriticalSec,
-			),
-			valueText:
-				staleSeconds.value === Number.POSITIVE_INFINITY
-					? "no data"
-					: `${staleSeconds.value.toFixed(1)}s`,
-			tooltip: `warn=${widgetProps.statsStaleWarnSec}s critical=${widgetProps.statsStaleCriticalSec}s`,
-		},
-	];
-});
-
-const penalty = computed(() => {
-	const health = metrics.value.reduce((total, metric) => {
-		const normalizedWeight = metric.weight / totalWeight.value;
-		return total * Math.pow(1 - metric.risk, normalizedWeight);
-	}, 1);
-	return clampRange((1 - health) * 100, 0, 100);
-});
-
-const score = computed(() => {
-	return clampRange(Math.round(100 - penalty.value), 0, 100);
-});
-
+const streamIsStale = computed(
+	() =>
+		lastUpdatedAt.value == null ||
+		now.value - lastUpdatedAt.value.getTime() >= streamStaleMs,
+);
+const score = computed(() =>
+	streamIsStale.value ? null : (stats.value.healthScore?.score ?? null),
+);
+const scoreText = computed(() => (score.value == null ? "--" : String(score.value)));
+const status = computed<HealthMetricStatus>(() =>
+	streamIsStale.value ? "unknown" : (stats.value.healthScore?.status ?? "unknown"),
+);
 const statusLabel = computed(() => {
-	if (score.value <= widgetProps.scoreCritical) return "CRITICAL";
-	if (score.value <= widgetProps.scoreWarn) return "WARN";
-	return "OK";
+	switch (status.value) {
+		case "ok":
+			return i18n.ts._widgets._healthScore.statusOk;
+		case "warn":
+			return i18n.ts._widgets._healthScore.statusWarn;
+		case "critical":
+			return i18n.ts._widgets._healthScore.statusCritical;
+		default:
+			return i18n.ts._widgets._healthScore.statusUnknown;
+	}
 });
+const statusClass = computed(() => status.value);
 
-const statusClass = computed(() => {
-	if (statusLabel.value === "CRITICAL") return "critical";
-	if (statusLabel.value === "WARN") return "warn";
-	return "ok";
-});
+/** 固定指標名を現在の表示言語へ変換する。 */
+function metricLabel(key: HealthMetricKey): string {
+	return i18n.ts._widgets._healthScore[key];
+}
 
-const breakdownItems = computed(() => {
-	return metrics.value.map((metric) => ({
+/** 指標値をバックエンド指定の単位で整形する。 */
+function formatMetricValue(metric: HealthMetricResult): string {
+	if (metric.value == null) return i18n.ts._widgets._healthScore.noData;
+	switch (metric.unit) {
+		case "percent":
+			return `${metric.value.toFixed(1)}%`;
+		case "count":
+			return metric.value.toFixed(0);
+		case "milliseconds":
+			return `${metric.value.toFixed(1)}ms`;
+		case "seconds":
+			if (metric.value >= 3600) return `${(metric.value / 3600).toFixed(1)}h`;
+			if (metric.value >= 60) return `${(metric.value / 60).toFixed(1)}m`;
+			return `${metric.value.toFixed(1)}s`;
+		case "megabytes":
+			return `${metric.value.toFixed(0)}MB`;
+	}
+}
+
+const breakdownItems = computed(() =>
+	(streamIsStale.value ? [] : (stats.value.healthScore?.components ?? [])).map((metric) => ({
 		...metric,
-		penalty:
-			(1 - Math.pow(1 - metric.risk, metric.weight / totalWeight.value)) * 100,
-	}));
-});
+		label: metricLabel(metric.key),
+		valueText: formatMetricValue(metric),
+		penaltyText:
+			metric.status === "unknown"
+				? "--"
+				: metric.penalty > 0
+					? `-${metric.penalty.toFixed(1)}`
+					: i18n.ts._widgets._healthScore.statusOk,
+		tooltip: `${metricLabel(metric.key)} / max -${metric.maxPenalty}`,
+	})),
+);
 
 const lastUpdatedText = computed(() => {
 	if (!lastUpdatedAt.value) return "-";
@@ -527,12 +218,16 @@ onMounted(() => {
 		id: Math.random().toString().substr(2, 8),
 		length: 1,
 	});
+	clockTimer = setInterval(() => {
+		now.value = Date.now();
+	}, 5000);
 });
 
 onUnmounted(() => {
 	healthConnection.off("stats", applyStats);
 	healthConnection.off("statsLog", onStatsLog);
 	healthConnection.dispose();
+	if (clockTimer != null) clearInterval(clockTimer);
 });
 
 defineExpose<WidgetComponentExpose>({
@@ -540,10 +235,6 @@ defineExpose<WidgetComponentExpose>({
 	configure,
 	id: props.widget ? props.widget.id : null,
 });
-
-function clampRange(value: number, min: number, max: number): number {
-	return Math.min(max, Math.max(min, value));
-}
 </script>
 
 <style lang="scss" scoped>
@@ -590,6 +281,11 @@ function clampRange(value: number, min: number, max: number): number {
 				&.critical {
 					color: var(--error);
 					background: color-mix(in srgb, var(--error) 20%, transparent);
+				}
+
+				&.unknown {
+					opacity: 0.7;
+					background: var(--bg);
 				}
 			}
 

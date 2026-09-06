@@ -1,5 +1,14 @@
-/*
- * Notification manager for SW
+/**
+ * @packageDocumentation
+ *
+ * Service Worker が受信したプッシュデータを OS 通知へ変換する。
+ *
+ * @remarks
+ * 通知種別ごとのタイトル・本文・画像・アクションを一か所で組み立てる。
+ * リアクション通知ではカスタム絵文字を主画像に優先し、Unicode 絵文字は
+ * 通知者のアバターを使って通知一覧との見分けやすさを保つ。
+ *
+ * @internal
  */
 declare var self: ServiceWorkerGlobalScope;
 
@@ -173,6 +182,8 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 				notice.title,
 				{
 					body: notice.body,
+					// 通知元が無い告知では、ブラウザ生成の頭文字アイコンを出さない。
+					icon: "/static-assets/icons/192.png",
 					badge: notificationBadgeUrl("clipboard-check-solid"),
 					// tag を指定すると同じ告知が重ならない
 					tag: notice.tag ? `push-notice:${notice.tag}` : "push-notice",
@@ -512,14 +523,15 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 					) {
 						displayReaction = `:${displayReaction.slice(
 							1,
-							displayReaction.indexOf("@") - 1,
+							displayReaction.indexOf("@"),
 						)}:`;
 					}
 
-					const icon = isDefault
-						? data.body.user.avatarUrl
-						: (resolveReactionNotificationIcon(reactionBody) ??
-								data.body.user.avatarUrl);
+					// カスタム絵文字は図柄を優先し、Unicode 絵文字は通知者を識別できる
+					// アバターへフォールバックする。
+					const icon =
+						resolveReactionNotificationIcon(reactionBody) ??
+						data.body.user.avatarUrl;
 
 					const badge = isDefault
 						? notificationBadgeUrl(DEFAULT_REACTION_BADGE)
@@ -686,7 +698,8 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 					const subIcon = (data.body as { subIcon?: string | null })
 						.subIcon;
 					const badge =
-						typeof subIcon === "string" && /^https?:\/\//.test(subIcon)
+						typeof subIcon === "string" &&
+						(/^https?:\/\//.test(subIcon) || subIcon.startsWith("/"))
 							? subIcon
 							: undefined;
 					return composeWithDisplayText(

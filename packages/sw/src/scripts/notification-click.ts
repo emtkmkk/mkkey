@@ -152,15 +152,20 @@ export async function resolveNotificationTapDefault(
 	data: NotificationPushData,
 	loginId: string,
 ): Promise<WindowClient | null> {
-	const type = getEffectiveNotificationType(
-		data.body as NotificationClickMetaBody,
-	);
+	const body = data.body as NotificationClickMetaBody;
+	const type = getEffectiveNotificationType(body);
 
 	if (type === "receiveFollowRequest") {
 		return swos.openClient("push", "/my/follow-requests", loginId);
 	}
 	if (type === "groupInvited") {
 		return swos.openClient("push", "/my/groups", loginId);
+	}
+	if (
+		type === "app" &&
+		(body as { isPushTest?: boolean }).isPushTest === true
+	) {
+		return swos.openClient("push", "/settings/notifications", loginId);
 	}
 	if (type === "app" || isR4NotificationType(type) || isR5NotificationType(type)) {
 		return openNotifications(loginId);

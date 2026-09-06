@@ -281,7 +281,8 @@ router.get("/twemoji-badge/(.*)", async (ctx) => {
 		)}.svg`,
 		{ density: 1000 },
 	)
-		.resize(488, 488)
+		// NOTE: 合成絵文字などの縦横比にかかわらず、通知 badge の全面を使う。
+		.resize(488, 488, { fit: "fill" })
 		.greyscale()
 		.normalise()
 		.linear(1.75, -(128 * 1.75) + 128) // 1.75x contrast

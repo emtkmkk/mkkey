@@ -92,6 +92,8 @@ export default define(meta, paramDef, async (ps, me) => {
 			isRead: false,
 			header: "プッシュ通知テスト",
 			body: "通知が届きました。",
+			icon: "/static-assets/icons/192.png",
+			subIcon: "/static-assets/notification-badges/check.png",
 			isPushTest: true,
 		} as Packed<"Notification">;
 	} else {

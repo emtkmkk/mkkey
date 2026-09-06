@@ -1,7 +1,7 @@
 {
-	"generatedAt": "2026-09-04T00:59:54.463Z",
+	"generatedAt": "2026-09-06T05:22:05.232Z",
 	"note": "型エラーの既知一覧。scripts/typecheck.js が「増えていないか」を判定するために使う。減ったときは --update で更新する。",
-	"total": 774,
+	"total": 758,
 	"packages": {
 		"backend": {
 			"total": 464,
@@ -616,7 +616,7 @@
 			}
 		},
 		"sw": {
-			"total": 309,
+			"total": 293,
 			"files": {
 				"packages/sw/src/scripts/app-badge-counter.ts": {
 					"TS2552": 1
@@ -625,12 +625,8 @@
 					"TS2352": 1,
 					"TS2322": 1,
 					"TS2345": 31,
-					"TS18048": 120,
-					"TS2339": 122,
-					"TS2304": 1
-				},
-				"packages/sw/src/scripts/lang.ts": {
-					"TS2304": 3
+					"TS18048": 119,
+					"TS2339": 121
 				},
 				"packages/sw/src/scripts/notification-click.ts": {
 					"TS2352": 1
@@ -641,7 +637,6 @@
 					"TS2345": 2
 				},
 				"packages/sw/src/sw.ts": {
-					"TS2304": 10,
 					"TS2488": 1,
 					"TS2339": 5,
 					"TS2345": 3,

@@ -10,7 +10,7 @@
  */
 declare var self: ServiceWorkerGlobalScope;
 
-import { char2fileName, char2filePath } from "@/scripts/twemoji-base";
+import { char2fileName } from "@/scripts/twemoji-base";
 import * as url from "@/scripts/url";
 
 const MAX_NOTIFICATION_ACTIONS = 2;
@@ -311,7 +311,7 @@ type ReactionNotificationBody = {
 };
 
 /**
- * プッシュ `icon` 用のリアクション画像 URL を解決する。
+ * プッシュ `icon` 用のカスタム絵文字リアクション画像 URL を解決する。
  *
  * @param body - notification body
  * @returns フルカラー icon URL
@@ -320,6 +320,9 @@ type ReactionNotificationBody = {
 export function resolveReactionNotificationIcon(
 	body: ReactionNotificationBody,
 ): string | undefined {
+	const reaction = body.reaction;
+	if (reaction == null || !reaction.startsWith(":")) return undefined;
+
 	if (
 		typeof body.reactionIconUrl === "string" &&
 		body.reactionIconUrl.length > 0
@@ -327,22 +330,11 @@ export function resolveReactionNotificationIcon(
 		return body.reactionIconUrl;
 	}
 
-	const reaction = body.reaction;
 	const note = body.note;
-	if (reaction == null || reaction === "") return undefined;
-
-	if (reaction.startsWith(":")) {
-		return findCustomEmojiUrl(reaction, [
-			note?.emojis,
-			note?.reactionEmojis,
-		]);
-	}
-
-	if (!reaction.startsWith(":")) {
-		return char2filePath(reaction);
-	}
-
-	return undefined;
+	return findCustomEmojiUrl(reaction, [
+		note?.emojis,
+		note?.reactionEmojis,
+	]);
 }
 
 /**

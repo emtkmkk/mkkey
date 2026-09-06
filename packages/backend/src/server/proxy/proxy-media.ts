@@ -149,7 +149,9 @@ export async function proxyMedia(ctx: Koa.Context) {
 
 			const mask = (await sharpBmp(path, mime))
 				.resize(96, 96, {
-					fit: "inside",
+					// NOTE: 通知バーでは小さく表示されるため、横長・縦長の絵文字も
+					// 余白を作らず全面へ引き伸ばし、図柄全体を使って判別しやすくする。
+					fit: "fill",
 					withoutEnlargement: false,
 				})
 				.greyscale()

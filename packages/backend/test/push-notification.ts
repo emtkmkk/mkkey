@@ -102,17 +102,30 @@ describe("notification-display-media", () => {
 		assert.strictEqual(url, "https://example.com/dm.png");
 	});
 
-	it("正常系: 非デフォルト Unicode リアクションの icon URL を解決する", () => {
+	it("正常系: Unicode リアクションではアバターを使うため icon URL を返さない", () => {
 		const url = resolveReactionNotificationIconUrl("😀", null, "⭐");
-		assert.strictEqual(
-			url,
-			`${config.url}/twemoji/1f600.svg`,
-		);
+		assert.strictEqual(url, undefined);
 	});
 
-	it("正常系: デフォルトリアクションの icon URL は返さない", () => {
+	it("正常系: デフォルトのUnicodeリアクションでも icon URL は返さない", () => {
 		const url = resolveReactionNotificationIconUrl("⭐", null, "⭐");
 		assert.strictEqual(url, undefined);
+	});
+
+	it("正常系: デフォルトリアクションがカスタム絵文字なら icon URL を解決する", () => {
+		const url = resolveReactionNotificationIconUrl(
+			":fav:",
+			{
+				reactionEmojis: [
+					{
+						name: "fav",
+						url: "https://example.com/default-fav.png",
+					},
+				],
+			},
+			":fav:",
+		);
+		assert.strictEqual(url, "https://example.com/default-fav.png");
 	});
 
 	it("正常系: カスタム絵文字リアクションの icon URL を解決する", () => {
@@ -190,7 +203,7 @@ describe("notification-display-media", () => {
 		assert.strictEqual(isDefaultInstanceReaction("😀", "⭐"), false);
 	});
 
-	it("境界値: attachReactionPushDisplayExtras が reaction 用フィールドを付与する", () => {
+	it("境界値: Unicode リアクションでは badge 用フィールドだけを付与する", () => {
 		const out = attachReactionPushDisplayExtras(
 			{
 				type: "reaction",
@@ -201,7 +214,7 @@ describe("notification-display-media", () => {
 		assert.strictEqual((out as { defaultReaction?: string }).defaultReaction, "⭐");
 		assert.strictEqual(
 			(out as { reactionIconUrl?: string }).reactionIconUrl,
-			`${config.url}/twemoji/1f600.svg`,
+			undefined,
 		);
 		assert.strictEqual(
 			(out as { reactionBadgeUrl?: string }).reactionBadgeUrl,

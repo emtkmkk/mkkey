@@ -170,30 +170,23 @@ export function unicodeEmojiToTwemojiFileName(char: string): string {
 }
 
 /**
- * プッシュ通知 `icon` 用のリアクション画像 URL（フルカラー）。
+ * プッシュ通知 `icon` 用のカスタム絵文字リアクション画像 URL（フルカラー）。
  *
  * @param reaction - リアクション文字列
  * @param note - ノート
- * @param defaultReaction - 既定リアクション
- * @returns 非デフォルト時の icon URL。既定時は undefined
+ * @param _defaultReaction - 既定リアクション（呼び出し互換性のため保持）
+ * @returns カスタム絵文字の icon URL。Unicodeリアクション時は undefined
  * @public
  */
 export function resolveReactionNotificationIconUrl(
 	reaction: string | null | undefined,
 	note: NotificationDisplayNote | null | undefined,
-	defaultReaction: string,
+	_defaultReaction: string,
 ): string | undefined {
-	if (isDefaultInstanceReaction(reaction, defaultReaction)) {
-		return undefined;
-	}
-	if (reaction == null) return undefined;
+	if (reaction == null || !reaction.startsWith(":")) return undefined;
 
 	const custom = resolveReactionEmojiImageUrlFromNote(reaction, note);
 	if (custom != null) return custom;
-
-	if (!reaction.startsWith(":")) {
-		return `${config.url}/twemoji/${unicodeEmojiToTwemojiFileName(reaction)}.svg`;
-	}
 
 	return undefined;
 }

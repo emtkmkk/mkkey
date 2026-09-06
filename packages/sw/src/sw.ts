@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * プッシュ通知・通知クリック・キャッシュ更新を処理する Service Worker。
+ *
+ * @remarks
+ * 通知本文のタップと通知内アクションは別経路として扱う。
+ * リアクション通知の「表示」は投稿へ直行する仕様を維持する。
+ *
+ * @internal
+ */
 declare var self: ServiceWorkerGlobalScope;
 
 import {
@@ -431,6 +442,9 @@ self.addEventListener(
 						const noticeUrl = (data.body as { url?: string }).url;
 						if (typeof noticeUrl === "string" && noticeUrl.startsWith("/")) {
 							client = await swos.openClient("push", noticeUrl, id);
+						} else {
+							// プッシュ専用告知は通知一覧に残らないため、リンク未指定時はホームを開く。
+							client = await swos.openClient("push", "/", id);
 						}
 						break;
 					}

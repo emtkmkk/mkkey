@@ -1,3 +1,13 @@
+/**
+ * @packageDocumentation
+ *
+ * 管理者向けユーザー一覧の検索条件と並び順を提供する。
+ *
+ * @remarks
+ * `available` は、凍結・削除・アカウント移行のいずれも行われていないユーザーを表す。
+ *
+ * @internal
+ */
 import { Users } from "@/models/index.js";
 import define from "../../define.js";
 
@@ -75,6 +85,8 @@ export default define(meta, paramDef, async (ps, me) => {
 	switch (ps.state) {
 		case "available":
 			query.where("user.isSuspended = FALSE");
+			query.andWhere("user.isDeleted = FALSE");
+			query.andWhere("user.movedToUri IS NULL");
 			break;
 		case "admin":
 			query.where("user.isAdmin = TRUE");

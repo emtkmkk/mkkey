@@ -122,6 +122,16 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * 管理者向けのユーザー管理ページを表示する。
+ *
+ * @remarks
+ * 初期表示では、凍結・削除・移行済みではない「正常」なローカルユーザーに絞り込む。
+ *
+ * @public
+ */
 import { computed } from "vue";
 import MkInput from "@/components/form/input.vue";
 import MkSelect from "@/components/form/select.vue";
@@ -135,7 +145,7 @@ import MkUserCardMini from "@/components/MkUserCardMini.vue";
 let paginationComponent = $ref<InstanceType<typeof MkPagination>>();
 
 let sort = $ref("+createdAt");
-let state = $ref("all");
+let state = $ref("available");
 let origin = $ref("local");
 let searchUsername = $ref("");
 let searchHost = $ref("");

@@ -4,6 +4,7 @@ import * as assert from "assert";
 import { inspect } from "node:util";
 import { DEFAULT_POLICIES } from "@/core/RoleService.js";
 import type { Packed } from "@/misc/json-schema.js";
+import { Users } from "@/models/index.js";
 import {
 	signup,
 	post,
@@ -221,6 +222,7 @@ describe("ユーザー", () => {
 	let userSuspended: User;
 	let userDeletedBySelf: User;
 	let userDeletedByAdmin: User;
+	let userMoved: User;
 	let userFollowingAlice: User;
 	let userFollowedByAlice: User;
 	let userBlockingAlice: User;
@@ -334,6 +336,10 @@ describe("ユーザー", () => {
 		userDeletedByAdmin = await signup({ username: "userDeletedByAdmin" });
 		await post(userDeletedByAdmin, { text: "test" });
 		await api("admin/delete-account", { userId: userDeletedByAdmin.id }, root);
+		userMoved = await signup({ username: "userMoved" });
+		await Users.update(userMoved.id, {
+			movedToUri: "https://example.com/users/userMoved",
+		});
 		userFollowingAlice = await signup({ username: "userFollowingAlice" });
 		await post(userFollowingAlice, { text: "test" });
 		await api("following/create", { userId: alice.id }, userFollowingAlice);
@@ -1497,6 +1503,26 @@ describe("ユーザー", () => {
 	//#endregion
 
 	test.todo("を管理人として確認することができる(admin/show-user)");
-	test.todo("を管理人として確認することができる(admin/show-users)");
+	test(
+		"正常系：状態が正常の場合、凍結・削除・移行済みのユーザーを含まない",
+		async () => {
+			const response = await successfulApiCall({
+				endpoint: "admin/show-users",
+				parameters: {
+					limit: 100,
+					sort: "+createdAt",
+					state: "available",
+					origin: "local",
+				},
+				user: root,
+			});
+			const userIds = response.map((user: { id: string }) => user.id);
+
+			assert.ok(userIds.includes(alice.id));
+			assert.ok(!userIds.includes(userSuspended.id));
+			assert.ok(!userIds.includes(userDeletedByAdmin.id));
+			assert.ok(!userIds.includes(userMoved.id));
+		},
+	);
 	test.todo("をサーバー向けに取得することができる(federation/users)");
 });

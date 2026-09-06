@@ -74,6 +74,7 @@ export default async (
 	endpoint: string,
 	user: CacheableLocalUser | null | undefined,
 	token: AccessToken | null | undefined,
+	// rome-ignore lint/suspicious/noExplicitAny: エンドポイントごとに異なる既存の入力型をここで束ねるため。
 	data: any,
 	ctx?: Koa.Context,
 ) => {
@@ -260,10 +261,15 @@ export default async (
 		ev.emit("apiRequestStart");
 	}
 	const before = performance.now();
+	let serverError = false;
 	return await ep
 		.exec(data, user, token, ctx?.file, ctx?.ip, ctx?.headers)
 		.catch((e: Error) => {
 			if (e instanceof ApiError) {
+				// api-handler と同じ規則で、利用者起因の既定400を内部エラーへ数えない。
+				const httpStatusCode =
+					e.httpStatusCode ?? (e.kind === "client" ? 400 : 500);
+				serverError = httpStatusCode >= 500;
 				apiLogger.error(`Api Error in ${ep.name}: ${e.message}`, {
 					ep: ep.name,
 					ps: data,
@@ -275,6 +281,7 @@ export default async (
 				});
 				throw e;
 			}
+			serverError = true;
 			apiLogger.error(`Internal error occurred in ${ep.name}: ${e.message}`, {
 				ep: ep.name,
 				ps: data,
@@ -303,6 +310,7 @@ export default async (
 					at: Date.now(),
 					responseMs: time,
 					endpoint: ep.name,
+					serverError,
 				});
 			}
 			if (time > 10000) {

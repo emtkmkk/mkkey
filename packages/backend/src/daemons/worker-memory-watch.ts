@@ -21,6 +21,7 @@
  * @internal
  */
 import os from "node:os";
+import { monitorEventLoopDelay } from "node:perf_hooks";
 import Xev from "xev";
 import Logger from "@/services/logger.js";
 import { readProcRssBytes } from "@/misc/process-rss.js";
@@ -50,6 +51,8 @@ export default function (): void {
 	const index = process.env.index ?? "?";
 	const mode = process.env.mode ?? "?";
 	const sanityCeilingBytes = os.totalmem() * SANITY_FACTOR;
+	const eventLoopDelay = monitorEventLoopDelay({ resolution: 20 });
+	eventLoopDelay.enable();
 
 	/** 直近に通知した段（MB）。0 は「まだ床を超えていない」 */
 	let notifiedStepMb = 0;
@@ -66,6 +69,12 @@ export default function (): void {
 		const heapTotalMb = toMb(mem.heapTotal);
 		const externalMb = toMb(mem.external ?? 0);
 		const arrayBuffersMb = toMb(mem.arrayBuffers ?? 0);
+		const measuredEventLoopLagMs = eventLoopDelay.mean / 1e6;
+		const eventLoopLagMs = Number.isFinite(measuredEventLoopLagMs)
+			? Math.round(measuredEventLoopLagMs * 100) / 100
+			: null;
+		// 次の5秒間だけを評価し、起動後の累積平均で異常が薄まらないようにする。
+		eventLoopDelay.reset();
 
 		const procRssBytes = readProcRssBytes();
 		const rssBytes = procRssBytes ?? mem.rss;
@@ -108,6 +117,7 @@ export default function (): void {
 			externalMb,
 			arrayBuffersMb,
 			peakRssMb,
+			eventLoopLagMs,
 			at: Date.now(),
 		});
 

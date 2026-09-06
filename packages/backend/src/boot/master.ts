@@ -102,7 +102,16 @@ export async function masterMain() {
 		import("../daemons/server-stats.js").then((x) => x.default());
 		import("../daemons/queue-stats.js").then((x) => x.default());
 		import("../daemons/delayed-retry-sync.js").then((x) => x.default());
-		import("../daemons/health-stats.js").then((x) => x.default());
+		import("../daemons/health-stats.js").then((x) =>
+			x.default({
+				expectedWebWorkers: envOption.disableClustering
+					? 0
+					: (config.clusterLimits!.web ?? 0),
+				expectedQueueWorkers: envOption.disableClustering
+					? 0
+					: (config.clusterLimits!.queue ?? 0),
+			}),
+		);
 		import("../daemons/janitor.js").then((x) => x.default());
 	}
 }

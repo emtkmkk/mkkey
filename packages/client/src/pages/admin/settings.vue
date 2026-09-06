@@ -358,6 +358,22 @@
 									></template>
 									<template #label>Private key</template>
 								</FormInput>
+
+								<FormInput
+									v-model="swContactEmail"
+									type="email"
+									class="_formBlock"
+								>
+									<template #prefix
+										><i class="ph-envelope ph-bold ph-lg"></i
+									></template>
+									<template #label>連絡先メールアドレス</template>
+									<template #caption>
+										VAPID の subject に使われます。メールアドレスの形式で入力してください。
+										未設定のときはインスタンスの URL が使われます。
+										不正な値を入れると一部の端末（特に Apple）へプッシュ通知が届かなくなります。
+									</template>
+								</FormInput>
 							</template>
 						</FormSection>
 
@@ -491,6 +507,7 @@ let emailRequiredForSignup: boolean = $ref(false);
 let enableServiceWorker: boolean = $ref(false);
 let swPublicKey: any = $ref(null);
 let swPrivateKey: any = $ref(null);
+let swContactEmail: string | null = $ref(null);
 let deeplAuthKey: string = $ref("");
 let deeplIsPro: boolean = $ref(false);
 let libreTranslateApiUrl: string = $ref("");
@@ -531,6 +548,7 @@ async function init() {
 	enableServiceWorker = meta.enableServiceWorker;
 	swPublicKey = meta.swPublickey;
 	swPrivateKey = meta.swPrivateKey;
+	swContactEmail = meta.swContactEmail;
 	deeplAuthKey = meta.deeplAuthKey;
 	deeplIsPro = meta.deeplIsPro;
 	libreTranslateApiUrl = meta.libreTranslateApiUrl;
@@ -593,6 +611,7 @@ function save() {
 		enableServiceWorker,
 		swPublicKey,
 		swPrivateKey,
+		swContactEmail,
 		deeplAuthKey,
 		deeplIsPro,
 		libreTranslateApiUrl,

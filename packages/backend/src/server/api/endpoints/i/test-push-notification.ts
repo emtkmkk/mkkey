@@ -106,12 +106,30 @@ export default define(meta, paramDef, async (ps, me) => {
 		} as Packed<"Notification">;
 	}
 
-	await pushNotification(me.id, "notification", testNotification);
+	// CHANGED: 送信結果をそのまま返す。従来は全滅していても "sent" を返していた
+	const report = await pushNotification(me.id, "notification", testNotification);
+
+	const failed = report.results.filter((r) => !r.ok);
 
 	return {
-		ok: true,
+		ok: report.ok,
 		subscriptionCount,
-		message: "sent",
+		attempted: report.attempted,
+		succeeded: report.attempted - failed.length,
+		failed: failed.length,
+		message: report.ok
+			? failed.length > 0
+				? "partially_sent"
+				: "sent"
+			: (report.skipped ?? "all_failed"),
 		notificationType: requestedType,
+		results: report.results.map((r) => ({
+			endpoint: r.endpointHash,
+			ok: r.ok,
+			...(r.statusCode != null ? { statusCode: r.statusCode } : {}),
+			...(r.errorMsg != null ? { error: r.errorMsg } : {}),
+			...(r.durationMs != null ? { durationMs: r.durationMs } : {}),
+			...(r.removed != null ? { removed: r.removed } : {}),
+		})),
 	};
 });

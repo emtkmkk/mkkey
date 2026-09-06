@@ -17,6 +17,7 @@
 
 import { publishMainStream } from "@/services/stream.js";
 import { pushNotification } from "@/services/push-notification.js";
+import { logPushSkip } from "@/services/push-audit-log.js";
 import Logger from "@/services/logger.js";
 import {
 	Notifications,
@@ -135,7 +136,14 @@ export async function createNotification(
 				const fresh = await Notifications.findOneBy({ id: notification.id });
 				if (fresh == null) return; // 既に削除されているかもしれない
 				// 種別ミュート・手動既読は isRead=true。プッシュもアプリ内表示と同様に抑止する
-				if (fresh.isRead) return;
+				if (fresh.isRead) {
+					void logPushSkip(notifieeId, {
+						reason: "already-read",
+						type: "notification",
+						notificationId: notification.id,
+					});
+					return;
+				}
 
 				const [deliverInApp, deliverPush] = await Promise.all([
 					shouldDeliverDelayedNotification(
@@ -151,6 +159,12 @@ export async function createNotification(
 				]);
 				if (deliverPush) {
 					await pushNotification(notifieeId, "notification", packed);
+				} else {
+					void logPushSkip(notifieeId, {
+						reason: "not-deliverable",
+						type: "notification",
+						notificationId: notification.id,
+					});
 				}
 				if (deliverInApp) {
 					publishMainStream(notifieeId, "unreadNotification", packed);

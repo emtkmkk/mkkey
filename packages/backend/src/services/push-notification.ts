@@ -11,8 +11,11 @@
  * @see {@link services/stream} ストリーム連携
  * @internal
  */
+import type * as https from "node:https";
 import push from "web-push";
 import config from "@/config/index.js";
+import { httpsAgent } from "@/misc/fetch.js";
+import { redisClient } from "@/db/redis.js";
 import { Mutings, SwSubscriptions } from "@/models/index.js";
 import { hasMuteScope } from "@/misc/mute-scope.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
@@ -30,7 +33,9 @@ import {
 import {
 	hashPushEndpoint,
 	logPushSend,
+	logPushSkip,
 	logPushSubscriptionChange,
+	type PushSkipReason,
 } from "@/services/push-audit-log.js";
 import {
 	resolveMessagingNotificationDisplayImageUrl,
@@ -46,12 +51,73 @@ import {
 
 export type { pushNotificationsTypes };
 
+/** 購読 1 件への送信結果 */
+export type PushSendResult = {
+	endpointHash: string;
+	ok: boolean;
+	statusCode?: number;
+	errorMsg?: string;
+	durationMs?: number;
+	/** 送信失敗を受けて購読を削除したときの理由 */
+	removed?: "410" | "unresolvable";
+};
+
+/**
+ * {@link pushNotification} の結果。
+ *
+ * @remarks
+ * 通常の呼び出し元は無視してよい。`i/test-push-notification` が
+ * 「送ったつもりで全滅している」状態を検知するために使う。
+ */
+export type PushDeliveryReport = {
+	/** 1 件でも成功したか。skip / 購読なしのときは false */
+	ok: boolean;
+	/** 送信を試みた購読数 */
+	attempted: number;
+	results: PushSendResult[];
+	/** 送信自体を行わなかったときの理由 */
+	skipped?: PushSkipReason;
+};
+
 const logger = new Logger("push-notification", "yellow");
 
 const SEND_TIMEOUT_MS = 15_000;
 
 /** Web Push ペイロード上限（バイト） */
 const MAX_PUSH_PAYLOAD_BYTES = 3800;
+
+/** 名前解決不能が続いた購読を削除するまでの連続失敗回数 */
+const UNRESOLVABLE_FAILURE_THRESHOLD = 8;
+
+/** 初回失敗からこれだけ経過していないと削除しない（DNS 障害の巻き添え防止） */
+const UNRESOLVABLE_MIN_AGE_MS = 24 * 60 * 60 * 1000;
+
+/** 失敗カウンタの保持期間。この間に閾値へ達しなければ数え直し */
+const UNRESOLVABLE_TTL_SECONDS = 60 * 60 * 24 * 30;
+
+function unresolvableCounterKey(userId: string, endpointHash: string): string {
+	// endpointHash は "<hex>:<前4>…<後4>" 形式。キーには hex 部分だけ使う
+	return `pushUnresolvable:${userId}:${endpointHash.split(":")[0]}`;
+}
+
+/**
+ * 「宛先ホストが名前解決できない」エラーか。
+ *
+ * @remarks
+ * NOTE: `EAI_AGAIN`（一時的な解決失敗）は意図的に含めない。リゾルバ障害で
+ * 全ユーザーの購読を巻き添えに削除しないため、恒久的な NXDOMAIN のみ数える。
+ *
+ * @param err - web-push が投げたエラー
+ * @internal
+ */
+export function isUnresolvableHostError(err: unknown): boolean {
+	if (err == null || typeof err !== "object") return false;
+
+	if ((err as { code?: unknown }).code === "ENOTFOUND") return true;
+
+	const message = (err as { message?: unknown }).message;
+	return typeof message === "string" && message.includes("ENOTFOUND");
+}
 
 /** VAPID 初期化済みか（鍵ペアの指紋） */
 let vapidInitializedKey: string | null = null;
@@ -65,6 +131,47 @@ export function resetPushVapidDetails(): void {
 	vapidInitializedKey = null;
 }
 
+/**
+ * VAPID の `sub` に使えるメールアドレスか。
+ *
+ * @remarks
+ * web-push は `mailto:` の接頭辞しか検証しないため、ここで中身を担保する。
+ * Apple の Web Push は `sub` の形式に厳格で、不正だと 403 を返す。
+ *
+ * @param value - 検証する文字列
+ * @internal
+ */
+export function isValidVapidContactEmail(value: string): boolean {
+	return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+/**
+ * VAPID の subject を決める。
+ *
+ * @remarks
+ * CHANGED: `maintainerEmail` は使わない。Fediverse ハンドル等が入っていることがあり、
+ * `mailto:` を前置すると不正な URI になって Apple が 403 を返すため、
+ * 専用の `swContactEmail` に分離した。未設定・不正なら `config.url` へフォールバックする。
+ *
+ * @param swContactEmail - meta の連絡先メールアドレス
+ * @internal
+ */
+export function resolveVapidSubject(swContactEmail: string | null): string {
+	if (swContactEmail != null && isValidVapidContactEmail(swContactEmail)) {
+		return `mailto:${swContactEmail}`;
+	}
+
+	if (config.url.startsWith("https://")) {
+		return config.url;
+	}
+
+	try {
+		return `mailto:admin@${new URL(config.url).hostname}`;
+	} catch {
+		return "mailto:noreply@localhost";
+	}
+}
+
 async function ensureVapidDetails(): Promise<boolean> {
 	const meta = await fetchMeta();
 	if (
@@ -75,19 +182,10 @@ async function ensureVapidDetails(): Promise<boolean> {
 		return false;
 	}
 
-	const keyFingerprint = `${meta.swPublicKey}:${meta.swPrivateKey}`;
+	const vapidSubject = resolveVapidSubject(meta.swContactEmail);
+	// NOTE: subject も指紋に含める。meta のポーリング更新だけで全ワーカーが追従する
+	const keyFingerprint = `${meta.swPublicKey}:${meta.swPrivateKey}:${vapidSubject}`;
 	if (vapidInitializedKey !== keyFingerprint) {
-		let vapidSubject = config.url;
-		if (!config.url.startsWith("https://")) {
-			try {
-				vapidSubject = `mailto:admin@${new URL(config.url).hostname}`;
-			} catch {
-				vapidSubject = "mailto:noreply@localhost";
-			}
-		}
-		if (meta.maintainerEmail != null && meta.maintainerEmail !== "") {
-			vapidSubject = `mailto:${meta.maintainerEmail}`;
-		}
 		push.setVapidDetails(vapidSubject, meta.swPublicKey, meta.swPrivateKey);
 		vapidInitializedKey = keyFingerprint;
 	}
@@ -632,6 +730,70 @@ async function buildPayload<T extends keyof pushNotificationsTypes>(
 	return payload;
 }
 
+/**
+ * 名前解決不能な購読の連続失敗を数え、閾値を超えたら削除する。
+ *
+ * @param userId - 送信先ユーザー ID
+ * @param endpointHash - ログ用の endpoint ハッシュ
+ * @param subscription - 削除対象の購読
+ * @returns 削除したとき true
+ * @internal
+ */
+async function recordUnresolvableFailure(
+	userId: string,
+	endpointHash: string,
+	subscription: { endpoint: string; auth: string; publickey: string },
+): Promise<boolean> {
+	const key = unresolvableCounterKey(userId, endpointHash);
+	const now = Date.now();
+
+	let count: number;
+	let firstAt: number;
+	try {
+		const results = await redisClient
+			.multi()
+			.hsetnx(key, "firstAt", String(now))
+			.hincrby(key, "count", 1)
+			.expire(key, UNRESOLVABLE_TTL_SECONDS)
+			.hget(key, "firstAt")
+			.exec();
+
+		if (results == null) return false;
+		count = Number(results[1]?.[1] ?? 0);
+		firstAt = Number(results[3]?.[1] ?? now);
+	} catch {
+		// NOTE: Redis 障害時は削除しない（フェイルセーフ）
+		return false;
+	}
+
+	if (!Number.isFinite(count) || count < UNRESOLVABLE_FAILURE_THRESHOLD) {
+		return false;
+	}
+	// 短時間に閾値へ達しただけなら、リゾルバ側の一時障害を疑って猶予する
+	if (Number.isFinite(firstAt) && now - firstAt < UNRESOLVABLE_MIN_AGE_MS) {
+		return false;
+	}
+
+	await SwSubscriptions.delete({
+		userId,
+		endpoint: subscription.endpoint,
+		auth: subscription.auth,
+		publickey: subscription.publickey,
+	});
+	await invalidateSwSubscriptionsCache(userId);
+	await redisClient.del(key).catch(() => {});
+
+	void logPushSubscriptionChange(userId, {
+		event: "unregister-by-unresolvable",
+		cause: "web-push-error",
+		endpointHash,
+	});
+	logger.warn(
+		`購読先ホストが名前解決できない状態が続いたため削除しました (${count}回): ${endpointHash}`,
+	);
+	return true;
+}
+
 async function sendToSubscription(
 	userId: string,
 	type: keyof pushNotificationsTypes,
@@ -641,7 +803,7 @@ async function sendToSubscription(
 		auth: string;
 		publickey: string;
 	},
-): Promise<void> {
+): Promise<PushSendResult> {
 	const pushSubscription = {
 		endpoint: subscription.endpoint,
 		keys: {
@@ -651,40 +813,55 @@ async function sendToSubscription(
 	};
 
 	const endpointHash = hashPushEndpoint(subscription.endpoint);
+	const startedAt = Date.now();
 
 	try {
 		// web-push 3.x は top-level `urgency` 非対応。RFC 8030 の Urgency ヘッダで指定する。
-		const isHighPriority =
+		const isRealtime =
 			type === "notification" || type === "unreadMessagingMessage";
+		// 告知は即時性は不要だが、オフライン端末にも後から届いてほしいので TTL は長く取る
+		const isHighPriority = isRealtime || type === "pushNotice";
 		const sendOptions: Parameters<typeof push.sendNotification>[2] = {
-			proxy: config.proxy,
+			// NOTE: keepAlive で TLS ハンドシェイクを使い回す。httpsAgent は
+			// config.proxy の有無を吸収する（hpagent の Agent は https.Agent を継承）。
+			// `proxy` と併用すると web-push 側で agent が無視されるので渡さない。
+			agent: httpsAgent as https.Agent,
+			// NOTE: web-push が実際にリクエストを中断する。Promise.race では
+			// 接続が残り、タイマーも解放されなかった。
+			timeout: SEND_TIMEOUT_MS,
 			TTL: isHighPriority ? 86400 : 300,
 			headers: {
-				Urgency: isHighPriority ? "high" : "normal",
+				Urgency: isRealtime ? "high" : "normal",
 			},
 		};
 
-		await Promise.race([
-			push.sendNotification(pushSubscription, payload, sendOptions),
-			new Promise<never>((_, reject) => {
-				setTimeout(() => reject(new Error("push-send-timeout")), SEND_TIMEOUT_MS);
-			}),
-		]);
+		await push.sendNotification(pushSubscription, payload, sendOptions);
 
 		void logPushSend(userId, {
 			type,
 			endpointHash,
 			ok: true,
+			durationMs: Date.now() - startedAt,
 			payloadSize: Buffer.byteLength(payload, "utf8"),
 		});
+
+		// 成功したら名前解決失敗のカウンタを畳む（連続失敗のみを数えるため）
+		void redisClient
+			.del(unresolvableCounterKey(userId, endpointHash))
+			.catch(() => {});
+
+		return { endpointHash, ok: true, durationMs: Date.now() - startedAt };
 	} catch (err: any) {
 		const statusCode = err?.statusCode;
+		const errorMsg = err?.message ?? String(err);
+		const durationMs = Date.now() - startedAt;
 		void logPushSend(userId, {
 			type,
 			endpointHash,
 			ok: false,
 			statusCode,
-			errorMsg: err?.message ?? String(err),
+			errorMsg,
+			durationMs,
 			payloadSize: Buffer.byteLength(payload, "utf8"),
 		});
 
@@ -705,13 +882,35 @@ async function sendToSubscription(
 			logger.warn(
 				`購読が無効でした (status=410)。削除しました: ${endpointHash}`,
 			);
-			return;
+			return {
+				endpointHash,
+				ok: false,
+				statusCode,
+				errorMsg,
+				durationMs,
+				removed: "410",
+			};
+		}
+
+		// 名前解決できないホストは status が付かない。連続したら削除する
+		if (isUnresolvableHostError(err)) {
+			if (await recordUnresolvableFailure(userId, endpointHash, subscription)) {
+				return {
+					endpointHash,
+					ok: false,
+					errorMsg,
+					durationMs,
+					removed: "unresolvable",
+				};
+			}
 		}
 
 		logger.error(
 			`プッシュ通知送信に失敗しました (status=${statusCode ?? "unknown"})`,
 		);
 		logger.error(err);
+
+		return { endpointHash, ok: false, statusCode, errorMsg, durationMs };
 	}
 }
 
@@ -729,10 +928,25 @@ export async function pushNotification<T extends keyof pushNotificationsTypes>(
 	userId: string,
 	type: T,
 	body: pushNotificationsTypes[T],
-): Promise<void> {
+): Promise<PushDeliveryReport> {
+	const notificationId =
+		body != null && typeof body === "object"
+			? (body as { id?: unknown }).id
+			: undefined;
+
+	/** 送信せずに終わるときの共通処理（理由を必ず記録する） */
+	const skip = (reason: PushSkipReason): PushDeliveryReport => {
+		void logPushSkip(userId, {
+			reason,
+			type,
+			...(typeof notificationId === "string" ? { notificationId } : {}),
+		});
+		return { ok: false, attempted: 0, results: [], skipped: reason };
+	};
+
 	// read* 系は push では送らない（ストリーム + SW postMessage で同期）
 	if ((PUSH_READ_SYNC_TYPES as readonly string[]).includes(type)) {
-		return;
+		return skip("read-sync");
 	}
 
 	const notifierId = extractNotifierIdForPushMute(type, body);
@@ -740,22 +954,40 @@ export async function pushNotification<T extends keyof pushNotificationsTypes>(
 		notifierId != null &&
 		(await isNotifierPushMuted(userId, notifierId))
 	) {
-		return;
+		return skip("push-muted");
 	}
 
 	if (!(await ensureVapidDetails())) {
 		logger.warn("Service Worker の設定が無効なため、プッシュ通知をスキップします。");
-		return;
+		return skip("vapid-disabled");
 	}
 
 	const subscriptions = await getSwSubscriptionsByUserId(userId);
-	if (subscriptions.length === 0) return;
+	if (subscriptions.length === 0) {
+		return skip("no-subscriptions");
+	}
 
 	const payload = await buildPayload(userId, type, body);
 
-	const tasks = subscriptions.map((subscription) =>
-		sendToSubscription(userId, type, payload, subscription),
+	const settled = await Promise.allSettled(
+		subscriptions.map((subscription) =>
+			sendToSubscription(userId, type, payload, subscription),
+		),
 	);
 
-	await Promise.allSettled(tasks);
+	const results: PushSendResult[] = settled.map((r, i) =>
+		r.status === "fulfilled"
+			? r.value
+			: {
+					endpointHash: hashPushEndpoint(subscriptions[i].endpoint),
+					ok: false,
+					errorMsg: String(r.reason),
+				},
+	);
+
+	return {
+		ok: results.some((r) => r.ok),
+		attempted: results.length,
+		results,
+	};
 }

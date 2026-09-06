@@ -190,6 +190,8 @@ let pushLogs = $ref<
 		ok?: boolean;
 		statusCode?: number;
 		errorMsg?: string;
+		durationMs?: number;
+		reason?: string;
 	}>
 >([]);
 let loadingLog = $ref(false);
@@ -264,12 +266,27 @@ async function loadPushLog() {
 	}
 }
 
+/** skip 理由の表示ラベル。バックエンドの PushSkipReason と対応させること */
+const skipReasonLabels: Record<string, string> = {
+	"read-sync": "既読同期のため送信対象外",
+	"push-muted": "プッシュミュート中",
+	"vapid-disabled": "Service Worker / VAPID が無効",
+	"no-subscriptions": "購読が登録されていない",
+	"already-read": "3秒以内に既読になった",
+	"not-deliverable": "ミュート・サスペンドのため配信対象外",
+};
+
 function formatLogEntry(entry: (typeof pushLogs)[number]): string {
 	const time = new Date(entry.at).toLocaleString();
 	if (entry.kind === "subscription") {
 		return `${time} [購読] ${entry.event} (${entry.cause}) ${entry.endpointHash ?? ""}`;
 	}
-	return `${time} [送信] ${entry.type} ok=${entry.ok} status=${entry.statusCode ?? "-"} ${entry.endpointHash ?? ""} ${entry.errorMsg ?? ""}`;
+	if (entry.kind === "skip") {
+		const label = skipReasonLabels[entry.reason ?? ""] ?? entry.reason ?? "";
+		return `${time} [未送信] ${entry.type ?? ""} ${label}`;
+	}
+	const duration = entry.durationMs != null ? ` ${entry.durationMs}ms` : "";
+	return `${time} [送信] ${entry.type} ok=${entry.ok} status=${entry.statusCode ?? "-"}${duration} ${entry.endpointHash ?? ""} ${entry.errorMsg ?? ""}`;
 }
 
 function configure() {

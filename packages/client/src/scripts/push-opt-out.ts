@@ -10,7 +10,41 @@
  * @internal
  */
 
+import { get as idbGet, set as idbSet } from "idb-keyval";
+
 const storageKey = (userId: string): string => `pushOptOut:${userId}`;
+
+/**
+ * Service Worker が読むミラー用の IDB キー。
+ *
+ * @remarks
+ * localStorage は SW から読めないため、オプトアウト意図をここへ複製する。
+ * `sw/src/scripts/push-opt-out.ts` と値を一致させること。
+ */
+const PUSH_OPT_OUT_IDB_KEY = "pushOptOutUserIds";
+
+/**
+ * オプトアウト状態を IDB へ複製する（SW からの自動再登録を抑止するため）。
+ *
+ * @internal
+ */
+async function mirrorPushOptOutToIdb(
+	userId: string,
+	optOut: boolean,
+): Promise<void> {
+	try {
+		const stored = await idbGet(PUSH_OPT_OUT_IDB_KEY);
+		const ids = new Set<string>(Array.isArray(stored) ? stored : []);
+		if (optOut) {
+			ids.add(userId);
+		} else {
+			ids.delete(userId);
+		}
+		await idbSet(PUSH_OPT_OUT_IDB_KEY, [...ids]);
+	} catch {
+		// IDB が使えない環境では SW もアカウントを読めないため再登録は走らない
+	}
+}
 
 /**
  * 現アカウントでサーバーへのプッシュ登録を望まないことを記録する。
@@ -26,6 +60,7 @@ export function setPushServerOptOut(userId: string, optOut: boolean): void {
 	} else {
 		localStorage.removeItem(key);
 	}
+	void mirrorPushOptOutToIdb(userId, optOut);
 }
 
 /**

@@ -6,6 +6,7 @@ import {
 	postDeveloperModeToSw,
 	postSuppressPushWhenForegroundToSw,
 } from "@/scripts/push-notification-sync";
+import { reconcilePushSubscriptionOnBoot } from "@/scripts/push-subscription-register";
 
 /**
  * Service Worker を登録し、言語・dev モードを同期する。
@@ -36,5 +37,8 @@ export async function initializeSw() {
 				$i.id,
 			);
 		}
+
+		// サーバー登録だけが消えている状態を起動時に自己修復する
+		void reconcilePushSubscriptionOnBoot();
 	});
 }

@@ -88,6 +88,7 @@ import * as ep___admin_canInviteUser from "./endpoints/admin/canInvite-user.js";
 import * as ep___admin_unsilenceUser from "./endpoints/admin/unsilence-user.js";
 import * as ep___admin_unsuspendUser from "./endpoints/admin/unsuspend-user.js";
 import * as ep___admin_cantInviteUser from "./endpoints/admin/cantInvite-user.js";
+import * as ep___admin_pushNotice from "./endpoints/admin/push-notice.js";
 import * as ep___admin_updateMeta from "./endpoints/admin/update-meta.js";
 import * as ep___admin_generateVapidKeys from "./endpoints/admin/generate-vapid-keys.js";
 import * as ep___admin_vacuum from "./endpoints/admin/vacuum.js";
@@ -502,6 +503,7 @@ const eps = [
 	["admin/unsilence-user", ep___admin_unsilenceUser],
 	["admin/unsuspend-user", ep___admin_unsuspendUser],
 	["admin/cantInvite-user", ep___admin_cantInviteUser],
+	["admin/push-notice", ep___admin_pushNotice],
 	["admin/update-meta", ep___admin_updateMeta],
 	["admin/generate-vapid-keys", ep___admin_generateVapidKeys],
 	["admin/vacuum", ep___admin_vacuum],

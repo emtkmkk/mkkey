@@ -26,7 +26,7 @@ export const paramDef = {
 		since: { type: "integer", minimum: 0, default: 0 },
 		kind: {
 			type: "string",
-			enum: ["send", "subscription", "all"],
+			enum: ["send", "subscription", "skip", "all"],
 			default: "all",
 		},
 	},

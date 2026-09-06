@@ -14,6 +14,7 @@ import {
 } from "./refresh-stats-mv.js";
 import { warnInactiveDeletion } from "./warn-inactive-deletion.js";
 import { sendUnreadSummaryEmail } from "./unread-summary-email.js";
+import { broadcastPushNotice } from "./broadcast-push-notice.js";
 
 type QueueProcessorWrapper = <T>(
 	queueName: string,
@@ -34,6 +35,7 @@ const jobs = {
 	refreshStatsMvFederationAndEmojiStats,
 	warnInactiveDeletion,
 	sendUnreadSummaryEmail,
+	broadcastPushNotice,
 } as Record<
 	string,
 	| Bull.ProcessCallbackFunction<Record<string, unknown>>

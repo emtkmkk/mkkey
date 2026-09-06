@@ -11,12 +11,16 @@ import {
 	resolveReactionNotificationIconUrl,
 } from "../src/misc/notification-display-media.js";
 import { resolveNotificationDisplayText } from "../src/misc/notification-display-text.js";
+import { isSafeNoticePath } from "../src/server/api/endpoints/admin/push-notice.js";
 import {
 	attachDisplayImageUrlToNotification,
 	attachDisplayTextToNotification,
 	attachReactionPushDisplayExtras,
 	buildMinimalNotificationPayloadForPush,
 	truncateNotification,
+	isValidVapidContactEmail,
+	resolveVapidSubject,
+	isUnresolvableHostError,
 } from "../src/services/push-notification.js";
 
 /**
@@ -567,5 +571,90 @@ describe("push-notification", () => {
 		const body = await res.json();
 		assert.ok(Array.isArray(body));
 		assert.strictEqual(body.length, 0);
+	});
+});
+
+describe("vapid-subject", () => {
+	it("メールアドレス形式のみ受理する", () => {
+		assert.strictEqual(isValidVapidContactEmail("admin@example.com"), true);
+		assert.strictEqual(
+			isValidVapidContactEmail("admin+tag@sub.example.co.jp"),
+			true,
+		);
+		// Fediverse ハンドル（本番で 403 を招いた形）
+		assert.strictEqual(isValidVapidContactEmail("@emtk@mkkey.net"), false);
+		assert.strictEqual(isValidVapidContactEmail("admin@localhost"), false);
+		assert.strictEqual(isValidVapidContactEmail("admin example@a.com"), false);
+		assert.strictEqual(isValidVapidContactEmail(""), false);
+	});
+
+	it("妥当なメールアドレスは mailto: になる", () => {
+		assert.strictEqual(
+			resolveVapidSubject("admin@example.com"),
+			"mailto:admin@example.com",
+		);
+	});
+
+	it("未設定・不正な値は config.url へフォールバックする", () => {
+		// config.url は https:// のときそのまま subject になる
+		const expected = config.url.startsWith("https://")
+			? config.url
+			: resolveVapidSubject(null);
+		assert.strictEqual(resolveVapidSubject(null), expected);
+		assert.strictEqual(resolveVapidSubject("@emtk@mkkey.net"), expected);
+		assert.strictEqual(resolveVapidSubject(""), expected);
+	});
+});
+
+describe("unresolvable-host-error", () => {
+	it("ENOTFOUND を検出する", () => {
+		assert.strictEqual(
+			isUnresolvableHostError(
+				Object.assign(new Error("getaddrinfo ENOTFOUND pantasystem.net"), {
+					code: "ENOTFOUND",
+				}),
+			),
+			true,
+		);
+		// code が落ちてもメッセージで拾う
+		assert.strictEqual(
+			isUnresolvableHostError(new Error("getaddrinfo ENOTFOUND example.test")),
+			true,
+		);
+	});
+
+	it("一時的な解決失敗や他のエラーは数えない", () => {
+		// EAI_AGAIN はリゾルバ障害。全購読の巻き添え削除を避けるため対象外
+		assert.strictEqual(
+			isUnresolvableHostError(
+				Object.assign(new Error("getaddrinfo EAI_AGAIN example.test"), {
+					code: "EAI_AGAIN",
+				}),
+			),
+			false,
+		);
+		assert.strictEqual(
+			isUnresolvableHostError(
+				Object.assign(new Error("connect ECONNREFUSED"), {
+					code: "ECONNREFUSED",
+				}),
+			),
+			false,
+		);
+		assert.strictEqual(isUnresolvableHostError(null), false);
+		assert.strictEqual(isUnresolvableHostError("ENOTFOUND"), false);
+	});
+});
+
+describe("push-notice", () => {
+	it("同一オリジンの相対パスのみ許可する", () => {
+		assert.strictEqual(isSafeNoticePath("/settings/notifications"), true);
+		assert.strictEqual(isSafeNoticePath("/"), true);
+		// protocol-relative URL は外部サイトへ飛ぶ
+		assert.strictEqual(isSafeNoticePath("//evil.example.com"), false);
+		assert.strictEqual(isSafeNoticePath("https://evil.example.com"), false);
+		assert.strictEqual(isSafeNoticePath("javascript:alert(1)"), false);
+		assert.strictEqual(isSafeNoticePath("settings"), false);
+		assert.strictEqual(isSafeNoticePath(""), false);
 	});
 });

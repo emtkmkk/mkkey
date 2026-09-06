@@ -426,6 +426,11 @@ export const meta = {
 				optional: true,
 				nullable: true,
 			},
+			swContactEmail: {
+				type: "string",
+				optional: true,
+				nullable: true,
+			},
 			useObjectStorage: {
 				type: "boolean",
 				optional: true,
@@ -603,6 +608,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		smtpUser: instance.smtpUser,
 		smtpPass: instance.smtpPass,
 		swPrivateKey: instance.swPrivateKey,
+		swContactEmail: instance.swContactEmail,
 		useObjectStorage: instance.useObjectStorage,
 		objectStorageBaseUrl: instance.objectStorageBaseUrl,
 		objectStorageBucket: instance.objectStorageBucket,

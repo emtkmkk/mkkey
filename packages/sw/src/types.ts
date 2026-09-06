@@ -14,6 +14,19 @@ export type SwMessage = {
 type pushNotificationDataSourceMap = {
 	notification: Misskey.entities.Notification;
 	unreadMessagingMessage: Misskey.entities.MessagingMessage;
+	/**
+	 * 管理者からの一斉プッシュ告知。
+	 *
+	 * @remarks
+	 * プッシュ専用（アプリ内通知は作られない）。
+	 * フォアグラウンド抑制設定を無視して必ず OS 通知を表示する。
+	 */
+	pushNotice: {
+		title: string;
+		body: string;
+		url?: string;
+		tag?: string;
+	};
 	readNotifications: { notificationIds: string[] };
 	readAllNotifications: undefined;
 	readAllMessagingMessages: undefined;

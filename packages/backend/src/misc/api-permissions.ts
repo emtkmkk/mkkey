@@ -77,6 +77,7 @@ export const kinds = [
 	"write:admin:meta",
 	"write:admin:performance",
 	"write:admin:promo",
+	"write:admin:push-notice",
 	"write:admin:queue",
 	"write:admin:relays",
 	"write:admin:reset-password",

@@ -3,9 +3,13 @@ import { insertModerationLog } from "@/services/insert-moderation-log.js";
 import { DB_MAX_NOTE_TEXT_LENGTH } from "@/misc/hard-limits.js";
 import { db } from "@/db/postgre.js";
 import define from "../../define.js";
+import { ApiError } from "../../error.js";
 import { bumpReactionNormalizeCacheVersion } from "@/misc/reaction-normalize-cache.js";
 import { invalidateMetaCache } from "@/misc/fetch-meta.js";
-import { resetPushVapidDetails } from "@/services/push-notification.js";
+import {
+	isValidVapidContactEmail,
+	resetPushVapidDetails,
+} from "@/services/push-notification.js";
 
 export const meta = {
 	tags: ["admin"],
@@ -13,6 +17,15 @@ export const meta = {
 	requireCredential: true,
 	requireAdmin: true,
 	kind: "write:admin:meta",
+
+	errors: {
+		invalidSwContactEmail: {
+			message:
+				"swContactEmail must be a valid email address (it is used as the VAPID subject).",
+			code: "INVALID_SW_CONTACT_EMAIL",
+			id: "0b1a5e1c-6a4f-4d2b-9a70-1c6f0a9d7e11",
+		},
+	},
 } as const;
 
 export const paramDef = {
@@ -166,6 +179,7 @@ export const paramDef = {
 		enableServiceWorker: { type: "boolean" },
 		swPublicKey: { type: "string", nullable: true },
 		swPrivateKey: { type: "string", nullable: true },
+		swContactEmail: { type: "string", nullable: true },
 		tosUrl: { type: "string", nullable: true },
 		repositoryUrl: { type: "string" },
 		feedbackUrl: { type: "string" },
@@ -497,6 +511,15 @@ export default define(meta, paramDef, async (ps, me) => {
 		set.swPrivateKey = ps.swPrivateKey;
 	}
 
+	if (ps.swContactEmail !== undefined) {
+		// 空文字は「未設定」に正規化する（config.url へフォールバックさせる）
+		const trimmed = ps.swContactEmail?.trim() ?? null;
+		if (trimmed != null && trimmed !== "" && !isValidVapidContactEmail(trimmed)) {
+			throw new ApiError(meta.errors.invalidSwContactEmail);
+		}
+		set.swContactEmail = trimmed === "" ? null : trimmed;
+	}
+
 	if (ps.tosUrl !== undefined) {
 		set.ToSUrl = ps.tosUrl;
 	}
@@ -649,7 +672,8 @@ export default define(meta, paramDef, async (ps, me) => {
 	if (
 		ps.enableServiceWorker !== undefined ||
 		ps.swPublicKey !== undefined ||
-		ps.swPrivateKey !== undefined
+		ps.swPrivateKey !== undefined ||
+		ps.swContactEmail !== undefined
 	) {
 		invalidateMetaCache();
 		resetPushVapidDetails();

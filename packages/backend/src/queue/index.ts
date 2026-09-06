@@ -18,6 +18,7 @@ import processNoteApDeliver from "./processors/note-ap-deliver.js";
 import { endedPollNotification } from "./processors/ended-poll-notification.js";
 import { deliverJobLogger, noteApDeliverLogger, queueLogger } from "./logger.js";
 import { getJobInfo } from "./get-job-info.js";
+import type { PushNoticePayload } from "@/misc/push-notification-types.js";
 import { clearDelayedRetry, markDelayedRetry } from "./delayed-retry-reason.js";
 import { adaptiveQueueWrap } from "./adaptive-queue-throttle.js";
 
@@ -487,6 +488,26 @@ export function createCleanRemoteFilesJob() {
 		"cleanRemoteFiles",
 		{},
 		{
+		},
+	);
+}
+
+/**
+ * 管理者からの一斉プッシュ告知を予約する。
+ *
+ * @remarks
+ * プッシュ専用の告知で、アプリ内通知は作られない。
+ *
+ * @param payload - 告知内容（title / body / url / tag）
+ * @internal
+ */
+export function createBroadcastPushNoticeJob(payload: PushNoticePayload) {
+	return systemQueue.add(
+		"broadcastPushNotice",
+		{ payload },
+		{
+			removeOnComplete: true,
+			removeOnFail: false,
 		},
 	);
 }

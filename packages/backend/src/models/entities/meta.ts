@@ -340,6 +340,19 @@ export class Meta {
 	})
 	public swPrivateKey: string | null;
 
+	/**
+	 * VAPID の `sub` に使う連絡先メールアドレス。
+	 *
+	 * @remarks
+	 * `maintainerEmail` とは独立。Apple は `sub` の形式に厳格なため、
+	 * ここが不正・未設定のときは `config.url` へフォールバックする。
+	 */
+	@Column('varchar', {
+		length: 128,
+		nullable: true,
+	})
+	public swContactEmail: string | null;
+
 	@Column('boolean', {
 		default: false,
 	})

@@ -1,6 +1,10 @@
 declare var self: ServiceWorkerGlobalScope;
 
-import { createNotification } from "@/scripts/create-notification";
+import {
+	createEmptyNotification,
+	createNotification,
+} from "@/scripts/create-notification";
+import { resubscribeAndRegisterInSw } from "@/scripts/resubscribe";
 import {
 	closePushNotifications,
 	hasFocusedVisibleClient,
@@ -244,14 +248,17 @@ self.addEventListener("push", (ev) => {
 				if (_DEV_ || swDeveloperMode) {
 					console.warn("[mkkey-push] invalid push payload", err);
 				}
-				return;
+				// NOTE: userVisibleOnly の契約上、何も表示せずに終えてはいけない。
+				// 空通知を出さないと Chrome が「このサイトはバックグラウンドで
+				// 更新されました」を代わりに表示する。
+				return createEmptyNotification();
 			}
 
 			if (data == null || typeof data.type !== "string") {
 				if (_DEV_ || swDeveloperMode) {
 					console.warn("[mkkey-push] missing data.type");
 				}
-				return;
+				return createEmptyNotification();
 			}
 
 			if (_DEV_ || swDeveloperMode) {
@@ -259,10 +266,17 @@ self.addEventListener("push", (ev) => {
 			}
 
 			switch (data.type) {
+				// 管理者からの一斉告知。プッシュ専用で、フォアグラウンド抑制も
+				// アプリ内転送も行わず、必ず OS 通知を出す。
+				// NOTE: プッシュ不調そのものを知らせる用途があるため、
+				// 「オンライン時は表示しない」設定を意図的に無視する。
+				case "pushNotice":
+					return createNotification(data);
+
 				case "notification":
 				case "unreadMessagingMessage": {
 					if (Date.now() - data.dateTime > 1000 * 60 * 60 * 24) {
-						return;
+						return createEmptyNotification();
 					}
 
 					// 端末受信プッシュ件数（OS 表示の有無に関わらず加算）
@@ -321,7 +335,7 @@ self.addEventListener("push", (ev) => {
 					if (_DEV_ || swDeveloperMode) {
 						console.info("[mkkey-push] ignored type", data.type);
 					}
-					return;
+					return createEmptyNotification();
 			}
 		})(),
 	);
@@ -339,6 +353,18 @@ self.addEventListener("pushsubscriptionchange", (ev) => {
 			});
 			for (const client of clients) {
 				client.postMessage({ type: "pushsubscriptionchange" });
+			}
+
+			// NOTE: このイベントはブラウザが裏で購読を差し替えたときに飛ぶため、
+			// タブが 1 枚も無い状態が本命。中継だけでは再登録が失われるので
+			// SW 自身でも完了させる。sw/register は endpoint 単位の upsert なので
+			// ウィンドウ側と二重に走っても安全。
+			try {
+				await resubscribeAndRegisterInSw();
+			} catch (err) {
+				if (_DEV_ || swDeveloperMode) {
+					console.warn("[mkkey-push] SW 側の再購読に失敗しました", err);
+				}
 			}
 		})(),
 	);
@@ -400,6 +426,14 @@ self.addEventListener(
 							client = await swos.openChat(data.body, id);
 						}
 						break;
+					case "pushNotice": {
+						// url は同一オリジンの相対パスのみサーバー側で許可している
+						const noticeUrl = (data.body as { url?: string }).url;
+						if (typeof noticeUrl === "string" && noticeUrl.startsWith("/")) {
+							client = await swos.openClient("push", noticeUrl, id);
+						}
+						break;
+					}
 				}
 
 				if (client) {

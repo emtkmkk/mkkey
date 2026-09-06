@@ -152,7 +152,8 @@ export async function createNotification<
 		return self.registration.showNotification(...n);
 	} else {
 		console.error("Could not compose notification", data);
-		return null;
+		// NOTE: compose に失敗しても何か表示しないと userVisibleOnly の契約を破る
+		return createEmptyNotification();
 	}
 }
 
@@ -163,6 +164,24 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 	const i18n = (await swLang.i18n) as I18n<any>;
 	const { t } = i18n;
 	switch (data.type) {
+		// 管理者からの一斉告知（プッシュ専用）
+		case "pushNotice": {
+			// NOTE: data は generic な pushNotificationDataMap[K] のため
+			// switch では絞り込めない。この case では型が確定しているので明示する。
+			const notice = data.body as pushNotificationDataMap["pushNotice"]["body"];
+			return [
+				notice.title,
+				{
+					body: notice.body,
+					badge: notificationBadgeUrl("clipboard-check-solid"),
+					// tag を指定すると同じ告知が重ならない
+					tag: notice.tag ? `push-notice:${notice.tag}` : "push-notice",
+					// 見落とされると意味がないので操作するまで残す
+					requireInteraction: true,
+					data,
+				},
+			];
+		}
 		/*
 		case 'driveFileCreated': // TODO (Server Side)
 			return [t('_notification.fileUploaded'), {
@@ -776,16 +795,14 @@ export async function createEmptyNotification(data?: string) {
 		},
 	);
 
-	await new Promise<void>((resolve) => {
-		setTimeout(async () => {
-			try {
-				await closeNotificationsByTags([
-					"user_visible_auto_notification",
-					"read_notification",
-				]);
-			} finally {
-				resolve();
-			}
-		}, 1000);
-	});
+	// NOTE: close を待ってはいけない。Chrome は push の waitUntil が解決した時点で
+	// 「通知が表示されたまま残っているか」を判定し、残っていなければ
+	// 「このサイトはバックグラウンドで更新されました」を代わりに出す。
+	// そのため閉じる処理は投げっぱなしにして、先に呼び出し元へ返す。
+	setTimeout(() => {
+		void closeNotificationsByTags([
+			"user_visible_auto_notification",
+			"read_notification",
+		]);
+	}, 1000);
 }

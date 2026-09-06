@@ -67,6 +67,74 @@ export async function registerPushSubscription(
 	});
 }
 
+/** `sw/show-registration` の応答 */
+type PushRegistrationInServer = {
+	userId: string;
+	endpoint: string;
+	sendReadMessage: boolean;
+} | null;
+
+/**
+ * サーバー側の購読登録を照会する。
+ *
+ * @remarks
+ * NOTE: calckey-js の `Endpoints` に `sw/show-registration` の定義が無いため、
+ * ここで型を与えて呼び出す。
+ *
+ * @internal
+ */
+async function showRegistration(params: {
+	endpoint: string;
+	auth: string;
+	publickey: string;
+}): Promise<PushRegistrationInServer> {
+	const call = api as unknown as (
+		endpoint: string,
+		data: Record<string, unknown>,
+	) => Promise<PushRegistrationInServer>;
+	return await call("sw/show-registration", params);
+}
+
+/**
+ * 起動時にブラウザ購読とサーバー登録の食い違いを解消する。
+ *
+ * @remarks
+ * - **なぜ必要か**: 410 削除・DB 側の消失・`pushsubscriptionchange` の取りこぼしなどで
+ *   サーバー登録だけが消えると、ブラウザ側の購読は健全なままなので何のイベントも飛ばない。
+ *   従来は設定画面を開いて手動で「購読」を押すまで永久に復旧しなかった。
+ * - ユーザが明示的にオフにした場合（{@link isPushServerOptOut}）は何もしない。
+ * - 新規に購読を作ることはしない。既にある購読の登録漏れだけを直す。
+ *
+ * @internal
+ */
+export async function reconcilePushSubscriptionOnBoot(): Promise<void> {
+	if (!$i?.token || !instance.swPublickey) return;
+	if (isPushServerOptOut($i.id)) return;
+	if (!("serviceWorker" in navigator)) return;
+
+	try {
+		const registration = await navigator.serviceWorker.ready;
+		const subscription = await registration.pushManager.getSubscription();
+		// 購読が無い場合は勝手に作らない（通知許可を求めることになるため）
+		if (subscription == null) return;
+
+		const auth = encodePushKey(subscription.getKey("auth"));
+		const publickey = encodePushKey(subscription.getKey("p256dh"));
+
+		const existing = await showRegistration({
+			endpoint: subscription.endpoint,
+			auth,
+			publickey,
+		});
+		if (existing != null) return;
+
+		await registerPushSubscription(subscription, "api-call");
+		console.info("[mkkey-push] サーバー登録が失われていたため再登録しました");
+	} catch (err) {
+		console.warn("[mkkey-push] 起動時の購読照合に失敗しました", err);
+	}
+}
+
 /**
  * pushsubscriptionchange 後に購読を再登録する（グローバル用）。
  *

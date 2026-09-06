@@ -168,6 +168,8 @@ export default abstract class Chart<T extends Schema> {
 		group?: string | null;
 		date: number;
 	}>;
+	/** 実行中または待機中の保存処理。保存同士を直列化して二重適用を防ぐ。 */
+	private savePromise: Promise<void> | null = null;
 	/** getChartRaw / getLatestLog の読み取り用。stats プール有効時はそちらを使う。 */
 	private hourEntity: ReturnType<typeof Chart.schemaToEntity>["hour"];
 	private dayEntity: ReturnType<typeof Chart.schemaToEntity>["day"];
@@ -490,11 +492,46 @@ export default abstract class Chart<T extends Schema> {
 		});
 	}
 
-	public async save(): Promise<void> {
+	/**
+	 * 未保存の差分を DB へ直列に書き込む。
+	 *
+	 * @remarks
+	 * 同時に呼ばれた保存は順番に処理し、先行処理の失敗分も次回の保存で再試行する。
+	 *
+	 * @returns この呼び出しに対応する保存が完了したときに解決する Promise
+	 * @public
+	 */
+	public save(): Promise<void> {
+		// 前の保存失敗は呼び出し元へ返しつつ、次の呼び出しでは再試行できるよう直列化する。
+		const previous = this.savePromise?.catch(() => undefined) ?? Promise.resolve();
+		const current = previous.then(() => this.saveBuffered());
+		this.savePromise = current;
+		void current
+			.finally(() => {
+				if (this.savePromise === current) this.savePromise = null;
+			})
+			.catch(() => undefined);
+		return current;
+	}
+
+	/**
+	 * 呼び出し時点の差分だけを DB へ保存する。
+	 *
+	 * @remarks
+	 * 時間・日次の更新は同一トランザクションで行い、一方だけ成功した差分が
+	 * 再試行時に二重加算されないようにする。失敗したグループだけを buffer へ戻す。
+	 *
+	 * @returns 保存完了時に解決する Promise
+	 * @internal
+	 */
+	private async saveBuffered(): Promise<void> {
 		if (this.buffer.length === 0) {
 			logger.info(`${this.name}: Write skipped`);
 			return;
 		}
+
+		const pendingBuffer = this.buffer;
+		this.buffer = [];
 
 		// TODO: 前の時間のログがbufferにあった場合のハンドリング
 		// 例えば、save が20分ごとに行われるとして、前回行われたのは 01:50 だったとする。
@@ -508,8 +545,8 @@ export default abstract class Chart<T extends Schema> {
 		): Promise<void> => {
 			const finalDiffs = {} as Record<string, number | string[]>;
 
-			for (const diff of this.buffer
-				.filter((q) => q.group == null || q.group === logHour.group)
+			for (const diff of pendingBuffer
+				.filter((q) => q.group === (logHour.group ?? null))
 				.map((q) => q.diff)) {
 				for (const [k, v] of Object.entries(diff)) {
 					if (finalDiffs[k] == null) {
@@ -634,35 +671,32 @@ export default abstract class Chart<T extends Schema> {
 				}
 			}
 
-			// ログ更新
-			await Promise.all([
-				this.repositoryForHour
+			// 時間・日次を原子的に更新し、片方だけ成功する状態を作らない。
+			await db.transaction(async (manager) => {
+				await manager
+					.getRepository(this.hourEntity)
 					.createQueryBuilder()
 					.update()
 					.set(queryForHour as any)
 					.where("id = :id", { id: logHour.id })
-					.execute(),
-				this.repositoryForDay
+					.execute();
+				await manager
+					.getRepository(this.dayEntity)
 					.createQueryBuilder()
 					.update()
 					.set(queryForDay as any)
 					.where("id = :id", { id: logDay.id })
-					.execute(),
-			]);
+					.execute();
+			});
 
 			logger.info(
 				`${this.name + (logHour.group ? `:${logHour.group}` : "")}: Updated`,
 			);
-
-			// TODO: この一連の処理が始まった後に新たにbufferに入ったものは消さないようにする
-			this.buffer = this.buffer.filter(
-				(q) => q.group != null && q.group !== logHour.group,
-			);
 		};
 
-		const startCount = this.buffer.length;
+		const startCount = pendingBuffer.length;
 
-		const groups = removeDuplicates(this.buffer.map((log) => log.group));
+		const groups = removeDuplicates(pendingBuffer.map((log) => log.group));
 		const groupCount = groups.length;
 
 		// DB で同時実行するチャート更新クエリ数を一度に 1000 件に制限し、
@@ -670,7 +704,7 @@ export default abstract class Chart<T extends Schema> {
 		const limit = promiseLimit(1000);
 
 		const startTime = Date.now();
-		await Promise.all(
+		const results = await Promise.allSettled(
 			groups.map((group) =>
 				limit(() =>
 					Promise.all([
@@ -680,6 +714,24 @@ export default abstract class Chart<T extends Schema> {
 				),
 			),
 		);
+
+		const failedGroups = new Set<string | null>();
+		let firstError: unknown;
+		for (const [index, result] of results.entries()) {
+			if (result.status === "rejected") {
+				failedGroups.add(groups[index]);
+				firstError ??= result.reason;
+			}
+		}
+
+		if (failedGroups.size > 0) {
+			// 保存中に追加された新しい差分より前へ戻し、次の save で失敗分だけ再試行する。
+			this.buffer = [
+				...pendingBuffer.filter((log) => failedGroups.has(log.group)),
+				...this.buffer,
+			];
+			throw firstError;
+		}
 
 		const duration = Date.now() - startTime;
 		logger.info(

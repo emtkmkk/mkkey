@@ -1,5 +1,12 @@
 process.env.NODE_ENV = "test";
 
+/**
+ * @packageDocumentation
+ *
+ * チャートの保存・期間集計・グループ化・重複排除を検証する。
+ *
+ * @internal
+ */
 import * as assert from "assert";
 import * as lolex from "@sinonjs/fake-timers";
 import TestChart from "../src/services/chart/charts/test.js";
@@ -145,6 +152,29 @@ describe("Chart", () => {
 			},
 		});
 
+		assert.deepStrictEqual(chartDays, {
+			foo: {
+				dec: [0, 0, 0],
+				inc: [1, 0, 0],
+				total: [1, 0, 0],
+			},
+		});
+	});
+
+	it("同時に複数回saveされてもデータの更新は一度だけ", async () => {
+		await testChart.increment();
+		await Promise.all([testChart.save(), testChart.save(), testChart.save()]);
+
+		const chartHours = await testChart.getChart("hour", 3, null);
+		const chartDays = await testChart.getChart("day", 3, null);
+
+		assert.deepStrictEqual(chartHours, {
+			foo: {
+				dec: [0, 0, 0],
+				inc: [1, 0, 0],
+				total: [1, 0, 0],
+			},
+		});
 		assert.deepStrictEqual(chartDays, {
 			foo: {
 				dec: [0, 0, 0],

@@ -1,3 +1,10 @@
+/**
+ * @packageDocumentation
+ *
+ * 指定したノートに対する利用者自身のお気に入り・監視・スレッドミュート状態を返す。
+ *
+ * @internal
+ */
 import {
 	NoteFavorites,
 	Notes,
@@ -6,6 +13,7 @@ import {
 } from "@/models/index.js";
 import { getNote } from "../../common/getters.js";
 import define from "../../define.js";
+import { ApiError } from "../../error.js";
 
 export const meta = {
 	tags: ["notes"],
@@ -35,6 +43,14 @@ export const meta = {
 			},
 		},
 	},
+
+	errors: {
+		noSuchNote: {
+			message: "その投稿は存在しません。",
+			code: "NO_SUCH_NOTE",
+			id: "c86f3f92-2f8b-4b46-89e7-455ecd364570",
+		},
+	},
 } as const;
 
 export const paramDef = {
@@ -50,7 +66,12 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, user) => {
-	const note = await getNote(ps.noteId, user);
+	const note = await getNote(ps.noteId, user).catch((err) => {
+		if (err.id === "9725d0ce-ba28-4dde-95a7-2cbb2c15de24") {
+			throw new ApiError(meta.errors.noSuchNote);
+		}
+		throw err;
+	});
 
 	const [favorite, watching, threadMuting] = await Promise.all([
 		NoteFavorites.count({

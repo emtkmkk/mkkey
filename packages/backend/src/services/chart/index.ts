@@ -1,4 +1,12 @@
+/**
+ * @packageDocumentation
+ *
+ * チャートサービスの共有インスタンスを生成し、定期保存と終了時保存を登録する。
+ *
+ * @internal
+ */
 import { beforeShutdown } from "@/misc/before-shutdown.js";
+import Logger from "../logger.js";
 
 import FederationChart from "./charts/federation.js";
 import NotesChart from "./charts/notes.js";
@@ -25,6 +33,8 @@ export const perUserFollowingChart = new PerUserFollowingChart();
 export const perUserDriveChart = new PerUserDriveChart();
 export const apRequestChart = new ApRequestChart();
 
+const logger = new Logger("chart");
+
 const charts = [
 	federationChart,
 	notesChart,
@@ -43,7 +53,10 @@ const charts = [
 // 20分おきにメモリ情報をDBに書き込み
 setInterval(() => {
 	for (const chart of charts) {
-		chart.save();
+		void chart.save().catch((error: unknown) => {
+			// 失敗分は Chart 側の buffer に戻され、次の定期保存で再試行される。
+			logger.error(error instanceof Error ? error : String(error));
+		});
 	}
 }, 1000 * 60 * 20);
 

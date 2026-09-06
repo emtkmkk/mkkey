@@ -96,7 +96,19 @@ export async function proxyMedia(ctx: Koa.Context) {
 	const [path, cleanup] = await createTemp();
 
 	try {
-		await downloadUrl(url, path);
+		try {
+			await downloadUrl(url, path);
+		} catch (e) {
+			serverLogger.error(`media download failed: ${e}`);
+
+			if (e instanceof StatusError && (e.statusCode === 302 || !e.isRetryable)) {
+				ctx.status = e.statusCode;
+			} else {
+				// 接続失敗・TLS エラー・上流 5xx はこのサーバ自身の 500 と区別する。
+				ctx.status = 502;
+			}
+			return;
+		}
 
 		const { mime, ext } = await detectType(path);
 		const isConvertibleImage = isMimeImage(mime, "sharp-convertible-image");

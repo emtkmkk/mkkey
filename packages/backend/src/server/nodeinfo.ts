@@ -121,6 +121,7 @@ const nodeinfo2 = async () => {
 
 const cache = new Cache<Awaited<ReturnType<typeof nodeinfo2>>>(1000 * 60 * 10, {
 	maxEntries: CACHE_MAX_SINGLETON,
+	scopeName: "nodeinfo",
 });
 
 router.get(nodeinfo2_1path, async (ctx) => {
@@ -132,11 +133,10 @@ router.get(nodeinfo2_1path, async (ctx) => {
 
 router.get(nodeinfo2_0path, async (ctx) => {
 	const base = await cache.fetch(null, () => nodeinfo2());
+	const software = { ...base.software, repository: undefined };
 
-	// @ts-ignore
-	base.software.repository = undefined;
-
-	ctx.body = { version: "2.0", ...base };
+	// 2.0 応答だけ repository を除外し、2.1 と共有するキャッシュ本体は変更しない。
+	ctx.body = { version: "2.0", ...base, software };
 	ctx.set("Cache-Control", "public, max-age=600");
 });
 

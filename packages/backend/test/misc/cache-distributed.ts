@@ -67,7 +67,10 @@ function createAdapter(bus: InMemoryBus, disableSignal = false): DistributedSing
 
 describe("cache / distributed inflight", () => {
 	const createCache = (): Cache<number> =>
-		new Cache<number>(60_000, { maxEntries: CACHE_MAX_SMALL });
+		new Cache<number>(60_000, {
+			maxEntries: CACHE_MAX_SMALL,
+			scopeName: "test:shared-default",
+		});
 	let originalCacheConfig: typeof config.cache;
 
 	beforeEach(() => {
@@ -203,8 +206,14 @@ describe("cache / distributed inflight", () => {
 	it("正常系：fetchMaybe で undefined でも別インスタンス間で1回だけ実行される", async () => {
 		const bus = createBus();
 		setCacheDistributedAdapterForTests(createAdapter(bus));
-		const cacheA = new Cache<number>(60_000, { maxEntries: CACHE_MAX_SMALL });
-		const cacheB = new Cache<number>(60_000, { maxEntries: CACHE_MAX_SMALL });
+		const cacheA = new Cache<number>(60_000, {
+			maxEntries: CACHE_MAX_SMALL,
+			scopeName: "test:maybe-undefined",
+		});
+		const cacheB = new Cache<number>(60_000, {
+			maxEntries: CACHE_MAX_SMALL,
+			scopeName: "test:maybe-undefined",
+		});
 		let calls = 0;
 
 		const [a, b] = await Promise.all([
@@ -242,7 +251,10 @@ describe("cache / distributed inflight", () => {
 			waitForSignal: async () => null,
 		};
 		setCacheDistributedAdapterForTests(adapter);
-		const cache = new Cache<bigint>(60_000, { maxEntries: CACHE_MAX_SMALL });
+		const cache = new Cache<bigint>(60_000, {
+			maxEntries: CACHE_MAX_SMALL,
+			scopeName: "test:serialize-failure",
+		});
 		let calls = 0;
 
 		let thrown = false;
@@ -258,6 +270,34 @@ describe("cache / distributed inflight", () => {
 		assert.strictEqual(thrown, true);
 		assert.strictEqual(calls, 1);
 		assert.strictEqual(lockTtlMsObserved > 0, true);
+	});
+
+	it("安全性：scopeName 未指定時は分散アダプターを使わない", async () => {
+		let lockCalls = 0;
+		setCacheDistributedAdapterForTests({
+			tryAcquireLock: async () => {
+				lockCalls += 1;
+				return true;
+			},
+			extendLock: async () => true,
+			releaseLock: async () => undefined,
+			getResult: async () => null,
+			setResult: async () => undefined,
+			publishDone: async () => undefined,
+			waitForSignal: async () => null,
+		});
+
+		const cacheA = new Cache<number>(60_000, { maxEntries: CACHE_MAX_SMALL });
+		const cacheB = new Cache<number>(60_000, { maxEntries: CACHE_MAX_SMALL });
+		let calls = 0;
+		const [a, b] = await Promise.all([
+			cacheA.fetch("same-key", async () => ++calls),
+			cacheB.fetch("same-key", async () => ++calls),
+		]);
+
+		assert.deepStrictEqual([a, b], [1, 2]);
+		assert.strictEqual(calls, 2);
+		assert.strictEqual(lockCalls, 0);
 	});
 
 	it("設定反映：enabled=false の場合は分散アダプターを使わない", async () => {

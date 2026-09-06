@@ -1,3 +1,10 @@
+/**
+ * @packageDocumentation
+ *
+ * Mastodon 互換のステータス・メディア・投票 API を登録する。
+ *
+ * @internal
+ */
 import Router from "@koa/router";
 import { getClient } from "../ApiMastodonCompatibleService.js";
 import { emojiRegexAtStartToEnd } from "@/misc/emoji-regex.js";
@@ -13,6 +20,49 @@ import {
 	convertStatus,
 } from "../converters.js";
 import { mastodonLogger } from "../../logger.js";
+
+type MastodonRequestError = {
+	code?: string;
+	response?: {
+		status?: number;
+		data?: unknown;
+	};
+};
+
+/**
+ * Mastodon 互換 API の失敗を安全な HTTP 応答へ変換する。
+ *
+ * @remarks
+ * ネイティブ ID 変換の `InvalidArg` には Axios の `response` がないため 400 とする。
+ * その他の response 不在エラーでは内部情報を返さず 500 にする。
+ *
+ * @param ctx - 応答を書き込む Koa コンテキスト
+ * @param error - Axios またはネイティブ処理由来のエラー
+ * @internal
+ */
+function setMastodonErrorResponse(
+	ctx: Router.RouterContext,
+	error: unknown,
+): void {
+	const requestError =
+		typeof error === "object" && error !== null
+			? (error as MastodonRequestError)
+			: {};
+	const status =
+		requestError.response?.status ??
+		(requestError.code === "InvalidArg" ? 400 : 500);
+
+	mastodonLogger.error("request failed", {
+		error,
+		response: requestError.response?.data,
+	});
+	ctx.status = status;
+	ctx.body =
+		requestError.response?.data ??
+		(status === 400
+			? { error: "Invalid request" }
+			: { error: "Internal server error" });
+}
 
 function normalizeQuery(data: any) {
 	const str = querystring.stringify(data);
@@ -65,10 +115,8 @@ export function apiStatusMastodon(router: Router): void {
 				typeof sensitive === "string" ? sensitive === "true" : sensitive;
 			const data = await client.postStatus(text, body);
 			ctx.body = convertStatus(data.data);
-		} catch (e: any) {
-			mastodonLogger.error("request failed", { e, response: e.response?.data });
-			ctx.status = e.response?.status ?? 500;
-			ctx.body = e.response.data;
+		} catch (e: unknown) {
+			setMastodonErrorResponse(ctx, e);
 		}
 	});
 	router.get<{ Params: { id: string } }>("/v1/statuses/:id", async (ctx) => {
@@ -80,10 +128,8 @@ export function apiStatusMastodon(router: Router): void {
 				convertId(ctx.params.id, IdType.CalckeyId),
 			);
 			ctx.body = convertStatus(data.data);
-		} catch (e: any) {
-			mastodonLogger.error("request failed", { e, response: e.response?.data });
-			ctx.status = e.response?.status ?? 500;
-			ctx.body = e.response.data;
+		} catch (e: unknown) {
+			setMastodonErrorResponse(ctx, e);
 		}
 	});
 	router.delete<{ Params: { id: string } }>("/v1/statuses/:id", async (ctx) => {

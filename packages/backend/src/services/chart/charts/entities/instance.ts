@@ -1,11 +1,18 @@
+/**
+ * @packageDocumentation
+ *
+ * リモートインスタンス単位で集計するチャートのスキーマを定義する。
+ *
+ * @internal
+ */
 import Chart from "../../core.js";
 
 export const name = "instance";
 
 export const schema = {
-	"requests.failed": { range: "small" },
-	"requests.succeeded": { range: "small" },
-	"requests.received": { range: "small" },
+	"requests.failed": {},
+	"requests.succeeded": {},
+	"requests.received": {},
 	"notes.total": { accumulate: true },
 	"notes.inc": {},
 	"notes.dec": {},

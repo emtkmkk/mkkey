@@ -14,7 +14,6 @@
  * @internal
  */
 
-import * as crypto from "node:crypto";
 import config from "@/config/index.js";
 import {
 	runDistributedSingleflight,
@@ -60,8 +59,8 @@ export type CacheOptions<T> = {
 	 * 分散 singleflight のキー接頭辞。
 	 *
 	 * @remarks
-	 * NOTE: 既定の stack 由来 fallback は、ビルド差異や callsite 変化で衝突・変動し得るため、
-	 * 取り違えを避けたいキャッシュは明示指定を推奨する。
+	 * NOTE: 未指定時はキャッシュ間の値取り違えを防ぐため、ワーカー横断の
+	 * singleflight を使わない。ワーカー間で処理をまとめる場合は必ず明示する。
 	 */
 	scopeName?: string;
 	/** 分散 singleflight 用の値コーデック。 */
@@ -334,7 +333,7 @@ export class Cache<T> {
 	public cache: Map<string | null, { date: number; value: T }>;
 	private lifetime: number;
 	private maxEntries: number;
-	private scopeName: string;
+	private scopeName: string | null;
 	private codec: CacheValueCodec<T>;
 
 	/**
@@ -353,7 +352,7 @@ export class Cache<T> {
 		this.cache = new Map();
 		this.lifetime = lifetime;
 		this.maxEntries = resolveMaxEntries(options?.maxEntries);
-		this.scopeName = options?.scopeName ?? this.deriveDefaultScopeName();
+		this.scopeName = options?.scopeName ?? null;
 		this.codec = options?.codec ?? {
 			serialize: (value) => JSON.stringify(encodeCacheValue(value)),
 			deserialize: (raw) => decodeCacheValue(JSON.parse(raw) as EncodedCacheValue) as T,
@@ -451,22 +450,6 @@ export class Cache<T> {
 	}
 
 	/**
-	 * `scopeName` 未指定時の fallback 値を生成する。
-	 *
-	 * @remarks
-	 * NOTE: 既存運用との互換維持のため stack ベースを残している。
-	 * scope 衝突回避が必要な箇所では `CacheOptions.scopeName` を明示すること。
-	 *
-	 * @returns 既定 scope 名
-	 * @internal
-	 */
-	private deriveDefaultScopeName(): string {
-		// 既存実装と互換な stack 行ハッシュを使う（段階移行のため）。
-		const callsite = new Error().stack?.split("\n")[2]?.trim() ?? "unknown";
-		return crypto.createHash("sha256").update(callsite, "utf8").digest("hex").slice(0, 16);
-	}
-
-	/**
 	 * `fetchMaybe` 用に `undefined` を壊さず直列化する。
 	 *
 	 * @remarks
@@ -530,7 +513,7 @@ export class Cache<T> {
 		deserialize: (raw: string) => V,
 	): Promise<V> {
 		const opts = getCacheDistributedOpts();
-		if (!opts.enabled) {
+		if (!opts.enabled || this.scopeName == null) {
 			return await factory();
 		}
 

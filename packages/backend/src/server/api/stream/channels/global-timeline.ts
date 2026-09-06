@@ -44,6 +44,10 @@ export default class extends Channel {
 	private async onNote(note: Packed<"Note">) {
 		if (note.visibility !== "public") return;
 
+		// 警告ユーザの投稿は閲覧設定 OFF のとき配送しない（REST の公開TLと同条件）
+		if (this.isWarnedUserNoteHidden(note, { socialFollowingException: false }))
+			return;
+
 		// 関係ない返信は除外（showReplyMode が notBotOnly のときのみ isBotMention も同様に除外、自分の投稿は除く）
 		if (!this.user && note.reply) {
 			return;

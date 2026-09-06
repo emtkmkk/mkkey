@@ -53,6 +53,10 @@ export default class extends Channel {
 		)
 			return;
 
+		// 警告ユーザの投稿は閲覧設定 OFF のとき配送しない（REST の公開TLと同条件）
+		if (this.isWarnedUserNoteHidden(note, { socialFollowingException: false }))
+			return;
+
 		// 流れてきたNoteがミュートしているユーザーが関わるものだったら無視する
 		if (isUserRelated(note, this.muting)) return;
 		if (!(note.renote && note.text == null) && this.noteMuting.has(note.userId))

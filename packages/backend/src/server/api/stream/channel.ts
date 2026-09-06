@@ -86,6 +86,31 @@ export default abstract class Channel {
 		});
 	}
 
+	/**
+	 * 公開TL系で「警告ユーザのノート」を配送しないか判定する。
+	 *
+	 * @remarks
+	 * REST の `applyPublicTimelineWarnedUserFilter` と同じ条件をストリーム側で再現する。
+	 * 未ログインは常に除外側（閲覧設定 OFF 相当）。
+	 *
+	 * @param note - パック済みノート
+	 * @param options.socialFollowingException - true のときフォロー済み投稿者は警告でも通す
+	 */
+	protected isWarnedUserNoteHidden(
+		note: Packed<"Note">,
+		options: { socialFollowingException: boolean },
+	): boolean {
+		if (note.user.isModerationWarning !== true) return false;
+		if (this.userProfile?.showWarnedUsersInPublicTimeline === true) return false;
+		if (
+			options.socialFollowingException &&
+			this.user != null &&
+			this.following.has(note.userId)
+		)
+			return false;
+		return true;
+	}
+
 	protected withPackedNote(
 		callback: (note: Packed<"Note">) => void,
 	): (Note) => void {

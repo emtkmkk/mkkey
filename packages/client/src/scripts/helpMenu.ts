@@ -1,3 +1,13 @@
+/**
+ * @packageDocumentation
+ *
+ * ヘルプメニューの項目と、各項目から実行する操作を定義する。
+ *
+ * @remarks
+ * チュートリアルの再表示など、端末内の状態を変更する操作もここで扱う。
+ *
+ * @internal
+ */
 import { defaultStore } from "@/store";
 import { instance } from "@/instance";
 import { host } from "@/config";
@@ -14,6 +24,17 @@ import {
 	MenuParent,
 } from "@/types/menu";
 
+/**
+ * 操作元の要素に紐づけてヘルプメニューを開く。
+ *
+ * @remarks
+ * アカウントの状態に応じて、招待コードなど表示可能な項目を切り替える。
+ *
+ * @param ev - ヘルプメニューを開いたマウスイベント
+ * @returns メニューを表示した時点で処理を終える
+ *
+ * @public
+ */
 export function openHelpMenu_(ev: MouseEvent) {
 	// 招待可能条件
 	// 登録から(7日-((投稿数-20)*1.5時間))経過
@@ -88,6 +109,12 @@ export function openHelpMenu_(ev: MouseEvent) {
 			{
 				type: "button",
 				action: async () => {
+					const { canceled } = await os.yesno({
+						type: "question",
+						text: i18n.ts.replayTutorialConfirm,
+					});
+					if (canceled) return;
+
 					resetPwaInstallPromptSuppression();
 					defaultStore.set("tutorial", 0);
 					defaultStore.set("showLocalPostsInfoPopup", false);

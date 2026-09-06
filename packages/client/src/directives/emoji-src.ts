@@ -242,8 +242,8 @@ function unmountEmojiSource(el: HTMLImageElement): void {
 	releaseActiveLoad(state);
 	el.removeEventListener("load", state.onLoad, true);
 	el.removeEventListener("error", state.onError, true);
-	// DOM から外れた要素が通信だけを継続して読み込み枠を占有しないよう中断する。
-	el.removeAttribute("src");
+	// leave アニメーション中は要素が描画され続けるため、表示中の src は変更しない。
+	// 実際に DOM から外れた後の通信中断はブラウザに任せる。
 	states.delete(el);
 	drainQueue();
 }

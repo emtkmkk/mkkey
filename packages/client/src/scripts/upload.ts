@@ -102,8 +102,34 @@ type SilentApiCall = (
 	suppressToast?: boolean,
 ) => Promise<unknown>;
 
-/** 複数 API を使う処理でエラー通知を 1 回にまとめる。 */
-const callApiWithoutToast = os.api as unknown as SilentApiCall;
+/**
+ * API 関数の参照を実際の呼び出し時まで遅延し、エラー通知を抑止して実行する。
+ *
+ * @remarks
+ * `os` と設定ストアには既存の循環依存があるため、モジュール初期化時に
+ * `os.api` を定数へ保存すると、圧縮後のバンドルで初期化前参照が発生する。
+ * 呼び出しを関数本体へ遅延させ、起動順に依存しないようにする。
+ *
+ * @param endpoint - 呼び出す API エンドポイント
+ * @param data - API へ送るデータ
+ * @param token - 明示的に使う認証トークン
+ * @param suppressToast - API 共通のエラー通知を抑止するか
+ * @returns API 応答を解決する Promise
+ * @internal
+ */
+function callApiWithoutToast(
+	endpoint: string,
+	data: Record<string, unknown>,
+	token?: string | null,
+	suppressToast?: boolean,
+): Promise<unknown> {
+	return (os.api as unknown as SilentApiCall)(
+		endpoint,
+		data,
+		token,
+		suppressToast,
+	);
+}
 
 /** 分割アップロードのパート送信失敗。 */
 class ChunkedUploadPartError extends Error {

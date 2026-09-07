@@ -21,11 +21,15 @@ import type { DriveFile } from "@/models/entities/drive-file.js";
 import type { User } from "@/models/entities/user.js";
 import type { DriveFileProgressReporter } from "@/misc/drive-file-progress.js";
 import { addFile } from "./add-file.js";
+import {
+	CHUNKED_UPLOAD_PART_SIZE,
+	CHUNKED_UPLOAD_THRESHOLD,
+} from "./chunked-upload-constants.js";
 
-/** Cloudflare の 100 MB より十分小さいパートサイズ。 */
-export const CHUNKED_UPLOAD_PART_SIZE = 64 * 1024 * 1024;
-/** 公式クライアントが分割へ切り替える推奨サイズ。 */
-export const CHUNKED_UPLOAD_THRESHOLD = 90 * 1024 * 1024;
+export {
+	CHUNKED_UPLOAD_PART_SIZE,
+	CHUNKED_UPLOAD_THRESHOLD,
+} from "./chunked-upload-constants.js";
 /** 最終操作からセッションを保持する秒数。 */
 const SESSION_TTL_SECONDS = 24 * 60 * 60;
 /** 1 ユーザーが同時に予約できるセッション数。 */

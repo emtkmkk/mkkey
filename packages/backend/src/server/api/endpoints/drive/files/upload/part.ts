@@ -8,8 +8,8 @@
  *
  * @internal
  */
+import { CHUNKED_UPLOAD_PART_FILE_SIZE_LIMIT } from "@/services/drive/chunked-upload-constants.js";
 import {
-	CHUNKED_UPLOAD_PART_SIZE,
 	ChunkedUploadError,
 	writeChunkedUploadPart,
 } from "@/services/drive/chunked-upload.js";
@@ -21,7 +21,7 @@ export const meta = {
 	tags: ["drive"],
 	requireCredential: true,
 	requireFile: true,
-	fileSizeLimit: CHUNKED_UPLOAD_PART_SIZE,
+	fileSizeLimit: CHUNKED_UPLOAD_PART_FILE_SIZE_LIMIT,
 	kind: "write:drive",
 	limit: { duration: HOUR, max: 480 },
 	errors: {

@@ -10,10 +10,10 @@
 		>
 			<template #label>{{ i18n.ts.masterVolume }}</template>
 		</FormRange>
-		<MkSwitch v-model="notUseSound" class="_formBlock">
+		<MkSwitch data-setting-key="notUseSound" v-model="notUseSound" class="_formBlock">
 			<template #label>{{ i18n.ts.notUseSound }}</template>
 		</MkSwitch>
-		<MkSwitch v-model="useSoundOnlyWhenActive" class="_formBlock">
+		<MkSwitch data-setting-key="useSoundOnlyWhenActive" v-model="useSoundOnlyWhenActive" class="_formBlock">
 			<template #label>{{ i18n.ts.useSoundOnlyWhenActive }}</template>
 		</MkSwitch>
 
@@ -50,6 +50,17 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * 通知音と音量を管理するページ。
+ *
+ * @remarks
+ * 設定検索は各操作部品の `data-setting-key` を使って、該当項目へ移動し強調する。
+ *
+ * @see {@link defaultStore}
+ * @internal
+ */
 import { computed, ref } from "vue";
 import FormRange from "@/components/form/range.vue";
 import FormButton from "@/components/MkButton.vue";

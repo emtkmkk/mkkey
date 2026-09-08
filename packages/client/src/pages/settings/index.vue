@@ -429,17 +429,34 @@ function isElementVisibleForScroll(element: HTMLElement): boolean {
 }
 
 /**
- * 表示中の設定ページ内で、ラベル文言に一致する `_formBlock` を探す
+ * 表示中の設定ページ内で、設定キーまたはラベル文言に一致する要素を探す
  *
  * @param mainEl - `.main .bkzroven` 要素
+ * @param settingKey - {@link defaultStore} の設定キー
  * @param labelText - `i18n.ts[settingKey]` の表示文言
  * @returns 見つかった要素。無ければ `null`
+ * @remarks
+ * `data-setting-key` による完全一致を優先し、移行中の項目だけ表示文言へフォールバックする。
+ * キーに一致する要素が非表示の場合も文言検索へ戻さず、親の `FormSection` を誤って強調しない。
  * @internal
  */
 function findSettingBlockInMain(
 	mainEl: HTMLElement,
+	settingKey: string,
 	labelText: string,
 ): HTMLElement | null {
+	const keyedBlocks = mainEl.querySelectorAll<HTMLElement>(
+		`[data-setting-key="${CSS.escape(settingKey)}"]`,
+	);
+	for (const block of keyedBlocks) {
+		if (isElementVisibleForScroll(block)) {
+			return block;
+		}
+	}
+	if (keyedBlocks.length > 0) {
+		return null;
+	}
+
 	const blocks = mainEl.querySelectorAll("._formBlock");
 	for (const block of blocks) {
 		if (!(block instanceof HTMLElement)) continue;
@@ -522,7 +539,7 @@ function scrollToSettingFromQuery(): void {
 		const mainEl = rootEl?.querySelector<HTMLElement>(".main .bkzroven");
 		if (!mainEl) return;
 
-		const block = findSettingBlockInMain(mainEl, labelText);
+		const block = findSettingBlockInMain(mainEl, key, labelText);
 		if (block) {
 			scrollToSettingBlock(block);
 		}

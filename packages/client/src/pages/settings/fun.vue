@@ -7,13 +7,13 @@
 					i18n.ts.mkkey
 				}}</span></template
 			>
-			<FormSwitch v-model="powerMode" class="_formBlock"
+			<FormSwitch data-setting-key="powerMode" v-model="powerMode" class="_formBlock"
 				>{{ i18n.ts.powerMode
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
-			<FormSwitch
+			<FormSwitch data-setting-key="powerModeColorful"
 				v-if="powerMode"
 				v-model="powerModeColorful"
 				class="_formBlock"
@@ -22,7 +22,7 @@
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
-			<FormSwitch
+			<FormSwitch data-setting-key="powerModeSuperColorful"
 				v-if="powerMode"
 				v-model="powerModeSuperColorful"
 				class="_formBlock"
@@ -31,7 +31,7 @@
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
-			<FormSwitch
+			<FormSwitch data-setting-key="powerModeNoShake"
 				v-if="powerMode"
 				v-model="powerModeNoShake"
 				class="_formBlock"
@@ -42,7 +42,7 @@
 			>
 			<FormFolder v-if="powerMode" class="_formBlock">
 				<template #label>{{ i18n.ts.powerModeOption }}</template>
-				<FormRange
+				<FormRange data-setting-key="powerModeParticleCount"
 					v-if="powerMode"
 					v-model="powerModeParticleCount"
 					:min="0"
@@ -55,7 +55,7 @@
 						>{{ i18n.ts.powerModeParticleCount }}</template
 					>
 				</FormRange>
-				<FormRange
+				<FormRange data-setting-key="powerModeParticleSize"
 					v-if="powerMode"
 					v-model="powerModeParticleSize"
 					:min="0"
@@ -68,7 +68,7 @@
 						>{{ i18n.ts.powerModeParticleSize }}</template
 					>
 				</FormRange>
-				<FormRange
+				<FormRange data-setting-key="powerModeParticleX"
 					v-if="powerMode"
 					v-model="powerModeParticleX"
 					:min="powerModeParticleX <= -10 ? (Math.floor(powerModeParticleX / -5) + 1) * -5 : -10"
@@ -81,7 +81,7 @@
 						>{{ i18n.ts.powerModeParticleX }}</template
 					>
 				</FormRange>
-				<FormRange
+				<FormRange data-setting-key="powerModeParticleY"
 					v-if="powerMode"
 					v-model="powerModeParticleY"
 					:min="powerModeParticleY <= -10 ? (Math.floor(powerModeParticleY / -5) + 1) * -5 : -10"
@@ -94,7 +94,7 @@
 						>{{ i18n.ts.powerModeParticleY }}</template
 					>
 				</FormRange>
-				<FormRange
+				<FormRange data-setting-key="powerModeParticleSpreadX"
 					v-if="powerMode"
 					v-model="powerModeParticleSpreadX"
 					:min="0"
@@ -107,7 +107,7 @@
 						>{{ i18n.ts.powerModeParticleSpreadX }}</template
 					>
 				</FormRange>
-				<FormRange
+				<FormRange data-setting-key="powerModeParticleSpreadY"
 					v-if="powerMode"
 					v-model="powerModeParticleSpreadY"
 					:min="0"
@@ -120,7 +120,7 @@
 						>{{ i18n.ts.powerModeParticleSpreadY }}</template
 					>
 				</FormRange>
-				<FormRange
+				<FormRange data-setting-key="powerModeParticleGravity"
 					v-if="powerMode"
 					v-model="powerModeParticleGravity"
 					:min="0"
@@ -133,7 +133,7 @@
 						>{{ i18n.ts.powerModeParticleGravity }}</template
 					>
 				</FormRange>
-				<FormRange
+				<FormRange data-setting-key="powerModeShakePower"
 					v-if="powerMode && !powerModeNoShake"
 					v-model="powerModeShakePower"
 					:min="0"
@@ -175,7 +175,7 @@
 					i18n.ts.mkkey
 				}}</span></template
 			>
-			<FormSwitch v-model="enableMorseDecode" class="_formBlock"
+			<FormSwitch data-setting-key="enableMorseDecode" v-model="enableMorseDecode" class="_formBlock"
 				>{{ i18n.ts.enableMorseDecode
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
@@ -189,7 +189,7 @@
 					i18n.ts.mkkey
 				}}</span></template
 			>
-			<FormSwitch v-model="excludeSimo" class="_formBlock"
+			<FormSwitch data-setting-key="excludeSimo" v-model="excludeSimo" class="_formBlock"
 				>{{ i18n.ts.excludeSimo
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
@@ -198,13 +198,13 @@
 					i18n.ts.excludeSimoDescription
 				}}</template></FormSwitch
 			>
-			<FormSwitch v-model="excludeNSFW" class="_formBlock"
+			<FormSwitch data-setting-key="excludeNSFW" v-model="excludeNSFW" class="_formBlock"
 				>{{ i18n.ts.excludeNSFW
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
-			<FormSwitch
+			<FormSwitch data-setting-key="excludeNotFollowNSFW"
 				:disabled="!excludeNSFW"
 				v-model="excludeNotFollowNSFW"
 				class="_formBlock"
@@ -216,19 +216,19 @@
 		</FormSection>
 		<FormSection>
 			<template #label></template>
-			<FormSwitch v-model="postReplaceMark" class="_formBlock"
+			<FormSwitch data-setting-key="postReplaceMark" v-model="postReplaceMark" class="_formBlock"
 				>{{ i18n.ts.postReplaceMark
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
-			<FormSelect v-model="replaceMakudo" class="_formBlock">
+			<FormSelect data-setting-key="replaceMakudo" v-model="replaceMakudo" class="_formBlock">
 				<template #label>{{ i18n.ts.replaceMakudo }}</template>
 				<option value="">{{ i18n.ts.replaceMakudo0 }}</option>
 				<option value="makudo">{{ i18n.ts.replaceMakudo1 }}</option>
 				<option value="makku">{{ i18n.ts.replaceMakudo2 }}</option>
 			</FormSelect>
-			<FormSwitch v-model="postStartSleep" class="_formBlock"
+			<FormSwitch data-setting-key="postStartSleep" v-model="postStartSleep" class="_formBlock"
 				>{{ i18n.ts.postStartSleep
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
@@ -242,7 +242,7 @@
 					i18n.ts.mkkey
 				}}</span></template
 			>
-			<FormSwitch v-model="enableEmojiReplace" class="_formBlock"
+			<FormSwitch data-setting-key="enableEmojiReplace" v-model="enableEmojiReplace" class="_formBlock"
 				>{{ i18n.ts.enableEmojiReplace
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
@@ -254,7 +254,7 @@
 				v-if="enableEmojiReplace"
 				style="border-radius: 0.375rem"
 			>
-				<XDraggable
+				<XDraggable data-setting-key="allEmojiReplace"
 					v-model="allEmojiReplace"
 					class="zoaiodol"
 					:item-key="(item) => item"
@@ -295,6 +295,17 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * 演出や文字変換など、遊びに関する表示設定を管理するページ。
+ *
+ * @remarks
+ * 設定検索は各操作部品の `data-setting-key` を使って、該当項目へ移動し強調する。
+ *
+ * @see {@link defaultStore}
+ * @internal
+ */
 import { ref, computed, watch } from "vue";
 import XDraggable from "vuedraggable";
 import FormButton from "@/components/MkButton.vue";

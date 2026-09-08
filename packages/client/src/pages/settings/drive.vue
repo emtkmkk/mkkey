@@ -41,7 +41,7 @@
 		</FormSection>
 
 		<FormSection>
-			<FormButton @click="chooseUploadFolder()">
+			<FormButton data-setting-key="uploadFolder" @click="chooseUploadFolder()">
 				{{ i18n.ts.uploadFolder }}
 				<template #suffix>{{
 					uploadFolder ? uploadFolder.name : "-"
@@ -50,7 +50,7 @@
 					><i class="ph-folder-notch-open ph-bold ph-lg"></i
 				></template>
 			</FormButton>
-			<FormButton
+			<FormButton data-setting-key="uploadFolderAvatar"
 				@click="chooseUploadFolderAvatar()"
 				style="margin-top: 0.375rem"
 			>
@@ -62,7 +62,7 @@
 					><i class="ph-folder-notch-open ph-bold ph-lg"></i
 				></template>
 			</FormButton>
-			<FormButton
+			<FormButton data-setting-key="uploadFolderBanner"
 				@click="chooseUploadFolderBanner()"
 				style="margin-top: 0.375rem"
 			>
@@ -74,7 +74,7 @@
 					><i class="ph-folder-notch-open ph-bold ph-lg"></i
 				></template>
 			</FormButton>
-			<FormButton
+			<FormButton data-setting-key="uploadFolderWallpaper"
 				@click="chooseUploadFolderWallpaper()"
 				style="margin-top: 0.375rem"
 			>
@@ -99,16 +99,16 @@
 					><i class="ph-folder-notch-open ph-bold ph-lg"></i
 				></template>
 			</FormButton>
-			<FormSwitch v-model="keepOriginalUploading" class="_formBlock">
+			<FormSwitch data-setting-key="keepOriginalUploading" v-model="keepOriginalUploading" class="_formBlock">
 				<template #label>{{ i18n.ts.keepOriginalUploading }}</template>
 				<template #caption>{{
 					i18n.ts.keepOriginalUploadingDescription
 				}}</template>
 			</FormSwitch>
-			<FormSwitch v-model="keepFileName" class="_formBlock">
+			<FormSwitch data-setting-key="keepFileName" v-model="keepFileName" class="_formBlock">
 				<template #label>{{ i18n.ts.keepFileName }}</template>
 			</FormSwitch>
-			<FormSwitch v-model="alwaysInputFilename" class="_formBlock">
+			<FormSwitch data-setting-key="alwaysInputFilename" v-model="alwaysInputFilename" class="_formBlock">
 				<template #label>{{ i18n.ts.alwaysInputFilename }}</template>
 			</FormSwitch>
 			<FormSwitch
@@ -140,6 +140,17 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * ドライブ容量、アップロード先、ファイル保存方法を管理するページ。
+ *
+ * @remarks
+ * 設定検索は各操作部品の `data-setting-key` を使って、該当項目へ移動し強調する。
+ *
+ * @see {@link defaultStore}
+ * @internal
+ */
 import { computed, ref } from "vue";
 import tinycolor from "tinycolor2";
 import FormLink from "@/components/form/link.vue";

@@ -2,7 +2,7 @@
 	<div class="_formRoot">
                 <FormSection>
                         <template #label>{{ i18n.ts.appearanceDisplayEffects }}</template>
-                        <FormSwitch v-model="autoplayMfm" class="_formBlock">
+                        <FormSwitch data-setting-key="animatedMfm" v-model="autoplayMfm" class="_formBlock">
                                 {{ i18n.ts._mfm.alwaysPlay }}
                                 <template #caption>
                                         <i
@@ -12,43 +12,43 @@
                                         {{ i18n.ts._mfm.warn }}
                                 </template>
                         </FormSwitch>
-                        <FormSwitch v-model="reduceAnimation" class="_formBlock">{{
+                        <FormSwitch data-setting-key="animation" v-model="reduceAnimation" class="_formBlock">{{
                                 i18n.ts.reduceUiAnimation
                         }}</FormSwitch>
-                        <FormSwitch v-model="useBlurEffect" class="_formBlock">{{
+                        <FormSwitch data-setting-key="useBlurEffect" v-model="useBlurEffect" class="_formBlock">{{
                                 i18n.ts.useBlurEffect
                         }}</FormSwitch>
-                        <FormSwitch v-model="useBlurEffectForModal" class="_formBlock">{{
+                        <FormSwitch data-setting-key="useBlurEffectForModal" v-model="useBlurEffectForModal" class="_formBlock">{{
                                 i18n.ts.useBlurEffectForModal
                         }}</FormSwitch>
                 </FormSection>
 
                 <FormSection>
                         <template #label>{{ i18n.ts.appearanceTimelineAndMedia }}</template>
-                        <FormSwitch
+                        <FormSwitch data-setting-key="showGapBetweenNotesInTimeline"
                                 v-model="showGapBetweenNotesInTimeline"
                                 class="_formBlock"
                                 >{{ i18n.ts.showGapBetweenNotesInTimeline }}</FormSwitch
                         >
-                        <FormSwitch v-model="loadRawImages" class="_formBlock">{{
+                        <FormSwitch data-setting-key="loadRawImages" v-model="loadRawImages" class="_formBlock">{{
                                 i18n.ts.loadRawImages
                         }}</FormSwitch>
-                        <FormSwitch v-model="loadOriginalImages" class="_formBlock">{{
+                        <FormSwitch data-setting-key="loadOriginalImages" v-model="loadOriginalImages" class="_formBlock">{{
                                 i18n.ts.loadOriginalImages
                         }}</FormSwitch>
-                        <FormSwitch v-model="thumbnailCover" class="_formBlock"
+                        <FormSwitch data-setting-key="thumbnailCover" v-model="thumbnailCover" class="_formBlock"
                                 >{{ i18n.ts.thumbnailCover
                                 }}<span v-if="showMkkeySettingTips" class="_beta">{{
                                         i18n.ts.mkkey
                                 }}</span></FormSwitch
                         >
-                        <FormSwitch v-model="compactGrid" class="_formBlock"
+                        <FormSwitch data-setting-key="compactGrid" v-model="compactGrid" class="_formBlock"
                                 >{{ i18n.ts.compactGrid
                                 }}<span v-if="showMkkeySettingTips" class="_beta">{{
                                         i18n.ts.mkkey
                                 }}</span></FormSwitch
                         >
-                        <FormSelect
+                        <FormSelect data-setting-key="linkPreviewThumbnailSize"
                                 v-model="linkPreviewThumbnailSize"
                                 class="_formBlock"
                         >
@@ -68,56 +68,56 @@
                                         i18n.ts._linkPreviewThumbnailSize.none
                                 }}</option>
                         </FormSelect>
-                        <FormSwitch
+                        <FormSwitch data-setting-key="showSensitiveLinkPreviewThumbnail"
                                 v-model="showSensitiveLinkPreviewThumbnail"
                                 class="_formBlock"
                         >
                                 {{ i18n.ts.showSensitiveLinkPreviewThumbnail }}
                         </FormSwitch>
-                        <FormSwitch
+                        <FormSwitch data-setting-key="disableShowingAnimatedImages"
                                 v-model="disableShowingAnimatedImages"
                                 class="_formBlock"
                                 >{{ i18n.ts.disableShowingAnimatedImages }}</FormSwitch
                         >
-                        <FormSwitch v-model="seperateRenoteQuote" class="_formBlock">{{
+                        <FormSwitch data-setting-key="seperateRenoteQuote" v-model="seperateRenoteQuote" class="_formBlock">{{
                                 i18n.ts.seperateRenoteQuote
                         }}</FormSwitch>
                 </FormSection>
 
                 <FormSection>
                         <template #label>{{ i18n.ts.appearanceInterface }}</template>
-                        <FormSwitch v-model="hiddenHeaderIcon" class="_formBlock">{{
+                        <FormSwitch data-setting-key="hiddenHeaderIcon" v-model="hiddenHeaderIcon" class="_formBlock">{{
                                 i18n.ts.hiddenHeaderIcon
                         }}</FormSwitch>
-                        <FormSwitch v-model="alwaysXExpand" class="_formBlock">{{
+                        <FormSwitch data-setting-key="alwaysXExpand" v-model="alwaysXExpand" class="_formBlock">{{
                                 i18n.ts.alwaysXExpand
                         }}</FormSwitch>
-                        <FormSwitch v-model="showRelationMark" class="_formBlock"
+                        <FormSwitch data-setting-key="showRelationMark" v-model="showRelationMark" class="_formBlock"
                                 >{{ i18n.ts.showRelationMark
                                 }}<span v-if="showMkkeySettingTips" class="_beta">{{
                                         i18n.ts.mkkey
                                 }}</span></FormSwitch
                         >
-                        <FormSwitch v-model="disableDrawer" class="_formBlock">{{
+                        <FormSwitch data-setting-key="disableDrawer" v-model="disableDrawer" class="_formBlock">{{
                                 i18n.ts.disableDrawer
                         }}</FormSwitch>
                 </FormSection>
 
                 <FormSection>
                         <template #label>{{ i18n.ts.appearanceReactions }}</template>
-                        <FormSwitch v-model="reactionShowBig" class="_formBlock">
+                        <FormSwitch data-setting-key="reactionShowBig" v-model="reactionShowBig" class="_formBlock">
                                 {{ i18n.ts.reactionShowBig }}
                                 <span v-if="showMkkeySettingTips" class="_beta">{{
                                         i18n.ts.mkkey
                                 }}</span></FormSwitch
                         >
-                        <FormSwitch v-model="reactionShowUsername" class="_formBlock">
+                        <FormSwitch data-setting-key="reactionShowUsername" v-model="reactionShowUsername" class="_formBlock">
                                 {{ i18n.ts.reactionShowUsername }}
                                 <span v-if="showMkkeySettingTips" class="_beta">{{
                                         i18n.ts.mkkey
                                 }}</span></FormSwitch
                         >
-                        <FormSwitch v-model="reactionShowShort" class="_formBlock">
+                        <FormSwitch data-setting-key="reactionShowShort" v-model="reactionShowShort" class="_formBlock">
                                 {{ i18n.ts.reactionShowShort }}
                                 <span v-if="showMkkeySettingTips" class="_beta">{{
                                         i18n.ts.mkkey
@@ -160,13 +160,13 @@
                         <FormSwitch v-model="useSystemFont" class="_formBlock">{{
                                 i18n.ts.useSystemFont
                         }}</FormSwitch>
-                        <FormSwitch v-model="useOsNativeEmojis" class="_formBlock">
+                        <FormSwitch data-setting-key="useOsNativeEmojis" v-model="useOsNativeEmojis" class="_formBlock">
                                 {{ i18n.ts.useOsNativeEmojis }}
                                 <div>
                                         <Mfm :key="useOsNativeEmojis" text="🍮🍦🍭🍩🍰🍫🍬🥞🍪" />
                                 </div>
                         </FormSwitch>
-                        <FormSelect v-model="customFont">
+                        <FormSelect data-setting-key="customFont" v-model="customFont">
                                 <template #label
                                         >{{ i18n.ts.customFont
                                         }}<span v-if="showMkkeySettingTips" class="_beta">{{
@@ -181,7 +181,7 @@
                                         {{ font.name }}
                                 </option>
                         </FormSelect>
-                        <FormSwitch v-model="randomCustomFont" class="_formBlock">
+                        <FormSwitch data-setting-key="randomCustomFont" v-model="randomCustomFont" class="_formBlock">
                                 {{ i18n.ts.randomCustomFont }}
                                 <span v-if="showMkkeySettingTips" class="_beta">{{
                                         i18n.ts.mkkey
@@ -204,7 +204,7 @@
 
                 <FormSection>
                         <template #label>{{ i18n.ts.appearanceAvatars }}</template>
-                        <FormSwitch v-model="squareAvatars" class="_formBlock">{{
+                        <FormSwitch data-setting-key="squareAvatars" v-model="squareAvatars" class="_formBlock">{{
                                 i18n.ts.squareAvatars
                         }}</FormSwitch>
                         <FormRadios v-model="avatarSize" class="_formBlock">
@@ -229,7 +229,7 @@
 
 		<FormSection>
 			<template #label>{{ i18n.ts.showColor }}</template>
-			<FormSwitch v-model="showVisibilityColor">{{
+			<FormSwitch data-setting-key="showVisibilityColor" v-model="showVisibilityColor">{{
 				i18n.ts.showVisibilityColor
 			}}</FormSwitch>
 			<MkColorInput 
@@ -270,24 +270,24 @@
 
                 <FormSection>
                         <template #label>{{ i18n.ts.instanceTicker }}</template>
-                        <FormSelect v-model="instanceTicker" class="_formBlock">
+                        <FormSelect data-setting-key="instanceTicker" v-model="instanceTicker" class="_formBlock">
                                 <option value="none">{{ i18n.ts._instanceTicker.none }}</option>
                                 <option value="remote">{{ i18n.ts._instanceTicker.remote }}</option>
                                 <option value="always">{{ i18n.ts._instanceTicker.always }}</option>
                         </FormSelect>
-                        <FormSwitch v-model="tickerShowName" class="_formBlock"
+                        <FormSwitch data-setting-key="tickerShowName" v-model="tickerShowName" class="_formBlock"
                                 >{{ i18n.ts.tickerShowName
                                 }}<span v-if="showMkkeySettingTips" class="_beta">{{
                                         i18n.ts.mkkey
                                 }}</span></FormSwitch
                         >
-                        <FormSwitch v-model="tickerShowFavicon" class="_formBlock"
+                        <FormSwitch data-setting-key="tickerShowFavicon" v-model="tickerShowFavicon" class="_formBlock"
                                 >{{ i18n.ts.tickerShowFavicon
                                 }}<span v-if="showMkkeySettingTips" class="_beta">{{
                                         i18n.ts.mkkey
                                 }}</span></FormSwitch
                         >
-                        <FormSwitch v-model="tickerShowIcon" class="_formBlock"
+                        <FormSwitch data-setting-key="tickerShowIcon" v-model="tickerShowIcon" class="_formBlock"
                                 >{{ i18n.ts.tickerShowIcon
                                 }}<span v-if="showMkkeySettingTips" class="_beta">{{
                                         i18n.ts.mkkey
@@ -312,6 +312,17 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * 表示、画像、フォント、アバターなどの外観設定を管理するページ。
+ *
+ * @remarks
+ * 設定検索は各操作部品の `data-setting-key` を使って、該当項目へ移動し強調する。
+ *
+ * @see {@link defaultStore}
+ * @internal
+ */
 import { ref, computed, watch } from "vue";
 import FormButton from "@/components/MkButton.vue";
 import FormLink from "@/components/form/link.vue";

@@ -852,7 +852,7 @@ export const defaultStore = markRaw(
 		showGapBetweenNotesInTimeline: {
 			where: "device",
 			default: false,
-			page: "timeline",
+			page: "appearance",
 		},
 		darkMode: {
 			where: "device",
@@ -1053,7 +1053,7 @@ export const defaultStore = markRaw(
 		enableCustomKaTeXMacro: {
 			where: "device",
 			default: false,
-			page: "general",
+			page: "custom-katex-macro",
 		},
 		enableEmojiReactions: {
 			where: "account",
@@ -1259,7 +1259,7 @@ export const defaultStore = markRaw(
                         where: "account",
                         default: false,
                         createdAt: "2024/7/12",
-                        page: "reaction",
+                        page: "emoji-picker-order",
                 },
                 enableEmojiPickerAddedOrderCategory: {
                         where: "account",
@@ -1285,7 +1285,7 @@ export const defaultStore = markRaw(
                                 "unicode",
                         ],
                         createdAt: "2024/7/12",
-                        page: "reaction",
+                        page: "emoji-picker-order",
                 },
                 remoteEmojisFetch: {
                         where: "device",
@@ -1338,7 +1338,7 @@ export const defaultStore = markRaw(
 			where: "account",
 			default: true,
 			createdAt: "2023/7/18",
-			page: "timeline",
+			page: "behavior",
 		},
 		alwaysPostButton: {
 			where: "device",
@@ -1781,7 +1781,7 @@ export const defaultStore = markRaw(
 			where: "device",
 			default: "",
 			createdAt: "2026/2/14",
-			page: "behavior",
+			page: "preferences-backups",
 		},
 		shortNoteMenu: {
 			where: "device",

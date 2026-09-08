@@ -2,10 +2,10 @@
 	<div class="_formRoot">
             <FormSection>
                         <template #label>{{ i18n.ts.behavior }}</template>
-                        <FormSwitch v-model="enterSendsMessage" class="_formBlock">{{
+                        <FormSwitch data-setting-key="enterSendsMessage" v-model="enterSendsMessage" class="_formBlock">{{
                                 i18n.ts.enterSendsMessage
                         }}</FormSwitch>
-                        <FormSwitch
+                        <FormSwitch data-setting-key="CloseAllClearButton"
                                 :disabled="!showCloseButton"
                                 v-model="CloseAllClearButton"
                                 class="_formBlock"
@@ -14,7 +14,7 @@
                                                 i18n.ts.mkkey
                                         }}</span></FormSwitch
 												>
-                        <FormSwitch
+                        <FormSwitch data-setting-key="openMentionWindow"
                                 :disabled="!showMentionButton"
                                 v-model="openMentionWindow"
                                 class="_formBlock"
@@ -23,22 +23,22 @@
                                         i18n.ts.mkkey
                                 }}</span></FormSwitch
                         >
-                        <FormSwitch v-model="keepPostCw" class="_formBlock"
+                        <FormSwitch data-setting-key="keepPostCw" v-model="keepPostCw" class="_formBlock"
                                 >{{ i18n.ts.keepPostCw
                                 }}<span v-if="showMkkeySettingTips" class="_beta">{{
                                         i18n.ts.mkkey
                                 }}</span></FormSwitch
                         >
-                        <FormSwitch v-model="keepCw" class="_formBlock">{{
+                        <FormSwitch data-setting-key="keepCw" v-model="keepCw" class="_formBlock">{{
                                 i18n.ts.keepCw
                         }}</FormSwitch>
-                        <FormSwitch v-model="smartMFMInputer" class="_formBlock"
+                        <FormSwitch data-setting-key="smartMFMInputer" v-model="smartMFMInputer" class="_formBlock"
                                 >{{ i18n.ts.smartMFMInputer
                                 }}<span v-if="showMkkeySettingTips" class="_beta">{{
                                         i18n.ts.mkkey
                                 }}</span></FormSwitch
                         >
-                        <FormSwitch v-model="quickToggleSmartMFMInputer" class="_formBlock"
+                        <FormSwitch data-setting-key="quickToggleSmartMFMInputer" v-model="quickToggleSmartMFMInputer" class="_formBlock"
                                 >{{ i18n.ts.quickToggleSmartMFMInputer
                                 }}<span v-if="showMkkeySettingTips" class="_beta">{{
                                         i18n.ts.mkkey
@@ -59,13 +59,13 @@
             </FormSection>
             <FormSection>
                         <template #label>{{ i18n.ts.emoji }}</template>
-                        <FormSwitch v-model="openEmojiPicker" class="_formBlock"
+                        <FormSwitch data-setting-key="openEmojiPicker" v-model="openEmojiPicker" class="_formBlock"
                                 >{{ i18n.ts.openEmojiPicker
                                 }}<span v-if="showMkkeySettingTips" class="_beta">{{
                                         i18n.ts.mkkey
                                 }}</span></FormSwitch
                         >
-                        <FormSwitch
+                        <FormSwitch data-setting-key="postAutoFocusSearchBar"
                                 :disabled="!openEmojiPicker"
                                 v-model="postAutoFocusSearchBar"
                                 class="_formBlock"
@@ -74,7 +74,7 @@
                                         i18n.ts.mkkey
                                 }}</span></FormSwitch
                         >
-                        <FormSwitch
+                        <FormSwitch data-setting-key="notCloseEmojiPicker"
                                 :disabled="!openEmojiPicker"
                                 v-model="notCloseEmojiPicker"
                                 class="_formBlock"
@@ -83,7 +83,7 @@
                                         i18n.ts.mkkey
                                 }}</span></FormSwitch
                         >
-                        <FormSwitch
+                        <FormSwitch data-setting-key="showRemoteEmojiPostForm"
                                 v-model="showRemoteEmojiPostForm"
                                 :disabled="showRemoteEmojiPostFormDisabled"
                                 class="_formBlock"
@@ -98,7 +98,7 @@
                                         i18n.ts.mkkey
                                 }}</span>
                         </FormSwitch>
-                        <FormSwitch
+                        <FormSwitch data-setting-key="emojiPickerUseDrawerForMobile"
                                 v-model="emojiPickerUseDrawerForMobile"
                                 class="_formBlock"
                                 >{{ i18n.ts.emojiPickerUseDrawerForMobile
@@ -109,7 +109,7 @@
             </FormSection>
             <FormSection>
                         <template #label>{{ i18n.ts.display }}</template>
-                        <FormSwitch v-model="plusInfoPostForm" class="_formBlock"
+                        <FormSwitch data-setting-key="plusInfoPostForm" v-model="plusInfoPostForm" class="_formBlock"
                                 >{{ i18n.ts.plusInfoPostForm
                                 }}<span v-if="showMkkeySettingTips" class="_beta">{{
                                         i18n.ts.mkkey
@@ -118,17 +118,17 @@
                         <div class="postFormGroupLabel _formBlock">
                                 {{ i18n.ts.postFormDisableTabNavigation }}
                         </div>
-                        <FormSwitch v-model="postFormHeaderButtonsTabindexMinusOne" class="_formBlock">
+                        <FormSwitch data-setting-key="postFormHeaderButtonsTabindexMinusOne" v-model="postFormHeaderButtonsTabindexMinusOne" class="_formBlock">
                                 {{ i18n.ts.postFormHeaderButtonsTabindexMinusOne }}
                         </FormSwitch>
-                        <FormSwitch v-model="postFormFooterButtonsTabindexMinusOne" class="_formBlock">
+                        <FormSwitch data-setting-key="postFormFooterButtonsTabindexMinusOne" v-model="postFormFooterButtonsTabindexMinusOne" class="_formBlock">
                                 {{ i18n.ts.postFormFooterButtonsTabindexMinusOne }}
                         </FormSwitch>
                         <div class="postFormSectionDivider _formBlock" aria-hidden="true"></div>
                         <div class="postFormGroupLabel _formBlock">
                                 {{ i18n.ts.postFormHeaderButtons }}
                         </div>
-                        <FormSwitch v-model="showCloseButton" class="_formBlock">
+                        <FormSwitch data-setting-key="hiddenCloseButton" v-model="showCloseButton" class="_formBlock">
                                 <span class="postFormSwitchLabel"
                                         ><i class="ph-x ph-bold ph-lg"></i
                                         ><span>{{ closeButtonLabel }}</span
@@ -137,7 +137,7 @@
                                         }}</span></span
                                 >
                         </FormSwitch>
-                        <FormSwitch v-model="showAccountButton" class="_formBlock">
+                        <FormSwitch data-setting-key="hiddenAccountButton" v-model="showAccountButton" class="_formBlock">
                                 <span class="postFormSwitchLabel"
                                         ><i class="ph-user-circle ph-bold ph-lg"></i
                                         ><span>{{ i18n.ts.hiddenAccountButton }}</span
@@ -146,7 +146,7 @@
                                         }}</span></span
                                 >
                         </FormSwitch>
-                        <FormSwitch v-model="showTextCount" class="_formBlock">
+                        <FormSwitch data-setting-key="hiddenTextCount" v-model="showTextCount" class="_formBlock">
                                 <span class="postFormSwitchLabel"
                                         ><i class="ph-text-t ph-bold ph-lg"></i
                                         ><span>{{ i18n.ts.hiddenTextCount }}</span
@@ -155,7 +155,7 @@
                                         }}</span></span
                                 >
                         </FormSwitch>
-                        <FormSwitch v-model="showDraftButton" class="_formBlock">
+                        <FormSwitch data-setting-key="hiddenDraftButton" v-model="showDraftButton" class="_formBlock">
                                 <span class="postFormSwitchLabel"
                                         ><i class="ph-notepad ph-bold ph-lg"></i
                                         ><span>{{ i18n.ts.hiddenDraftButton }}</span
@@ -164,7 +164,7 @@
                                         }}</span></span
                                 >
                         </FormSwitch>
-                        <FormSwitch v-model="showMFMHelp" class="_formBlock">
+                        <FormSwitch data-setting-key="hiddenMFMHelp" v-model="showMFMHelp" class="_formBlock">
                                 <span class="postFormSwitchLabel"
                                         ><i class="ph-question ph-bold ph-lg"></i
                                         ><span>{{ i18n.ts.hiddenMFMHelp }}</span
@@ -173,7 +173,7 @@
                                         }}</span></span
                                 >
                         </FormSwitch>
-                        <FormSwitch v-model="showPostButton" class="_formBlock">
+                        <FormSwitch data-setting-key="hiddenPostButton" v-model="showPostButton" class="_formBlock">
                                 <span class="postFormSwitchLabel"
                                         ><i class="ph-paper-plane-tilt ph-bold ph-lg"></i
                                         ><span>{{ i18n.ts.hiddenPostButton }}</span
@@ -186,7 +186,7 @@
                         <div class="postFormGroupLabel _formBlock">
                                 {{ i18n.ts.postFormFooterButtons }}
                         </div>
-                        <FormSwitch v-model="showUploadButton" class="_formBlock">
+                        <FormSwitch data-setting-key="hiddenUploadButton" v-model="showUploadButton" class="_formBlock">
                                 <span class="postFormSwitchLabel"
                                         ><i class="ph-upload ph-bold ph-lg"></i
                                         ><span>{{ i18n.ts.hiddenUploadButton }}</span
@@ -195,7 +195,7 @@
                                         }}</span></span
                                 >
                         </FormSwitch>
-                        <FormSwitch v-model="showPollButton" class="_formBlock">
+                        <FormSwitch data-setting-key="hiddenPollButton" v-model="showPollButton" class="_formBlock">
                                 <span class="postFormSwitchLabel"
                                         ><i class="ph-microphone-stage ph-bold ph-lg"></i
                                         ><span>{{ i18n.ts.hiddenPollButton }}</span
@@ -204,7 +204,7 @@
                                         }}</span></span
                                 >
                         </FormSwitch>
-                        <FormSwitch v-model="showCwButton" class="_formBlock">
+                        <FormSwitch data-setting-key="hiddenCwButton" v-model="showCwButton" class="_formBlock">
                                 <span class="postFormSwitchLabel"
                                         ><i class="ph-eye-slash ph-bold ph-lg"></i
                                         ><span>{{ i18n.ts.hiddenCwButton }}</span
@@ -213,7 +213,7 @@
                                         }}</span></span
                                 >
                         </FormSwitch>
-                        <FormSwitch v-model="showMentionButton" class="_formBlock">
+                        <FormSwitch data-setting-key="hiddenMentionButton" v-model="showMentionButton" class="_formBlock">
                                 <span class="postFormSwitchLabel"
                                         ><i class="ph-at ph-bold ph-lg"></i
                                         ><span>{{ i18n.ts.hiddenMentionButton }}</span
@@ -222,7 +222,7 @@
                                         }}</span></span
                                 >
                         </FormSwitch>
-                        <FormSwitch v-model="showHashtagButton" class="_formBlock">
+                        <FormSwitch data-setting-key="hiddenHashtagButton" v-model="showHashtagButton" class="_formBlock">
                                 <span class="postFormSwitchLabel"
                                         ><i class="ph-hash ph-bold ph-lg"></i
                                         ><span>{{ i18n.ts.hiddenHashtagButton }}</span
@@ -231,7 +231,7 @@
                                         }}</span></span
                                 >
                         </FormSwitch>
-                        <FormSwitch v-model="showEmojiButton" class="_formBlock">
+                        <FormSwitch data-setting-key="hiddenEmojiButton" v-model="showEmojiButton" class="_formBlock">
                                 <span class="postFormSwitchLabel"
                                         ><i class="ph-smiley ph-bold ph-lg"></i
                                         ><span>{{ i18n.ts.hiddenEmojiButton }}</span
@@ -240,7 +240,7 @@
                                         }}</span></span
                                 >
                         </FormSwitch>
-                        <FormSwitch v-model="showMFMButton" class="_formBlock">
+                        <FormSwitch data-setting-key="hiddenMFMButton" v-model="showMFMButton" class="_formBlock">
                                 <span class="postFormSwitchLabel"
                                         ><i class="ph-magic-wand ph-bold ph-lg"></i
                                         ><span>{{ i18n.ts.hiddenMFMButton }}</span
@@ -249,7 +249,7 @@
                                         }}</span></span
                                 >
                         </FormSwitch>
-                        <FormSwitch v-model="showPreviewButton" class="_formBlock">
+                        <FormSwitch data-setting-key="hiddenPreviewButton" v-model="showPreviewButton" class="_formBlock">
                                 <span class="postFormSwitchLabel"
                                         ><i class="ph-binoculars ph-bold ph-lg"></i
                                         ><span>{{ i18n.ts.hiddenPreviewButton }}</span
@@ -258,7 +258,7 @@
                                         }}</span></span
                                 >
                         </FormSwitch>
-                        <FormSwitch v-model="showPostLockButton" class="_formBlock">
+                        <FormSwitch data-setting-key="hiddenPostLockButton" v-model="showPostLockButton" class="_formBlock">
                                 <span class="postFormSwitchLabel"
                                         ><i class="ph-lock ph-bold ph-lg"></i
                                         ><span>{{ i18n.ts.hiddenPostLockButton }}</span
@@ -267,7 +267,7 @@
                                         }}</span></span
                                 >
                         </FormSwitch>
-                        <FormSwitch
+                        <FormSwitch data-setting-key="hiddenNowPlayingButton"
                                 v-model="showNowPlayingButton"
                                 class="_formBlock"
                                 :disabled="!isNowPlayingSupported"
@@ -281,7 +281,7 @@
                                 >
                         </FormSwitch>
                         <!-- 表示条件を満たすときのみ、Swarm/プラグインボタンの表示切替を表示 -->
-                        <FormSwitch
+                        <FormSwitch data-setting-key="hiddenSwarmButton"
                                 v-if="showSwarmButtonInSettings"
                                 v-model="showSwarmButton"
                                 class="_formBlock"
@@ -294,7 +294,7 @@
                                         }}</span></span
                                 >
                         </FormSwitch>
-                        <FormSwitch
+                        <FormSwitch data-setting-key="hiddenPluginButton"
                                 v-if="showPluginButtonInSettings"
                                 v-model="showPluginButton"
                                 class="_formBlock"
@@ -312,6 +312,17 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * 投稿フォームの操作、表示ボタン、絵文字入力を管理するページ。
+ *
+ * @remarks
+ * 設定検索は各操作部品の `data-setting-key` を使って、該当項目へ移動し強調する。
+ *
+ * @see {@link defaultStore}
+ * @internal
+ */
 import { ref, computed, watch } from "vue";
 import FormSection from "@/components/form/section.vue";
 import FormSwitch from "@/components/form/switch.vue";

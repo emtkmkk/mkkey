@@ -71,7 +71,7 @@
 			<!-- TODO: サイドバーを完全に隠せるようにすると、別途ハンバーガーボタンのようなものをUIに表示する必要があり面倒 -->
 		</FormRadios>
 
-		<FormRadios
+		<FormRadios data-setting-key="mobileThirdButton"
 			v-if="!freeThirdButton"
 			v-model="mobileThirdButton"
 			class="_formBlock"
@@ -95,7 +95,7 @@
 				{{ i18n.ts.hidden }}
 			</option>
 		</FormRadios>
-		<FormInput
+		<FormInput data-setting-key="mobileThirdButton"
 			v-if="freeThirdButton"
 			v-model="mobileThirdButton"
 			class="_formBlock"
@@ -122,6 +122,17 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * ナビゲーション項目とモバイル向けボタンを管理するページ。
+ *
+ * @remarks
+ * 設定検索は各操作部品の `data-setting-key` を使って、該当項目へ移動し強調する。
+ *
+ * @see {@link defaultStore}
+ * @internal
+ */
 import { computed, ref, watch, unref, defineAsyncComponent } from "vue";
 import FormInput from "@/components/form/input.vue";
 import FormRadios from "@/components/form/radios.vue";

@@ -2,13 +2,13 @@
 	<div class="_formRoot">
 		<FormSection>
 			<template #label></template>
-			<FormSwitch v-model="imageNewTab" class="_formBlock">{{
+			<FormSwitch data-setting-key="imageNewTab" v-model="imageNewTab" class="_formBlock">{{
 				i18n.ts.openImageInNewTab
 			}}</FormSwitch>
-			<FormSwitch v-model="enableInfiniteScroll" class="_formBlock">{{
+			<FormSwitch data-setting-key="enableInfiniteScroll" v-model="enableInfiniteScroll" class="_formBlock">{{
 				i18n.ts.enableInfiniteScroll
 			}}</FormSwitch>
-			<FormSelect v-model="doContextMenu" class="_formBlock">
+			<FormSelect data-setting-key="doContextMenu" v-model="doContextMenu" class="_formBlock">
 				<template #label>{{ i18n.ts.doContextMenu }}</template>
 				<option value="contextMenu">{{ i18n.ts.contextMenu }}</option>
 				<option value="reactionPicker">
@@ -16,13 +16,13 @@
 				</option>
 				<option value="doNothing">{{ i18n.ts.doNothing }}</option>
 			</FormSelect>
-			<FormSwitch v-model="shortNoteMenu" class="_formBlock"
+			<FormSwitch data-setting-key="shortNoteMenu" v-model="shortNoteMenu" class="_formBlock"
 				>{{ i18n.ts.shortNoteMenu
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
-			<FormSwitch
+			<FormSwitch data-setting-key="showUserMenuMessagingAndGroup"
 				v-model="showUserMenuMessagingAndGroup"
 				class="_formBlock"
 				>{{ i18n.ts.showUserMenuMessagingAndGroup
@@ -30,31 +30,31 @@
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
-			<FormSwitch v-model="showReactionMenuContext" class="_formBlock"
+			<FormSwitch data-setting-key="showReactionMenuContext" v-model="showReactionMenuContext" class="_formBlock"
 				>{{ i18n.ts.showReactionMenuContext
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
-			<FormSwitch v-model="alwaysPostButton" class="_formBlock"
+			<FormSwitch data-setting-key="alwaysPostButton" v-model="alwaysPostButton" class="_formBlock"
 				>{{ i18n.ts.alwaysPostButton
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
-			<FormSwitch v-model="showDetailNoteClick" class="_formBlock"
+			<FormSwitch data-setting-key="showDetailNoteClick" v-model="showDetailNoteClick" class="_formBlock"
 				>{{ i18n.ts.showDetailNoteClick
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
-			<FormSwitch v-model="noteReactionMenu" class="_formBlock"
+			<FormSwitch data-setting-key="noteReactionMenu" v-model="noteReactionMenu" class="_formBlock"
 				>{{ i18n.ts.noteReactionMenu
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
-			<FormSwitch
+			<FormSwitch data-setting-key="enableDataSaverMode"
 				v-model="enableDataSaverMode"
 				:disabled="autoSwitchDataSaver"
 				class="_formBlock"
@@ -63,7 +63,7 @@
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
-			<FormSwitch
+			<FormSwitch data-setting-key="autoSwitchDataSaver"
 				v-model="autoSwitchDataSaver"
 				:disabled="!supportAutoDataSaver"
 				class="_formBlock"
@@ -72,7 +72,7 @@
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
-			<FormSwitch
+			<FormSwitch data-setting-key="dataSaverDisabledBanner"
 				v-if="enableDataSaverMode || autoSwitchDataSaver"
 				v-model="dataSaverDisabledBanner"
 				class="_formBlock"
@@ -81,7 +81,7 @@
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
-			<FormSwitch
+			<FormSwitch data-setting-key="alwaysReplyInNoteMenu"
 				v-model="alwaysReplyInNoteMenu"
 				class="_formBlock"
 				>{{ i18n.ts.alwaysReplyInNoteMenu
@@ -89,19 +89,19 @@
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
-			<FormSwitch v-model="enabledAirReply" class="_formBlock"
+			<FormSwitch data-setting-key="enabledAirReply" v-model="enabledAirReply" class="_formBlock"
 				>{{ i18n.ts.enabledAirReply
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
-			<FormSwitch v-model="toolbarAirReply" class="_formBlock"
+			<FormSwitch data-setting-key="toolbarAirReply" v-model="toolbarAirReply" class="_formBlock"
 				>{{ i18n.ts.toolbarAirReply
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
-			<FormSwitch
+			<FormSwitch data-setting-key="strangerReplyMisclickGuard"
 				v-model="strangerReplyMisclickGuard"
 				class="_formBlock"
 				>{{ i18n.ts.strangerReplyMisclickGuard
@@ -109,22 +109,22 @@
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
-			<FormSwitch v-model="hiddenActivityChart" class="_formBlock"
+			<FormSwitch data-setting-key="hiddenActivityChart" v-model="hiddenActivityChart" class="_formBlock"
 				>{{ i18n.ts.hiddenActivityChart
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
-			<FormSwitch v-model="disablePagesScript" class="_formBlock">{{
+			<FormSwitch data-setting-key="disablePagesScript" v-model="disablePagesScript" class="_formBlock">{{
 				i18n.ts.disablePagesScript
 			}}</FormSwitch>
-			<FormSwitch v-model="longLoading" class="_formBlock"
+			<FormSwitch data-setting-key="longLoading" v-model="longLoading" class="_formBlock"
 				>{{ i18n.ts.longLoading
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
-			<FormSwitch v-model="copyPostRemoteEmojiCode" class="_formBlock"
+			<FormSwitch data-setting-key="copyPostRemoteEmojiCode" v-model="copyPostRemoteEmojiCode" class="_formBlock"
 				>{{ i18n.ts.copyPostRemoteEmojiCode
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
@@ -158,7 +158,7 @@
 				}}</span></FormSwitch
 			>
 
-			<FormSelect v-model="serverDisconnectedBehavior" class="_formBlock">
+			<FormSelect data-setting-key="serverDisconnectedBehavior" v-model="serverDisconnectedBehavior" class="_formBlock">
 				<template #label>{{ i18n.ts.whenServerDisconnected }}</template>
 				<option value="reload">
 					{{ i18n.ts._serverDisconnectedBehavior.reload }}
@@ -176,7 +176,7 @@
 		</FormSection>
 		<FormSection>
 			<template #label></template>
-			<FormRadios v-model="overridedDeviceKind" class="_formBlock">
+			<FormRadios data-setting-key="overridedDeviceKind" v-model="overridedDeviceKind" class="_formBlock">
 				<template #label>{{ i18n.ts.overridedDeviceKind }}</template>
 				<option :value="null">{{ i18n.ts.auto }}</option>
 				<option value="smartphone">
@@ -247,7 +247,7 @@
 				</option>
 			</FormSelect>
 
-			<FormRange
+			<FormRange data-setting-key="numberOfPageCache"
 				v-model="numberOfPageCache"
 				:min="1"
 				:max="10"
@@ -261,7 +261,7 @@
 				}}</template>
 			</FormRange>
 
-			<FormSwitch v-model="swipeOnDesktop" class="_formBlock"
+			<FormSwitch data-setting-key="swipeOnDesktop" v-model="swipeOnDesktop" class="_formBlock"
 				>{{ i18n.ts.swipeOnDesktop
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
@@ -278,7 +278,7 @@
 				}}</span></FormSwitch
 			>
 
-			<FormRange
+			<FormRange data-setting-key="swipeTouchAngle"
 				v-model="swipeTouchAngle"
 				:min="1"
 				:max="90"
@@ -294,7 +294,7 @@
 				>
 			</FormRange>
 
-			<FormRange
+			<FormRange data-setting-key="swipeThreshold"
 				v-model="swipeThreshold"
 				:min="0"
 				:max="200"
@@ -310,7 +310,7 @@
 				>
 			</FormRange>
 
-			<FormSwitch v-model="swipeCenteredSlides" class="_formBlock"
+			<FormSwitch data-setting-key="swipeCenteredSlides" v-model="swipeCenteredSlides" class="_formBlock"
 				>{{ i18n.ts.swipeCenteredSlides
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey

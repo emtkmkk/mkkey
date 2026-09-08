@@ -12,7 +12,7 @@
 			<FormSwitch v-model="autoSaveBackup" class="_formBlock">{{
 				i18n.ts.autoSaveBackup
 			}}</FormSwitch>
-			<FormInput v-model="autoSaveDeviceName" class="_formBlock">
+			<FormInput data-setting-key="autoSaveDeviceName" v-model="autoSaveDeviceName" class="_formBlock">
 				<template #label>{{ i18n.ts.autoSaveDeviceName }}</template>
 				<template #caption>{{ i18n.ts.autoSaveDeviceNameDescription }}</template>
 			</FormInput>
@@ -65,6 +65,17 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * 設定バックアップの作成、復元、自動保存を管理するページ。
+ *
+ * @remarks
+ * 設定検索は各操作部品の `data-setting-key` を使って、該当項目へ移動し強調する。
+ *
+ * @see {@link defaultStore}
+ * @internal
+ */
 import { computed, onMounted, onUnmounted, useCssModule } from "vue";
 import { v4 as uuid } from "uuid";
 import FormSection from "@/components/form/section.vue";

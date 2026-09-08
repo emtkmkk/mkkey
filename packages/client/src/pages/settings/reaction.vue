@@ -1,9 +1,9 @@
 <template>
 	<div class="_formRoot">
-		<FormSwitch v-model="enableEmojiReactions" class="_formBlock">
+		<FormSwitch data-setting-key="enableEmojiReactions" v-model="enableEmojiReactions" class="_formBlock">
 			{{ i18n.ts.enableEmojiReactions }}
 		</FormSwitch>
-		<FormSwitch
+		<FormSwitch data-setting-key="showEmojiButton"
 			v-if="!enableEmojiReactions"
 			v-model="showEmojiButton"
 			class="_formBlock"
@@ -14,14 +14,14 @@
 			}}</span>
 		</FormSwitch>
 		<div v-if="!enableEmojiReactions">
-			<FormSwitch
+			<FormSwitch data-setting-key="showEmojisInReactionNotifications"
 				v-model="showEmojisInReactionNotifications"
 				class="_formBlock"
 			>
 				{{ i18n.ts.showEmojisInReactionNotifications }}
 			</FormSwitch>
 		</div>
-		<FormSwitch v-model="hiddenReactionNumber" class="_formBlock">
+		<FormSwitch data-setting-key="hiddenReactionNumber" v-model="hiddenReactionNumber" class="_formBlock">
 			{{ i18n.ts.hiddenReactionNumber
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{
 				i18n.ts.mkkey
@@ -93,7 +93,7 @@
 					v-if="tab === 'reactions'"
 					style="border-radius: 0.375rem"
 				>
-					<FormInput
+					<FormInput data-setting-key="reactionsFolderName"
 						v-model="reactionsFolderName"
 						class="_formBlock"
 						:small="true"
@@ -108,7 +108,7 @@
 						"
 						style="margin: 0 0 !important"
 					/>
-					<XDraggable
+					<XDraggable data-setting-key="reactions"
 						v-model="reactions"
 						class="zoaiodol"
 						:item-key="(item) => item"
@@ -140,7 +140,7 @@
 					v-if="tab === 'reactions2'"
 					style="border-radius: 0.375rem"
 				>
-					<FormInput
+					<FormInput data-setting-key="reactionsFolderName2"
 						v-model="reactionsFolderName2"
 						class="_formBlock"
 						:small="true"
@@ -148,7 +148,7 @@
 						:manualSave="true"
 						style="margin: 0 0 !important"
 					/>
-					<XDraggable
+					<XDraggable data-setting-key="reactions2"
 						v-model="reactions2"
 						class="zoaiodol"
 						:item-key="(item) => item"
@@ -180,7 +180,7 @@
 					v-if="tab === 'reactions3'"
 					style="border-radius: 0.375rem"
 				>
-					<FormInput
+					<FormInput data-setting-key="reactionsFolderName3"
 						v-model="reactionsFolderName3"
 						class="_formBlock"
 						:small="true"
@@ -188,7 +188,7 @@
 						:manualSave="true"
 						style="margin: 0 0 !important"
 					/>
-					<XDraggable
+					<XDraggable data-setting-key="reactions3"
 						v-model="reactions3"
 						class="zoaiodol"
 						:item-key="(item) => item"
@@ -220,7 +220,7 @@
 					v-if="tab === 'reactions4'"
 					style="border-radius: 0.375rem"
 				>
-					<FormInput
+					<FormInput data-setting-key="reactionsFolderName4"
 						v-model="reactionsFolderName4"
 						class="_formBlock"
 						:small="true"
@@ -228,7 +228,7 @@
 						:manualSave="true"
 						style="margin: 0 0 !important"
 					/>
-					<XDraggable
+					<XDraggable data-setting-key="reactions4"
 						v-model="reactions4"
 						class="zoaiodol"
 						:item-key="(item) => item"
@@ -260,7 +260,7 @@
 					v-if="tab === 'reactions5'"
 					style="border-radius: 0.375rem"
 				>
-					<FormInput
+					<FormInput data-setting-key="reactionsFolderName5"
 						v-model="reactionsFolderName5"
 						class="_formBlock"
 						:small="true"
@@ -268,7 +268,7 @@
 						:manualSave="true"
 						style="margin: 0 0 !important"
 					/>
-					<XDraggable
+					<XDraggable data-setting-key="reactions5"
 						v-model="reactions5"
 						class="zoaiodol"
 						:item-key="(item) => item"
@@ -301,7 +301,7 @@
 						{{ i18n.ts.preview }}
 					</button></template
 				>
-				<FormSwitch
+				<FormSwitch data-setting-key="reactionsDefaultOpen"
 					v-model="reactionsDefaultOpen"
 					v-if="
 						tab === 'reactions' &&
@@ -318,7 +318,7 @@
 						i18n.ts.mkkey
 					}}</span>
 				</FormSwitch>
-				<FormSwitch
+				<FormSwitch data-setting-key="reactionsPostHiddens"
 					v-model="reactionsPostHiddens"
 					v-if="
 						tab === 'reactions' &&
@@ -335,7 +335,7 @@
 						i18n.ts.mkkey
 					}}</span>
 				</FormSwitch>
-				<FormSwitch
+				<FormSwitch data-setting-key="reactionsReactionHiddens"
 					v-model="reactionsReactionHiddens"
 					v-if="
 						tab === 'reactions' &&
@@ -352,7 +352,7 @@
 						i18n.ts.mkkey
 					}}</span>
 				</FormSwitch>
-				<FormSwitch
+				<FormSwitch data-setting-key="reactions2DefaultOpen"
 					v-model="reactions2DefaultOpen"
 					v-if="tab === 'reactions2'"
 					class="_formBlock"
@@ -382,7 +382,7 @@
 						i18n.ts.mkkey
 					}}</span>
 				</FormSwitch>
-				<FormSwitch
+				<FormSwitch data-setting-key="reactions3DefaultOpen"
 					v-model="reactions3DefaultOpen"
 					v-if="tab === 'reactions3'"
 					class="_formBlock"
@@ -412,7 +412,7 @@
 						i18n.ts.mkkey
 					}}</span>
 				</FormSwitch>
-				<FormSwitch
+				<FormSwitch data-setting-key="reactions4DefaultOpen"
 					v-model="reactions4DefaultOpen"
 					v-if="tab === 'reactions4'"
 					class="_formBlock"
@@ -442,7 +442,7 @@
 						i18n.ts.mkkey
 					}}</span>
 				</FormSwitch>
-				<FormSwitch
+				<FormSwitch data-setting-key="reactions5DefaultOpen"
 					v-model="reactions5DefaultOpen"
 					v-if="tab === 'reactions5'"
 					class="_formBlock"
@@ -473,19 +473,19 @@
 					}}</span>
 				</FormSwitch>
 			</FromSlot>
-			<FormSwitch v-model="reactionAutoFocusSearchBar" class="_formBlock">
+			<FormSwitch data-setting-key="reactionAutoFocusSearchBar" v-model="reactionAutoFocusSearchBar" class="_formBlock">
 				{{ i18n.ts.reactionAutoFocusSearchBar
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
 				}}</span>
 			</FormSwitch>
-			<FormSwitch v-model="doubleTapReaction" class="_formBlock">
+			<FormSwitch data-setting-key="doubleTapReaction" v-model="doubleTapReaction" class="_formBlock">
 				{{ i18n.ts.doubleTapReaction
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
 				}}</span>
 			</FormSwitch>
-			<FormSwitch v-model="showReactionMenu" class="_formBlock">
+			<FormSwitch data-setting-key="showReactionMenu" v-model="showReactionMenu" class="_formBlock">
 				{{ i18n.ts.showReactionMenu
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
@@ -497,7 +497,7 @@
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
-			<FormSwitch
+			<FormSwitch data-setting-key="recentlyUsedDefaultOpen"
 				v-model="recentlyUsedDefaultOpen"
 				class="_formBlock"
 				v-if="
@@ -515,7 +515,7 @@
 					i18n.ts.mkkey
 				}}</span>
 			</FormSwitch>
-			<FormSwitch
+			<FormSwitch data-setting-key="hiddenRecent"
 				v-model="hiddenRecent"
 				class="_formBlock"
 				v-if="!hiddenReactionDeckAndRecent"
@@ -525,7 +525,7 @@
 					i18n.ts.mkkey
 				}}</span>
 			</FormSwitch>
-			<FormSwitch
+			<FormSwitch data-setting-key="hiddenReactionDeckAndRecent"
 				v-model="hiddenReactionDeckAndRecent"
 				class="_formBlock"
 				v-if="!hiddenRecent"
@@ -535,13 +535,13 @@
 					i18n.ts.mkkey
 				}}</span>
 			</FormSwitch>
-			<FormSwitch v-model="japanCategory" class="_formBlock" :disabled="nullCategoryHidden || categoryHidden">
+			<FormSwitch data-setting-key="japanCategory" v-model="japanCategory" class="_formBlock" :disabled="nullCategoryHidden || categoryHidden">
 				{{ i18n.ts.japanCategory
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
 				}}</span>
 			</FormSwitch>
-			<FormSwitch
+			<FormSwitch data-setting-key="enableEmojiPickerAddedOrderCategory"
 				v-model="enableEmojiPickerAddedOrderCategory"
 				class="_formBlock"
 				:disabled="nullCategoryHidden || categoryHidden"
@@ -551,32 +551,32 @@
 					i18n.ts.mkkey
 				}}</span>
 			</FormSwitch>
-			<FormSwitch v-model="nullCategoryHidden" class="_formBlock" :disabled="categoryHidden">
+			<FormSwitch data-setting-key="nullCategoryHidden" v-model="nullCategoryHidden" class="_formBlock" :disabled="categoryHidden">
 				{{ i18n.ts.nullCategoryHidden
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
 				}}</span>
 			</FormSwitch>
-			<FormSwitch v-model="categoryHidden" class="_formBlock">
+			<FormSwitch data-setting-key="categoryHidden" v-model="categoryHidden" class="_formBlock">
 				{{ i18n.ts.categoryHidden
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
 				}}</span>
 			</FormSwitch>
-			<FormSwitch v-model="enableInstanceEmojiSearch" class="_formBlock">
+			<FormSwitch data-setting-key="enableInstanceEmojiSearch" v-model="enableInstanceEmojiSearch" class="_formBlock">
 				{{ i18n.ts.enableInstanceEmojiSearch
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
 				}}</span>
 			</FormSwitch>
-			<FormSwitch v-model="disableAllIncludesSearch" class="_formBlock">
+			<FormSwitch data-setting-key="disableAllIncludesSearch" v-model="disableAllIncludesSearch" class="_formBlock">
 				{{ i18n.ts.disableAllIncludesSearch
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
 				}}</span>
 			</FormSwitch>
 
-			<FormSelect
+			<FormSelect data-setting-key="remoteEmojisFetch"
 				v-if="!isMobile"
 				v-model="remoteEmojisFetch"
 				class="_formBlock"
@@ -603,7 +603,7 @@
 					{{ i18n.ts._remoteEmojisFetchForPc.none }}
 				</option>
 			</FormSelect>
-			<FormSelect v-else v-model="remoteEmojisFetch" class="_formBlock">
+			<FormSelect data-setting-key="remoteEmojisFetch" v-else v-model="remoteEmojisFetch" class="_formBlock">
 				<template #label
 					>{{ i18n.ts.remoteEmojisFetch
 					}}<span v-if="showMkkeySettingTips" class="_beta">{{
@@ -627,7 +627,7 @@
 				</option>
 			</FormSelect>
 
-			<FormSwitch v-model="mastodonOnetapFavorite" class="_formBlock">
+			<FormSwitch data-setting-key="mastodonOnetapFavorite" v-model="mastodonOnetapFavorite" class="_formBlock">
 				{{ i18n.ts.mastodonOnetapFavorite
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
@@ -635,7 +635,7 @@
 			</FormSwitch>
 
 			<FormSection>
-				<FormRadios v-model="favButtonReaction" class="_formBlock">
+				<FormRadios data-setting-key="favButtonReaction" v-model="favButtonReaction" class="_formBlock">
 					<template #label
 						>{{ i18n.ts.defaultReactionUser
 						}}<span v-if="showMkkeySettingTips" class="_beta">{{
@@ -687,7 +687,7 @@
 				</FormRadios>
 			</FormSection>
 
-			<FormRange
+			<FormRange data-setting-key="reactionPickerSize"
 				v-model="reactionPickerSize"
 				:min="-7"
 				:max="reactionPickerSize >= 11 ? (Math.floor(reactionPickerSize / 5) + 1) * 5 : 11"
@@ -702,7 +702,7 @@
 					>{{  [(reactionPickerSize <= 1 ? `小${reactionPickerSize <= 0 ? `${reactionPickerSize - 1}` : ""}` : reactionPickerSize === 2 ? "中" : `大${reactionPickerSize >= 4 ? `+${reactionPickerSize - 3}` : ""}`), "デフォルト: 2"].filter(Boolean).join(" ") }}</template
 				>
 			</FormRange>
-			<FormRange
+			<FormRange data-setting-key="reactionPickerVAlign"
 				v-model="reactionPickerVAlign"
 				:min="reactionPickerVAlign <= -10 ? (Math.floor(reactionPickerVAlign / -5) + 1) * -5 : -10"
 				:max="reactionPickerVAlign >= 10 ? (Math.floor(reactionPickerVAlign / 5) + 1) * 5 : 10"
@@ -717,7 +717,7 @@
 					>{{ "デフォルト: -4" }}</template
 				>
 			</FormRange>
-			<FormRange
+			<FormRange data-setting-key="reactionPickerWidth"
 				v-model="reactionPickerWidth"
 				:min="1"
 				:max="reactionPickerWidth >= 20 ? (Math.floor(reactionPickerWidth / 10) + 1) * 10 : 20"
@@ -732,7 +732,7 @@
 					>{{ "デフォルト: 7" }}</template
 				>
 			</FormRange>
-			<FormRange
+			<FormRange data-setting-key="reactionPickerAllWidth"
 				v-model="reactionPickerAllWidth"
 				:min="1"
 				:max="100"
@@ -747,7 +747,7 @@
 					>{{ "画面幅に対するピッカーの幅 デフォルト: 95" }}</template
 				>
 			</FormRange>
-			<FormRange
+			<FormRange data-setting-key="reactionPickerHeight"
 				v-model="reactionPickerHeight"
 				:min="11"
 				:max="100"
@@ -763,14 +763,14 @@
 				>
 			</FormRange>
 
-			<FormSwitch v-model="usePickerSizePostForm" class="_formBlock">
+			<FormSwitch data-setting-key="usePickerSizePostForm" v-model="usePickerSizePostForm" class="_formBlock">
 				{{ i18n.ts.usePickerSizePostForm
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
 				}}</span>
 			</FormSwitch>
 
-			<FormSwitch
+			<FormSwitch data-setting-key="reactionPickerUseDrawerForMobile"
 				v-model="reactionPickerUseDrawerForMobile"
 				class="_formBlock"
 			>

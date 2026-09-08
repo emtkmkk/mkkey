@@ -4,7 +4,7 @@
 			><template #icon><i class="ph-gear-six ph-bold ph-lg"></i></template
 			>{{ i18n.ts.notificationSetting }}</FormButton
 		>
-		<FormSwitch v-model="enableAntennaTab">
+		<FormSwitch data-setting-key="enableAntennaTab" v-model="enableAntennaTab">
 			<template #label
 				>{{ i18n.ts.enableAntennaTab
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
@@ -12,7 +12,7 @@
 				}}</span></template
 			>
 		</FormSwitch>
-		<FormSwitch v-model="disableRequestNotification">
+		<FormSwitch data-setting-key="disableRequestNotification" v-model="disableRequestNotification">
 			<template #label
 				>{{ i18n.ts.disableRequestNotification
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
@@ -38,7 +38,7 @@
 
 			<div class="_gaps_m">
 				<MkPushNotificationAllowButton ref="allowButton" />
-				<FormSwitch v-model="suppressPushWhenForeground">
+				<FormSwitch data-setting-key="suppressPushWhenForeground" v-model="suppressPushWhenForeground">
 					<template #label
 						>画面を開いている間はこの端末で通知を表示しない</template
 					>

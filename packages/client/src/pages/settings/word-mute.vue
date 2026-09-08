@@ -29,19 +29,19 @@
                                         <i class="ph-wrench ph-bold ph-lg"></i>
                                         {{ i18n.ts.wordMuteBuilder }}
                                 </MkButton>
-				<FormSwitch v-model="hiddenSoftMutes" class="_formBlock"
+				<FormSwitch data-setting-key="hiddenSoftMutes" v-model="hiddenSoftMutes" class="_formBlock"
 					>{{ i18n.ts.hiddenSoftMutes
 					}}<span v-if="showMkkeySettingTips" class="_beta">{{
 						i18n.ts.mkkey
 					}}</span></FormSwitch
 				>
-				<FormSwitch v-model="muteExcludeReplyQuote" class="_formBlock"
+				<FormSwitch data-setting-key="muteExcludeReplyQuote" v-model="muteExcludeReplyQuote" class="_formBlock"
 					>{{ i18n.ts.muteExcludeReplyQuote
 					}}<span v-if="showMkkeySettingTips" class="_beta">{{
 						i18n.ts.mkkey
 					}}</span></FormSwitch
 				>
-				<FormSwitch v-model="muteExcludeNotification" class="_formBlock"
+				<FormSwitch data-setting-key="muteExcludeNotification" v-model="muteExcludeNotification" class="_formBlock"
 					>{{ i18n.ts.muteExcludeNotification
 					}}<span v-if="showMkkeySettingTips" class="_beta">{{
 						i18n.ts.mkkey
@@ -78,7 +78,7 @@
 						i18n.ts.mkkey
 					}}</span></MkInfo
 				>
-                                <FormTextarea v-model="reactionMutedWords" class="_formBlock">
+                                <FormTextarea data-setting-key="reactionMutedWords" v-model="reactionMutedWords" class="_formBlock">
                                         <span>{{ i18n.ts._wordMute.muteWords }}</span>
                                         <template #caption
                                                 >{{ i18n.ts._wordMute.reactionMuteWordsDescription
@@ -87,7 +87,7 @@
                                                 }}</template
                                         >
                                 </FormTextarea>
-				<FormSwitch
+				<FormSwitch data-setting-key="showQuickEmojiMuteInReactionMenu"
 					v-model="showQuickEmojiMuteInReactionMenu"
 					class="_formBlock"
 					>{{ i18n.ts.showQuickEmojiMuteInReactionMenu
@@ -95,7 +95,7 @@
 						i18n.ts.mkkey
 					}}</span></FormSwitch
 				>
-				<FormSwitch v-model="remoteReactionMute" class="_formBlock"
+				<FormSwitch data-setting-key="remoteReactionMute" v-model="remoteReactionMute" class="_formBlock"
 					>{{ i18n.ts.remoteReactionMute
 					}}<span v-if="showMkkeySettingTips" class="_beta">{{
 						i18n.ts.mkkey
@@ -145,6 +145,17 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * 投稿やリアクションに対するワードミュートを管理するページ。
+ *
+ * @remarks
+ * 設定検索は各操作部品の `data-setting-key` を使って、該当項目へ移動し強調する。
+ *
+ * @see {@link defaultStore}
+ * @internal
+ */
 import { computed, ref, watch } from "vue";
 import FormTextarea from "@/components/form/textarea.vue";
 import FormSwitch from "@/components/form/switch.vue";

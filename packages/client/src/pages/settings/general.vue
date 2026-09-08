@@ -7,7 +7,7 @@
 			</option>
 		</FormSelect>
 
-		<FormSwitch v-model="showAds" class="_formBlock">{{
+		<FormSwitch data-setting-key="showAds" v-model="showAds" class="_formBlock">{{
 			i18n.ts.showAds
 		}}</FormSwitch>
 
@@ -28,7 +28,7 @@
 			>{{ i18n.ts.showAdminUpdates }}</FormSwitch
 		>
 
-		<FormSwitch v-model="showMkkeySettingTips" class="_formBlock"
+		<FormSwitch data-setting-key="showMkkeySettingTips" v-model="showMkkeySettingTips" class="_formBlock"
 			>{{ i18n.ts.showMkkeySettingTips
 			}}<span v-if="showMkkeySettingTips" class="_beta">{{
 				i18n.ts.mkkey
@@ -60,6 +60,17 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * 言語、広告、開発者向け表示などの一般設定を管理するページ。
+ *
+ * @remarks
+ * 設定検索は各操作部品の `data-setting-key` を使って、該当項目へ移動し強調する。
+ *
+ * @see {@link defaultStore}
+ * @internal
+ */
 import { computed, ref, watch } from "vue";
 import { $i } from "@/account";
 import FormInput from "@/components/form/input.vue";

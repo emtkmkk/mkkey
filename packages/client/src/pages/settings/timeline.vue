@@ -2,7 +2,7 @@
 	<div class="_formRoot">
 		<FormSection>
 			<template #label></template>
-			<FormRadios v-if="!instance.disableLocalTimeline" v-model="showLocalPostsInTimeline" class="_formBlock">
+			<FormRadios data-setting-key="showLocalPostsInTimeline" v-if="!instance.disableLocalTimeline" v-model="showLocalPostsInTimeline" class="_formBlock">
 				<template #label>{{ i18n.ts.showLocalPosts }}</template>
 				<option value="home">
 					<i class="ph-handshake ph-bold ph-lg" />
@@ -21,7 +21,7 @@
 					{{ i18n.ts.hidden }}
 				</option>
 			</FormRadios>
-			<FormRadios v-else v-model="showLocalPostsInTimeline" class="_formBlock">
+			<FormRadios data-setting-key="showLocalPostsInTimeline" v-else v-model="showLocalPostsInTimeline" class="_formBlock">
 				<template #label>{{ i18n.ts.showLocalPosts }}</template>
 				<option value="social">
 					<i class="ph-house ph-bold ph-lg" />
@@ -31,7 +31,7 @@
 					{{ i18n.ts.hidden }}
 				</option>
 			</FormRadios>
-			<FormSwitch :disabled="instance.disableLocalTimeline" v-model="hiddenLTL" class="_formBlock"
+			<FormSwitch data-setting-key="hiddenLTL" :disabled="instance.disableLocalTimeline" v-model="hiddenLTL" class="_formBlock"
 				>{{ i18n.ts.hiddenLTL
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
@@ -51,13 +51,13 @@
 					}}{{ i18n.ts.hiddenLTLDescription }}</template
 				></FormSwitch
 			>
-			<FormSwitch :disabled="instance.disableGlobalTimeline" v-model="hiddenGTL" class="_formBlock"
+			<FormSwitch data-setting-key="hiddenGTL" :disabled="instance.disableGlobalTimeline" v-model="hiddenGTL" class="_formBlock"
 				>{{ i18n.ts.hiddenGTL
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
-			<FormSelect v-model="thirdTimelineType" class="_formBlock">
+			<FormSelect data-setting-key="thirdTimelineType" v-model="thirdTimelineType" class="_formBlock">
 				<template #label
 					>{{ i18n.ts.thirdTimelineType
 					}}<span v-if="showMkkeySettingTips" class="_beta">{{
@@ -111,7 +111,7 @@
 			<div class="timelineButtonGroupLabel _formBlock">
 				{{ i18n.ts.timelineHeaderButtons }}
 			</div>
-			<FormSwitch
+			<FormSwitch data-setting-key="showListButton"
 				v-model="showListButton"
 				class="_formBlock"
 				:disabled="!isTimelineHeaderButtonsAvailable"
@@ -124,7 +124,7 @@
 					}}</span></span
 				>
 			</FormSwitch>
-			<FormSwitch
+			<FormSwitch data-setting-key="showAntennaButton"
 				v-model="showAntennaButton"
 				class="_formBlock"
 				:disabled="!isTimelineHeaderButtonsAvailable"
@@ -137,7 +137,7 @@
 					}}</span></span
 				>
 			</FormSwitch>
-			<FormSwitch
+			<FormSwitch data-setting-key="showTimeTravelButton"
 				v-model="showTimeTravelButton"
 				class="_formBlock"
 				:disabled="!isTimelineHeaderButtonsAvailable"
@@ -150,7 +150,7 @@
 					}}</span></span
 				>
 			</FormSwitch>
-			<FormSwitch
+			<FormSwitch data-setting-key="showTlReloadButton"
 				v-model="showTlReloadButton"
 				class="_formBlock"
 				:disabled="!isTimelineHeaderButtonsAvailable"
@@ -163,22 +163,22 @@
 					}}</span></span
 				>
 			</FormSwitch>
-			<FormSwitch v-model="showFixedPostForm" class="_formBlock">{{
+			<FormSwitch data-setting-key="showFixedPostForm" v-model="showFixedPostForm" class="_formBlock">{{
 				i18n.ts.showFixedPostForm
 			}}</FormSwitch>
-			<FormSwitch v-model="recentRenoteHidden" class="_formBlock"
+			<FormSwitch data-setting-key="recentRenoteHidden" v-model="recentRenoteHidden" class="_formBlock"
 				>{{ i18n.ts.recentRenoteHidden
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
-			<FormSwitch v-model="reactedRenoteHidden" class="_formBlock"
+			<FormSwitch data-setting-key="reactedRenoteHidden" v-model="reactedRenoteHidden" class="_formBlock"
 				>{{ i18n.ts.reactedRenoteHidden
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
-			<FormSwitch
+			<FormSwitch data-setting-key="showLocalTimelineBelowPublic"
 				v-model="showLocalTimelineBelowPublic"
 				:disabled="instance.disableLocalTimeline"
 				class="_formBlock"
@@ -187,7 +187,7 @@
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
-			<FormSwitch v-model="delayPostHidden" class="_formBlock"
+			<FormSwitch data-setting-key="delayPostHidden" v-model="delayPostHidden" class="_formBlock"
 				>{{ i18n.ts.delayPostHidden
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
@@ -241,33 +241,33 @@
 				@update:modelValue="saveModerationTimelinePrefs()"
 				>{{ i18n.ts.receiveReactionsFromNonFollowedWarnedUsers
 				}}</FormSwitch>
-				<FormSelect v-model="showPublicTimelineReplyMode" class="_formBlock">
+				<FormSelect data-setting-key="showPublicTimelineReplyMode" v-model="showPublicTimelineReplyMode" class="_formBlock">
 					<template #label>{{ i18n.ts.showPublicTimelineReplyMode }}</template>
 					<option value="all">{{ i18n.ts._replyMode.all }}</option>
 					<option value="notBotOnly">{{ i18n.ts._replyMode.notBotOnly }}</option>
 					<option value="personalOnly">{{ i18n.ts._replyMode.personalOnly }}</option>
 				</FormSelect>
 
-			<FormSelect v-model="nsfw" class="_formBlock">
+			<FormSelect data-setting-key="nsfw" v-model="nsfw" class="_formBlock">
 				<template #label>{{ i18n.ts.nsfw }}</template>
 				<option value="respect">{{ i18n.ts._nsfw.respect }}</option>
 				<option value="ignore">{{ i18n.ts._nsfw.ignore }}</option>
 				<option value="force">{{ i18n.ts._nsfw.force }}</option>
 				<option value="toCW">{{ i18n.ts._nsfw.toCW }}</option>
 			</FormSelect>
-			<FormSwitch v-model="openPopupNsfwToCarrior" :disabled="!supportAutoDataSaver" class="_formBlock"
+			<FormSwitch data-setting-key="openPopupNsfwToCarrior" v-model="openPopupNsfwToCarrior" :disabled="!supportAutoDataSaver" class="_formBlock"
 				>{{ i18n.ts.openPopupNsfwToCarrior
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
-			<FormSwitch v-model="noteAllCw" class="_formBlock"
+			<FormSwitch data-setting-key="noteAllCw" v-model="noteAllCw" class="_formBlock"
 				>{{ i18n.ts.noteAllCw
 				}}<span v-if="showMkkeySettingTips" class="_beta">{{
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
-			<FormSwitch
+			<FormSwitch data-setting-key="showRemoteEmojiTimeline"
 				:model-value="showRemoteEmojiTimeline"
 				class="_formBlock"
 				@update:modelValue="onUpdateShowRemoteEmojiTimeline"
@@ -281,6 +281,17 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * タイムラインの種類、表示対象、操作ボタンを管理するページ。
+ *
+ * @remarks
+ * 設定検索は各操作部品の `data-setting-key` を使って、該当項目へ移動し強調する。
+ *
+ * @see {@link defaultStore}
+ * @internal
+ */
 import { ref, computed, watch } from "vue";
 import FormButton from "@/components/MkButton.vue";
 import FormLink from "@/components/form/link.vue";

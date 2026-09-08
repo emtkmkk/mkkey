@@ -15,7 +15,7 @@
 		<FormSwitch v-model="notSetOnly" class="_formBlock">
 			{{ i18n.ts.notSetOnly }}
 		</FormSwitch>
-		<FormSwitch
+		<FormSwitch data-setting-key="dontShowNotSet"
 			v-if="!notSetOnly"
 			v-model="dontShowNotSet"
 			class="_formBlock"
@@ -67,6 +67,17 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * 追加された設定項目を検索し、各設定ページへ案内するページ。
+ *
+ * @remarks
+ * 設定検索は各操作部品の `data-setting-key` を使って、該当項目へ移動し強調する。
+ *
+ * @see {@link defaultStore}
+ * @internal
+ */
 import { ref, unref, computed, defineAsyncComponent } from "vue";
 import FormSwitch from "@/components/form/switch.vue";
 import FormLink from "@/components/form/link.vue";

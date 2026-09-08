@@ -1,6 +1,6 @@
 <template>
 	<div class="_formRoot rsljpzjq">
-		<div v-adaptive-border class="rfqxtzch _panel _formBlock">
+		<div data-setting-key="darkMode" v-adaptive-border class="rfqxtzch _panel _formBlock">
 			<div class="toggle">
 				<div class="toggleWrapper">
 					<input
@@ -30,7 +30,7 @@
 				<FormSwitch v-model="syncDeviceDarkMode">{{
 					i18n.ts.syncDeviceDarkMode
 				}}</FormSwitch>
-				<FormSwitch v-model="enableHotkeyDarkMode">{{
+				<FormSwitch data-setting-key="enableHotkeyDarkMode" v-model="enableHotkeyDarkMode">{{
 					i18n.ts.enableHotkeyDarkMode
 				}}</FormSwitch>
 			</div>
@@ -191,6 +191,17 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * 配色テーマ、ダークモード、壁紙を管理するページ。
+ *
+ * @remarks
+ * 設定検索は各操作部品の `data-setting-key` を使って、該当項目へ移動し強調する。
+ *
+ * @see {@link defaultStore}
+ * @internal
+ */
 import { computed, onActivated, ref, watch } from "vue";
 import JSON5 from "json5";
 import FormSwitch from "@/components/form/switch.vue";

@@ -175,7 +175,7 @@
 		</FormSwitch>
 
 		<FormSection>
-			<FormSwitch
+			<FormSwitch data-setting-key="rememberNoteVisibility"
 				v-model="rememberNoteVisibility"
 				class="_formBlock"
 				@update:modelValue="save()"
@@ -202,7 +202,7 @@
 					>{{ i18n.ts._visibility.specified }}</template
 				>
 
-				<FormSelect v-model="defaultNoteVisibility" class="_formBlock">
+				<FormSelect data-setting-key="defaultNoteVisibility" v-model="defaultNoteVisibility" class="_formBlock">
 					<option value="public" v-if="!$i.isMiniSilenced">
 						{{ i18n.ts._visibility.public }}
 					</option>
@@ -214,7 +214,7 @@
 						{{ i18n.ts._visibility.specified }}
 					</option>
 				</FormSelect>
-				<FormSwitch
+				<FormSwitch data-setting-key="defaultNoteLocalAndFollower"
 					v-model="defaultNoteLocalAndFollower"
 					class="_formBlock"
 					>{{ i18n.ts._visibility.localAndFollower }}</FormSwitch
@@ -223,7 +223,7 @@
 					i18n.ts._visibility.localOnlyChannel
 				}}</FormSwitch>
 				<br />
-				<FormSwitch
+				<FormSwitch data-setting-key="firstPostButtonVisibilityForce"
 					v-model="firstPostButtonVisibilityForce"
 					class="_formBlock"
 					>{{ i18n.ts.firstPostButtonVisibilityForce }}</FormSwitch
@@ -286,13 +286,13 @@
 					>{{ i18n.ts._visibility.specified }}</template
 				>
 
-				<FormSwitch v-model="secondPostButton" class="_formBlock"
+				<FormSwitch data-setting-key="secondPostButton" v-model="secondPostButton" class="_formBlock"
 					>{{ i18n.ts.secondPostButton
 					}}<span v-if="showMkkeySettingTips" class="_beta">{{
 						i18n.ts.mkkey
 					}}</span></FormSwitch
 				>
-				<FormSwitch
+				<FormSwitch data-setting-key="firstPostWideButton"
 					v-if="secondPostButton"
 					v-model="firstPostWideButton"
 					class="_formBlock"
@@ -301,7 +301,7 @@
 						i18n.ts.mkkey
 					}}</span></FormSwitch
 				>
-				<FormSwitch
+				<FormSwitch data-setting-key="secondPostWideButton"
 					v-if="secondPostButton"
 					v-model="secondPostWideButton"
 					class="_formBlock"
@@ -311,7 +311,7 @@
 					}}</span></FormSwitch
 				>
 
-				<FormSelect v-model="secondPostVisibility" class="_formBlock">
+				<FormSelect data-setting-key="secondPostVisibility" v-model="secondPostVisibility" class="_formBlock">
 					<option value="public">
 						{{ i18n.ts._visibility.public }}
 					</option>
@@ -390,13 +390,13 @@
 					>{{ i18n.ts._visibility.specified }}</template
 				>
 
-				<FormSwitch v-model="thirdPostButton" class="_formBlock"
+				<FormSwitch data-setting-key="thirdPostButton" v-model="thirdPostButton" class="_formBlock"
 					>{{ i18n.ts.thirdPostButton
 					}}<span v-if="showMkkeySettingTips" class="_beta">{{
 						i18n.ts.mkkey
 					}}</span></FormSwitch
 				>
-				<FormSwitch
+				<FormSwitch data-setting-key="thirdPostWideButton"
 					v-if="thirdPostButton"
 					v-model="thirdPostWideButton"
 					class="_formBlock"
@@ -406,7 +406,7 @@
 					}}</span></FormSwitch
 				>
 
-				<FormSelect v-model="thirdPostVisibility" class="_formBlock">
+				<FormSelect data-setting-key="thirdPostVisibility" v-model="thirdPostVisibility" class="_formBlock">
 					<option value="public">
 						{{ i18n.ts._visibility.public }}
 					</option>
@@ -488,13 +488,13 @@
 					>{{ i18n.ts._visibility.specified }}</template
 				>
 
-				<FormSwitch v-model="fourthPostButton" class="_formBlock"
+				<FormSwitch data-setting-key="fourthPostButton" v-model="fourthPostButton" class="_formBlock"
 					>{{ i18n.ts.fourthPostButton
 					}}<span v-if="showMkkeySettingTips" class="_beta">{{
 						i18n.ts.mkkey
 					}}</span></FormSwitch
 				>
-				<FormSwitch
+				<FormSwitch data-setting-key="fourthPostWideButton"
 					v-if="fourthPostButton"
 					v-model="fourthPostWideButton"
 					class="_formBlock"
@@ -504,7 +504,7 @@
 					}}</span></FormSwitch
 				>
 
-				<FormSelect v-model="fourthPostVisibility" class="_formBlock">
+				<FormSelect data-setting-key="fourthPostVisibility" v-model="fourthPostVisibility" class="_formBlock">
 					<option value="public">
 						{{ i18n.ts._visibility.public }}
 					</option>
@@ -586,13 +586,13 @@
 					>{{ i18n.ts._visibility.specified }}</template
 				>
 
-				<FormSwitch v-model="fifthPostButton" class="_formBlock"
+				<FormSwitch data-setting-key="fifthPostButton" v-model="fifthPostButton" class="_formBlock"
 					>{{ i18n.ts.fifthPostButton
 					}}<span v-if="showMkkeySettingTips" class="_beta">{{
 						i18n.ts.mkkey
 					}}</span></FormSwitch
 				>
-				<FormSwitch
+				<FormSwitch data-setting-key="fifthPostWideButton"
 					v-if="fifthPostButton"
 					v-model="fifthPostWideButton"
 					class="_formBlock"
@@ -602,7 +602,7 @@
 					}}</span></FormSwitch
 				>
 
-				<FormSelect v-model="fifthPostVisibility" class="_formBlock">
+				<FormSelect data-setting-key="fifthPostVisibility" v-model="fifthPostVisibility" class="_formBlock">
 					<option value="public">
 						{{ i18n.ts._visibility.public }}
 					</option>
@@ -627,7 +627,7 @@
 			</FormFolder>
 		</FormSection>
 
-		<FormSwitch
+		<FormSwitch data-setting-key="channelSecondPostButton"
 			v-model="channelSecondPostButton"
 			class="_formBlock"
 			@update:modelValue="save()"
@@ -640,6 +640,17 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * 投稿の公開範囲やアカウントの公開性を管理するページ。
+ *
+ * @remarks
+ * 設定検索は各操作部品の `data-setting-key` を使って、該当項目へ移動し強調する。
+ *
+ * @see {@link defaultStore}
+ * @internal
+ */
 import {} from "vue";
 import FormSwitch from "@/components/form/switch.vue";
 import FormSelect from "@/components/form/select.vue";

@@ -1,7 +1,7 @@
 <template>
   <div class="_formRoot">
-    <FormSwitch v-model="enabled" class="_formBlock">{{ i18n.ts.enableEmojiPickerOrder }}</FormSwitch>
-    <FormSlot>
+    <FormSwitch data-setting-key="enableEmojiPickerOrder" v-model="enabled" class="_formBlock">{{ i18n.ts.enableEmojiPickerOrder }}</FormSwitch>
+    <FormSlot data-setting-key="emojiPickerOrder">
       <template #label>{{ i18n.ts.emojiPickerOrder }}</template>
       <MkContainer :showHeader="false">
         <Sortable
@@ -35,6 +35,17 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * 絵文字ピッカーのカテゴリ順序を管理するページ。
+ *
+ * @remarks
+ * 設定検索は各操作部品の `data-setting-key` を使って、該当項目へ移動し強調する。
+ *
+ * @see {@link defaultStore}
+ * @internal
+ */
 import { ref, defineAsyncComponent, computed } from 'vue';
 import FormSlot from '@/components/form/slot.vue';
 import FormButton from '@/components/MkButton.vue';

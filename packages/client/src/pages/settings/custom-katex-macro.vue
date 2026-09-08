@@ -14,13 +14,24 @@
 			<template #label>{{ i18n.ts.customKaTeXMacro }}</template>
 		</FormTextarea>
 
-		<FormSwitch v-model="enableCustomKaTeXMacro" class="_formBlock">{{
+		<FormSwitch data-setting-key="enableCustomKaTeXMacro" v-model="enableCustomKaTeXMacro" class="_formBlock">{{
 			i18n.ts.enableCustomKaTeXMacro
 		}}</FormSwitch>
 	</div>
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * カスタムKaTeXマクロの定義と有効状態を管理するページ。
+ *
+ * @remarks
+ * 設定検索は各操作部品の `data-setting-key` を使って、該当項目へ移動し強調する。
+ *
+ * @see {@link defaultStore}
+ * @internal
+ */
 import { ref, watch, computed } from "vue";
 import FormTextarea from "@/components/form/textarea.vue";
 import FormInfo from "@/components/MkInfo.vue";

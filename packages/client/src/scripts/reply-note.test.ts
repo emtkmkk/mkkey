@@ -98,3 +98,27 @@ test("本人投稿への返信では著者メンションを前提にしない",
 		true,
 	);
 });
+
+test("@youtube へのメンションはコピー対象にしない", () => {
+	assert.equal(
+		noteWouldCopyExtraReplyMentions(
+			note("@bob @youtube こんにちは", { username: "bob" }),
+			viewer,
+			localHost,
+			identity,
+		),
+		false,
+	);
+});
+
+test("リモートの @youtube はコピー対象にする", () => {
+	assert.equal(
+		noteWouldCopyExtraReplyMentions(
+			note("@bob @youtube@remote.example こんにちは", { username: "bob" }),
+			viewer,
+			localHost,
+			identity,
+		),
+		true,
+	);
+});

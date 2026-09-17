@@ -10,6 +10,7 @@
  */
 import * as mfm from "mfm-js";
 import { extractMentions } from "./extract-mentions.ts";
+import { isIgnoredMention } from "./is-ignored-mention.ts";
 
 /**
  * 返信メンション判定に使う閲覧者情報。
@@ -82,6 +83,11 @@ export function noteWouldCopyExtraReplyMentions(
 			viewer.username === x.username &&
 			(x.host == null || x.host === localHost)
 		) {
+			continue;
+		}
+
+		// @youtube 等、自ホスト宛メンションとして扱わない名前は除外
+		if (isIgnoredMention(x.username, x.host ?? otherHost, localHost)) {
 			continue;
 		}
 

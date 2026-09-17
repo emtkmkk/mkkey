@@ -18,6 +18,7 @@ import { reducedMotion } from "@/scripts/reduced-motion";
 import { defaultStore } from "@/store";
 import { mr_to_str } from "@/scripts/convert-mr";
 import { nyaize } from "@/scripts/nyaize.js";
+import { isIgnoredMention } from "@/scripts/is-ignored-mention";
 
 export default defineComponent({
 	emits: ["clickEv"],
@@ -661,15 +662,28 @@ export default defineComponent({
                                                 }
 
 						case "mention": {
+							const mentionHost =
+								(token.props.host == null &&
+								this.author &&
+								this.author.host != null
+									? this.author.host
+									: token.props.host) || host;
+
+							// NOTE: @youtube 等、自ホスト宛メンションとして扱わない名前はただの文字列として表示する
+							if (
+								isIgnoredMention(
+									token.props.username,
+									mentionHost,
+									host,
+								)
+							) {
+								return [token.props.acct];
+							}
+
 							return [
 								h(MkMention, {
 									key: Math.random(),
-									host:
-										(token.props.host == null &&
-										this.author &&
-										this.author.host != null
-											? this.author.host
-											: token.props.host) || host,
+									host: mentionHost,
 									username: token.props.username,
 								}),
 							];

@@ -38,6 +38,7 @@ import define from "../../define.js";
 import { isIncludeNgWord } from "@/misc/is-include-ng-word.js";
 import { resolveUser } from "@/remote/resolve-user.js";
 import { extractMentions } from "@/misc/extract-mentions.js";
+import { isIgnoredMention } from "@/misc/is-ignored-mention.js";
 
 export const meta = {
 	tags: ["account"],
@@ -660,10 +661,15 @@ async function verifyMutualMentions(fields: UserProfile["fields"], user: ILocalU
 	const mentions = fields.flatMap((field) => {
 		const tokens = mfm.parse(field.value) ?? [];
 
-		return extractMentions(tokens).map((mention) => ({
-			mention,
-			original: field.value,
-		}));
+		return extractMentions(tokens)
+			// NOTE: @youtube 等、自ホスト宛メンションとして扱わない名前は検証対象にしない
+			.filter(
+				(mention) => !isIgnoredMention(mention.username, mention.host, config.host),
+			)
+			.map((mention) => ({
+				mention,
+				original: field.value,
+			}));
 	});
 
 	await Promise.all(

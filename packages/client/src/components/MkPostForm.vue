@@ -495,6 +495,7 @@ import XPollEditor from "@/components/MkPollEditor.vue";
 import { host, url } from "@/config";
 import { erase, unique } from "@/scripts/array";
 import { extractMentions } from "@/scripts/extract-mentions";
+import { isIgnoredMention } from "@/scripts/is-ignored-mention";
 import { formatTimeString } from "@/scripts/format-time-string";
 import { Autocomplete } from "@/scripts/autocomplete";
 import * as os from "@/os";
@@ -1578,6 +1579,9 @@ if (reply && reply.text != null && props.replyAllMentions !== false) {
 		if ($i.username === x.username && (x.host == null || x.host === host))
 			continue;
 
+		// @youtube 等、自ホスト宛メンションとして扱わない名前は除外
+		if (isIgnoredMention(x.username, x.host ?? otherHost, host)) continue;
+
 		// 重複は除外
 		if (text.includes(`${mention} `)) continue;
 
@@ -1719,6 +1723,7 @@ function checkMissingMention() {
 		const ast = mfm.parse(text);
 
 		for (const x of extractMentions(ast)) {
+			if (isIgnoredMention(x.username, x.host, host)) continue;
 			if (
 				!visibleUsers.some(
 					(u) =>
@@ -1734,7 +1739,11 @@ function checkMissingMention() {
 	} else {
 		if (!reply) {
 			const ast = mfm.parse(text);
-			if (extractMentions(ast)?.length) {
+			if (
+				extractMentions(ast).some(
+					(x) => !isIgnoredMention(x.username, x.host, host),
+				)
+			) {
 				hasNotMentions = true;
 			} else {
 				hasNotMentions = false;
@@ -1757,6 +1766,7 @@ function addMissingMention() {
 	const ast = mfm.parse(text);
 
 	for (const x of extractMentions(ast)) {
+		if (isIgnoredMention(x.username, x.host, host)) continue;
 		if (
 			!visibleUsers.some(
 				(u) =>

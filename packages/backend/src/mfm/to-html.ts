@@ -12,6 +12,7 @@
 import { JSDOM } from "jsdom";
 import type * as mfm from "mfm-js";
 import config from "@/config/index.js";
+import { isIgnoredMention } from "@/misc/is-ignored-mention.js";
 import { intersperse } from "@/prelude/array.js";
 import type { IMentionedRemoteUsers } from "@/models/entities/note.js";
 
@@ -220,8 +221,16 @@ export function toHtml(
 		},
 
 		mention(node) {
-			const a = doc.createElement("a");
 			const { username, host, acct } = node.props;
+
+			// NOTE: @youtube 等、自ホスト宛メンションとして扱わない名前はリンクにしない
+			if (isIgnoredMention(username, host, config.host)) {
+				const span = doc.createElement("span");
+				span.textContent = acct;
+				return span;
+			}
+
+			const a = doc.createElement("a");
 			const remoteUserInfo = mentionedRemoteUsers.find(
 				(remoteUser) =>
 					remoteUser.username === username && remoteUser.host === host,

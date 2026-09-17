@@ -33,6 +33,7 @@ import {
 } from "@/services/note/unread.js";
 import { registerOrFetchInstanceDoc } from "../register-or-fetch-instance-doc.js";
 import { extractMentions } from "@/misc/extract-mentions.js";
+import { isIgnoredMention } from "@/misc/is-ignored-mention.js";
 import { extractCustomEmojisFromMfm } from "@/misc/extract-custom-emojis-from-mfm.js";
 import { extractHashtags } from "@/misc/extract-hashtags.js";
 import type { IMentionedRemoteUsers } from "@/models/entities/note.js";
@@ -1882,7 +1883,10 @@ export async function extractMentionedUsers(
 ): Promise<User[]> {
 	if (tokens == null) return [];
 
-	const mentions = extractMentions(tokens);
+	// NOTE: @youtube 等、自ホスト宛メンションとして扱わない名前は解決しない
+	const mentions = extractMentions(tokens).filter(
+		(m) => !isIgnoredMention(m.username, m.host || user.host, config.host),
+	);
 
 	let mentionedUsers = (
 		await Promise.all(

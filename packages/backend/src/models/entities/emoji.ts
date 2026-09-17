@@ -116,7 +116,7 @@ export class Emoji {
 	})
 	public isTextOnly: boolean;
 
-	/** センシティブフラグ。ActivityPub では "sensitive": "as:sensitive" として扱う */
+	/** センシティブフラグ。ActivityPub では sensitive: true として配信する（キーが @context で as:sensitive にマップされる） */
 	@Column('boolean', {
 		default: false,
 	})

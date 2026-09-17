@@ -878,6 +878,8 @@ export async function extractEmojis(
 			/** タグの sensitive / emojiInfo.isSensitive / エイリアス「センシティブ」をフラグに変換 */
 			const sensitive =
 				tag.sensitive === true ||
+				// 旧実装は値として文字列 "as:sensitive" を送ってくるため受け付ける
+				(tag.sensitive as unknown) === "as:sensitive" ||
 				emojiInfo?.isSensitive === true ||
 				(aliases as string[]).some(
 					(a) => String(a).trim() === "センシティブ" || String(a).trim() === "sensitive",

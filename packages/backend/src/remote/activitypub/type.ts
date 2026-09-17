@@ -271,7 +271,7 @@ export interface IApEmoji extends IObject {
 	usageInfo?: string;
 	description?: string;
 	isBasedOnUrl?: string;
-	/** センシティブフラグ。タグに含まれる場合もある */
+	/** センシティブフラグ。タグに含まれる場合もある（旧実装は値として文字列 "as:sensitive" を送ってくる） */
 	sensitive?: boolean;
 }
 

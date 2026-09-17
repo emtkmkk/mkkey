@@ -24,10 +24,8 @@ export default (emoji: Emoji) => {
 		type: "Emoji",
 		name: `:${emoji.name}:`,
 		host: `${emoji.host ?? config.host}`,
-		updated:
-			!emoji.host && emoji.updatedAt != null
-				? emoji.updatedAt.toISOString()
-				: new Date().toISOString(),
+		// リモート絵文字でも保存済みの更新日時を使う（毎回 now を送ると受信側で毎回「更新あり」と判定される）
+		updated: (emoji.updatedAt ?? emoji.createdAt ?? new Date()).toISOString(),
 		icon: {
 			type: "Image",
 			mediaType: emoji.type || "image/png",
@@ -40,6 +38,7 @@ export default (emoji: Emoji) => {
 		creator,
 		description: emoji.description ?? undefined,
 		isBasedOnUrl: emoji.isBasedOnUrl ?? undefined,
-		sensitive: emoji.sensitive ? "as:sensitive" : undefined,
+		// as:sensitive は @context のマッピング先であり、値は boolean を送る
+		sensitive: emoji.sensitive ? true : undefined,
 	};
 };

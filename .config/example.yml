@@ -187,6 +187,11 @@ reservedUsernames: [
 
 # Media Proxy
 #mediaProxy: https://example.com/proxy
+# 複数書くと、ファイルごとに振り分けて負荷を分散する。
+# どれかが失敗したら、クライアントが別のプロキシ → このサーバの /proxy の順に切り替える。
+#mediaProxy:
+#  - https://media-proxy-a.example.com
+#  - https://media-proxy-b.example.com
 
 # Proxy remote files (default: false)
 #proxyRemoteFiles: true

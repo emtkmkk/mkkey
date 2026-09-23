@@ -396,6 +396,14 @@ export type LiteInstanceMetadata = {
 	enableServiceWorker: boolean;
 	emojiUpdatedAt: DateString | null;
 	emojis: CustomEmoji[];
+	/**
+	 * 外部メディアプロキシの一覧
+	 *
+	 * @remarks
+	 * 画像がプロキシ経由で読めなかったとき、クライアントが別のプロキシへ切り替えるために使う。
+	 * 古いサーバは返さないので省略可能にしている。
+	 */
+	mediaProxies?: string[];
 	ads: {
 		id: ID;
 		ratio: number;

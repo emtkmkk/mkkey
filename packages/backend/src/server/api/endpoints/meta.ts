@@ -15,6 +15,7 @@
 import { IsNull, MoreThan, Not } from "typeorm";
 import config from "@/config/index.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
+import { getMediaProxies } from "@/misc/media-proxy.js";
 import { Ads, Emojis, Followings, RegistryItems, Users } from "@/models/index.js";
 import { getEffectiveUsageVisibility } from "@/models/repositories/emoji.js";
 import { MAX_NOTE_TEXT_LENGTH, MAX_CAPTION_TEXT_LENGTH } from "@/const.js";
@@ -325,6 +326,18 @@ export const meta = {
 				optional: false,
 				nullable: true,
 			},
+			mediaProxies: {
+				type: "array",
+				optional: false,
+				nullable: false,
+				description:
+					"外部メディアプロキシの一覧。クライアントがプロキシの失敗時に別のプロキシへ切り替えるために使う。",
+				items: {
+					type: "string",
+					optional: false,
+					nullable: false,
+				},
+			},
 			features: {
 				type: "object",
 				optional: true,
@@ -582,6 +595,8 @@ export default define(meta, paramDef, async (ps, me) => {
 			instance.deeplAuthKey != null || instance.libreTranslateApiUrl != null,
 		defaultReaction: instance.defaultReaction,
 		enableGuestTimeline: true,
+		// 画像読み込みに失敗したとき、クライアントが別のプロキシへ切り替えるために渡す
+		mediaProxies: getMediaProxies(),
 
 		...(ps.detail
 			? {

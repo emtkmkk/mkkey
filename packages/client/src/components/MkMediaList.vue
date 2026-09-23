@@ -54,6 +54,8 @@
  * `fileIds` を渡すと、`mediaList` に無い ID は「削除されたファイル」プレースホルダになる。
  * 画像拡大は PhotoSwipe（`imageNewTab` が無効のとき）。初期化失敗や itemData 解決失敗は
  * {@link appendErrorLog} に残す（Vue errorHandler 外のため）。
+ * 拡大画像が外部メディアプロキシ経由で失敗したときは、別の URL で読み直す
+ * （{@link getMediaFallbackUrls}）。
  *
  * @public
  */
@@ -68,6 +70,10 @@ import XVideo from "@/components/MkMediaVideo.vue";
 import * as os from "@/os";
 import { FILE_TYPE_BROWSERSAFE } from "@/const";
 import { defaultStore } from "@/store";
+import {
+	getMediaFallbackUrls,
+	loadImageWithFallback,
+} from "@/scripts/media-proxy-fallback";
 import { i18n } from "@/i18n";
 import {
 	buildNoteMediaSlots,
@@ -256,6 +262,26 @@ function initLightbox(): void {
 			"placeholderSrc",
 			(placeholderSrc, content) => placeholderSrc || content.data.msrc || false,
 		);
+
+		// 外部メディアプロキシが失敗したら、別のプロキシ → このサーバの /proxy の順に読み直す。
+		// PhotoSwipe 自身の読み込みを止めて、代わりに読み込み、結果だけ PhotoSwipe に伝える。
+		lightbox.on("contentLoadImage", (ev) => {
+			const { content } = ev;
+			const img = content.element as HTMLImageElement | undefined;
+			const src = content.data.src;
+			if (!img || !src) return;
+			const fallbacks = getMediaFallbackUrls(src);
+			// 外部プロキシの画像でなければ PhotoSwipe に任せる
+			if (fallbacks.length === 0) return;
+
+			ev.preventDefault();
+			img.alt = content.data.alt || "";
+			content.state = "loading";
+			void loadImageWithFallback(img, [src, ...fallbacks]).then((ok) => {
+				if (ok) content.onLoaded();
+				else content.onError();
+			});
+		});
 
 		lightbox.on("itemData", (ev) => {
 			try {

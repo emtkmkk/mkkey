@@ -62,6 +62,7 @@ import packFeed from "./feed.js";
 import { MINUTE, DAY } from "@/const.js";
 import type { Note } from "@/models/entities/note.js";
 import Logger from "@/services/logger.js";
+import { pickMediaProxy } from "@/misc/media-proxy.js";
 
 const webLogger = new Logger("web");
 
@@ -495,14 +496,18 @@ router.get("/emoji/:path(.*)", async (ctx) => {
 		return;
 	}
 
-	let proxy;
 	let url: URL;
 	// TODO : プロキシをサイズが大きすぎる物のみに使用するようにしたい
-	if (!config?.mediaProxy) {
-		proxy = `${config.url}/proxy`;
-	} else {
-		proxy = `${config.mediaProxy}`;
-	}
+	// 外部プロキシが複数あるときは、絵文字 ID で振り分けて同じ絵文字は同じプロキシへ送る。
+	// クライアントはプロキシが失敗したとき、次の指定で読み直す（media-proxy-fallback.ts）。
+	// - ?proxy=数字: 本来の振り分け先から数えて何個先の外部プロキシを使うか
+	// - ?proxy=local: このサーバの /proxy を使う
+	const proxyParam = ctx.query.proxy;
+	const proxy =
+		(proxyParam === "local"
+			? null
+			: pickMediaProxy(emoji.id, Number(proxyParam) || 0)) ??
+		`${config.url}/proxy`;
 
 	if ("badge" in ctx.query) {
 		url = new URL(`${proxy}/emoji.png`);

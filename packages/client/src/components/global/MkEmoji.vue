@@ -14,19 +14,8 @@
 		:alt="alt"
 		decoding="async"
 		@click="handleImgClick"
-		@error="
-			() => {
-				errorCnt = errorCnt + 1;
-				if (isPicker && urlRaw.length <= errorCnt) {
-					emit('loaderror', '');
-				}
-				if (!instance.errorEmoji) {
-					instance.errorEmoji = {};
-				}
-				instance.errorEmoji[emoji + (noteHost ? '@' + noteHost : '')] =
-					errorCnt;
-			}
-		"
+		@load="onCustomLoad"
+		@error="onCustomError"
 	/>
 	<img
 		v-else-if="char && !useOsNativeEmojis && !errorAlt"
@@ -114,10 +103,18 @@
  *
  * @remarks
  * note の emojis / reactionEmojis に hiddenForViewer が true のときは画像にせず :name: のまま表示（isMuted と同様）。
+ *
+ * カスタム絵文字は候補 URL（{@link urlRaw}）を先頭から順に試す。
+ * `/emoji/` 経由の外部プロキシが失敗したとき（HTTP エラー、またはエラー画像）は、
+ * 別のプロキシ → このサーバの `/proxy` の候補へ進む（{@link getEmojiFallbackUrls}）。
  */
 import { computed, ref, watch } from "vue";
 import { CustomEmoji } from "calckey-js/built/entities";
 import { getStaticImageUrl } from "@/scripts/get-static-image-url";
+import {
+	getEmojiFallbackUrls,
+	isProxyErrorImage,
+} from "@/scripts/media-proxy-fallback";
 import { char2filePath } from "@/scripts/twemoji-base";
 import { defaultStore } from "@/store";
 import { instance, emojiMap } from "@/instance";
@@ -309,7 +306,9 @@ const urlRaw = computed(() => {
 	if (customEmoji.value?.url && !defaultStore.state.enableDataSaverMode)
 		urlArr.push(customEmoji.value.url);
 	if (customEmojiName.value && (emojiHost || !props.nofallback)) {
-		urlArr.push(`/emoji/${emojiFullName.value}.webp`);
+		const emojiUrl = `/emoji/${emojiFullName.value}.webp`;
+		// 外部プロキシが失敗したときに、別のプロキシ → このサーバの /proxy の順に読み直す
+		urlArr.push(emojiUrl, ...getEmojiFallbackUrls(emojiUrl));
 	}
 	if (customEmoji.value?.url && defaultStore.state.enableDataSaverMode)
 		urlArr.push(customEmoji.value.url);
@@ -327,6 +326,45 @@ const url = computed(() => {
 		return "";
 	}
 });
+
+/**
+ * カスタム絵文字の画像が読めなかったとき、次の候補 URL へ進める
+ *
+ * @remarks
+ * 失敗回数は `instance.errorEmoji` にも残し、同じ絵文字の別の表示箇所で失敗済みの URL を飛ばす。
+ *
+ * @internal
+ */
+function onCustomError() {
+	errorCnt.value = errorCnt.value + 1;
+	if (props.isPicker && urlRaw.value.length <= errorCnt.value) {
+		emit("loaderror", "");
+	}
+	if (!instance.errorEmoji) {
+		instance.errorEmoji = {};
+	}
+	instance.errorEmoji[emoji + (props.noteHost ? "@" + props.noteHost : "")] =
+		errorCnt.value;
+}
+
+/**
+ * カスタム絵文字の画像が読み込めたとき
+ *
+ * @remarks
+ * 外部プロキシはエラー時にもエラー画像を「成功」として返すことがある。
+ * その場合は読み込み失敗と同じ扱いにして、次の候補 URL へ進める。
+ *
+ * @param ev - load イベント
+ * @internal
+ */
+async function onCustomLoad(ev: Event) {
+	const img = ev.target as HTMLImageElement;
+	const src = url.value;
+	if (!(await isProxyErrorImage(img))) return;
+	// 判定の間に別の URL へ変わっていたら何もしない
+	if (src !== url.value) return;
+	onCustomError();
+}
 
 const altimgUrl = computed(() => {
 	if (!emojiHost.value) return "";

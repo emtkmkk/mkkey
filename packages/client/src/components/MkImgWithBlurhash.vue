@@ -8,19 +8,36 @@
 			:title="title"
 		/>
 		<img
-			v-if="src && !forceBlurhash"
-			:src="src"
+			v-if="currentSrc && !forceBlurhash"
+			:src="currentSrc"
 			:title="title"
 			:type="type"
 			:alt="alt"
 			@load="onLoad"
+			@error="onError"
 		/>
 	</div>
 </template>
 
 <script lang="ts" setup>
-import { onMounted } from "vue";
+/**
+ * @packageDocumentation
+ *
+ * blurhash のぼかし画像を下地に、本画像を読み込んで表示するコンポーネント
+ *
+ * @remarks
+ * 本画像の読み込みが終わるまでは blurhash を canvas に描いておく。
+ * 本画像が外部メディアプロキシ経由で、読み込みに失敗したりエラー画像が返ってきたりしたときは、
+ * {@link getMediaFallbackUrls} の順に別の URL で読み直す。
+ *
+ * @internal
+ */
+import { onMounted, watch } from "vue";
 import { decode } from "blurhash";
+import {
+	getMediaFallbackUrls,
+	isProxyErrorImage,
+} from "@/scripts/media-proxy-fallback";
 
 const props = withDefaults(
 	defineProps<{
@@ -47,6 +64,52 @@ const props = withDefaults(
 const canvas = $ref<HTMLCanvasElement>();
 let loaded = $ref(false);
 
+/**
+ * 試す URL の一覧（先頭が元の `src`、以降は失敗時の代わり）
+ *
+ * @internal
+ */
+const candidates = $computed(() =>
+	props.src ? [props.src, ...getMediaFallbackUrls(props.src)] : [],
+);
+
+/**
+ * いま表示している URL が {@link candidates} の何番目か
+ *
+ * @internal
+ */
+let attempt = $ref(0);
+
+/**
+ * いま表示している URL
+ *
+ * @internal
+ */
+const currentSrc = $computed(() => candidates[attempt] ?? props.src);
+
+// 表示する画像そのものが変わったら、最初の URL から試し直す
+watch(
+	() => props.src,
+	() => {
+		attempt = 0;
+	},
+);
+
+/**
+ * 次の URL へ切り替える
+ *
+ * @remarks
+ * 最後の URL まで失敗したときは切り替えず、そのまま表示しておく。
+ *
+ * @returns 切り替えたら `true`
+ * @internal
+ */
+function tryNext(): boolean {
+	if (attempt >= candidates.length - 1) return false;
+	attempt++;
+	return true;
+}
+
 function draw() {
 	if (canvas == null) return;
 	const ctx = canvas.getContext("2d");
@@ -70,8 +133,32 @@ function draw() {
 	ctx.putImageData(imageData, 0, 0);
 }
 
-function onLoad() {
+/**
+ * 本画像の読み込みが終わったとき
+ *
+ * @remarks
+ * 外部プロキシがエラー画像を返していたら、成功扱いにせず次の URL へ切り替える。
+ *
+ * @param ev - load イベント
+ * @internal
+ */
+async function onLoad(ev: Event) {
+	const img = ev.target as HTMLImageElement;
+	const src = currentSrc;
+	if (await isProxyErrorImage(img)) {
+		// 判定の間に別の画像へ変わっていたら何もしない
+		if (src === currentSrc && tryNext()) return;
+	}
 	loaded = true;
+}
+
+/**
+ * 本画像の読み込みに失敗したとき
+ *
+ * @internal
+ */
+function onError() {
+	tryNext();
 }
 
 onMounted(() => {

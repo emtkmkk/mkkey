@@ -11,6 +11,7 @@ import { fetchMeta } from "@/misc/fetch-meta.js";
 import { In } from "typeorm";
 import { Users, DriveFolders } from "../index.js";
 import { deepClone } from "@/misc/clone.js";
+import { pickMediaProxy } from "@/misc/media-proxy.js";
 
 type PackOptions = {
 	detail?: boolean;
@@ -47,13 +48,11 @@ export const DriveFileRepository = db.getRepository(DriveFile).extend({
 
 	getPublicUrl(file: DriveFile, thumbnail = false, original = false): string | null {
 		// リモートかつメディアプロキシ
-		if (
-			file.uri != null &&
-			file.userHost != null &&
-			config.mediaProxy != null
-		) {
+		// 複数設定されているときは、ファイル ID で振り分けて同じファイルは同じプロキシへ送る
+		const mediaProxy = pickMediaProxy(file.id);
+		if (file.uri != null && file.userHost != null && mediaProxy != null) {
 			return appendQuery(
-				config.mediaProxy,
+				mediaProxy,
 				query({
 					url: file.uri,
 					thumbnail: thumbnail ? "1" : undefined,

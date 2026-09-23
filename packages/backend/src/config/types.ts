@@ -122,7 +122,15 @@ export type Source = {
 		port: number;
 	};
 
-	mediaProxy?: string;
+	/**
+	 * リモートの画像を配信するときに使う外部メディアプロキシ
+	 *
+	 * @remarks
+	 * 配列で複数書くと、ファイルごとに振り分けて負荷を分散する。
+	 * 失敗したときはクライアントが別のプロキシ、最後にこのサーバの `/proxy` へ切り替える。
+	 * 値は必ず {@link ../misc/media-proxy.ts | getMediaProxies} を通して読むこと。
+	 */
+	mediaProxy?: string | string[];
 	proxyRemoteFiles?: boolean;
 
 	twa: {

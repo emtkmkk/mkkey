@@ -7,6 +7,7 @@
  * - **API パス**: `i/notifications`（GET `/api/i/notifications` で呼び出し）
  * - 認証必須。未読含む通知をページネーションで返す。type や sinceId で絞り込み可能。
  * - `markAsRead` + `includeTypes` 指定時は取得分のみ既読。フィルタなしは latestId 以前を一括既読。
+ * - CHANGED: 削除済みアカウントからの通知は返さない（アカウント削除に関する通知は除く）。
  *
  * @see {@link define} エンドポイント登録
  * @internal
@@ -23,6 +24,7 @@ import define from "../../define.js";
 import { makePaginationQuery } from "../../common/make-pagination-query.js";
 import { createFollowingExistsCondition } from "../../common/following-exists-condition.js";
 import { createMuteScopeCondition } from "@/misc/mute-scope.js";
+import { createDeletedNotifierCondition } from "@/misc/deleted-notifier-condition.js";
 
 export const meta = {
 	tags: ["account", "notifications"],
@@ -149,6 +151,9 @@ export default define(meta, paramDef, async (ps, user) => {
 			).orWhere("notification.notifierId IS NULL");
 		}),
 	);
+
+	// 削除済みユーザー（アカウント削除に関する通知は残す）
+	query.andWhere(createDeletedNotifierCondition("notifier"));
 
         if (ps.following) {
                 query.andWhere(

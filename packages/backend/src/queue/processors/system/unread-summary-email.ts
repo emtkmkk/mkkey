@@ -52,6 +52,7 @@ import {
 	Users,
 } from "@/models/index.js";
 import { createMuteScopeCondition } from "@/misc/mute-scope.js";
+import { createDeletedNotifierCondition } from "@/misc/deleted-notifier-condition.js";
 import {
 	buildGuidanceEmail,
 	escapeHtml,
@@ -128,7 +129,7 @@ interface UnreadSummary {
 
 /**
  * 通知一覧 API と同等の可視性フィルタ（ミュートユーザー / ミュートインスタンス /
- * サスペンド notifier の除外）を適用する。
+ * サスペンド / 削除済み notifier の除外）を適用する。
  *
  * @remarks
  * クエリ側で `notification.notifier` を `"notifier"` として leftJoin していること。
@@ -181,6 +182,9 @@ function applyVisibilityFilters<T extends SelectQueryBuilder<Notification>>(
 			).orWhere("notification.notifierId IS NULL");
 		}),
 	);
+
+	// 削除済みユーザー（アカウント削除に関する通知は残す）
+	query.andWhere(createDeletedNotifierCondition("notifier"));
 
 	return query;
 }

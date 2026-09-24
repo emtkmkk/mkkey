@@ -1,3 +1,4 @@
+import { HOUR } from "@/const.js";
 import define from "../../define.js";
 import { getRemoteUser } from "../../common/getters.js";
 import { updatePerson } from "@/remote/activitypub/models/person.js";
@@ -7,6 +8,12 @@ export const meta = {
 
 	requireCredential: true,
 	kind: "read:account",
+
+	// NOTE: 呼ぶたびにリモートサーバーへの取得が走るため、回数を制限する（Misskey 2026.9.1 の修正を移植）
+	limit: {
+		duration: HOUR,
+		max: 30,
+	},
 } as const;
 
 export const paramDef = {

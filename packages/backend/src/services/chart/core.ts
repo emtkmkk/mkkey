@@ -22,6 +22,7 @@ import {
 	addTime,
 } from "@/prelude/time.js";
 import { getChartInsertLock } from "@/misc/app-lock.js";
+import { sqlStringEscape } from "@/misc/sql-string-escape.js";
 import { db, getStatsDataSource } from "@/db/postgre.js";
 import promiseLimit from "promise-limit";
 
@@ -579,23 +580,24 @@ export default abstract class Chart<T extends Schema> {
 					// ユニークインクリメント
 					const tempColumnName = (uniqueTempColumnPrefix +
 						k.replaceAll(".", columnDot)) as keyof TempColumnsForUnique<T>;
-					// TODO: item をSQLエスケープ
+					// NOTE: item にはリモートのホスト名など外部由来の文字列が入るため、必ずエスケープする。
+					// 配列リテラル（'{...}'）は独自のエスケープ規則を持つので、ARRAY[...] で組み立てる
 					const itemsForHour = v
 						.filter((item) => !logHour[tempColumnName].includes(item))
-						.map((item) => `"${item}"`);
+						.map((item) => sqlStringEscape(item));
 					const itemsForDay = v
 						.filter((item) => !logDay[tempColumnName].includes(item))
-						.map((item) => `"${item}"`);
+						.map((item) => sqlStringEscape(item));
 					if (itemsForHour.length > 0)
 						queryForHour[tempColumnName] = () =>
-							`array_cat("${tempColumnName}", '{${itemsForHour.join(
+							`array_cat("${tempColumnName}", ARRAY[${itemsForHour.join(
 								",",
-							)}}'::varchar[])`;
+							)}]::varchar[])`;
 					if (itemsForDay.length > 0)
 						queryForDay[tempColumnName] = () =>
-							`array_cat("${tempColumnName}", '{${itemsForDay.join(
+							`array_cat("${tempColumnName}", ARRAY[${itemsForDay.join(
 								",",
-							)}}'::varchar[])`;
+							)}]::varchar[])`;
 				}
 			}
 

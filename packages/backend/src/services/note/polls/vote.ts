@@ -68,7 +68,8 @@ export default async function (
 	// 投票数をインクリメント
 	const index = choice + 1; // SQLでは配列インデックスは1始まり
 	await Polls.query(
-		`UPDATE poll SET votes[${index}] = votes[${index}] + 1 WHERE "noteId" = '${poll.noteId}'`,
+		'UPDATE poll SET votes[$1] = votes[$1] + 1 WHERE "noteId" = $2',
+		[index, poll.noteId],
 	);
 
 	publishNoteStream(note.id, "pollVoted", {

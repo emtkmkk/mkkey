@@ -232,8 +232,8 @@ export default define(meta, paramDef, async (ps, user) => {
 			insertedVoteIds.push(id);
 			const index = c + 1;
 			await manager.query(
-				`UPDATE poll SET votes[${index}] = votes[${index}] + 1 WHERE "noteId" = $1`,
-				[poll.noteId],
+				'UPDATE poll SET votes[$1] = votes[$1] + 1 WHERE "noteId" = $2',
+				[index, poll.noteId],
 			);
 		}
 	});

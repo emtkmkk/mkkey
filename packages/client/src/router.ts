@@ -765,6 +765,16 @@ export const routes = [
 		loginRequired: true,
 	},
 	{
+		// 絵文字の追加申請（ステップ式）。MEGAMOJI からは ?from=megamoji&name=… で開く
+		path: "/emoji-requests/new",
+		component: page(() => import("./pages/emoji-requests/new.vue")),
+		loginRequired: true,
+		query: {
+			name: "name",
+			from: "from",
+		},
+	},
+	{
 		path: "/my/emoji-import-requests",
 		component: page(() => import("./pages/emoji-import-requests.vue")),
 		loginRequired: true,

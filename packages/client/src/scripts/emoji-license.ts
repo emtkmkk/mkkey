@@ -42,6 +42,9 @@ export const EMOJI_LICENSE_OTHER_LABEL = "その他（自由入力）";
 
 /**
  * ライセンスの選択肢ごとの説明文。キーは選択欄の値（空文字 = 付けない、{@link EMOJI_LICENSE_OTHER} = その他）。
+ *
+ * @remarks
+ * 申請画面では短い版（{@link EMOJI_LICENSE_SHORT_DESCRIPTIONS}）を使う。こちらは管理画面用。
  */
 export const EMOJI_LICENSE_DESCRIPTIONS: Readonly<Record<string, string>> = {
 	"":
@@ -60,6 +63,20 @@ export const EMOJI_LICENSE_DESCRIPTIONS: Readonly<Record<string, string>> = {
 		"法律で著作権が切れた、または最初から権利が及ばない状態です。クレジット表示なしで商用・改変ともに自由に使えます。",
 	[EMOJI_LICENSE_OTHER]:
 		"上記以外のライセンスを使う場合に選び、下の入力欄にライセンス名を記入してください。",
+};
+
+/**
+ * 申請画面で出す、ライセンスの短い説明文（スマホで読みやすいよう文ごとに改行する前提）。
+ */
+export const EMOJI_LICENSE_SHORT_DESCRIPTIONS: Readonly<Record<string, string>> = {
+	"": "ライセンスを付けません。ライセンスが無い絵文字は、作者の許可なく使ったり加工したりできない扱いになります。\n二次創作などで、ライセンスを決められないときもこれを選びます。",
+	"CC0 1.0 Universal": "作者が全ての権利を行使しないと宣言した状態です。\n誰でも自由に使えます。",
+	"CC BY 4.0": "使う・コピーするときに作者の表示が必要です。\n商用・改変は自由です。",
+	"CC BY-NC 4.0": "作者の表示が必要で、商用利用はできません。",
+	"CC BY-NC-SA 4.0": "作者の表示が必要で、商用利用はできません。\n改変したものも同じ条件にします。",
+	"CC BY-NC-ND 4.0": "作者の表示が必要で、商用利用も改変もできません。",
+	"Public Domain": "著作権が無い状態です。\n誰でも自由に使えます。",
+	[EMOJI_LICENSE_OTHER]: "上にないライセンスを使うときに、下の欄に名前を書いてください。",
 };
 
 /**
@@ -112,6 +129,136 @@ export const EMOJI_COPY_PERMISSION_REQUEST_OPTIONS: ReadonlyArray<{
 	{ value: COPY_PERMISSION_ASK, label: "許可の後、コピー可" },
 	{ value: "conditional", label: "条件付きでコピー可" },
 	{ value: "deny", label: "コピー不可" },
+];
+
+// #endregion
+
+// #region よくある組み合わせ（申請画面の［どう使ってほしいかで選ぶ］）
+
+/** カードの札の色（ok：できる、ng：できない、cond：条件付き、info：補足） */
+export type EmojiLicensePresetBadgeKind = "ok" | "ng" | "cond" | "info";
+
+/**
+ * 「どう使ってほしいか」のカード 1 枚。
+ *
+ * @remarks
+ * 選ぶとコピー可否とライセンスがまとめて入る（M1）。usageInfo があれば使用情報にも入る（もこチキ）。
+ * allowAsk が true のカードだけ「コピーする前に一声かけてほしい」スイッチと組み合わせられる（M4）。
+ */
+export type EmojiLicensePreset = {
+	key: string;
+	/** Phosphor のアイコン名（ph-… の部分） */
+	icon: string;
+	title: string;
+	description: string;
+	/** 説明の下に小さく出す注意書き */
+	note?: string;
+	badges: ReadonlyArray<{ kind: EmojiLicensePresetBadgeKind; label: string }>;
+	copyPermission: EmojiCopyPermission;
+	/** 空文字はライセンスを付けない */
+	licenseName: string;
+	usageInfo?: string;
+	allowAsk: boolean;
+};
+
+/** もこチキの二次創作を選んだときに使用情報へ入れる文 */
+export const MKCK_USAGE_INFO =
+	"コピーする場合は、コピー先でもライセンス（CC BY-NC-SA 4.0）を明記してください";
+
+/**
+ * 申請画面の「よくある組み合わせ」（M1・M5）。
+ *
+ * @remarks
+ * コピー可否は必ず守られるものではないので、コピーに関する文はお願いの言い方にする。
+ * ライセンスの条件（商用利用など）は効力があるので言い切る。
+ */
+export const EMOJI_LICENSE_PRESETS: ReadonlyArray<EmojiLicensePreset> = [
+	{
+		key: "free",
+		icon: "heart",
+		title: "自由に使ってOK",
+		description: "誰がどう使っても構いません。名前を出してもらう必要もありません。",
+		badges: [
+			{ kind: "ok", label: "コピー" },
+			{ kind: "ok", label: "商用" },
+			{ kind: "ok", label: "加工" },
+			{ kind: "info", label: "作者表示は不要" },
+		],
+		copyPermission: "allow",
+		licenseName: "CC0 1.0 Universal",
+		allowAsk: true,
+	},
+	{
+		key: "by",
+		icon: "identification-badge",
+		title: "作者の名前を出してくれればOK",
+		description: "使うときやコピーするときに、作者の名前を出してもらいます。",
+		badges: [
+			{ kind: "ok", label: "コピー" },
+			{ kind: "ok", label: "商用" },
+			{ kind: "ok", label: "加工" },
+			{ kind: "cond", label: "作者表示が必要" },
+		],
+		copyPermission: "allow",
+		licenseName: "CC BY 4.0",
+		allowAsk: true,
+	},
+	{
+		key: "nc",
+		icon: "currency-circle-dollar",
+		title: "名前を出して、お金もうけには使わないで",
+		description: "作者の名前を出してもらい、商用利用はお断りします。",
+		badges: [
+			{ kind: "ok", label: "コピー" },
+			{ kind: "ng", label: "商用" },
+			{ kind: "ok", label: "加工" },
+			{ kind: "cond", label: "作者表示が必要" },
+		],
+		copyPermission: "allow",
+		licenseName: "CC BY-NC 4.0",
+		allowAsk: true,
+	},
+	{
+		key: "local",
+		icon: "house",
+		title: "もこきーの中だけで使ってほしい",
+		description: "ほかのサーバーへのコピーは希望しません。",
+		note: "コピーを希望しないだけで、この絵文字を使った投稿やリアクションは、ほかのサーバーの人にも見えます（Misskey の絵文字の「ローカルのみ」とは異なります）。",
+		badges: [
+			{ kind: "ng", label: "コピー" },
+			{ kind: "ng", label: "商用" },
+			{ kind: "ng", label: "加工" },
+		],
+		copyPermission: "deny",
+		licenseName: "",
+		allowAsk: false,
+	},
+	{
+		key: "fan",
+		icon: "sparkle",
+		title: "二次創作・自分の作品ではない",
+		description: "ほかの作品が元の絵文字や、作者が分からない絵文字。ライセンスは決めずに申請します。",
+		badges: [{ kind: "info", label: "元の作品のルールに従う" }],
+		copyPermission: "none",
+		licenseName: "",
+		allowAsk: false,
+	},
+	{
+		key: "mkck",
+		icon: "bird",
+		title: "もこチキの二次創作",
+		description: "もこチキと同じ条件（CC BY-NC-SA）になります。",
+		badges: [
+			{ kind: "cond", label: "条件付きでコピー" },
+			{ kind: "ng", label: "商用" },
+			{ kind: "cond", label: "加工は同じ条件で" },
+			{ kind: "cond", label: "作者表示が必要" },
+		],
+		copyPermission: "conditional",
+		licenseName: "CC BY-NC-SA 4.0",
+		usageInfo: MKCK_USAGE_INFO,
+		allowAsk: true,
+	},
 ];
 
 // #endregion

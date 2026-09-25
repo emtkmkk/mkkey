@@ -270,8 +270,7 @@ let ruby: string = $ref(props.emoji.ruby ?? "");
 let orgCategory: string = $ref(props.emoji.orgCategory ?? "");
 let copyrightNotice: string = $ref(props.emoji.copyrightNotice ?? "");
 let creditText: string = $ref(props.emoji.creditText ?? "");
-let relatedLinksStr: string = $ref((props.emoji.relatedLinks ?? []).join("
-"));
+let relatedLinksStr: string = $ref((props.emoji.relatedLinks ?? []).join("\n"));
 let sourceLicenseText: string = $ref(props.emoji.sourceLicenseText ?? "");
 /** 詳細項目を API から取り直せたか。false の間は詳細項目を送らない */
 let detailLoaded: boolean = $ref(Array.isArray(props.emoji.relatedLinks));
@@ -300,8 +299,7 @@ if (!detailLoaded) {
 			orgCategory = detail.orgCategory ?? orgCategory;
 			copyrightNotice = detail.copyrightNotice ?? "";
 			creditText = detail.creditText ?? "";
-			relatedLinksStr = (detail.relatedLinks ?? []).join("
-");
+			relatedLinksStr = (detail.relatedLinks ?? []).join("\n");
 			sourceLicenseText = detail.sourceLicenseText ?? "";
 			detailLoaded = true;
 		})

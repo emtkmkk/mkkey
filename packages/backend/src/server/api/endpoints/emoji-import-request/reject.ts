@@ -1,15 +1,16 @@
 /**
  * 絵文字インポート申請を否認する。否認リストに登録し、申請者に通知する。
  *
+ * @remarks
+ * 通知の種類は emojiRequest（押すと自分の申請の詳細が開く）。理由は通知の本文には入れず、詳細で見せる。
+ *
  * @public
  */
 import define from "../../define.js";
-import { EmojiImportRequests, EmojiImportDenieds } from "@/models/index.js";
+import { EmojiImportRequests, EmojiImportDenieds, Emojis } from "@/models/index.js";
+import { notifyEmojiRequestRequester } from "@/services/emoji-request-notification.js";
 import { ApiError } from "../../error.js";
-import { createNotification } from "@/services/create-notification.js";
 import { insertModerationLog } from "@/services/insert-moderation-log.js";
-import { fetchMeta } from "@/misc/fetch-meta.js";
-import config from "@/config/index.js";
 
 export const meta = {
 	tags: ["emoji-import-request", "admin"],
@@ -68,20 +69,14 @@ export default define(meta, paramDef, async (ps, me) => {
 		await EmojiImportDenieds.insert({ name: request.emojiName });
 	}
 
-	const body =
-		`:${request.emojiName}@${request.emojiHost}: の申請は見送られました。` +
-		(reason ? `\n\n理由: ${reason}` : "");
-	const m = await fetchMeta();
-	const iconUrl =
-		m?.iconUrl != null
-			? m.iconUrl.startsWith("http")
-				? m.iconUrl
-				: `${config.url}${m.iconUrl.startsWith("/") ? "" : "/"}${m.iconUrl}`
-			: undefined;
-	createNotification(request.requesterId, "app", {
-		customHeader: "絵文字インポート申請が見送られました",
-		customBody: body,
-		customIcon: iconUrl,
+	// 通知の種類は emojiRequest。理由は、押して開く申請の詳細で見せる
+	const remoteEmoji = await Emojis.findOneBy({ name: request.emojiName, host: request.emojiHost });
+	notifyEmojiRequestRequester(request.requesterId, {
+		kind: "import",
+		requestId: request.id,
+		header: "絵文字インポート申請が見送られました",
+		body: `:${request.emojiName}@${request.emojiHost}: のインポート申請は見送られました。\nタップして確認してください。`,
+		icon: remoteEmoji ? (remoteEmoji.publicUrl || remoteEmoji.originalUrl) : null,
 	});
 
 	insertModerationLog(me, "emojiImportRequestReject", {

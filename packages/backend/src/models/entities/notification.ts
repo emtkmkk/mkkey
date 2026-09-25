@@ -87,6 +87,7 @@ export class Notification {
 	 * wasUnblocked - ブロック解除された
 	 * followedAccountWasDeleted - フォローしていたユーザーがアカウントを削除した
 	 * badge - バッジを獲得した（周年バッジ等）
+	 * emojiRequest - 絵文字の申請（追加・インポート）が届いた・審査された（emojiRequestKind / emojiRequestId / emojiRequestRole を参照）
 	 */
 	@Index()
 	@Column('enum', {
@@ -188,4 +189,30 @@ export class Notification {
 	})
 	@JoinColumn()
 	public appAccessToken: AccessToken | null;
+
+	// #region 絵文字申請（type = emojiRequest のときだけ使う）
+
+	/**
+	 * どの種類の申請か。add（追加申請）/ import（インポート申請）/ edit（変更申請。第 1 段階 B で使う）
+	 */
+	@Column('varchar', {
+		length: 16, nullable: true,
+	})
+	public emojiRequestKind: 'add' | 'import' | 'edit' | null;
+
+	/** 申請の ID（申請のテーブルは種類ごとに別） */
+	@Column('varchar', {
+		length: 32, nullable: true,
+	})
+	public emojiRequestId: string | null;
+
+	/**
+	 * 誰に向けた通知か。requester（申請者）なら自分の申請の詳細、reviewer（管理者）なら審査画面を開く
+	 */
+	@Column('varchar', {
+		length: 16, nullable: true,
+	})
+	public emojiRequestRole: 'requester' | 'reviewer' | null;
+
+	// #endregion
 }

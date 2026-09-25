@@ -27,12 +27,11 @@ import {
 	appendHistory,
 	applyAskContactRule,
 	buildEmojiRowFromRequest,
-	describeChangedFields,
 	diffEditableFields,
 	emojiAddRequestFieldsParamDef,
 	findEmojiAddRequestProblem,
 	normalizeEmojiAddRequestFields,
-	notifyEmojiRequester,
+	notifyAddRequestRequester,
 	pickEditableFields,
 } from "@/services/emoji-add-request.js";
 import {
@@ -149,14 +148,13 @@ export default define(meta, paramDef, async (ps, me) => {
 		changed: Object.keys(changes),
 	});
 
-	// 直して承認したときは、何を直したかを伝える（R1）
-	notifyEmojiRequester(
-		request.requesterId,
+	// 直して承認したときは、直したことを伝える（R1）。直した項目とコメントは、押して開く詳細で見せる（R6）
+	notifyAddRequestRequester(
+		{ id: request.id, requesterId: request.requesterId, fileId: after.fileId },
 		"絵文字の追加申請が承認されました",
 		[
 			`申請していた :${after.name}: がサーバーに追加されました。`,
-			changed ? `管理者が次の項目を直しています：${describeChangedFields(changes)}` : null,
-			comment ? `管理者からのコメント：${comment}` : null,
+			changed ? "管理者が一部の項目を直しています。タップして確認してください。" : null,
 		]
 			.filter(Boolean)
 			.join("\n"),

@@ -13,7 +13,7 @@ import define from "../../define.js";
 import { ApiError } from "../../error.js";
 import { EmojiAddRequests } from "@/models/index.js";
 import { insertModerationLog } from "@/services/insert-moderation-log.js";
-import { appendHistory, notifyEmojiRequester } from "@/services/emoji-add-request.js";
+import { appendHistory, notifyAddRequestRequester } from "@/services/emoji-add-request.js";
 import { emojiAddRequestErrors } from "../../common/emoji-add-request-errors.js";
 
 export const meta = {
@@ -56,11 +56,10 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	insertModerationLog(me, "emojiAddRequestReject", { requestId: request.id, reason });
 
-	notifyEmojiRequester(
-		request.requesterId,
+	// 理由は、押して開く詳細で見せる（R6）
+	notifyAddRequestRequester(
+		request,
 		"絵文字の追加申請が見送られました",
-		[`:${request.name}: の追加申請は見送られました。`, reason ? `理由：${reason}` : null]
-			.filter(Boolean)
-			.join("\n"),
+		`${request.name} の追加申請は見送られました。\nタップして確認してください。`,
 	);
 });

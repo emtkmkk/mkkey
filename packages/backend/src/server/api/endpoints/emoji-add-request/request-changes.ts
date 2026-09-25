@@ -20,12 +20,11 @@ import { insertModerationLog } from "@/services/insert-moderation-log.js";
 import {
 	appendHistory,
 	applyAskContactRule,
-	describeChangedFields,
 	diffEditableFields,
 	emojiAddRequestFieldsParamDef,
 	findEmojiAddRequestProblem,
 	normalizeEmojiAddRequestFields,
-	notifyEmojiRequester,
+	notifyAddRequestRequester,
 	pickEditableFields,
 } from "@/services/emoji-add-request.js";
 import {
@@ -107,17 +106,10 @@ export default define(meta, paramDef, async (ps, me) => {
 		changed: Object.keys(proposal),
 	});
 
-	const changedText = describeChangedFields(proposal);
-	notifyEmojiRequester(
-		request.requesterId,
+	// 修正案とコメントは、押して開く詳細で見せる（R6）
+	notifyAddRequestRequester(
+		request,
 		"絵文字の追加申請に修正のお願いがあります",
-		[
-			`:${request.name}: の申請について、管理者から修正のお願いが届きました。`,
-			changedText ? `管理者の修正案：${changedText}` : null,
-			comment ? `管理者からのコメント：${comment}` : null,
-			"絵文字申請のページから、内容を確認して出し直してください。",
-		]
-			.filter(Boolean)
-			.join("\n"),
+		`${request.name} の申請について、管理者から修正のお願いが届きました。\nタップして確認してください。`,
 	);
 });

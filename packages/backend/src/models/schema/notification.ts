@@ -102,5 +102,17 @@ export const packedNotificationSchema = {
 			nullable: true,
 			description: "アイコン右下に表示するサブアイコン（絵文字または画像 URL）。",
 		},
+		emojiRequest: {
+			type: "object",
+			optional: true,
+			nullable: true,
+			description: "絵文字申請の通知（type = emojiRequest）のとき、どの申請か。url は押したときに開くページ。",
+			properties: {
+				kind: { type: "string", optional: false, nullable: false, enum: ["add", "import", "edit"] },
+				id: { type: "string", optional: false, nullable: false },
+				role: { type: "string", optional: false, nullable: false, enum: ["requester", "reviewer"] },
+				url: { type: "string", optional: false, nullable: false },
+			},
+		},
 	},
 } as const;

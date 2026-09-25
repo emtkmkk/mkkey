@@ -5,7 +5,7 @@
  *
  * @remarks
  * 申請・再申請・審査（承認／直して承認／修正のお願い／却下）の各 API から使う。
- * - 申請者・管理者への通知
+ * - 申請者・管理者への通知（通知の種類 emojiRequest。{@link "@/services/emoji-request-notification"} を使う）
  * - API で返す形（{@link packEmojiAddRequest}）
  * 入力の検査や値の組み立ては {@link "@/misc/emoji-add-request-fields"} にあり、ここからまとめて再公開している
  * （各 API はこのファイルだけを import すればよい）。
@@ -13,65 +13,76 @@
  *
  * @internal
  */
-import { IsNull } from "typeorm";
-import config from "@/config/index.js";
-import { fetchMeta } from "@/misc/fetch-meta.js";
-import { createNotification } from "@/services/create-notification.js";
-import { DriveFiles, Users } from "@/models/index.js";
+import { DriveFiles } from "@/models/index.js";
+import {
+	notifyEmojiRequestRequester,
+	notifyEmojiRequestReviewers,
+} from "@/services/emoji-request-notification.js";
 import { pickEditableFields } from "@/misc/emoji-add-request-fields.js";
 import type { EmojiAddRequest } from "@/models/entities/emoji-add-request.js";
-import type { User } from "@/models/entities/user.js";
 
 export * from "@/misc/emoji-add-request-fields.js";
 
 // #region 通知
 
-/** 通知の見出しの前に付けるアイコン URL（サーバーのアイコン） */
-async function getInstanceIconUrl(): Promise<string | undefined> {
-	const meta = await fetchMeta();
-	if (meta?.iconUrl == null) return undefined;
-	if (meta.iconUrl.startsWith("http")) return meta.iconUrl;
-	return `${config.url}${meta.iconUrl.startsWith("/") ? "" : "/"}${meta.iconUrl}`;
+/**
+ * 申請の画像の URL を返す（通知のアイコンに使う）。
+ *
+ * @param fileId - 申請の画像
+ * @returns 公開用の URL、または null
+ */
+async function getRequestImageUrl(fileId: string | null): Promise<string | null> {
+	if (fileId == null) return null;
+	const file = await DriveFiles.findOneBy({ id: fileId });
+	return file ? (file.webpublicUrl ?? file.url) : null;
 }
 
 /**
- * 管理者（isAdmin のローカルユーザー）全員に通知する。
+ * 追加申請について、申請者に通知する（通知の種類は emojiRequest。押すと自分の申請の詳細が開く）。
  *
- * @remarks
- * インポート申請と同じく、モデレーターには送らない。送信は待たずに裏で行う。
- *
+ * @param r - 申請（id・申請者・画像）
  * @param header - 見出し
  * @param body - 本文
  * @internal
  */
-export function notifyEmojiRequestAdmins(header: string, body: string): void {
-	setImmediate(async () => {
-		const admins = await Users.find({ where: { isAdmin: true, host: IsNull() }, select: ["id"] });
-		const icon = await getInstanceIconUrl();
-		for (const admin of admins) {
-			createNotification(admin.id, "app", { customHeader: header, customBody: body, customIcon: icon });
-		}
-	});
-}
-
-/**
- * 申請者に通知する。申請者が分からない（過去の取り込み）ときは何もしない。
- *
- * @param requesterId - 申請者
- * @param header - 見出し
- * @param body - 本文
- * @internal
- */
-export function notifyEmojiRequester(
-	requesterId: User["id"] | null,
+export function notifyAddRequestRequester(
+	r: Pick<EmojiAddRequest, "id" | "requesterId" | "fileId">,
 	header: string,
 	body: string,
 ): void {
-	if (requesterId == null) return;
-	setImmediate(async () => {
-		const icon = await getInstanceIconUrl();
-		createNotification(requesterId, "app", { customHeader: header, customBody: body, customIcon: icon });
-	});
+	void (async () => {
+		notifyEmojiRequestRequester(r.requesterId, {
+			kind: "add",
+			requestId: r.id,
+			header,
+			body,
+			icon: await getRequestImageUrl(r.fileId),
+		});
+	})();
+}
+
+/**
+ * 追加申請について、管理者に通知する（押すと審査画面のその申請が開く）。
+ *
+ * @param r - 申請（id・画像・申請者）
+ * @param header - 見出し
+ * @param body - 本文
+ * @internal
+ */
+export function notifyAddRequestReviewers(
+	r: Pick<EmojiAddRequest, "id" | "fileId" | "requesterId">,
+	header: string,
+	body: string,
+): void {
+	void (async () => {
+		notifyEmojiRequestReviewers({
+			kind: "add",
+			requestId: r.id,
+			header,
+			body,
+			icon: await getRequestImageUrl(r.fileId),
+		}, r.requesterId);
+	})();
 }
 
 // #endregion

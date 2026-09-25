@@ -24,7 +24,7 @@ import {
 	emojiAddRequestFieldsParamDef,
 	findEmojiAddRequestProblem,
 	normalizeEmojiAddRequestFields,
-	notifyEmojiRequestAdmins,
+	notifyAddRequestReviewers,
 	pickEditableFields,
 } from "@/services/emoji-add-request.js";
 import {
@@ -113,8 +113,9 @@ export default define(meta, paramDef, async (ps, me) => {
 		history: appendHistory(request.history, { by: me.id, action: "resubmitted" }),
 	});
 
-	notifyEmojiRequestAdmins(
+	notifyAddRequestReviewers(
+		{ id: request.id, fileId: next.fileId, requesterId: request.requesterId },
 		"絵文字の追加申請が出し直されました",
-		`:${next.name}: の追加申請が、修正のお願いを受けて出し直されました。`,
+		`${next.name} の追加申請が、修正のお願いを受けて出し直されました。\nタップして確認してください。`,
 	);
 });

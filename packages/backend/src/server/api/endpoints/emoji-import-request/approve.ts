@@ -14,16 +14,14 @@ import {
 	Emojis,
 } from "@/models/index.js";
 import { genId } from "@/misc/gen-id.js";
+import { notifyEmojiRequestRequester } from "@/services/emoji-request-notification.js";
 import { buildCopiedEmojiExtraFields } from "@/misc/emoji-fedibird.js";
 import { ApiError } from "../../error.js";
 import type { DriveFile } from "@/models/entities/drive-file.js";
 import { uploadFromUrl } from "@/services/drive/upload-from-url.js";
 import { db } from "@/db/postgre.js";
 import { bumpReactionNormalizeCacheVersion } from "@/misc/reaction-normalize-cache.js";
-import { createNotification } from "@/services/create-notification.js";
 import { insertModerationLog } from "@/services/insert-moderation-log.js";
-import { fetchMeta } from "@/misc/fetch-meta.js";
-import config from "@/config/index.js";
 import { publishBroadcastStream } from "@/services/stream.js";
 
 export const meta = {
@@ -210,17 +208,13 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	await EmojiImportDenieds.delete({ name: request.emojiName }).catch(() => {});
 
-	const m = await fetchMeta();
-	const iconUrl =
-		m?.iconUrl != null
-			? m.iconUrl.startsWith("http")
-				? m.iconUrl
-				: `${config.url}${m.iconUrl.startsWith("/") ? "" : "/"}${m.iconUrl}`
-			: undefined;
-	createNotification(request.requesterId, "app", {
-		customHeader: "絵文字インポート申請が承認されました",
-		customBody: `申請していた :${request.emojiName}@${request.emojiHost}: がサーバーに追加されました。`,
-		customIcon: iconUrl,
+	// 通知の種類は emojiRequest。押すと自分の申請の詳細が開く
+	notifyEmojiRequestRequester(request.requesterId, {
+		kind: "import",
+		requestId: request.id,
+		header: "絵文字インポート申請が承認されました",
+		body: `申請していた :${finalName}: がサーバーに追加されました。`,
+		icon: copied.publicUrl || copied.originalUrl,
 	});
 
 	insertModerationLog(me, "emojiImportRequestApprove", {

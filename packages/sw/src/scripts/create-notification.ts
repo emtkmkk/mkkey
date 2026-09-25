@@ -716,6 +716,34 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 					);
 				}
 
+				case "emojiRequest": {
+					// 絵文字申請。管理者宛ては申請者のアイコン、申請者宛ては申請した絵文字の画像を出す
+					const body = data.body as {
+						header?: string | null;
+						body?: string | null;
+						icon?: string | null;
+						user?: { avatarUrl?: string | null } | null;
+						emojiRequest?: { kind: string; id: string } | null;
+					};
+					return composeWithDisplayText(
+						// 表示用の上書き文言（displayTitle など）を読むための型にそろえる
+						data as pushNotificationDataMap["notification"] & {
+							body: { displayTitle?: string | null; displayBody?: string | null };
+						},
+						body.header || body.body || "",
+						// 翻訳関数の型も composeWithDisplayText の引数にそろえる（中身は同じ）
+						t as (key: string, ...args: unknown[]) => string,
+						{
+							body: body.header ? (body.body ?? undefined) : undefined,
+							icon: body.user?.avatarUrl ?? body.icon ?? undefined,
+							tag: body.emojiRequest
+								? `emojiRequest:${body.emojiRequest.kind}:${body.emojiRequest.id}`
+								: undefined,
+							data,
+						},
+					);
+				}
+
 				case "badge":
 					return composeWithDisplayText(
 						data,

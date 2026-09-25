@@ -105,6 +105,10 @@
 					v-else-if="notification.type === 'badge'"
 					class="ph-seal-check ph-bold"
 				></i>
+				<i
+					v-else-if="notification.type === 'emojiRequest'"
+					class="ph-smiley-sticker ph-bold"
+				></i>
 				<template v-else-if="isDefaultReaction">
 					<i
 						v-if="instance.defaultReaction === '👍'"
@@ -443,6 +447,17 @@
 			<span v-if="notification.type === 'app'" class="text">
 				<Mfm :text="notification.body" :nowrap="!full" />
 			</span>
+			<MkA
+				v-if="notification.type === 'emojiRequest'"
+				class="text"
+				:to="notification.emojiRequest?.url ?? '/my/notifications'"
+			>
+				<!-- 管理者宛て（申請者のアイコン・名前が出る）ときは、見出しを本文の上に出す -->
+				<span v-if="notification.user" class="emoji-request-header">{{
+					notification.header
+				}}</span>
+				<Mfm :text="notification.body" :nowrap="!full" />
+			</MkA>
 			<span v-if="notification.type === 'badge'" class="text">
 				{{ notification.body }}
 			</span>
@@ -451,6 +466,18 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * 通知一覧の 1 件を表示するコンポーネント。
+ *
+ * @remarks
+ * 絵文字申請（emojiRequest）の通知は、本文を押すとその申請のページ（サーバーが返す emojiRequest.url）を開く。
+ * 管理者宛ては申請者のアイコン・名前を出すので、見出し（例「絵文字の追加申請がありました」）を本文の上に出す。
+ * 右下の小さなアイコンは、どちらも絵文字申請のマーク。
+ *
+ * @internal
+ */
 import { ref, onMounted, onUnmounted, watch } from "vue";
 import * as misskey from "calckey-js";
 import * as config from "@/config";
@@ -854,6 +881,11 @@ useTooltip(reactionRef, (showing) => {
 			white-space: nowrap;
 			overflow: hidden;
 			text-overflow: ellipsis;
+
+			> .emoji-request-header {
+				display: block;
+				font-weight: bold;
+			}
 
 			> i {
 				vertical-align: super;

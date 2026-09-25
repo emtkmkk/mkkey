@@ -23,7 +23,7 @@ import {
 	emojiAddRequestFieldsParamDef,
 	findEmojiAddRequestProblem,
 	normalizeEmojiAddRequestFields,
-	notifyEmojiRequestAdmins,
+	notifyAddRequestReviewers,
 } from "@/services/emoji-add-request.js";
 import type { EmojiAddRequestEditableFields } from "@/models/entities/emoji-add-request.js";
 import {
@@ -131,9 +131,10 @@ export default define(meta, paramDef, async (ps, me) => {
 		history: appendHistory([], { by: me.id, action: "created" }),
 	}).then((x) => EmojiAddRequests.findOneByOrFail(x.identifiers[0]));
 
-	notifyEmojiRequestAdmins(
+	notifyAddRequestReviewers(
+		request,
 		"絵文字の追加申請がありました",
-		`:${request.name}: の追加申請が届きました。`,
+		`${request.name} の追加申請が届きました。\nタップして確認してください。`,
 	);
 
 	return { id: request.id };

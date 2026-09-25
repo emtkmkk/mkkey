@@ -1,7 +1,7 @@
 /**
  * 絵文字インポート申請を作成する（ユーザー向け）。
  * 1日10回制限（UTC 0:00リセット）。否認リスト・同一名で pending があれば拒否。
- * 申請作成時に管理者（isAdmin）にのみ通知する（モデレーターには送らない）。
+ * 申請作成時に管理者（isAdmin）にのみ通知する（モデレーターには送らない）。通知の種類は emojiRequest（押すと審査画面のこの申請が開く）。
  *
  * @public
  */
@@ -9,11 +9,9 @@ import { IsNull, MoreThanOrEqual } from "typeorm";
 import define from "../../define.js";
 import { EmojiImportRequests, EmojiImportDenieds, Emojis, Users } from "@/models/index.js";
 import { genId } from "@/misc/gen-id.js";
+import { notifyEmojiRequestReviewers } from "@/services/emoji-request-notification.js";
 import { ApiError } from "../../error.js";
 import { toPuny } from "@/misc/convert-host.js";
-import { createNotification } from "@/services/create-notification.js";
-import { fetchMeta } from "@/misc/fetch-meta.js";
-import config from "@/config/index.js";
 
 const DAILY_LIMIT = 10;
 
@@ -129,27 +127,14 @@ export default define(meta, paramDef, async (ps, me) => {
 		EmojiImportRequests.findOneByOrFail(x.identifiers[0]),
 	);
 
-	// 管理者のみに通知（モデレーターには送らない）
-	setImmediate(async () => {
-		const admins = await Users.find({
-			where: { isAdmin: true, host: IsNull() },
-			select: ["id"],
-		});
-		const meta = await fetchMeta();
-		const iconUrl =
-			meta?.iconUrl != null
-				? meta.iconUrl.startsWith("http")
-					? meta.iconUrl
-					: `${config.url}${meta.iconUrl.startsWith("/") ? "" : "/"}${meta.iconUrl}`
-				: undefined;
-		for (const admin of admins) {
-			createNotification(admin.id, "app", {
-				customHeader: "絵文字インポート申請がありました",
-				customBody: `:${emojiName}@${emojiHost}: のインポート申請が届きました。`,
-				customIcon: iconUrl,
-			});
-		}
-	});
+	// 管理者のみに通知（モデレーターには送らない）。通知の種類は emojiRequest で、押すと審査画面のこの申請が開く
+	notifyEmojiRequestReviewers({
+		kind: "import",
+		requestId: request.id,
+		header: "絵文字インポート申請がありました",
+		body: `:${emojiName}@${emojiHost}: のインポート申請が届きました。\nタップして確認してください。`,
+		icon: remoteEmoji.publicUrl || remoteEmoji.originalUrl,
+	}, me.id);
 
 	return { id: request.id };
 });

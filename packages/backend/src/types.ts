@@ -19,6 +19,8 @@ export const notificationTypes = [
 	"wasUnblocked",
 	"followedAccountWasDeleted",
 	"badge",
+	// 絵文字の追加・インポート（・変更）申請のお知らせ。押すとその申請を開く
+	"emojiRequest",
 ] as const;
 
 export const noteVisibilities = [

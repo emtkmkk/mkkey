@@ -1308,7 +1308,7 @@ router.get("(.*)", async (ctx) => {
 		motd.push("春ももうすぐ終わりですね");
 		if (now.getDate() == 5) {
 			motd.push("屋根より高い🎏");
-		} else if (now.getDate() >= 20 && now.getDate() < 27) {
+		} else if (now.getDate() < 27) {
 			motd.push(`5/27は${meta.name} ${now.getFullYear() - 2023}.5 周年の日みたいです`);
 		} else if (now.getDate() == 27) {
 			seasonalMotdForcedExclusive = true;
@@ -1351,7 +1351,7 @@ router.get("(.*)", async (ctx) => {
 		}
 	} else if (now.getMonth() == 10) {
 		motd.push("秋か冬かよく分からない時期ですね");
-		if (now.getDate() >= 19 && now.getDate() < 26) {
+		if (now.getDate() < 26) {
 			motd.push(`11/26は${meta.name} ${now.getFullYear() - 2022} 周年の日みたいです`);
 		} else if (now.getDate() == 26) {
 			seasonalMotdForcedExclusive = true;

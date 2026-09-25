@@ -31,8 +31,8 @@ export const paramDef = {
 	properties: {
 		status: {
 			type: "string",
+			// NB: default: null を付けると、省略時に null が入って enum の検査で 400 になる
 			nullable: true,
-			default: null,
 			enum: ["pending", "changesRequested", "approved", "rejected", "withdrawn"],
 		},
 		limit: { type: "integer", minimum: 1, maximum: 100, default: 30 },

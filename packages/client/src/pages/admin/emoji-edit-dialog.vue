@@ -39,6 +39,7 @@
 				</MkInput>
 				<MkInput v-model="alternateName" class="_formBlock">
 					<template #label>表示名</template>
+					<template #caption>絵文字名を日本語などで書いたもの。</template>
 				</MkInput>
 				<MkInput v-model="ruby" class="_formBlock">
 					<template #label>読み</template>

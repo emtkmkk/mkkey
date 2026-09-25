@@ -1169,6 +1169,7 @@
  *
  * @remarks
  * 「最近追加された」は usageVisibility が public または user（許可ユーザ）の絵文字のみ表示。
+ * 検索ではタグに加えて読み（ruby）も照合する（{@link getEmojiSearchWords}）。
  */
 import { ref, unref, computed, watch, onMounted, onBeforeUnmount, nextTick } from "vue";
 import * as Misskey from "calckey-js";
@@ -1200,6 +1201,7 @@ import { defaultStore } from "@/store";
 import { FocusTrap } from "focus-trap-vue";
 import { $i } from "@/account";
 import { unisonReload } from "@/scripts/unison-reload";
+import { getEmojiSearchWords } from "@/scripts/emoji-search-words";
 import { get, set, del } from "@/scripts/idb-proxy";
 import {
 	getFolloweeIdsForMotifCheck,
@@ -1573,12 +1575,12 @@ function emojiSearch(nQ, oQ) {
 
 	/** 検索クエリと名前 or エイリアスが完全一致するか（searchExactOnly 用）。 */
 	const isExactNameOrAliasMatch = (
-		emoji: { name?: string; aliases?: string[]; keywords?: string[] },
+		emoji: { name?: string; aliases?: string[]; keywords?: string[]; ruby?: string | null },
 		q: string,
 	) => {
 		const qq = (q ?? "").toLowerCase();
 		if (emoji.name && emoji.name.toLowerCase() === qq) return true;
-		return (emoji.aliases || emoji.keywords || []).some(
+		return getEmojiSearchWords(emoji).some(
 			(a) => String(a).toLowerCase() === qq,
 		);
 	};
@@ -1649,7 +1651,7 @@ function emojiSearch(nQ, oQ) {
 			if (shouldSkipEmoji(emoji)) continue;
 			if (
 				keywords.every((keyword) =>
-					(emoji.aliases || emoji.keywords).some((alias) =>
+					getEmojiSearchWords(emoji).some((alias) =>
 						startsWith
 							? kanaToHira(formatRoomaji(alias)).startsWith(
 									keyword
@@ -1687,7 +1689,7 @@ function emojiSearch(nQ, oQ) {
 				keywords.every(
 					(keyword) =>
 						formatRoomaji(emoji.name).includes(keyword) ||
-						(emoji.aliases || emoji.keywords).some((alias) =>
+						getEmojiSearchWords(emoji).some((alias) =>
 							kanaToHira(formatRoomaji(alias)).includes(keyword)
 						)
 				)

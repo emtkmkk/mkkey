@@ -5,6 +5,7 @@
  * ライセンスは個別パラメータ（copyPermission, licenseName 等）で指定。isTextOnly 時は 3 項目を固定値で保存。
  * 従来形式の license（「コピー可否 : 」「ライセンス : 」等のキー・値形式）が渡された場合はパースして個別カラムに展開する。
  * 新規追加時は usageVisibility 未指定なら private。private のときは emojiAdded を送信しない。
+ * Fedibird 互換項目（alternateName / ruby / relatedLinks / copyrightNotice / creditText / orgCategory）も受け取る。
  */
 import { IsNull } from "typeorm";
 import define from "../../../define.js";
@@ -19,6 +20,10 @@ import rndstr from "rndstr";
 import { publishBroadcastStream } from "@/services/stream.js";
 import { db } from "@/db/postgre.js";
 import { bumpReactionNormalizeCacheVersion } from "@/misc/reaction-normalize-cache.js";
+import {
+	emojiExtraFieldsParamDef,
+	pickEmojiExtraFields,
+} from "../../../common/emoji-extra-fields.js";
 
 const COPY_PERMISSION_VALUES = ["allow", "deny", "conditional", "none"] as const;
 
@@ -105,6 +110,7 @@ export const paramDef = {
 			enum: ["any", "follow", "owner"],
 			description: "モチーフの利用範囲。未指定時は any",
 		},
+		...emojiExtraFieldsParamDef,
 	},
 	required: ["fileId"],
 } as const;
@@ -164,6 +170,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		allowedUserIds: ps.allowedUserIds ?? [],
 		motifUserId: ps.motifUserId ?? null,
 		motifUserMode: ps.motifUserMode ?? "any",
+		...pickEmojiExtraFields(ps),
 	} as Record<string, unknown>;
 
 	const noIndividualLicenseFields =

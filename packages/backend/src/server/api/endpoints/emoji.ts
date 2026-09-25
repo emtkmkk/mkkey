@@ -136,5 +136,6 @@ export default define(meta, paramDef, async (ps, me) => {
 		throw new ApiError(meta.errors.noSuchEmoji);
 	}
 
-	return Emojis.pack(emoji);
+	// 詳細表示用なので、関連リンク・著作権表示などの詳細項目も返す
+	return Emojis.pack(emoji, { detail: true });
 });

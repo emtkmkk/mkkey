@@ -365,6 +365,10 @@ export type CustomEmoji = {
 	aliases: string[];
 	/** センシティブフラグ（ActivityPub では as:sensitive） */
 	sensitive?: boolean;
+	/** 表示名（Fedibird の alternateName）。空なら返らない */
+	alternateName?: string | null;
+	/** 読み（Fedibird の ruby）。検索にも使う。空なら返らない */
+	ruby?: string | null;
 };
 
 export type LiteInstanceMetadata = {

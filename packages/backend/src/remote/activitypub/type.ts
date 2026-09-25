@@ -271,8 +271,30 @@ export interface IApEmoji extends IObject {
 	usageInfo?: string;
 	description?: string;
 	isBasedOnUrl?: string;
+	/** isBasedOnUrl の別名。Fedibird は実データでこちらのキーを使う */
+	isBasedOn?: string;
 	/** センシティブフラグ。タグに含まれる場合もある（旧実装は値として文字列 "as:sensitive" を送ってくる） */
 	sensitive?: boolean;
+	/** カテゴリ（Fedibird）。受け取ったら相手サーバーの API より優先する */
+	category?: string;
+	/** 表示名（Fedibird） */
+	alternateName?: string;
+	/** 読み（Fedibird） */
+	ruby?: string;
+	/** 関連リンク（Fedibird の実データのキー）。文字列 1 つで来ることもある */
+	relatedLinks?: string | string[];
+	/** relatedLinks の別名（Fedibird の @context 上の名前） */
+	relatedLink?: string | string[];
+	/** 著作権の表示（Fedibird） */
+	copyrightNotice?: string;
+	/** クレジット（Fedibird） */
+	creditText?: string;
+	/** 上流 Misskey が使うライセンスの 1 行まとめ。参考情報としてだけ保存する */
+	_misskey_license?: { freeText?: string | null } | null;
+	/** _misskey_license の別名（Fedibird が受け付けるもの） */
+	misskeyLicense?: { freeText?: string | null } | null;
+	/** _misskey_license の別名（Fedibird が受け付けるもの） */
+	_misskeyLicense?: { freeText?: string | null } | null;
 }
 
 export const isEmoji = (object: IObject): object is IApEmoji =>

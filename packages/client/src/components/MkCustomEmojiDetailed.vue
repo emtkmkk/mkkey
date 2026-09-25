@@ -25,6 +25,14 @@
 				<template #key>{{ i18n.ts.name }}</template>
 				<template #value>{{ _emoji.name }}</template>
 			</MkKeyValue>
+			<MkKeyValue v-if="_emoji.alternateName">
+				<template #key>表示名</template>
+				<template #value>{{ _emoji.alternateName }}</template>
+			</MkKeyValue>
+			<MkKeyValue v-if="_emoji.ruby">
+				<template #key>読み</template>
+				<template #value>{{ _emoji.ruby }}</template>
+			</MkKeyValue>
 			<MkKeyValue v-if="_emoji.host">
 				<template #key>{{ i18n.ts.host }}</template>
 				<template #value>{{ _emoji.host }}</template>
@@ -57,6 +65,10 @@
 				<template #value>{{
 					_emoji.category ?? i18n.ts.none
 				}}</template>
+			</MkKeyValue>
+			<MkKeyValue v-if="_emoji.orgCategory">
+				<template #key>コピー元のカテゴリ</template>
+				<template #value>{{ _emoji.orgCategory }}</template>
 			</MkKeyValue>
 			<MkKeyValue v-if="licenseDetail.description">
 				<template #key>{{ i18n.ts.emojiDescription }}</template>
@@ -111,6 +123,32 @@
 					<Mfm :text="licenseDetail.usageInfo" />
 				</template>
 			</MkKeyValue>
+			<MkKeyValue v-if="_emoji.copyrightNotice">
+				<template #key>著作権の表示</template>
+				<template #value>
+					<span :class="$style.plainText">{{ _emoji.copyrightNotice }}</span>
+				</template>
+			</MkKeyValue>
+			<MkKeyValue v-if="_emoji.creditText">
+				<template #key>クレジット</template>
+				<template #value>
+					<span :class="$style.plainText">{{ _emoji.creditText }}</span>
+				</template>
+			</MkKeyValue>
+			<MkKeyValue v-if="_emoji.relatedLinks?.length">
+				<template #key>関連リンク</template>
+				<template #value>
+					<div :class="$style.links">
+						<MkLink
+							v-for="link in _emoji.relatedLinks"
+							:key="link"
+							:url="link"
+							target="_blank"
+							>{{ link }}</MkLink
+						>
+					</div>
+				</template>
+			</MkKeyValue>
 			<MkKeyValue v-if="!_emoji.license || licenseText">
 				<template #key>{{
 					Object.keys(licenseDetail).filter((x) => licenseDetail[x])
@@ -120,6 +158,12 @@
 				}}</template>
 				<template #value>
 					<Mfm :text="licenseText ?? i18n.ts.none" />
+				</template>
+			</MkKeyValue>
+			<MkKeyValue v-if="_emoji.sourceLicenseText">
+				<template #key>コピー元のライセンス情報（参考）</template>
+				<template #value>
+					<span :class="$style.plainText">{{ _emoji.sourceLicenseText }}</span>
 				</template>
 			</MkKeyValue>
 			<MkKeyValue v-if="_emoji.createdAt">
@@ -201,6 +245,11 @@
  * @packageDocumentation
  *
  * カスタム絵文字詳細表示コンポーネント。ライセンス情報は API の個別フィールドから表示する。
+ *
+ * @remarks
+ * Fedibird 互換項目（表示名・読み・関連リンク・著作権表示・クレジット・コピー元のカテゴリ）も表示する。
+ * 「コピー元のライセンス情報（参考）」はリモートから届いた `_misskey_license.freeText` をそのまま出すだけで、
+ * 書き方が信用できないため MFM としては解釈せず、ただの文字として表示する。
  */
 import * as Misskey from "calckey-js";
 import { defineAsyncComponent, defineProps, onMounted } from "vue";
@@ -303,6 +352,18 @@ onMounted(async () => {
 </script>
 
 <style lang="scss" module>
+.plainText {
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.links {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25em;
+	word-break: break-all;
+}
+
 .emojiImgWrapper {
 	max-width: 100%;
 	height: 20cqh;

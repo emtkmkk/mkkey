@@ -7,6 +7,9 @@
  * pack では isTextOnly のとき copyPermission / licenseName / creator を固定値で返す。DB の copyPermission（a/d/c/n）は API 用に完全形に変換して返す。
  * usageVisibility はローカル絵文字のみの概念で、リモート絵文字（host != null）は DB の値によらず常に public として扱う。
  * 返却前に新規項目の falsy 削除とデフォルト値キー削除を適用する（キーが無い場合はクライアントでデフォルト扱い）。
+ * Fedibird 互換項目のうち、一覧でも使う表示名・読み（検索用）は常に返し、
+ * 関連リンク・著作権表示・クレジット・コピー元のカテゴリ・参考情報は `detail: true` のとき（絵文字の詳細）だけ返す。
+ * 絵文字一覧は全員に配る大きな応答なので、詳細でしか使わない項目で重くしないため。
  */
 import config from "@/config/index.js";
 import { fromStoredCopyPermission } from "@/misc/copy-permission.js";
@@ -28,6 +31,13 @@ export const NEW_EMOJI_FIELDS = [
 	"motifUserMode",
 	"category",
 	"host",
+	"alternateName",
+	"ruby",
+	"relatedLinks",
+	"copyrightNotice",
+	"creditText",
+	"orgCategory",
+	"sourceLicenseText",
 ] as const;
 
 /** デフォルト値のときはキーを返さない */
@@ -127,7 +137,17 @@ export function canUseEmoji(
 }
 
 export const EmojiRepository = db.getRepository(Emoji).extend({
-	async pack(src: Emoji["id"] | Emoji): Promise<Packed<"Emoji">> {
+	/**
+	 * 絵文字を API の返却形にする。
+	 *
+	 * @param src - 絵文字 ID または絵文字
+	 * @param opts - detail: true なら詳細でしか使わない項目も含める
+	 * @returns 返却形
+	 */
+	async pack(
+		src: Emoji["id"] | Emoji,
+		opts?: { detail?: boolean },
+	): Promise<Packed<"Emoji">> {
 		const emoji =
 			typeof src === "object" ? src : await this.findOneByOrFail({ id: src });
 
@@ -165,6 +185,17 @@ export const EmojiRepository = db.getRepository(Emoji).extend({
 			allowedUserIds: emoji.allowedUserIds ?? [],
 			motifUserId: emoji.motifUserId ?? null,
 			motifUserMode: emoji.motifUserMode ?? "any",
+			alternateName: emoji.alternateName,
+			ruby: emoji.ruby,
+			...(opts?.detail
+				? {
+						relatedLinks: emoji.relatedLinks ?? [],
+						copyrightNotice: emoji.copyrightNotice,
+						creditText: emoji.creditText,
+						orgCategory: emoji.orgCategory,
+						sourceLicenseText: emoji.sourceLicenseText,
+				  }
+				: {}),
 			...(emoji.oldEmoji ? { oldEmoji: true } : {}),
 		};
 		return stripDefaultEmojiFields(

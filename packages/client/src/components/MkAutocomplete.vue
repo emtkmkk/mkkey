@@ -120,6 +120,7 @@ import {
 } from "@/scripts/convert-jp";
 import { defaultStore } from "@/store";
 import { emojilist } from "@/scripts/emojilist";
+import { getEmojiSearchWords } from "@/scripts/emoji-search-words";
 import { instance } from "@/instance";
 import { i18n } from "@/i18n";
 import * as config from "@/config";
@@ -166,8 +167,10 @@ for (const x of customEmojis) {
 		isCustomEmoji: true,
 	});
 
-	if (x.aliases) {
-		for (const alias of x.aliases) {
+	// タグに加えて読み（ruby）でも補完できるようにする
+	const searchWords = getEmojiSearchWords(x);
+	if (searchWords.length > 0) {
+		for (const alias of searchWords) {
 			emojiDefinitions.push({
 				name: alias.toLowerCase(),
 				aliasOf: x.name.toLowerCase(),

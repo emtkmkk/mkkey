@@ -251,6 +251,9 @@ export default define(meta, paramDef, async (ps, me) => {
 						description: emoji.description,
 						isBasedOnUrl: emoji.isBasedOnUrl,
 						isTextOnly: emoji.isTextOnly,
+						// 検索・表示用。空なら返さない
+						...(emoji.alternateName ? { alternateName: emoji.alternateName } : {}),
+						...(emoji.ruby ? { ruby: emoji.ruby } : {}),
 						createdAt: emoji.createdAt,
 						updatedAt: emoji.updatedAt,
 					};

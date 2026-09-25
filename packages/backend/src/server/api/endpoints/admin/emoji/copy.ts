@@ -7,6 +7,7 @@
  * - **API パス**: `admin/emoji/copy`（POST `/api/admin/emoji/copy` で呼び出し）
  * - 認証必須・モデレーター権限必須。コピー元は isBasedOnUrl に URI を指定。
  * - 補足情報（license）には「Copy to 〇〇」を格納。モチーフ情報は引き継がず、usageVisibility は常に private で新規作成（emojiAdded は送信しない）。
+ * - Fedibird 互換項目（表示名・読み・関連リンク・著作権表示・クレジット・参考情報）は引き継ぎ、コピー元のカテゴリはホスト名を外して orgCategory に入れる。
  *
  * @see {@link define} エンドポイント登録
  * @internal
@@ -15,6 +16,7 @@ import { IsNull } from "typeorm";
 import define from "../../../define.js";
 import { Emojis } from "@/models/index.js";
 import { genId } from "@/misc/gen-id.js";
+import { buildCopiedEmojiExtraFields } from "@/misc/emoji-fedibird.js";
 import { ApiError } from "../../../error.js";
 import type { DriveFile } from "@/models/entities/drive-file.js";
 import { uploadFromUrl } from "@/services/drive/upload-from-url.js";
@@ -137,6 +139,8 @@ export default define(meta, paramDef, async (ps, me) => {
 		description: emoji.description ?? null,
 		isBasedOnUrl: emoji.uri ?? null,
 		license,
+		// 表示名・読み・関連リンク・著作権表示・クレジット・コピー元のカテゴリも引き継ぐ
+		...buildCopiedEmojiExtraFields(emoji),
 		isTextOnly: false,
 		sensitive: emoji.sensitive ?? false,
 		usageVisibility: "private",

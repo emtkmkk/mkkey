@@ -51,6 +51,14 @@
 					<template #label>{{ i18n.ts.tags }}</template>
 					<template #caption>{{ i18n.ts.setMultipleBySeparatingWithSpace }}</template>
 				</MkInput>
+				<MkInput v-model="alternateName" class="_formBlock">
+					<template #label>表示名</template>
+					<template #caption>絵文字の名前を日本語などで書いたもの。例「他サーバーへのインポートを許可します」</template>
+				</MkInput>
+				<MkInput v-model="ruby" class="_formBlock">
+					<template #label>読み</template>
+					<template #caption>ひらがなで書いた読み方。絵文字の検索にも使われます</template>
+				</MkInput>
 				<FormSplit class="_formBlock">
 					<MkSwitch v-model="sensitive">
 						<template #label>{{ i18n.ts.sensitive ?? "センシティブ" }}</template>
@@ -110,9 +118,28 @@
 				<MkInput v-model="isBasedOnUrl" class="_formBlock">
 					<template #label>{{ i18n.ts.isBasedOnUrl ?? "コピー元URL" }}</template>
 				</MkInput>
+				<MkInput v-model="orgCategory" class="_formBlock">
+					<template #label>コピー元のカテゴリ</template>
+					<template #caption>リモートからコピーした絵文字の、元のサーバーでのカテゴリ</template>
+				</MkInput>
 				<MkTextarea v-model="license" class="_formBlock">
 					<template #label>{{ i18n.ts.licenseSupplement ?? "ライセンス補足情報" }}</template>
 				</MkTextarea>
+				<MkTextarea v-model="copyrightNotice" class="_formBlock" :disabled="!detailLoaded">
+					<template #label>著作権の表示</template>
+				</MkTextarea>
+				<MkTextarea v-model="creditText" class="_formBlock" :disabled="!detailLoaded">
+					<template #label>クレジット</template>
+					<template #caption>作成に使ったソフトやフォントなど</template>
+				</MkTextarea>
+				<MkTextarea v-model="relatedLinksStr" class="_formBlock" :disabled="!detailLoaded">
+					<template #label>関連リンク</template>
+					<template #caption>1 行に 1 つずつ入力します</template>
+				</MkTextarea>
+				<div v-if="sourceLicenseText" class="_formBlock source-license">
+					<div class="label">コピー元のライセンス情報（参考）</div>
+					<div class="text">{{ sourceLicenseText }}</div>
+				</div>
 				<FormSplit class="_formBlock">
 					<span class="label">モチーフユーザー</span>
 					<div class="motif-user__body">
@@ -154,6 +181,9 @@
  *
  * @remarks
  * 使用可能状態・許可ユーザ・モチーフユーザー・モチーフモードの編集、ライセンス名のリスト選択と説明表示に対応。
+ * Fedibird 互換項目（表示名・読み・関連リンク・著作権表示・クレジット・コピー元のカテゴリ）も編集できる。
+ * 一覧から渡される絵文字には詳細項目（関連リンク・著作権表示・クレジット・参考情報）が含まれないため、開いたときに `emoji` API で取り直す。
+ * 取り直しが終わるまでは詳細項目の入力欄を無効にし、保存時も送らない（読み込み前の空の値で上書きしないため）。
  */
 import { computed, ref, watch } from "vue";
 import XModalWindow from "@/components/MkModalWindow.vue";
@@ -235,6 +265,16 @@ let usageInfo: string = $ref(props.emoji.usageInfo ?? "");
 let description: string = $ref(props.emoji.description ?? "");
 let isBasedOnUrl: string = $ref(props.emoji.isBasedOnUrl ?? "");
 let license: string = $ref(props.emoji.license ?? "");
+let alternateName: string = $ref(props.emoji.alternateName ?? "");
+let ruby: string = $ref(props.emoji.ruby ?? "");
+let orgCategory: string = $ref(props.emoji.orgCategory ?? "");
+let copyrightNotice: string = $ref(props.emoji.copyrightNotice ?? "");
+let creditText: string = $ref(props.emoji.creditText ?? "");
+let relatedLinksStr: string = $ref((props.emoji.relatedLinks ?? []).join("
+"));
+let sourceLicenseText: string = $ref(props.emoji.sourceLicenseText ?? "");
+/** 詳細項目を API から取り直せたか。false の間は詳細項目を送らない */
+let detailLoaded: boolean = $ref(Array.isArray(props.emoji.relatedLinks));
 const usageVisibility: string = $ref(
 	props.emoji.usageVisibility ?? (props.emoji.category?.startsWith("!") ? "private" : "public") // キー無しはデフォルト public
 );
@@ -252,6 +292,23 @@ let licenseSelectValue: string = $ref(
 let licenseNameOther: string = $ref(
 	resolveLicenseSelectValue(props.emoji.licenseName) === "__other__" ? (props.emoji.licenseName ?? "") : ""
 );
+
+if (!detailLoaded) {
+	// 一覧の絵文字には詳細項目が無いので、詳細を取り直して入力欄を埋める
+	os.apiGet("emoji", { name: props.emoji.name })
+		.then((detail: any) => {
+			orgCategory = detail.orgCategory ?? orgCategory;
+			copyrightNotice = detail.copyrightNotice ?? "";
+			creditText = detail.creditText ?? "";
+			relatedLinksStr = (detail.relatedLinks ?? []).join("
+");
+			sourceLicenseText = detail.sourceLicenseText ?? "";
+			detailLoaded = true;
+		})
+		.catch(() => {
+			// 取り直せなかったときは詳細項目を触らない（detailLoaded は false のまま）
+		});
+}
 
 if (props.emoji.motifUserId) {
 	api("users/show", { userId: props.emoji.motifUserId })
@@ -322,6 +379,7 @@ async function replaceEmojiImage(ev: MouseEvent) {
 				: undefined,
 		motifUserId: motifUserId || undefined,
 		motifUserMode,
+		...extraFieldParams(),
 		fileId: file.id,
 	});
 	replacedEmojiUrl.value = file.url ?? null;
@@ -347,8 +405,33 @@ async function replaceEmojiImage(ev: MouseEvent) {
 					: [],
 			motifUserId,
 			motifUserMode,
+			alternateName,
+			ruby,
 		},
 	});
+}
+
+/**
+ * Fedibird 互換項目を API のパラメータにする。
+ *
+ * @remarks
+ * 詳細項目は取り直しが終わっているときだけ送る（送らなければサーバー側で変更しない扱いになる）。
+ *
+ * @returns admin/emoji/update に混ぜるパラメータ
+ */
+function extraFieldParams(): Record<string, unknown> {
+	return {
+		alternateName: alternateName.trim() || null,
+		ruby: ruby.trim() || null,
+		orgCategory: orgCategory.trim() || null,
+		...(detailLoaded
+			? {
+					copyrightNotice: copyrightNotice.trim() || null,
+					creditText: creditText.trim() || null,
+					relatedLinks: relatedLinksStr.split(/\s+/).filter(Boolean),
+			  }
+			: {}),
+	};
 }
 
 const displayCopyPermission = computed({
@@ -412,6 +495,7 @@ async function update() {
 				: undefined,
 		motifUserId: motifUserId || undefined,
 		motifUserMode,
+		...extraFieldParams(),
 	});
 
 	emit("done", {
@@ -436,6 +520,8 @@ async function update() {
 					: [],
 			motifUserId,
 			motifUserMode,
+			alternateName,
+			ruby,
 		},
 	});
 
@@ -495,6 +581,23 @@ async function del() {
 	flex-direction: column;
 	gap: 0.5rem;
 	width: 100%;
+}
+
+.source-license {
+	> .label {
+		font-size: 0.85em;
+		opacity: 0.8;
+		margin-bottom: 0.25rem;
+	}
+
+	> .text {
+		padding: 0.5rem;
+		font-size: 0.9em;
+		background: var(--panel);
+		border-radius: 6px;
+		white-space: pre-wrap;
+		word-break: break-all;
+	}
 }
 
 .motif-user__actions {

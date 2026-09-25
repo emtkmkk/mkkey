@@ -187,6 +187,8 @@ import * as ep___emoji_add_request_approve from "./endpoints/emoji-add-request/a
 import * as ep___emoji_add_request_requestChanges from "./endpoints/emoji-add-request/request-changes.js";
 import * as ep___emoji_add_request_reject from "./endpoints/emoji-add-request/reject.js";
 import * as ep___emoji_add_request_show from "./endpoints/emoji-add-request/show.js";
+// TEMP: 過去のフォーム回答の取り込み。移行後に削除する
+import * as ep___admin_emoji_add_request_importLegacy from "./endpoints/admin/emoji-add-request/import-legacy.js";
 import * as ep___emojis from "./endpoints/emojis.js";
 import * as ep___emojis_latest from "./endpoints/emojis/latest.js";
 import * as ep___emoji_stats from "./endpoints/emoji-stats.js";
@@ -615,6 +617,7 @@ const eps = [
 	["emoji-add-request/request-changes", ep___emoji_add_request_requestChanges],
 	["emoji-add-request/reject", ep___emoji_add_request_reject],
 	["emoji-add-request/show", ep___emoji_add_request_show],
+	["admin/emoji-add-request/import-legacy", ep___admin_emoji_add_request_importLegacy],
         ["emojis", ep___emojis],
         ["emojis/latest", ep___emojis_latest],
         ["emoji-stats", ep___emoji_stats],

@@ -37,6 +37,13 @@
 				<MkInput v-model="name" class="_formBlock">
 					<template #label>{{ i18n.ts.name }}</template>
 				</MkInput>
+				<MkInput v-model="alternateName" class="_formBlock">
+					<template #label>表示名</template>
+				</MkInput>
+				<MkInput v-model="ruby" class="_formBlock">
+					<template #label>読み</template>
+					<template #caption>ひらがなで書いた読み方。絵文字の検索にも使われます</template>
+				</MkInput>
 				<MkTextarea v-model="description" class="_formBlock">
 					<template #label>{{ i18n.ts.emojiDescription }}</template>
 				</MkTextarea>
@@ -50,14 +57,6 @@
 				<MkInput v-model="aliases" class="_formBlock">
 					<template #label>{{ i18n.ts.tags }}</template>
 					<template #caption>{{ i18n.ts.setMultipleBySeparatingWithSpace }}</template>
-				</MkInput>
-				<MkInput v-model="alternateName" class="_formBlock">
-					<template #label>表示名</template>
-					<template #caption>絵文字の名前を日本語などで書いたもの。例「他サーバーへのインポートを許可します」</template>
-				</MkInput>
-				<MkInput v-model="ruby" class="_formBlock">
-					<template #label>読み</template>
-					<template #caption>ひらがなで書いた読み方。絵文字の検索にも使われます</template>
 				</MkInput>
 				<FormSplit class="_formBlock">
 					<MkSwitch v-model="sensitive">

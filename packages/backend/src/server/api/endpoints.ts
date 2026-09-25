@@ -178,6 +178,14 @@ import * as ep___emoji_import_request_sameNameEmojis from "./endpoints/emoji-imp
 import * as ep___emoji_import_request_list from "./endpoints/emoji-import-request/list.js";
 import * as ep___emoji_import_request_approve from "./endpoints/emoji-import-request/approve.js";
 import * as ep___emoji_import_request_reject from "./endpoints/emoji-import-request/reject.js";
+import * as ep___emoji_add_request_create from "./endpoints/emoji-add-request/create.js";
+import * as ep___emoji_add_request_myList from "./endpoints/emoji-add-request/my-list.js";
+import * as ep___emoji_add_request_list from "./endpoints/emoji-add-request/list.js";
+import * as ep___emoji_add_request_resubmit from "./endpoints/emoji-add-request/resubmit.js";
+import * as ep___emoji_add_request_withdraw from "./endpoints/emoji-add-request/withdraw.js";
+import * as ep___emoji_add_request_approve from "./endpoints/emoji-add-request/approve.js";
+import * as ep___emoji_add_request_requestChanges from "./endpoints/emoji-add-request/request-changes.js";
+import * as ep___emoji_add_request_reject from "./endpoints/emoji-add-request/reject.js";
 import * as ep___emojis from "./endpoints/emojis.js";
 import * as ep___emojis_latest from "./endpoints/emojis/latest.js";
 import * as ep___emoji_stats from "./endpoints/emoji-stats.js";
@@ -597,6 +605,14 @@ const eps = [
 	["emoji-import-request/list", ep___emoji_import_request_list],
 	["emoji-import-request/approve", ep___emoji_import_request_approve],
 	["emoji-import-request/reject", ep___emoji_import_request_reject],
+	["emoji-add-request/create", ep___emoji_add_request_create],
+	["emoji-add-request/my-list", ep___emoji_add_request_myList],
+	["emoji-add-request/list", ep___emoji_add_request_list],
+	["emoji-add-request/resubmit", ep___emoji_add_request_resubmit],
+	["emoji-add-request/withdraw", ep___emoji_add_request_withdraw],
+	["emoji-add-request/approve", ep___emoji_add_request_approve],
+	["emoji-add-request/request-changes", ep___emoji_add_request_requestChanges],
+	["emoji-add-request/reject", ep___emoji_add_request_reject],
         ["emojis", ep___emojis],
         ["emojis/latest", ep___emojis_latest],
         ["emoji-stats", ep___emoji_stats],

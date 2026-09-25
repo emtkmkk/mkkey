@@ -571,6 +571,21 @@ export const WellKnownContext = {
 			keywords: "schema:keywords",
 			usageInfo: "schema:usageInfo",
 			isBasedOnUrl: "schema:isBasedOnUrl",
+			// Fedibird の Emoji 拡張。Fedibird は @context の名前（relatedLink / isBasedOnUrl）と
+			// 実際のキー（relatedLinks / isBasedOn）がずれているため、両方の名前を定義しておく。
+			category: "schema:category",
+			alternateName: "schema:alternateName",
+			ruby: "fedibird:ruby",
+			relatedLink: "schema:relatedLink",
+			relatedLinks: "schema:relatedLink",
+			isBasedOn: "schema:isBasedOn",
+			copyrightNotice: "schema:copyrightNotice",
+			creditText: "schema:creditText",
+			_misskey_license: "misskey:_misskey_license",
+			freeText: {
+				"@id": "misskey:freeText",
+				"@type": "schema:text",
+			},
 			references: {
 				"@id": "fedibird:references",
 				"@type": "@id",

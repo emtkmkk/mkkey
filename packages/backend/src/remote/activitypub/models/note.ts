@@ -3,9 +3,19 @@
  *
  * @remarks
  * extractEmojis では licenseData を個別カラム（copyPermission, licenseName 等）に保存。補足情報は license に格納。
+ * Fedibird 形式の項目（alternateName / ruby / relatedLinks / copyrightNotice / creditText）は届いたものだけを保存する。
+ * `_misskey_license.freeText` は中身を読まず、参考情報として sourceLicenseText にそのまま残す。
+ * カテゴリは ActivityPub の category を優先し、無ければ相手サーバーの API から取る（どちらも「カテゴリ名 <ホスト>」の形）。
  */
 import { IsNull } from "typeorm";
 import { toStoredCopyPermission } from "@/misc/copy-permission.js";
+import {
+	extractFedibirdEmojiFields,
+	isFedibirdFieldsChanged,
+	normalizeLicenseName,
+	toFedibirdColumns,
+	toRemoteCategory,
+} from "@/misc/emoji-fedibird.js";
 import promiseLimit from "promise-limit";
 import * as mfm from "mfm-js";
 import config from "@/config/index.js";
@@ -725,6 +735,12 @@ export async function extractEmojis(
 
 			let emojiInfoFlg = false;
 
+			/**
+			 * Fedibird 形式で届いた項目。
+			 * _misskey_license.freeText は書き方が信用できないので中身は読まず、sourceLicenseText にそのまま残す。
+			 */
+			const fedibird = extractFedibirdEmojiFields(tag);
+
 			let licenseData = {
 				license: tag.license,
 				// ActivityPub 仕様は creator。後方互換のため author も受け取る
@@ -732,7 +748,8 @@ export async function extractEmojis(
 				copyPermission: tag.copyPermission,
 				usageInfo: tag.usageInfo,
 				description: tag.description,
-				isBasedOnUrl: tag.isBasedOnUrl,
+				// Fedibird は実データで isBasedOn のキーを使うので、無いときの予備にする
+				isBasedOnUrl: tag.isBasedOnUrl ?? (fedibird.isBasedOn || undefined),
 				text: "",
 			};
 
@@ -860,9 +877,15 @@ export async function extractEmojis(
 				}
 			}
 
-			const category = emojiInfo?.category
-				? `${emojiInfo?.category} <${_host}>`
-				: null;
+			// ActivityPub で届いたカテゴリを優先し、無ければ相手サーバーの API から取ったものを使う
+			const category = toRemoteCategory(
+				fedibird.category ??
+					(typeof emojiInfo?.category === "string" ? emojiInfo.category : null),
+				_host,
+			);
+
+			// Fedibird はライセンスを URL で送るので、分かるものはライセンス名に直す
+			licenseData.license = normalizeLicenseName(licenseData.license) ?? undefined;
 
 			let aliases: Array<string> =
 				tag.aliases || tag.keywords || emojiInfo?.aliases || [];
@@ -958,7 +981,8 @@ export async function extractEmojis(
 							licenseData.author !== exists.creator ||
 							licenseData.description !== exists.description ||
 							licenseData.isBasedOnUrl !== exists.isBasedOnUrl ||
-							licenseSupplement !== exists.license)) ||
+							licenseSupplement !== exists.license ||
+							isFedibirdFieldsChanged(fedibird, exists))) ||
 					sensitive !== exists.sensitive
 				) {
 					let beforeD15Date = new Date();
@@ -1016,6 +1040,7 @@ export async function extractEmojis(
 								description: licenseData.description ?? null,
 								isBasedOnUrl: licenseData.isBasedOnUrl ?? null,
 								license: licenseSupplement,
+								...toFedibirdColumns(fedibird),
 								sensitive,
 								updatedAt: new Date(),
 							},
@@ -1067,6 +1092,7 @@ export async function extractEmojis(
 				description: licenseData.description ?? null,
 				isBasedOnUrl: licenseData.isBasedOnUrl ?? null,
 				license: licenseSupplement,
+				...toFedibirdColumns(fedibird),
 				sensitive,
 			} as Partial<Emoji>).then((x) =>
 				Emojis.findOneByOrFail(x.identifiers[0]),

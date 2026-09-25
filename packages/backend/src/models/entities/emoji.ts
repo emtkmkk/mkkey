@@ -5,6 +5,10 @@
  *
  * @remarks
  * license はライセンス補足情報として利用。構造化項目は copyPermission, licenseName, usageInfo, creator, description, isBasedOnUrl。isTextOnly 時は copyPermission / licenseName / creator を固定値として扱う。
+ * alternateName / ruby / relatedLinks / copyrightNotice / creditText / orgCategory は Fedibird の Emoji に合わせた項目。
+ * sourceLicenseText はリモートの `_misskey_license.freeText` を残すだけの参考情報で、他の項目の判定には使わない。
+ *
+ * @public
  */
 import { PrimaryColumn, Entity, Index, Column } from "typeorm";
 import { id } from "../id.js";
@@ -109,6 +113,59 @@ export class Emoji {
 		length: 512, nullable: true,
 	})
 	public isBasedOnUrl: string | null;
+
+	/** 表示名（Fedibird の alternateName）。例「他サーバーへのインポートを許可します」 */
+	@Column('varchar', {
+		length: 512, nullable: true,
+	})
+	public alternateName: string | null;
+
+	/** 読み（Fedibird の ruby）。絵文字の検索対象にも使う */
+	@Column('varchar', {
+		length: 512, nullable: true,
+	})
+	public ruby: string | null;
+
+	/** 関連リンク（Fedibird の relatedLinks）。作成に使ったソフトやフォントのページなど */
+	@Column('varchar', {
+		array: true, length: 512, default: '{}',
+	})
+	public relatedLinks: string[];
+
+	/** 著作権の表示（Fedibird の copyrightNotice） */
+	@Column('text', {
+		nullable: true,
+	})
+	public copyrightNotice: string | null;
+
+	/** クレジット（Fedibird の creditText）。作成に使ったもの等 */
+	@Column('text', {
+		nullable: true,
+	})
+	public creditText: string | null;
+
+	/**
+	 * コピー元のカテゴリ（Fedibird の org_category）。
+	 *
+	 * @remarks
+	 * ローカルにコピーしたときだけ入れる。リモート絵文字の category（「カテゴリ名 <ホスト>」）から末尾のホスト名を外したもの。
+	 * 絵文字の分類には使わず、詳細情報に表示するだけ。
+	 */
+	@Column('varchar', {
+		length: 128, nullable: true,
+	})
+	public orgCategory: string | null;
+
+	/**
+	 * リモートから届いた `_misskey_license.freeText` をそのまま残した参考情報。
+	 *
+	 * @remarks
+	 * 書き方がサーバーごとにばらばらで信用できないため、中身を読み取って他の項目に分けることはしない。詳細情報に表示するだけ。
+	 */
+	@Column('text', {
+		nullable: true,
+	})
+	public sourceLicenseText: string | null;
 
 	/** 文字だけ絵文字フラグ。true のとき copyPermission / licenseName / creator は固定値として扱う */
 	@Column('boolean', {

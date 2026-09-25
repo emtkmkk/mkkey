@@ -1,6 +1,9 @@
 /**
  * 絵文字インポート申請を承認する。内部で admin/emoji/copy 相当の処理を行い、同名がローカルに既にある場合は newEmojiName で登録する。
  *
+ * @remarks
+ * Fedibird 互換項目とコピー元のカテゴリ（orgCategory）も admin/emoji/copy と同じく引き継ぐ。
+ *
  * @public
  */
 import { IsNull } from "typeorm";
@@ -11,6 +14,7 @@ import {
 	Emojis,
 } from "@/models/index.js";
 import { genId } from "@/misc/gen-id.js";
+import { buildCopiedEmojiExtraFields } from "@/misc/emoji-fedibird.js";
 import { ApiError } from "../../error.js";
 import type { DriveFile } from "@/models/entities/drive-file.js";
 import { uploadFromUrl } from "@/services/drive/upload-from-url.js";
@@ -181,6 +185,8 @@ export default define(meta, paramDef, async (ps, me) => {
 		description: emoji.description ?? null,
 		isBasedOnUrl: emoji.uri ?? null,
 		license,
+		// 表示名・読み・関連リンク・著作権表示・クレジット・コピー元のカテゴリも引き継ぐ
+		...buildCopiedEmojiExtraFields(emoji),
 		isTextOnly: false,
 		sensitive: emoji.sensitive ?? false,
 		usageVisibility: "public",

@@ -5,6 +5,8 @@
  * isTextOnly が true のときは copyPermission / licenseName / creator は固定値で上書き（リクエストの値は無視）。
  * 更新後: private なら emojiDeleted、非公開→公開なら emojiAdded、それ以外の公開なら emojiUpdated をストリーム送信。
  * fileId を指定した場合、その Drive ファイルから originalUrl / publicUrl / type を更新し、画像のみ差し替える。
+ * Fedibird 互換項目（alternateName / ruby / relatedLinks / copyrightNotice / creditText / orgCategory）は、
+ * 指定したものだけを更新する（省略は変更しない、null や空文字は空にする）。
  */
 import { IsNull } from "typeorm";
 import define from "../../../define.js";
@@ -15,6 +17,10 @@ import { ApiError } from "../../../error.js";
 import { publishBroadcastStream } from "@/services/stream.js";
 import { db } from "@/db/postgre.js";
 import { bumpReactionNormalizeCacheVersion } from "@/misc/reaction-normalize-cache.js";
+import {
+	emojiExtraFieldsParamDef,
+	pickEmojiExtraFields,
+} from "../../../common/emoji-extra-fields.js";
 
 const COPY_PERMISSION_VALUES = ["allow", "deny", "conditional", "none"] as const;
 
@@ -108,6 +114,7 @@ export const paramDef = {
 			nullable: true,
 			description: "画像差し替え用。指定時は Drive ファイルから originalUrl/publicUrl/type を更新する。",
 		},
+		...emojiExtraFieldsParamDef,
 	},
 	required: ["id", "name", "aliases"],
 } as const;
@@ -148,6 +155,7 @@ export default define(meta, paramDef, async (ps) => {
 		description: ps.description ?? emoji.description,
 		isBasedOnUrl: ps.isBasedOnUrl ?? emoji.isBasedOnUrl,
 		license: ps.license ?? emoji.license,
+		...pickEmojiExtraFields(ps),
 	};
 	if (ps.usageVisibility !== undefined) update.usageVisibility = ps.usageVisibility;
 	if (ps.allowedUserIds !== undefined) update.allowedUserIds = ps.allowedUserIds;

@@ -6,6 +6,7 @@
  * @remarks
  * - **役割**: API の絵文字レスポンス型と OpenAPI スキーマで利用する Packed Emoji の定義。
  * - license はライセンス補足情報。copyPermission, licenseName, usageInfo, creator, description, isBasedOnUrl, isTextOnly を個別に返す。
+ * - Fedibird 互換項目のうち alternateName / ruby は一覧でも返し、relatedLinks / copyrightNotice / creditText / orgCategory / sourceLicenseText は詳細取得時だけ返す。
  *
  * @internal
  */
@@ -123,6 +124,49 @@ export const packedEmojiSchema = {
 			optional: true,
 			nullable: true,
 			description: "モチーフの利用範囲: any / follow / owner",
+		},
+		alternateName: {
+			type: "string",
+			optional: true,
+			nullable: true,
+			description: "表示名（Fedibird の alternateName）",
+		},
+		ruby: {
+			type: "string",
+			optional: true,
+			nullable: true,
+			description: "読み（Fedibird の ruby）。検索にも使う",
+		},
+		relatedLinks: {
+			type: "array",
+			optional: true,
+			nullable: false,
+			items: { type: "string", optional: false, nullable: false },
+			description: "関連リンク（詳細取得時のみ）",
+		},
+		copyrightNotice: {
+			type: "string",
+			optional: true,
+			nullable: true,
+			description: "著作権の表示（詳細取得時のみ）",
+		},
+		creditText: {
+			type: "string",
+			optional: true,
+			nullable: true,
+			description: "クレジット（詳細取得時のみ）",
+		},
+		orgCategory: {
+			type: "string",
+			optional: true,
+			nullable: true,
+			description: "コピー元のカテゴリ（ローカルにコピーした絵文字のみ。詳細取得時のみ）",
+		},
+		sourceLicenseText: {
+			type: "string",
+			optional: true,
+			nullable: true,
+			description: "リモートから届いた _misskey_license.freeText の参考情報（詳細取得時のみ）",
 		},
 	},
 } as const;

@@ -74,6 +74,7 @@ import MkFolder from "@/components/MkFolder.vue";
 import MkTab from "@/components/MkTab.vue";
 import * as os from "@/os";
 import { emojiCategories, emojiTags } from "@/instance";
+import { getEmojiSearchWords } from "@/scripts/emoji-search-words";
 import { i18n } from "@/i18n";
 
 export default defineComponent({
@@ -124,13 +125,14 @@ export default defineComponent({
 				this.searchEmojis = this.customEmojis.filter(
 					(emoji) =>
 						emoji.name.includes(this.q) ||
-						emoji.aliases.includes(this.q)
+						// タグに加えて読み（ruby）でも探せるようにする
+						getEmojiSearchWords(emoji).includes(this.q)
 				);
 			} else {
 				this.searchEmojis = this.customEmojis.filter(
 					(emoji) =>
 						(emoji.name.includes(this.q) ||
-							emoji.aliases.includes(this.q)) &&
+							getEmojiSearchWords(emoji).includes(this.q)) &&
 						[...this.selectedTags].every((t) =>
 							emoji.aliases.includes(t)
 						)

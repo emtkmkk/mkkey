@@ -92,32 +92,7 @@
 					<div :class="$style.boxTitle">この申請は取り下げました</div>
 				</div>
 
-				<!-- 申請内容 -->
-				<div :class="$style.section">
-					<div :class="$style.sectionTitle">申請内容</div>
-					<div v-for="row in contentRows" :key="row.key" :class="$style.row">
-						<span :class="$style.rowLabel">{{ row.label }}</span>
-						<span :class="$style.rowValue">{{ row.value }}</span>
-					</div>
-					<div v-if="addRequest.message" :class="$style.row">
-						<span :class="$style.rowLabel">メッセージ</span>
-						<span :class="$style.rowValue">{{ addRequest.message }}</span>
-					</div>
-				</div>
-
-				<!-- 経緯 -->
-				<div v-if="addRequest.history.length > 0" :class="$style.section">
-					<div :class="$style.sectionTitle">経緯</div>
-					<div v-for="(h, i) in [...addRequest.history].reverse()" :key="i" :class="$style.history">
-						<div>
-							<span :class="$style.historyAction">{{ HISTORY_ACTION_LABELS[h.action] ?? h.action }}</span>
-							<span :class="$style.date">
-								{{ formatRequestDate(h.at) }}・{{ h.by === addRequest.requesterId ? "あなた" : "管理者" }}
-							</span>
-						</div>
-						<div v-if="h.comment" :class="$style.historyComment">{{ h.comment }}</div>
-					</div>
-				</div>
+				<MkEmojiAddRequestSummary :request="addRequest" viewer="requester" />
 			</template>
 			<!-- #endregion -->
 
@@ -180,6 +155,7 @@
 import { computed, onMounted, ref } from "vue";
 import MkButton from "@/components/MkButton.vue";
 import MkEmoji from "@/components/global/MkEmoji.vue";
+import MkEmojiAddRequestSummary from "@/components/emoji-request/MkEmojiAddRequestSummary.vue";
 import * as os from "@/os";
 import { useRouter } from "@/router";
 import { definePageMetadata } from "@/scripts/page-metadata";
@@ -188,7 +164,6 @@ import {
 	EMOJI_ADD_REQUEST_FIELD_LABELS,
 	EMOJI_ADD_REQUEST_FIELD_ORDER,
 	EMOJI_REQUEST_STATUS,
-	HISTORY_ACTION_LABELS,
 	formatEmojiAddRequestField,
 	formatRequestDate,
 	type EmojiAddRequestFields,
@@ -210,20 +185,6 @@ const working = ref(false);
 const addRequest = ref<PackedEmojiAddRequest | null>(null);
 const importRequest = ref<PackedEmojiImportRequest | null>(null);
 
-/** 文字だけの絵文字のときに出さない項目（承認時に固定値になるため） */
-const LICENSE_KEYS: ReadonlyArray<keyof EmojiAddRequestFields> = [
-	"motifSelf",
-	"motifUserMode",
-	"copyPermission",
-	"askContact",
-	"licenseName",
-	"creator",
-	"usageInfo",
-	"copyrightNotice",
-	"creditText",
-	"relatedLinks",
-];
-
 /**
  * 状態の表示名と色を引く。
  *
@@ -235,16 +196,6 @@ function statusOf(status: string) {
 }
 
 // #region 追加申請の表示
-
-/** 申請内容の行（空の項目は出さない） */
-const contentRows = computed(() => {
-	const r = addRequest.value;
-	if (r == null) return [];
-	return EMOJI_ADD_REQUEST_FIELD_ORDER.filter((k) => k !== "fileId")
-		.filter((k) => !(r.isTextOnly && LICENSE_KEYS.includes(k)))
-		.map((k) => ({ key: k, label: EMOJI_ADD_REQUEST_FIELD_LABELS[k], value: formatEmojiAddRequestField(k, r[k], r) }))
-		.filter((row) => row.value !== "" && !(row.key === "sensitive" && row.value === "いいえ"));
-});
 
 /**
  * 変わった項目を「今の値」と「新しい値」の行にする。
@@ -527,56 +478,11 @@ definePageMetadata(
 	background: var(--buttonBg);
 }
 
-.section {
-	margin: 0 0 16px;
-	padding: 10px 12px;
-	border: solid 1px var(--divider);
-	border-radius: 10px;
-}
 
-.sectionTitle {
-	margin: 0 0 6px;
-	font-weight: bold;
-}
 
-.row {
-	display: flex;
-	gap: 12px;
-	padding: 4px 0;
-	font-size: 0.9em;
-}
 
-.rowLabel {
-	flex: none;
-	width: 7em;
-	opacity: 0.7;
-}
 
-.rowValue {
-	min-width: 0;
-	white-space: pre-wrap;
-	overflow-wrap: anywhere;
-}
 
-.history {
-	padding: 6px 0;
-	border-top: solid 1px var(--divider);
-	font-size: 0.9em;
 
-	&:first-of-type {
-		border-top: none;
-	}
-}
 
-.historyAction {
-	font-weight: bold;
-	margin-right: 8px;
-}
-
-.historyComment {
-	margin: 2px 0 0;
-	white-space: pre-wrap;
-	overflow-wrap: anywhere;
-	opacity: 0.85;
-}
 </style>

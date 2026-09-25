@@ -11,7 +11,12 @@
  *
  * @internal
  */
-import { EMOJI_COPY_PERMISSION_REQUEST_OPTIONS } from "@/scripts/emoji-license";
+import {
+	COPY_PERMISSION_ASK,
+	EMOJI_COPY_PERMISSION_REQUEST_OPTIONS,
+	EMOJI_LICENSE_OTHER,
+	resolveLicenseSelectValue,
+} from "@/scripts/emoji-license";
 
 // #region 型
 
@@ -206,6 +211,161 @@ export function formatEmojiAddRequestField(
 			return String(value);
 	}
 }
+
+/**
+ * コピー可否を、画面の選択肢の値にする（conditional で連絡先があれば「許可の後、コピー可」）。
+ *
+ * @param v - コピー可否と連絡先
+ * @returns 画面の選択肢の値（"allow" / "deny" / "conditional" / "none" / "ask"）
+ * @internal
+ */
+export function toCopyPermissionChoice(v: Partial<Pick<EmojiAddRequestFields, "copyPermission" | "askContact">>): string {
+	return v.copyPermission === "conditional" && v.askContact ? COPY_PERMISSION_ASK : v.copyPermission ?? "none";
+}
+
+// #endregion
+
+// #region 入力欄との変換（審査画面の修正案の入力）
+
+/**
+ * 審査画面の入力欄の値。申請の項目を、入力欄で扱いやすい形（文字列・画面の選択肢）にしたもの。
+ *
+ * @remarks
+ * コピー可否は画面の選択肢（"ask" を含む）、ライセンスは選択欄の値と「その他」の自由入力に分ける。
+ */
+export type EmojiAddRequestForm = {
+	name: string;
+	alternateName: string;
+	ruby: string;
+	description: string;
+	category: string;
+	/** 空白区切り */
+	aliases: string;
+	sensitive: boolean;
+	isTextOnly: boolean;
+	/** "" は未回答 */
+	motifSelf: "" | "yes" | "no";
+	motifUserMode: "any" | "follow" | "owner";
+	copyPermission: string;
+	askContact: string;
+	licenseSelect: string;
+	licenseOther: string;
+	creator: string;
+	usageInfo: string;
+	copyrightNotice: string;
+	creditText: string;
+	/** 1 行に 1 つ */
+	relatedLinks: string;
+};
+
+/**
+ * 申請の項目を、入力欄の値にする。
+ *
+ * @param r - 申請の項目
+ * @returns 入力欄の値
+ * @internal
+ */
+export function requestFieldsToForm(r: EmojiAddRequestFields): EmojiAddRequestForm {
+	const licenseSelect = resolveLicenseSelectValue(r.licenseName);
+	return {
+		name: r.name,
+		alternateName: r.alternateName ?? "",
+		ruby: r.ruby ?? "",
+		description: r.description ?? "",
+		category: r.category ?? "",
+		aliases: (r.aliases ?? []).join(" "),
+		sensitive: r.sensitive,
+		isTextOnly: r.isTextOnly,
+		motifSelf: r.motifSelf == null ? "" : r.motifSelf ? "yes" : "no",
+		motifUserMode: r.motifUserMode ?? "any",
+		copyPermission: toCopyPermissionChoice(r),
+		askContact: r.askContact ?? "",
+		licenseSelect,
+		licenseOther: licenseSelect === EMOJI_LICENSE_OTHER ? r.licenseName ?? "" : "",
+		creator: r.creator ?? "",
+		usageInfo: r.usageInfo ?? "",
+		copyrightNotice: r.copyrightNotice ?? "",
+		creditText: r.creditText ?? "",
+		relatedLinks: (r.relatedLinks ?? []).join("\n"),
+	};
+}
+
+/**
+ * 入力欄の値を、申請の項目にする（サーバー側の正規化と同じ書き方にそろえる）。
+ *
+ * @remarks
+ * 空白だけの文字は null、絵文字名は小文字、タグは空白で分けて重複を除き、関連リンクは空行を除く。
+ * 「許可の後、コピー可」は conditional と連絡先にする。それ以外のときは連絡先を持たない。
+ *
+ * @param f - 入力欄の値
+ * @param fileId - 画像
+ * @returns 申請の項目
+ * @internal
+ */
+export function formToRequestFields(f: EmojiAddRequestForm, fileId: string | null): EmojiAddRequestFields {
+	const text = (v: string) => v.trim() || null;
+	const ask = f.copyPermission === COPY_PERMISSION_ASK;
+	const motifSelf = f.motifSelf === "" ? null : f.motifSelf === "yes";
+	return {
+		name: f.name.trim().toLowerCase(),
+		alternateName: text(f.alternateName),
+		ruby: text(f.ruby),
+		description: text(f.description),
+		category: text(f.category),
+		aliases: [...new Set(f.aliases.split(/[\s　]+/).filter(Boolean))],
+		sensitive: f.sensitive,
+		isTextOnly: f.isTextOnly,
+		motifSelf,
+		motifUserMode: motifSelf ? f.motifUserMode : null,
+		copyPermission: (ask ? "conditional" : f.copyPermission) as EmojiAddRequestFields["copyPermission"],
+		askContact: ask ? text(f.askContact) : null,
+		licenseName: f.licenseSelect === EMOJI_LICENSE_OTHER ? text(f.licenseOther) : f.licenseSelect || null,
+		creator: text(f.creator),
+		usageInfo: text(f.usageInfo),
+		copyrightNotice: text(f.copyrightNotice),
+		creditText: text(f.creditText),
+		relatedLinks: f.relatedLinks.split(/\r?\n/).map((x) => x.trim()).filter(Boolean),
+		fileId,
+	};
+}
+
+/**
+ * 2 つの申請の項目を比べ、変わった項目だけを返す。
+ *
+ * @param before - 元の値
+ * @param after - 新しい値
+ * @returns 変わった項目（新しい値）
+ * @internal
+ */
+export function diffRequestFields(
+	before: EmojiAddRequestFields,
+	after: EmojiAddRequestFields,
+): Partial<EmojiAddRequestFields> {
+	const out: Partial<EmojiAddRequestFields> = {};
+	for (const k of EMOJI_ADD_REQUEST_FIELD_ORDER) {
+		if (JSON.stringify(before[k] ?? null) !== JSON.stringify(after[k] ?? null)) {
+			(out as Record<string, unknown>)[k] = after[k];
+		}
+	}
+	return out;
+}
+
+/**
+ * 申請の項目だけを取り出す（API の返り値には他の情報も入っているため）。
+ *
+ * @param r - API の返り値
+ * @returns 申請の項目
+ * @internal
+ */
+export function pickRequestFields(r: PackedEmojiAddRequest): EmojiAddRequestFields {
+	const out = {} as Record<string, unknown>;
+	for (const k of EMOJI_ADD_REQUEST_FIELD_ORDER) out[k] = r[k];
+	return out as EmojiAddRequestFields;
+}
+
+// #endregion
+
+// #region 日時
 
 /**
  * 日時を「2026/09/25 12:34」の形にする。

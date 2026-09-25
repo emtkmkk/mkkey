@@ -583,9 +583,24 @@ export const routes = [
 				component: page(() => import("./pages/admin/emojis.vue")),
 			},
 			{
+				// 絵文字申請 1 件の審査（通知を押したときにも開く）。kind は add / import
+				path: "/emoji-requests/:kind/:id",
+				name: "emoji-request-detail",
+				component: page(() => import("./pages/admin/emoji-request-detail.vue")),
+			},
+			{
+				path: "/emoji-requests",
+				name: "emoji-requests",
+				component: page(() => import("./pages/admin/emoji-requests.vue")),
+				query: {
+					kind: "kind",
+				},
+			},
+			{
+				// 古い URL。開くと /admin/emoji-requests?kind=import に置き換える
 				path: "/emoji-import-requests",
-				name: "emoji-import-requests",
-				component: page(() => import("./pages/admin/emoji-import-requests.vue")),
+				name: "emoji-requests",
+				component: page(() => import("./pages/admin/emoji-requests.vue")),
 			},
 			{
 				path: "/federation",

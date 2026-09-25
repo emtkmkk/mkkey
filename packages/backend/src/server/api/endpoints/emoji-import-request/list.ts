@@ -20,6 +20,8 @@ export const meta = {
 				type: "array",
 				items: { type: "object" },
 			},
+			/** 状態ごとの件数（例：{ pending: 3, rejected: 10 }） */
+			counts: { type: "object" },
 		},
 	},
 } as const;
@@ -50,7 +52,17 @@ export default define(meta, paramDef, async (ps, me) => {
 		q.andWhere("r.status = :status", { status: ps.status });
 	}
 
-	const requests = await q.getMany();
+	// 審査画面のタブに状態ごとの件数を出すため、件数もいっしょに返す（追加申請の list と同じ形）
+	const [requests, countRows] = await Promise.all([
+		q.getMany(),
+		EmojiImportRequests.createQueryBuilder("r")
+			.select("r.status", "status")
+			.addSelect("COUNT(*)", "count")
+			.groupBy("r.status")
+			.getRawMany<{ status: string; count: string }>(),
+	]);
+	const counts: Record<string, number> = {};
+	for (const row of countRows) counts[row.status] = Number(row.count);
 
 	const items = requests.map((r) => ({
 		id: r.id,
@@ -72,5 +84,5 @@ export default define(meta, paramDef, async (ps, me) => {
 		processedAt: r.processedAt?.toISOString() ?? null,
 	}));
 
-	return { items };
+	return { items, counts };
 });

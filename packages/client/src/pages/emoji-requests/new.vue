@@ -411,6 +411,7 @@ import {
 } from "@/scripts/emoji-license";
 import {
 	formatEmojiAddRequestField,
+	toCopyPermissionChoice,
 	type EmojiAddRequestFields,
 	type PackedEmojiAddRequest,
 } from "@/scripts/emoji-request";
@@ -868,16 +869,6 @@ function fieldsToDraft(f: Partial<EmojiAddRequestFields>): Partial<Draft> {
 	if (f.motifSelf !== undefined) out.motifSelf = f.motifSelf;
 	if (f.motifUserMode !== undefined) out.motifUserMode = f.motifUserMode ?? "any";
 	return out;
-}
-
-/**
- * コピー可否を画面の選択肢の値にする（連絡先があれば「許可の後、コピー可」）。
- *
- * @param v - コピー可否と連絡先
- * @returns 画面の選択肢の値
- */
-function toCopyPermissionChoice(v: Partial<EmojiAddRequestFields>): string {
-	return v.copyPermission === "conditional" && v.askContact ? COPY_PERMISSION_ASK : v.copyPermission ?? "none";
 }
 
 /**

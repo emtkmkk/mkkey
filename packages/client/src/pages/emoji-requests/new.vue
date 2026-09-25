@@ -27,11 +27,20 @@
 								:class="[$style.bar, { [$style.barDone]: i <= stepIndex }]"
 							></span>
 						</div>
+						<div v-if="resubmitRequest" :class="$style.bars">
+							<span v-for="s in steps" :key="s" :class="$style.dotCell">
+								<i v-if="stepHasSuggestion(s)" :class="$style.dot"></i>
+							</span>
+						</div>
 						<div :class="$style.progressText">
 							{{ stepIndex + 1 }} / {{ steps.length }}　{{ STEP_LABELS[step] }}
 						</div>
 					</div>
 
+					<MkInfo v-if="resubmitRequest?.reviewComment" warn :class="$style.mb12">
+						<div :class="$style.commentTitle">管理者からのコメント</div>
+						<div :class="$style.pre">{{ resubmitRequest.reviewComment }}</div>
+					</MkInfo>
 					<MkInfo v-if="restoredDraft && step === 'image'" :class="$style.mb12">
 						前回の入力の続きから始めます。
 						<button class="_textButton" @click="restart()">最初からやり直す</button>
@@ -57,6 +66,10 @@
 								縦 256px 程度・四隅の余白は削るのがおすすめ。<br />ダーク・ライトの両方で見やすいか確認してください。
 							</p>
 						</template>
+						<div v-if="suggestionOf('file')" :class="$style.proposalImage">
+							<img v-if="resubmitRequest?.proposalFileUrl" :src="resubmitRequest.proposalFileUrl" alt="" />
+							<MkEmojiRequestSuggestion v-bind="suggestionOf('file')!" @apply="applySuggestion('file')" />
+						</div>
 					</section>
 					<!-- #endregion -->
 
@@ -77,17 +90,21 @@
 								<template v-else>小文字の a-z・数字・_（アンダーバー）で入力します。</template>
 							</template>
 						</MkInput>
+						<MkEmojiRequestSuggestion v-if="suggestionOf('name')" v-bind="suggestionOf('name')!" @apply="applySuggestion('name')" />
 						<MkInput v-model="d.alternateName" class="_formBlock">
 							<template #label>表示名 <span :class="$style.req">任意</span></template>
 							<template #caption>絵文字名を日本語などで書いたもの。</template>
 						</MkInput>
+						<MkEmojiRequestSuggestion v-if="suggestionOf('alternateName')" v-bind="suggestionOf('alternateName')!" @apply="applySuggestion('alternateName')" />
 						<MkInput v-model="d.ruby" class="_formBlock">
 							<template #label>読み <span :class="$style.req">任意</span></template>
 							<template #caption>ひらがなで書いた読み方。<br />絵文字の検索にも使われます</template>
 						</MkInput>
+						<MkEmojiRequestSuggestion v-if="suggestionOf('ruby')" v-bind="suggestionOf('ruby')!" @apply="applySuggestion('ruby')" />
 						<MkTextarea v-model="d.description" class="_formBlock">
 							<template #label>説明 <span :class="$style.req">任意</span></template>
 						</MkTextarea>
+						<MkEmojiRequestSuggestion v-if="suggestionOf('description')" v-bind="suggestionOf('description')!" @apply="applySuggestion('description')" />
 						<MkInput v-model="d.category" class="_formBlock" :datalist="categories">
 							<template #label>カテゴリ <span :class="$style.req">任意</span></template>
 							<template v-if="d.category.trim()" #caption>
@@ -95,14 +112,17 @@
 								<template v-else>そのカテゴリはまだ存在しません。<br />新規作成する予定です。</template>
 							</template>
 						</MkInput>
+						<MkEmojiRequestSuggestion v-if="suggestionOf('category')" v-bind="suggestionOf('category')!" @apply="applySuggestion('category')" />
 						<MkInput v-model="d.aliases" class="_formBlock">
 							<template #label>タグ <span :class="$style.req">任意</span></template>
 							<template #caption>絵文字の別名になります。<br />空白で区切って複数入力できます。</template>
 						</MkInput>
+						<MkEmojiRequestSuggestion v-if="suggestionOf('aliases')" v-bind="suggestionOf('aliases')!" @apply="applySuggestion('aliases')" />
 						<MkSwitch v-model="d.sensitive" class="_formBlock">
 							<template #label>センシティブ</template>
 							<template #caption>公開投稿で使えないような場合</template>
 						</MkSwitch>
+						<MkEmojiRequestSuggestion v-if="suggestionOf('sensitive')" v-bind="suggestionOf('sensitive')!" @apply="applySuggestion('sensitive')" />
 					</section>
 					<!-- #endregion -->
 
@@ -127,6 +147,7 @@
 								<div :class="$style.caption">文字だけの絵文字は、誰でも自由に使えるもの（パブリックドメイン）として扱います。</div>
 							</button>
 						</div>
+						<MkEmojiRequestSuggestion :class="$style.afterChoices" v-if="suggestionOf('licenseMode')" v-bind="suggestionOf('licenseMode')!" @apply="applySuggestion('licenseMode')" />
 					</section>
 					<!-- #endregion -->
 
@@ -149,6 +170,7 @@
 								<div :class="$style.choiceTitle">いいえ</div>
 							</button>
 						</div>
+						<MkEmojiRequestSuggestion :class="$style.afterChoices" v-if="suggestionOf('motifSelf')" v-bind="suggestionOf('motifSelf')!" @apply="applySuggestion('motifSelf')" />
 						<template v-if="d.motifSelf === true">
 							<div :class="$style.subHead">この絵文字を使える人</div>
 							<div :class="$style.choices">
@@ -163,6 +185,7 @@
 									<div v-if="m.caption" :class="$style.caption">{{ m.caption }}</div>
 								</button>
 							</div>
+							<MkEmojiRequestSuggestion :class="$style.afterChoices" v-if="suggestionOf('motifUserMode')" v-bind="suggestionOf('motifUserMode')!" @apply="applySuggestion('motifUserMode')" />
 						</template>
 					</section>
 					<!-- #endregion -->
@@ -180,6 +203,7 @@
 								{{ o.label }}
 							</option>
 						</MkSelect>
+						<MkEmojiRequestSuggestion v-if="suggestionOf('copyPermission')" v-bind="suggestionOf('copyPermission')!" @apply="applySuggestion('copyPermission')" />
 
 						<MkSelect v-model="d.licenseSelect" class="_formBlock">
 							<template #label>ライセンス</template>
@@ -190,6 +214,7 @@
 								<span :class="$style.pre">{{ EMOJI_LICENSE_SHORT_DESCRIPTIONS[d.licenseSelect] }}</span>
 							</template>
 						</MkSelect>
+						<MkEmojiRequestSuggestion v-if="suggestionOf('licenseSelect')" v-bind="suggestionOf('licenseSelect')!" @apply="applySuggestion('licenseSelect')" />
 						<MkInput
 							v-if="d.licenseSelect === EMOJI_LICENSE_OTHER"
 							v-model="d.licenseOther"
@@ -206,6 +231,7 @@
 							</template>
 							<template #caption>この絵文字を描いた（作った）人です。<br />fediverse 上の ID であることが望ましいです。</template>
 						</MkInput>
+						<MkEmojiRequestSuggestion v-if="suggestionOf('creator')" v-bind="suggestionOf('creator')!" @apply="applySuggestion('creator')" />
 
 						<MkInput v-if="isAsk" v-model="d.askContact" class="_formBlock">
 							<template #label>許可を取る連絡先 <span :class="[$style.req, $style.required]">必須</span></template>
@@ -214,6 +240,7 @@
 							</template>
 							<template #caption>コピーしたい人が、許可を取るための連絡先です。</template>
 						</MkInput>
+						<MkEmojiRequestSuggestion v-if="suggestionOf('askContact')" v-bind="suggestionOf('askContact')!" @apply="applySuggestion('askContact')" />
 						<MkTextarea v-if="showUsageInfo" v-model="d.usageInfo" class="_formBlock">
 							<template #label>
 								使用情報
@@ -222,6 +249,7 @@
 							</template>
 							<template #caption>絵文字をインポートする際の注意など。<br />「条件付きでコピー可」のときは、条件をここに書きます。</template>
 						</MkTextarea>
+						<MkEmojiRequestSuggestion v-if="suggestionOf('usageInfo')" v-bind="suggestionOf('usageInfo')!" @apply="applySuggestion('usageInfo')" />
 
 						<!-- 詳細情報（どれも任意） -->
 						<button class="_button" :class="$style.foldHead" @click="showDetails = !showDetails">
@@ -234,14 +262,17 @@
 								<template #label>著作権の表示</template>
 								<template #caption>作者とは別に、元作品の権利者などを示したいときに書きます。<br />例「© 〇〇株式会社」</template>
 							</MkInput>
+							<MkEmojiRequestSuggestion v-if="suggestionOf('copyrightNotice')" v-bind="suggestionOf('copyrightNotice')!" @apply="applySuggestion('copyrightNotice')" />
 							<MkInput v-model="d.creditText" class="_formBlock">
 								<template #label>クレジット</template>
 								<template #caption>作成に使ったソフトやフォントなど。<br />例「〇〇フォントを使用」「Adobe Illustrator で作成」「Generated using MEGAMOJI」</template>
 							</MkInput>
+							<MkEmojiRequestSuggestion v-if="suggestionOf('creditText')" v-bind="suggestionOf('creditText')!" @apply="applySuggestion('creditText')" />
 							<MkTextarea v-model="d.relatedLinks" class="_formBlock">
 								<template #label>関連リンク</template>
 								<template #caption>1 行に 1 つずつ入力します。<br />例：絵文字の配布ページ、利用規約のページ、使ったフォントのページ</template>
 							</MkTextarea>
+							<MkEmojiRequestSuggestion v-if="suggestionOf('relatedLinks')" v-bind="suggestionOf('relatedLinks')!" @apply="applySuggestion('relatedLinks')" />
 						</div>
 					</section>
 					<!-- #endregion -->
@@ -316,7 +347,7 @@
 							:disabled="submitting || !d.file || !nameValid"
 							@click="submit()"
 						>
-							<i class="ph-paper-plane-tilt ph-bold"></i> 申請する
+							<i class="ph-paper-plane-tilt ph-bold"></i> {{ resubmitRequest ? "再申請する" : "申請する" }}
 						</MkButton>
 					</div>
 				</template>
@@ -341,7 +372,9 @@
  *   受け付けるのは {@link MEGAMOJI_ORIGIN} からの画像のデータだけ。受け取っても自動では申請しない
  * - 入力の途中は localStorage に下書きとして残し、次に開いたときに続きから始める（MEGAMOJI から来たときは使わない）
  * - 「許可の後、コピー可」は画面だけの選択肢。送るときは連絡先（askContact）を付け、サーバー側で conditional と前置きの文に変える（B5）
- * TODO: 修正のお願いへの対応（R2：管理者の提案を入力欄の下に出す）は、手順 7 でこのページを元の申請内容から開けるようにして入れる
+ * - 修正のお願いに応えるとき（`?resubmit={id}`）は、元の申請内容を入れた状態で開き、管理者の提案を入力欄の下に出す（R2）。
+ *   提案は、入力欄が空か元のままのときだけ押して入れられる。管理者のコメントは各画面の上に、提案のある画面は進み具合の線の下に点で示す。
+ *   このときは下書きを使わず、送ると emoji-add-request/resubmit で出し直して、その申請の詳細ページへ移る
  *
  * @internal
  */
@@ -354,6 +387,7 @@ import MkTextarea from "@/components/form/textarea.vue";
 import MkSelect from "@/components/form/select.vue";
 import MkSwitch from "@/components/form/switch.vue";
 import MkEmojiImageCheck from "@/components/emoji-request/MkEmojiImageCheck.vue";
+import MkEmojiRequestSuggestion from "@/components/emoji-request/MkEmojiRequestSuggestion.vue";
 import * as os from "@/os";
 import { $i } from "@/account";
 import { host } from "@/config";
@@ -375,12 +409,19 @@ import {
 	resolveLicenseSelectValue,
 	type EmojiLicensePreset,
 } from "@/scripts/emoji-license";
+import {
+	formatEmojiAddRequestField,
+	type EmojiAddRequestFields,
+	type PackedEmojiAddRequest,
+} from "@/scripts/emoji-request";
 
 const props = defineProps<{
 	/** 絵文字名の初期値（MEGAMOJI などから URL で渡す） */
 	name?: string;
 	/** "megamoji" なら MEGAMOJI から来た */
 	from?: string;
+	/** 修正のお願いに応えて直す申請の ID（R2） */
+	resubmit?: string;
 }>();
 
 const router = useRouter();
@@ -741,6 +782,246 @@ const licenseRows = computed(() =>
 
 // #endregion
 
+// #region 再申請（修正のお願いへの応答）
+
+/** 再申請する申請（`?resubmit={id}` で開いたとき。それ以外は null） */
+const resubmitRequest = ref<PackedEmojiAddRequest | null>(null);
+
+/** 開いたときの入力（提案を押して入れてよいか＝元のままかの判断に使う。書き換えない） */
+let originalDraft: Draft | null = null;
+
+/** 提案を出す場所（入力の項目名。画像だけは "file"） */
+type Anchor = keyof Draft | "file";
+
+/** 提案を出す場所が、どの画面にあるか（進み具合の線の下の点に使う） */
+const ANCHOR_STEP: Readonly<Record<string, Step>> = {
+	file: "image",
+	name: "name",
+	alternateName: "name",
+	ruby: "name",
+	description: "name",
+	category: "name",
+	aliases: "name",
+	sensitive: "name",
+	licenseMode: "licenseQ",
+	motifSelf: "motif",
+	motifUserMode: "motif",
+	copyPermission: "license",
+	licenseSelect: "license",
+	creator: "license",
+	askContact: "license",
+	usageInfo: "license",
+	copyrightNotice: "license",
+	creditText: "license",
+	relatedLinks: "license",
+};
+
+/**
+ * API の画像の情報を、画像の確認部品に渡せる形にする。
+ *
+ * @remarks
+ * 申請の画像はサーバー側（持ち主なし）のファイルなので、ドライブのファイルそのものではない。
+ * 部品が使う id・url・name・type・properties だけをそろえる。
+ *
+ * @param f - 画像の id と URL など
+ * @param name - ファイル名に使う絵文字名
+ * @returns ドライブのファイルに見立てたもの
+ */
+function asDriveFile(
+	f: { id: string; url: string; type?: string; width?: number | null; height?: number | null },
+	name: string,
+): Misskey.entities.DriveFile {
+	return {
+		id: f.id,
+		url: f.url,
+		thumbnailUrl: f.url,
+		name: `${name || "emoji"}.png`,
+		type: f.type ?? "image/png",
+		properties: { width: f.width ?? undefined, height: f.height ?? undefined },
+	} as unknown as Misskey.entities.DriveFile;
+}
+
+/**
+ * 申請の項目の値を、入力の形に直す（渡された項目のうち、そのまま対応するものだけ）。
+ *
+ * @param f - 申請の項目（一部でもよい）
+ * @returns 入力の値
+ */
+function fieldsToDraft(f: Partial<EmojiAddRequestFields>): Partial<Draft> {
+	const out: Partial<Draft> = {};
+	const textKeys = [
+		"name",
+		"alternateName",
+		"ruby",
+		"description",
+		"category",
+		"creator",
+		"askContact",
+		"usageInfo",
+		"copyrightNotice",
+		"creditText",
+	] as const;
+	for (const k of textKeys) if (k in f) out[k] = (f[k] as string | null) ?? "";
+	if (f.aliases !== undefined) out.aliases = (f.aliases ?? []).join(" ");
+	if (f.relatedLinks !== undefined) out.relatedLinks = (f.relatedLinks ?? []).join("\n");
+	if (f.sensitive !== undefined) out.sensitive = f.sensitive;
+	if (f.motifSelf !== undefined) out.motifSelf = f.motifSelf;
+	if (f.motifUserMode !== undefined) out.motifUserMode = f.motifUserMode ?? "any";
+	return out;
+}
+
+/**
+ * コピー可否を画面の選択肢の値にする（連絡先があれば「許可の後、コピー可」）。
+ *
+ * @param v - コピー可否と連絡先
+ * @returns 画面の選択肢の値
+ */
+function toCopyPermissionChoice(v: Partial<EmojiAddRequestFields>): string {
+	return v.copyPermission === "conditional" && v.askContact ? COPY_PERMISSION_ASK : v.copyPermission ?? "none";
+}
+
+/**
+ * 申請の内容から、入力の全体を作る。
+ *
+ * @param r - 申請
+ * @returns 入力
+ */
+function requestToDraft(r: PackedEmojiAddRequest): Draft {
+	const licenseSelect = resolveLicenseSelectValue(r.licenseName);
+	return {
+		...emptyDraft(),
+		...fieldsToDraft(r),
+		file: r.file ? asDriveFile(r.file, r.name) : null,
+		licenseMode: r.isTextOnly ? "textOnly" : "input",
+		copyPermission: toCopyPermissionChoice(r),
+		licenseSelect,
+		licenseOther: licenseSelect === EMOJI_LICENSE_OTHER ? r.licenseName ?? "" : "",
+		message: r.message ?? "",
+	};
+}
+
+/** 管理者の提案。場所ごとに、見せる文と、押したときに入れる値 */
+const suggestions = computed(() => {
+	const out: Partial<Record<Anchor, { text: string; patch: Partial<Draft> }>> = {};
+	const r = resubmitRequest.value;
+	const p = r?.proposal;
+	if (r == null || p == null) return out;
+	const merged = { ...r, ...p };
+	for (const key of Object.keys(p) as Array<keyof EmojiAddRequestFields>) {
+		const text = formatEmojiAddRequestField(key, p[key], merged) || "（空にする）";
+		switch (key) {
+			case "fileId":
+				if (r.proposalFileUrl) out.file = { text: "画像を差し替える", patch: {} };
+				break;
+			case "isTextOnly":
+				out.licenseMode = { text, patch: { licenseMode: p.isTextOnly ? "textOnly" : "input" } };
+				break;
+			case "copyPermission":
+				out.copyPermission = { text, patch: { copyPermission: toCopyPermissionChoice(merged) } };
+				break;
+			case "askContact":
+				// 連絡先の有無で「許可の後、コピー可」かどうかが変わるので、コピー可否もいっしょに入れる
+				out.askContact = {
+					text,
+					patch: { askContact: p.askContact ?? "", copyPermission: toCopyPermissionChoice(merged) },
+				};
+				break;
+			case "licenseName": {
+				const sel = resolveLicenseSelectValue(p.licenseName);
+				out.licenseSelect = {
+					text: p.licenseName ?? EMOJI_LICENSE_NONE_LABEL,
+					patch: { licenseSelect: sel, licenseOther: sel === EMOJI_LICENSE_OTHER ? p.licenseName ?? "" : "" },
+				};
+				break;
+			}
+			default:
+				out[key as keyof Draft] = { text, patch: fieldsToDraft({ [key]: p[key] }) };
+		}
+	}
+	return out;
+});
+
+/**
+ * 提案の表示のしかたを決める（R2）。
+ *
+ * @remarks
+ * - 入力が提案と同じなら「入れました」
+ * - 入力が空か、開いたときのままなら、押して入れられる
+ * - この画面で書き換えた後は、ただの文として出す（書き直したものを上書きしないため）
+ *
+ * @param a - 提案を出す場所
+ * @returns 表示に渡す値（提案が無ければ null）
+ */
+function suggestionOf(a: Anchor): { text: string; state: "apply" | "applied" | "plain" } | null {
+	const s = suggestions.value[a];
+	if (s == null || originalDraft == null) return null;
+	if (a === "file") {
+		const proposedId = resubmitRequest.value?.proposal?.fileId;
+		const state = d.file?.id === proposedId ? "applied" : d.file?.id === originalDraft.file?.id ? "apply" : "plain";
+		return { text: s.text, state };
+	}
+	const keys = Object.keys(s.patch) as Array<keyof Draft>;
+	if (keys.every((k) => d[k] === s.patch[k])) return { text: s.text, state: "applied" };
+	const untouched = keys.every((k) => d[k] === originalDraft![k] || d[k] === "" || d[k] == null);
+	return { text: s.text, state: untouched ? "apply" : "plain" };
+}
+
+/**
+ * 提案の値を入力に入れる（入れてよいときだけ）。
+ *
+ * @param a - 提案を出す場所
+ */
+function applySuggestion(a: Anchor): void {
+	if (suggestionOf(a)?.state !== "apply") return;
+	const r = resubmitRequest.value;
+	if (a === "file") {
+		if (r?.proposal?.fileId && r.proposalFileUrl) {
+			d.file = asDriveFile({ id: r.proposal.fileId, url: r.proposalFileUrl }, d.name);
+			d.originalFile = null;
+			d.originalSize = null;
+		}
+		return;
+	}
+	Object.assign(d, suggestions.value[a]!.patch);
+}
+
+/**
+ * その画面に管理者の提案があるか。
+ *
+ * @param s - 画面
+ * @returns あれば true
+ */
+function stepHasSuggestion(s: Step): boolean {
+	return Object.keys(suggestions.value).some((a) => ANCHOR_STEP[a] === s);
+}
+
+/**
+ * 再申請する申請を読み込み、入力に入れる。
+ *
+ * @param id - 申請の ID
+ */
+async function loadResubmit(id: string): Promise<void> {
+	try {
+		const r = (await os.api("emoji-add-request/show", { requestId: id })) as PackedEmojiAddRequest;
+		if (r.status !== "changesRequested") {
+			await os.alert({ type: "info", text: "この申請は、今は修正のお願い中ではありません。" });
+			router.replace(`/emoji-requests/add/${id}`);
+			return;
+		}
+		Object.assign(d, requestToDraft(r));
+		originalDraft = JSON.parse(JSON.stringify(d));
+		resubmitRequest.value = r;
+		// 詳細情報の項目に提案があれば、折りたたみを開いておく（見落とさないように）
+		const p = r.proposal ?? {};
+		if ("copyrightNotice" in p || "creditText" in p || "relatedLinks" in p) showDetails.value = true;
+	} catch {
+		await os.alert({ type: "error", text: "申請を読み込めませんでした。" });
+		router.replace("/emoji-requests");
+	}
+}
+
+// #endregion
+
 // #region 送信
 
 /** API のエラーの code から、利用者に見せる文 */
@@ -753,38 +1034,66 @@ const ERROR_MESSAGES: Record<string, string> = {
 	USAGE_INFO_REQUIRED: "「条件付きでコピー可」のときは、使用情報に条件を書いてください。",
 };
 
+/**
+ * 入力から、API に送る申請の項目を作る（新しい申請と再申請で共通）。
+ *
+ * @param file - 申請の画像
+ * @returns 送る項目
+ */
+function buildFields(file: Misskey.entities.DriveFile) {
+	const textOnly = isTextOnly.value;
+	const text = (v: string) => v.trim() || null;
+	return {
+		fileId: file.id,
+		name: d.name.trim().toLowerCase(),
+		alternateName: text(d.alternateName),
+		ruby: text(d.ruby),
+		description: text(d.description),
+		category: text(d.category),
+		aliases: d.aliases.split(/[\s　]+/).filter(Boolean),
+		sensitive: d.sensitive,
+		isTextOnly: textOnly,
+		// 文字だけの絵文字は、承認時にライセンスが固定値になるので、ライセンス情報の画面の値は送らない
+		motifSelf: textOnly ? null : d.motifSelf,
+		motifUserMode: !textOnly && d.motifSelf ? d.motifUserMode : null,
+		copyPermission: textOnly ? "none" : isAsk.value ? "conditional" : d.copyPermission,
+		askContact: !textOnly && isAsk.value ? text(d.askContact) : null,
+		licenseName: textOnly ? null : licenseName.value,
+		creator: textOnly ? null : text(d.creator),
+		usageInfo: !textOnly && showUsageInfo.value ? text(d.usageInfo) : null,
+		copyrightNotice: textOnly ? null : text(d.copyrightNotice),
+		creditText: textOnly ? null : text(d.creditText),
+		relatedLinks: textOnly ? [] : relatedLinkList.value,
+		message: text(d.message),
+		imageProcessed: d.originalFile != null,
+		originalWidth: d.originalFile != null ? d.originalSize?.width ?? null : null,
+		originalHeight: d.originalFile != null ? d.originalSize?.height ?? null : null,
+	};
+}
+
 async function submit(): Promise<void> {
 	if (d.file == null || submitting.value) return;
 	submitting.value = true;
-	const textOnly = isTextOnly.value;
-	const text = (v: string) => v.trim() || null;
 	try {
+		const fields = buildFields(d.file);
+		if (resubmitRequest.value) {
+			const r = resubmitRequest.value;
+			// 画像を変えていなければ、加工の記録は元の申請のまま残す
+			const imageChanged = d.file.id !== r.file?.id;
+			await os.api("emoji-add-request/resubmit", {
+				...fields,
+				requestId: r.id,
+				imageProcessed: imageChanged ? fields.imageProcessed : undefined,
+				originalWidth: imageChanged ? fields.originalWidth : undefined,
+				originalHeight: imageChanged ? fields.originalHeight : undefined,
+			});
+			os.success();
+			router.push(`/emoji-requests/add/${r.id}`);
+			return;
+		}
 		const res = await os.api("emoji-add-request/create", {
-			fileId: d.file.id,
-			name: d.name.trim().toLowerCase(),
-			alternateName: text(d.alternateName),
-			ruby: text(d.ruby),
-			description: text(d.description),
-			category: text(d.category),
-			aliases: d.aliases.split(/[\s　]+/).filter(Boolean),
-			sensitive: d.sensitive,
-			isTextOnly: textOnly,
-			// 文字だけの絵文字は、承認時にライセンスが固定値になるので、ライセンス情報の画面の値は送らない
-			motifSelf: textOnly ? null : d.motifSelf,
-			motifUserMode: !textOnly && d.motifSelf ? d.motifUserMode : null,
-			copyPermission: textOnly ? "none" : isAsk.value ? "conditional" : d.copyPermission,
-			askContact: !textOnly && isAsk.value ? text(d.askContact) : null,
-			licenseName: textOnly ? null : licenseName.value,
-			creator: textOnly ? null : text(d.creator),
-			usageInfo: !textOnly && showUsageInfo.value ? text(d.usageInfo) : null,
-			copyrightNotice: textOnly ? null : text(d.copyrightNotice),
-			creditText: textOnly ? null : text(d.creditText),
-			relatedLinks: textOnly ? [] : relatedLinkList.value,
-			message: text(d.message),
+			...fields,
 			source: props.from === "megamoji" ? "megamoji" : "form",
-			imageProcessed: d.originalFile != null,
-			originalWidth: d.originalFile != null ? d.originalSize?.width ?? null : null,
-			originalHeight: d.originalFile != null ? d.originalSize?.height ?? null : null,
 		});
 		clearDraft();
 		submittedId.value = res.id;
@@ -815,7 +1124,8 @@ function restart(): void {
 
 // NOTE: localStorage が使えない環境（プライベートモードなど）でも、申請はできるようにする
 function saveDraft(): void {
-	if (megamojiSimple.value || submittedId.value) return;
+	// 再申請の入力は下書きにしない（新しい申請の下書きを上書きしないため）
+	if (megamojiSimple.value || submittedId.value || props.resubmit) return;
 	try {
 		localStorage.setItem(DRAFT_KEY, JSON.stringify({ draft: d, step: step.value }));
 	} catch {}
@@ -888,6 +1198,10 @@ async function onMessage(ev: MessageEvent): Promise<void> {
 }
 
 onMounted(() => {
+	if (props.resubmit) {
+		loadResubmit(props.resubmit);
+		return;
+	}
 	if (props.from === "megamoji") {
 		// MEGAMOJI から来たときは下書きを使わず、文字だけの絵文字の 3 ステップにする（H4）
 		megamojiSimple.value = true;
@@ -908,10 +1222,12 @@ onBeforeUnmount(() => {
 
 // #endregion
 
-definePageMetadata({
-	title: "絵文字を申請",
-	icon: "ph-smiley-sticker ph-bold ph-lg",
-});
+definePageMetadata(
+	computed(() => ({
+		title: props.resubmit ? "直して再申請" : "絵文字を申請",
+		icon: "ph-smiley-sticker ph-bold ph-lg",
+	})),
+);
 </script>
 
 <style lang="scss" module>
@@ -937,6 +1253,42 @@ definePageMetadata({
 
 .barDone {
 	background: var(--accent);
+}
+
+.dotCell {
+	flex: 1;
+	display: flex;
+	justify-content: center;
+	height: 8px;
+}
+
+.dot {
+	width: 6px;
+	height: 6px;
+	margin: 2px 0 0;
+	border-radius: 50%;
+	background: var(--accent);
+}
+
+.afterChoices {
+	margin-top: 8px !important;
+}
+
+.commentTitle {
+	font-weight: bold;
+	margin: 0 0 4px;
+}
+
+.proposalImage {
+	margin: 12px 0 0;
+
+	> img {
+		display: block;
+		max-width: 60%;
+		max-height: 64px;
+		margin: 0 0 12px;
+		object-fit: contain;
+	}
 }
 
 .progressText {

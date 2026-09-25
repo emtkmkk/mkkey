@@ -129,6 +129,8 @@ export async function packEmojiAddRequest(r: EmojiAddRequest) {
 		...pickEditableFields(r),
 		message: r.message,
 		proposal: r.proposal,
+		// 修正案で画像を差し替えたとき、申請者が新しい画像を見られるようにする
+		proposalFileUrl: await getRequestImageUrl(r.proposal?.fileId ?? null),
 		reviewComment: r.reviewComment,
 		processedAt: r.processedAt?.toISOString() ?? null,
 		approvedEmojiId: r.approvedEmojiId,

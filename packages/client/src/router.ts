@@ -772,11 +772,27 @@ export const routes = [
 		query: {
 			name: "name",
 			from: "from",
+			resubmit: "resubmit",
 		},
 	},
 	{
+		// 申請の詳細（通知を押したときにも開く）。kind は add / import
+		path: "/emoji-requests/:kind/:id",
+		component: page(() => import("./pages/emoji-requests/detail.vue")),
+		loginRequired: true,
+	},
+	{
+		path: "/emoji-requests",
+		component: page(() => import("./pages/emoji-requests/index.vue")),
+		loginRequired: true,
+		query: {
+			kind: "kind",
+		},
+	},
+	{
+		// 古い URL。開くと /emoji-requests?kind=import に置き換える
 		path: "/my/emoji-import-requests",
-		component: page(() => import("./pages/emoji-import-requests.vue")),
+		component: page(() => import("./pages/emoji-requests/index.vue")),
 		loginRequired: true,
 	},
 	{

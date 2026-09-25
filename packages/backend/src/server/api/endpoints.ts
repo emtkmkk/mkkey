@@ -186,6 +186,7 @@ import * as ep___emoji_add_request_withdraw from "./endpoints/emoji-add-request/
 import * as ep___emoji_add_request_approve from "./endpoints/emoji-add-request/approve.js";
 import * as ep___emoji_add_request_requestChanges from "./endpoints/emoji-add-request/request-changes.js";
 import * as ep___emoji_add_request_reject from "./endpoints/emoji-add-request/reject.js";
+import * as ep___emoji_add_request_show from "./endpoints/emoji-add-request/show.js";
 import * as ep___emojis from "./endpoints/emojis.js";
 import * as ep___emojis_latest from "./endpoints/emojis/latest.js";
 import * as ep___emoji_stats from "./endpoints/emoji-stats.js";
@@ -613,6 +614,7 @@ const eps = [
 	["emoji-add-request/approve", ep___emoji_add_request_approve],
 	["emoji-add-request/request-changes", ep___emoji_add_request_requestChanges],
 	["emoji-add-request/reject", ep___emoji_add_request_reject],
+	["emoji-add-request/show", ep___emoji_add_request_show],
         ["emojis", ep___emojis],
         ["emojis/latest", ep___emojis_latest],
         ["emoji-stats", ep___emoji_stats],

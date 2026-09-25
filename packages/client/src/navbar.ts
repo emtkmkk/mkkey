@@ -97,7 +97,8 @@ export const navbarItemDef = reactive({
 		title: "emojiImportRequests",
 		icon: "ph-smiley-sticker ph-bold ph-lg",
 		show: computed(() => $i != null),
-		to: "/my/emoji-import-requests",
+		// NOTE: キー名は保存済みのナビゲーション設定が参照しているので変えない。行き先だけ新しいページにする
+		to: "/emoji-requests",
 	},
 	favorites: {
 		title: "favorites",

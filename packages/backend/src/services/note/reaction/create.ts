@@ -422,16 +422,18 @@ export default async (
 
 	if (!isMutedReaction) {
 		// リアクション数をインクリメント
-		const sql = `jsonb_set("reactions", '{${reaction}}', (COALESCE("reactions"->>'${reaction}', '0')::int + 1)::text::jsonb)`;
+		// NOTE: reaction にはリモートのホスト名など外部由来の文字列が入るため、SQL に直接埋め込まずパラメータで渡す
 		await Notes.createQueryBuilder()
 			.update()
 			.set({
-				reactions: () => sql,
+				reactions: () =>
+					`jsonb_set("reactions", ARRAY[:reaction], (COALESCE("reactions"->>:reaction, '0')::int + 1)::text::jsonb)`,
 				...(existCount === 0
 					? { score: () => `"score" + ${user.isBot ? "0" : user.host ? "1" : "3"}` }
 					: {}),
 			})
 			.where("id = :id", { id: note.id })
+			.setParameter("reaction", reaction)
 			.execute();
 	}
 

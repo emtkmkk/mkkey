@@ -48,6 +48,18 @@ import { toTextWithReaction } from "../mastodon/endpoints/timeline.js";
 import { apiLogger } from "../logger.js";
 
 /**
+ * 1 接続あたりに同時購読できる投稿数の上限
+ *
+ * @remarks
+ * 上限が無いと、1 本の接続から大量の投稿を購読させてメモリを使い切らせることができる（Misskey 2026.9.1 の修正を移植）。
+ * 上限に達したときは最も長く使われていない購読を解除するため、通常のクライアントの動作には影響しない想定。
+ * NOTE: Mastodon 互換接続は受信した投稿を自動で購読し解除しないので、長時間の接続ではこの上限で古い購読が外れる。
+ *
+ * @internal
+ */
+const MAX_SUBSCRIBING_NOTES_PER_CONNECTION = 1536;
+
+/**
  * メインストリーム接続
  */
 export default class Connection {
@@ -389,11 +401,33 @@ export default class Connection {
 
 	/**
 	 * 投稿購読要求時
+	 *
+	 * @remarks
+	 * 同時購読数は {@link MAX_SUBSCRIBING_NOTES_PER_CONNECTION} までで、超えた分は最も古い購読から解除する。
+	 *
+	 * @param payload - `{ id: 投稿ID }` 形式の購読要求
+	 * @internal
 	 */
 	private onSubscribeNote(payload: any) {
-		if (!payload.id) return;
+		if (!payload.id || typeof payload.id !== "string") return;
 
 		const current = this.subscribingNotes.get(payload.id) || 0;
+
+		if (
+			!current &&
+			this.subscribingNotes.size >= MAX_SUBSCRIBING_NOTES_PER_CONNECTION
+		) {
+			// 新規購読で上限に達している場合は、最も古い購読を解除してから追加する
+			const oldestId = this.subscribingNotes.keys().next().value;
+			if (oldestId != null) {
+				this.subscriber.off(`noteStream:${oldestId}`, this.onNoteStreamMessage);
+				this.subscribingNotes.delete(oldestId);
+			}
+		} else {
+			// Map は挿入順を保つので、入れ直してアクセス順（LRU）を更新する
+			this.subscribingNotes.delete(payload.id);
+		}
+
 		this.subscribingNotes.set(payload.id, current + 1);
 
 		if (!current) {
@@ -405,7 +439,7 @@ export default class Connection {
 	 * 投稿購読解除要求時
 	 */
 	private onUnsubscribeNote(payload: any) {
-		if (!payload.id) return;
+		if (!payload.id || typeof payload.id !== "string") return;
 
 		const current = this.subscribingNotes.get(payload.id) || 0;
 		if (current <= 1) {

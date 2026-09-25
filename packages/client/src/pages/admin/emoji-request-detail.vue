@@ -5,7 +5,7 @@
 		</template>
 		<MkSpacer :content-max="700">
 			<!-- インポート申請は、一覧と同じ部品でその 1 件だけを出す -->
-			<MkAdminEmojiImportRequests v-if="kind === 'import'" :only-id="id" />
+			<MkAdminEmojiImportRequests v-if="kind === 'import'" :key="importReloadKey" :only-id="id" />
 
 			<div v-else-if="error" :class="$style.empty">申請が見つかりませんでした。</div>
 			<div v-else-if="request == null" :class="$style.empty">読み込んでいます…</div>
@@ -215,7 +215,7 @@
  *
  * @internal
  */
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onActivated, onMounted, reactive, ref } from "vue";
 import * as Misskey from "calckey-js";
 import MkButton from "@/components/MkButton.vue";
 import MkInfo from "@/components/MkInfo.vue";
@@ -293,6 +293,8 @@ const form = reactive<EmojiAddRequestForm>(requestFieldsToForm({ name: "", alias
 const comment = ref("");
 /** 管理者が加工・差し替えした画像（管理者のドライブのファイル）。していなければ null */
 const editedFile = ref<Misskey.entities.DriveFile | null>(null);
+/** インポート申請の部品を作り直して読み直させるための番号 */
+const importReloadKey = ref(0);
 
 const editable = computed(() => request.value?.status === "pending" || request.value?.status === "changesRequested");
 
@@ -472,6 +474,17 @@ async function load(): Promise<void> {
 		error.value = true;
 	}
 }
+
+// NOTE: ページはルーターに保持（KeepAlive）されるので、一度開いたページに戻ると onMounted は動かない。
+// 申請や審査で内容が変わっているかもしれないので、2 回目以降に表示されたときは読み直す
+let activatedOnce = false;
+onActivated(() => {
+	if (activatedOnce) {
+		if (props.kind === "add") void load();
+		else importReloadKey.value++;
+	}
+	activatedOnce = true;
+});
 
 onMounted(() => {
 	if (props.kind === "add") load();

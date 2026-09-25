@@ -7,13 +7,39 @@
 			<div ref="rootEl" :class="$style.root">
 				<!-- #region 送信後 -->
 				<div v-if="submittedId" :class="$style.done">
-					<i class="ph-check-circle ph-bold" :class="$style.doneIcon"></i>
-					<div :class="$style.doneTitle">申請しました</div>
+					<div :class="$style.doneEmoji">
+						<img v-if="submittedSummary?.url" :src="submittedSummary.url" alt="" />
+						<i :class="['ph-check-circle ph-fill', $style.doneBadge]"></i>
+					</div>
+					<div :class="$style.doneTitle">申請しました！</div>
+					<div v-if="submittedSummary" :class="$style.doneName">:{{ submittedSummary.name }}:</div>
+
+					<!-- これから先の流れ -->
+					<ol :class="$style.flow">
+						<li :class="$style.flowDone">
+							<i class="ph-paper-plane-tilt ph-bold"></i>
+							<span><b>申請</b><br />受け付けました</span>
+						</li>
+						<li>
+							<i class="ph-magnifying-glass ph-bold"></i>
+							<span><b>審査</b><br />管理者が内容を確認します</span>
+						</li>
+						<li>
+							<i class="ph-smiley ph-bold"></i>
+							<span><b>追加</b><br />承認されるとすぐに使えます</span>
+						</li>
+					</ol>
 					<p :class="$style.cap">
-						管理者が確認します。<br />結果は通知でお知らせします。
+						結果は通知でお知らせします。<br />直してほしいところがあるときは、修正のお願いが届きます。
 					</p>
-					<MkButton primary full @click="router.push('/emoji-requests')">申請の一覧へ</MkButton>
-					<MkButton full :class="$style.mt8" @click="restart()">続けて申請する</MkButton>
+
+					<div :class="$style.doneActions">
+						<MkButton primary full @click="router.push(`/emoji-requests/add/${submittedId}`)">
+							<i class="ph-file-text ph-bold"></i> この申請を見る
+						</MkButton>
+						<MkButton full @click="restart()"><i class="ph-plus ph-bold"></i> 続けて申請する</MkButton>
+						<MkButton full @click="router.push('/emoji-requests')">申請の一覧へ</MkButton>
+					</div>
 				</div>
 				<!-- #endregion -->
 
@@ -408,7 +434,7 @@
  *
  * @internal
  */
-import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, reactive, ref, useCssModule, watch } from "vue";
+import { computed, defineAsyncComponent, onActivated, onBeforeUnmount, onMounted, reactive, ref, useCssModule, watch } from "vue";
 import * as Misskey from "calckey-js";
 import MkButton from "@/components/MkButton.vue";
 import MkInfo from "@/components/MkInfo.vue";
@@ -570,6 +596,8 @@ const restoredDraft = ref(false);
 const uploading = ref(false);
 const submitting = ref(false);
 const submittedId = ref<string | null>(null);
+/** 送信後の画面に出す、申請した絵文字（画像と名前） */
+const submittedSummary = ref<{ url: string; name: string } | null>(null);
 const showDetails = ref(false);
 const rootEl = ref<HTMLElement>();
 
@@ -1231,6 +1259,7 @@ async function submit(): Promise<void> {
 			source: props.from === "megamoji" ? "megamoji" : "form",
 		});
 		clearDraft();
+		submittedSummary.value = { url: d.file.url, name: fields.name };
 		submittedId.value = res.id;
 		rootEl.value?.scrollIntoView({ block: "start" });
 	} catch (err: any) {
@@ -1364,6 +1393,20 @@ onMounted(async () => {
 	restoredDraft.value = loadDraft();
 	if (props.name && !d.name) d.name = nameFromFileName(props.name);
 	restoreStepFromHistory();
+});
+
+// NOTE: ページはルーターに保持（KeepAlive）される。申請した後に別のページへ移ってから戻ると
+// 「申請しました」の画面が残るので、そのときは空の入力から始め直す
+let activatedOnce = false;
+onActivated(() => {
+	if (activatedOnce && submittedId.value) {
+		Object.assign(d, emptyDraft());
+		submittedId.value = null;
+		restoredDraft.value = false;
+		megamojiSimple.value = false;
+		step.value = "image";
+	}
+	activatedOnce = true;
 });
 
 onBeforeUnmount(() => {
@@ -1821,19 +1864,88 @@ definePageMetadata(
 	padding: 24px 0;
 }
 
-.doneIcon {
-	font-size: 48px;
+.doneEmoji {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 96px;
+	max-width: 100%;
+	height: 96px;
+	padding: 12px 16px;
+	box-sizing: border-box;
+	border-radius: 16px;
+	background: var(--buttonBg);
+
+	> img {
+		max-width: 100%;
+		height: 64px;
+		object-fit: contain;
+	}
+}
+
+.doneBadge {
+	position: absolute;
+	right: -10px;
+	bottom: -10px;
+	font-size: 32px;
 	color: var(--success);
+	background: var(--bg);
+	border-radius: 50%;
 }
 
 .doneTitle {
-	margin: 8px 0 0;
-	font-size: 1.2em;
+	margin: 16px 0 0;
+	font-size: 1.3em;
 	font-weight: bold;
 }
 
-.mt8 {
-	margin-top: 8px;
+.doneName {
+	margin: 2px 0 0;
+	font-family: monospace;
+	opacity: 0.8;
+	overflow-wrap: anywhere;
+}
+
+.flow {
+	display: flex;
+	gap: 6px;
+	margin: 20px 0 8px;
+	padding: 0;
+	list-style: none;
+	text-align: left;
+
+	> li {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 4px;
+		padding: 10px 6px;
+		border-radius: 10px;
+		font-size: 0.8em;
+		text-align: center;
+		line-height: 1.5;
+		background: var(--buttonBg);
+		opacity: 0.75;
+
+		> i {
+			font-size: 1.6em;
+		}
+	}
+}
+
+.flowDone {
+	opacity: 1 !important;
+	color: var(--accent);
+	background: var(--accentedBg) !important;
+}
+
+.doneActions {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	margin: 20px 0 0;
 }
 
 .mb12 {

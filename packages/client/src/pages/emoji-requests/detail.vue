@@ -152,7 +152,7 @@
  *
  * @internal
  */
-import { computed, onMounted, ref } from "vue";
+import { computed, onActivated, onMounted, ref } from "vue";
 import MkButton from "@/components/MkButton.vue";
 import MkEmoji from "@/components/global/MkEmoji.vue";
 import MkEmojiAddRequestSummary from "@/components/emoji-request/MkEmojiAddRequestSummary.vue";
@@ -293,6 +293,14 @@ async function load(): Promise<void> {
 		loading.value = false;
 	}
 }
+
+// NOTE: ページはルーターに保持（KeepAlive）されるので、一度開いたページに戻ると onMounted は動かない。
+// 申請や審査で内容が変わっているかもしれないので、2 回目以降に表示されたときは読み直す
+let activatedOnce = false;
+onActivated(() => {
+	if (activatedOnce) void load();
+	activatedOnce = true;
+});
 
 onMounted(load);
 

@@ -99,7 +99,7 @@
  *
  * @internal
  */
-import { computed, onMounted, ref } from "vue";
+import { computed, onActivated, onMounted, ref } from "vue";
 import MkButton from "@/components/MkButton.vue";
 import MkEmoji from "@/components/global/MkEmoji.vue";
 import * as os from "@/os";
@@ -185,6 +185,14 @@ async function fetchImport(): Promise<void> {
 			(b.processedAt ?? b.createdAt).localeCompare(a.processedAt ?? a.createdAt),
 	);
 }
+
+// NOTE: ページはルーターに保持（KeepAlive）されるので、一度開いたページに戻ると onMounted は動かない。
+// 申請や審査で内容が変わっているかもしれないので、2 回目以降に表示されたときは読み直す
+let activatedOnce = false;
+onActivated(() => {
+	if (activatedOnce) void Promise.all([fetchAdd(), fetchImport()]);
+	activatedOnce = true;
+});
 
 onMounted(async () => {
 	// 古い URL から来たときは、新しい URL に置き換える（置き換え先でこのページが開き直される）

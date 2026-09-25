@@ -59,7 +59,7 @@
 			</template>
 			<!-- #endregion -->
 
-			<MkAdminEmojiImportRequests v-else-if="tab === 'import'" @counts="(c) => (importPending = c.pending ?? 0)" />
+			<MkAdminEmojiImportRequests v-else-if="tab === 'import'" :key="importReloadKey" @counts="(c) => (importPending = c.pending ?? 0)" />
 		</MkSpacer>
 	</MkStickyContainer>
 </template>
@@ -82,7 +82,7 @@
  *
  * @internal
  */
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onActivated, onMounted, ref, watch } from "vue";
 import MkButton from "@/components/MkButton.vue";
 import MkAdminEmojiImportRequests from "@/components/emoji-request/MkAdminEmojiImportRequests.vue";
 import * as os from "@/os";
@@ -135,6 +135,8 @@ const statusFilter = ref<AddFilter>("pending");
 const items = ref<PackedEmojiAddRequest[]>([]);
 const addCounts = ref<Record<string, number>>({});
 const importPending = ref(0);
+/** インポート申請の部品を作り直して読み直させるための番号 */
+const importReloadKey = ref(0);
 const hasMore = ref(false);
 const loading = ref(true);
 const approving = ref(false);
@@ -278,6 +280,17 @@ async function approveSelected(): Promise<void> {
 // #endregion
 
 watch(statusFilter, () => fetchAdd());
+
+// NOTE: ページはルーターに保持（KeepAlive）されるので、一度開いたページに戻ると onMounted は動かない。
+// 申請や審査で内容が変わっているかもしれないので、2 回目以降に表示されたときは読み直す
+let activatedOnce = false;
+onActivated(() => {
+	if (activatedOnce) {
+		void fetchAdd();
+		importReloadKey.value++;
+	}
+	activatedOnce = true;
+});
 
 onMounted(async () => {
 	// 古い URL から来たときは、新しい URL に置き換える（置き換え先でこのページが開き直される）

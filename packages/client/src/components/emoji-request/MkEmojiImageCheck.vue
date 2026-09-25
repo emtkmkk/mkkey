@@ -60,30 +60,19 @@
 		</div>
 
 		<!-- 実際の見え方。見た目を実物と合わせるため、本物の MkEmoji に仮の絵文字として渡して描く -->
+		<!-- 実際の見え方。見た目を実物と合わせるため、本物の投稿・リアクションの部品に仮の投稿を渡して描く。
+			押しても何も起きないよう、操作は受け付けない -->
 		<div :class="$style.label"><i class="ph-chat-circle ph-bold"></i> 投稿の中</div>
-		<div :class="$style.note">
-			今日も
-			<MkEmoji :emoji="PREVIEW_CODE" :key="file.id" :custom-emojis="previewEmojis" noreplace nofallback />
-			です
+		<div :key="file.id" :class="[$style.note, $style.inert]" inert>
+			<MkNoteSimple :note="previewNote" />
 		</div>
 		<div :class="$style.label"><i class="ph-smiley ph-bold"></i> リアクション・ピッカー</div>
-		<div :class="$style.reactions">
-			<span :class="$style.reaction">
-				<MkEmoji
-					:emoji="PREVIEW_CODE"
-					:key="file.id" :custom-emojis="previewEmojis"
-					is-reaction
-					normal
-					noreplace
-					nofallback
-					:class="$style.reactionEmoji"
-				/>
-				<span :class="$style.count">3</span>
-			</span>
+		<div :key="file.id" :class="[$style.reactions, $style.inert]" inert>
+			<XReaction :reaction="PREVIEW_CODE" :count="3" :is-initial="true" :note="previewNote" />
 			<span :class="$style.pickerCell">
 				<MkEmoji
 					:emoji="PREVIEW_CODE"
-					:key="file.id" :custom-emojis="previewEmojis"
+					:custom-emojis="previewEmojis"
 					is-picker
 					normal
 					noreplace
@@ -110,6 +99,7 @@
  * - 警告の中に［余白をカット］［目安サイズに縮小］を置く。押したときだけブラウザで加工し、加工した画像をドライブへ上げて processed で返す（I1）
  * - アニメーション画像は加工すると 1 コマ目だけになるので、加工のボタンを出さない
  * - 画像の範囲を示す点線は左上の小さなプレビューだけ。背景ごと・投稿の中・リアクションでは付けない（K7）
+ * - 「投稿の中」「リアクション」は、本物の投稿（MkNoteSimple）・リアクションの部品に仮の投稿を渡して描く（見た目を実物とそろえるため）
  * - 元の画像（originalFile）が渡されていて今の画像と違えば「加工済み」と［元に戻す］を出す
  * 画像はオブジェクトストレージから読み込む（CORS は許可されている）。
  *
@@ -120,6 +110,9 @@ import * as Misskey from "calckey-js";
 import MkButton from "@/components/MkButton.vue";
 import MkInfo from "@/components/MkInfo.vue";
 import MkEmoji from "@/components/global/MkEmoji.vue";
+import MkNoteSimple from "@/components/MkNoteSimple.vue";
+import XReaction from "@/components/MkReactionsViewer.reaction.vue";
+import { $i } from "@/account";
 import * as os from "@/os";
 import { defaultStore } from "@/store";
 import { uploadFile } from "@/scripts/upload";
@@ -157,6 +150,41 @@ const PREVIEW_CODE = `:${PREVIEW_NAME}:`;
 
 /** MkEmoji に渡す仮の絵文字（今の画像を指す） */
 const previewEmojis = computed(() => [{ name: PREVIEW_NAME, url: props.file.url }] as any[]);
+
+/**
+ * プレビュー用の仮の投稿（自分が「今日も :絵文字: です」と投稿し、その絵文字のリアクションが 3 つ付いた形）。
+ *
+ * @remarks
+ * 投稿の部品・リアクションの部品が読む項目だけをそろえている。サーバーには存在しない投稿なので、
+ * 押したときの API 呼び出しが起きないよう、表示側で操作を止めている（inert）。
+ */
+const previewNote = computed(
+	() =>
+		({
+			id: "emoji-request-preview",
+			createdAt: new Date().toISOString(),
+			updatedAt: null,
+			deletedAt: null,
+			userId: $i?.id,
+			user: $i,
+			text: `今日も ${PREVIEW_CODE} です`,
+			cw: null,
+			visibility: "public",
+			localOnly: false,
+			replyId: null,
+			reply: null,
+			renoteId: null,
+			renote: null,
+			files: [],
+			fileIds: [],
+			poll: null,
+			references: [],
+			emojis: previewEmojis.value,
+			reactionEmojis: previewEmojis.value,
+			reactions: { [PREVIEW_CODE]: 3 },
+			myReaction: null,
+		}) as any,
+);
 
 const analysis = ref<EmojiImageAnalysis | null>(null);
 const analyzing = ref(false);
@@ -380,26 +408,9 @@ function shrink(): void {
 	gap: 8px;
 }
 
-.reaction {
-	display: inline-flex;
-	align-items: center;
-	gap: 4px;
-	height: 2.375rem;
-	max-width: 8rem;
-	padding: 0 0.375rem;
-	border-radius: 0.25rem;
-	background: var(--buttonBg);
-	box-sizing: border-box;
-}
-
-.reactionEmoji {
-	min-width: 0;
-	max-width: 100%;
-}
-
-.count {
-	font-size: 0.9em;
-	opacity: 0.8;
+.inert {
+	pointer-events: none;
+	user-select: none;
 }
 
 .pickerCell {

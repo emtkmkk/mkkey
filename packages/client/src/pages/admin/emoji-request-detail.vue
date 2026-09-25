@@ -85,10 +85,11 @@
 								</template>
 							</template>
 						</MkInput>
-						<MkInput v-model="form.aliases" class="_formBlock">
-							<template #label>タグ <span v-if="isChanged('aliases')" :class="$style.changed">変更</span></template>
-							<template v-if="isChanged('aliases')" #caption>元：{{ orig("aliases") }}</template>
-						</MkInput>
+						<div class="_formBlock">
+							<div :class="$style.label">タグ <span v-if="isChanged('aliases')" :class="$style.changed">変更</span></div>
+							<MkEmojiTagInput v-model="form.aliases" />
+							<div v-if="isChanged('aliases')" :class="$style.origText">元：{{ orig("aliases") }}</div>
+						</div>
 						<MkSwitch v-model="form.sensitive" class="_formBlock">
 							<template #label>センシティブ <span v-if="isChanged('sensitive')" :class="$style.changed">変更</span></template>
 						</MkSwitch>
@@ -223,6 +224,7 @@ import MkTextarea from "@/components/form/textarea.vue";
 import MkSelect from "@/components/form/select.vue";
 import MkSwitch from "@/components/form/switch.vue";
 import MkEmojiImageCheck from "@/components/emoji-request/MkEmojiImageCheck.vue";
+import MkEmojiTagInput from "@/components/emoji-request/MkEmojiTagInput.vue";
 import MkEmojiAddRequestSummary from "@/components/emoji-request/MkEmojiAddRequestSummary.vue";
 import MkAdminEmojiImportRequests from "@/components/emoji-request/MkAdminEmojiImportRequests.vue";
 import * as os from "@/os";
@@ -576,6 +578,17 @@ definePageMetadata(
 
 .caption {
 	margin: 0 0 8px;
+	font-size: 0.85em;
+	opacity: 0.7;
+}
+
+.label {
+	margin: 0 0 8px;
+	font-size: 0.85em;
+}
+
+.origText {
+	margin: 8px 0 0;
 	font-size: 0.85em;
 	opacity: 0.7;
 }

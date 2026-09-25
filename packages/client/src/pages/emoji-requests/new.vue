@@ -9,7 +9,7 @@
 				<div v-if="submittedId" :class="$style.done">
 					<i class="ph-check-circle ph-bold" :class="$style.doneIcon"></i>
 					<div :class="$style.doneTitle">申請しました</div>
-					<p :class="$style.caption">
+					<p :class="$style.cap">
 						管理者が確認します。<br />結果は通知でお知らせします。
 					</p>
 					<MkButton primary full @click="router.push('/emoji-requests')">申請の一覧へ</MkButton>
@@ -19,22 +19,21 @@
 
 				<template v-else>
 					<!-- 進み具合 -->
-					<div :class="$style.progress">
-						<div :class="$style.bars">
-							<span
-								v-for="(s, i) in steps"
-								:key="s"
-								:class="[$style.bar, { [$style.barDone]: i <= stepIndex }]"
-							></span>
-						</div>
-						<div v-if="resubmitRequest" :class="$style.bars">
-							<span v-for="s in steps" :key="s" :class="$style.dotCell">
-								<i v-if="stepHasSuggestion(s)" :class="$style.dot"></i>
-							</span>
-						</div>
-						<div :class="$style.progressText">
-							{{ stepIndex + 1 }} / {{ steps.length }}　{{ STEP_LABELS[step] }}
-						</div>
+					<div :class="$style.bars">
+						<span
+							v-for="(s, i) in steps"
+							:key="s"
+							:class="[$style.bar, { [$style.barDone]: i <= stepIndex }]"
+						></span>
+					</div>
+					<div v-if="resubmitRequest" :class="$style.bars">
+						<span v-for="s in steps" :key="s" :class="$style.dotCell">
+							<i v-if="stepHasSuggestion(s)" :class="$style.dot"></i>
+						</span>
+					</div>
+					<div :class="$style.stepHead">
+						<span>{{ STEP_LABELS[step] }}</span>
+						<span :class="$style.counter">{{ stepIndex + 1 }}/{{ steps.length }}</span>
 					</div>
 
 					<MkInfo v-if="resubmitRequest?.reviewComment" warn :class="$style.mb12">
@@ -48,24 +47,30 @@
 
 					<!-- #region 1. 画像 -->
 					<section v-if="step === 'image'">
-						<h2 :class="$style.h">絵文字の画像</h2>
-						<div v-if="uploading" :class="$style.dim">画像を受け取っています…</div>
-						<MkEmojiImageCheck
-							v-else-if="d.file"
-							:file="d.file"
-							:original-file="d.originalFile"
-							@processed="onProcessed"
-							@restore="onRestore"
-							@reselect="chooseFile"
-						/>
-						<template v-else>
-							<MkButton primary full large @click="chooseFile">
-								<i class="ph-upload-simple ph-bold"></i> 画像を選ぶ
-							</MkButton>
-							<p :class="$style.caption">
-								縦 256px 程度・四隅の余白は削るのがおすすめ。<br />ダーク・ライトの両方で見やすいか確認してください。
-							</p>
-						</template>
+						<div v-if="megamojiSimple" :class="$style.from">
+							<i class="ph-sparkle ph-bold"></i> MEGAMOJI で作った画像を{{ d.file ? "受け取りました" : "待っています…" }}
+						</div>
+						<div data-field="file" :class="fieldClass('file')">
+							<div v-if="uploading" :class="$style.cap">画像を受け取っています…</div>
+							<MkEmojiImageCheck
+								v-else-if="d.file"
+								:file="d.file"
+								:original-file="d.originalFile"
+								@processed="onProcessed"
+								@restore="onRestore"
+								@reselect="chooseFile"
+								@analyzed="onAnalyzed"
+							/>
+							<template v-else>
+								<MkButton primary full large @click="chooseFile">
+									<i class="ph-upload-simple ph-bold"></i> 画像を選ぶ
+								</MkButton>
+								<p :class="$style.cap">
+									縦 256px 程度・四隅の余白は削るのがおすすめ。<br />ダーク・ライトの両方で見やすいか確認してください。
+								</p>
+							</template>
+							<div v-if="missingField === 'file'" :class="$style.missingText">画像を選んでください</div>
+						</div>
 						<div v-if="suggestionOf('file')" :class="$style.proposalImage">
 							<img v-if="resubmitRequest?.proposalFileUrl" :src="resubmitRequest.proposalFileUrl" alt="" />
 							<MkEmojiRequestSuggestion v-bind="suggestionOf('file')!" @apply="applySuggestion('file')" />
@@ -75,279 +80,304 @@
 
 					<!-- #region 2. 名前とタグ -->
 					<section v-else-if="step === 'name'">
-						<h2 :class="$style.h">名前とタグ</h2>
-						<MkInput v-model="d.name" class="_formBlock" :class="$style.mono">
-							<template #label>絵文字名 <span :class="[$style.req, $style.required]">必須</span></template>
-							<template #prefix>:</template>
-							<template #suffix>:</template>
-							<template #caption>
-								<span v-if="d.name && !nameValid" :class="$style.errorText">
-									小文字の a-z・数字・_（アンダーバー）だけが使えます。
-								</span>
-								<span v-else-if="nameExists" :class="$style.warnText">
-									同じ名前の絵文字がすでにあります。<br />このまま申請できますが、承認のときに名前を変えることがあります。
-								</span>
-								<template v-else>小文字の a-z・数字・_（アンダーバー）で入力します。</template>
-							</template>
-						</MkInput>
-						<MkEmojiRequestSuggestion v-if="suggestionOf('name')" v-bind="suggestionOf('name')!" @apply="applySuggestion('name')" />
-						<MkInput v-model="d.alternateName" class="_formBlock">
-							<template #label>表示名 <span :class="$style.req">任意</span></template>
-							<template #caption>絵文字名を日本語などで書いたもの。</template>
-						</MkInput>
-						<MkEmojiRequestSuggestion v-if="suggestionOf('alternateName')" v-bind="suggestionOf('alternateName')!" @apply="applySuggestion('alternateName')" />
-						<MkInput v-model="d.ruby" class="_formBlock">
-							<template #label>読み <span :class="$style.req">任意</span></template>
-							<template #caption>ひらがなで書いた読み方。<br />絵文字の検索にも使われます</template>
-						</MkInput>
-						<MkEmojiRequestSuggestion v-if="suggestionOf('ruby')" v-bind="suggestionOf('ruby')!" @apply="applySuggestion('ruby')" />
-						<MkTextarea v-model="d.description" class="_formBlock">
-							<template #label>説明 <span :class="$style.req">任意</span></template>
-						</MkTextarea>
-						<MkEmojiRequestSuggestion v-if="suggestionOf('description')" v-bind="suggestionOf('description')!" @apply="applySuggestion('description')" />
-						<MkInput v-model="d.category" class="_formBlock" :datalist="categories">
-							<template #label>カテゴリ <span :class="$style.req">任意</span></template>
-							<template v-if="d.category.trim()" #caption>
-								<template v-if="categoryCount > 0">現在 {{ categoryCount }} 件の絵文字があるカテゴリです</template>
-								<template v-else>そのカテゴリはまだ存在しません。<br />新規作成する予定です。</template>
-							</template>
-						</MkInput>
-						<MkEmojiRequestSuggestion v-if="suggestionOf('category')" v-bind="suggestionOf('category')!" @apply="applySuggestion('category')" />
-						<MkInput v-model="d.aliases" class="_formBlock">
-							<template #label>タグ <span :class="$style.req">任意</span></template>
-							<template #caption>絵文字の別名になります。<br />空白で区切って複数入力できます。</template>
-						</MkInput>
-						<MkEmojiRequestSuggestion v-if="suggestionOf('aliases')" v-bind="suggestionOf('aliases')!" @apply="applySuggestion('aliases')" />
-						<MkSwitch v-model="d.sensitive" class="_formBlock">
-							<template #label>センシティブ</template>
-							<template #caption>公開投稿で使えないような場合</template>
-						</MkSwitch>
+						<div data-field="name" :class="fieldClass('name')">
+							<div :class="$style.lb"><i class="ph-at ph-bold"></i> 絵文字名 <span :class="$style.req">必須</span></div>
+							<MkInput v-model="d.name" :class="$style.mono" />
+							<div v-if="d.name && !nameValid" :class="[$style.cap, $style.errorText]">
+								小文字の a-z・0-9・_ だけが使えます。
+							</div>
+							<div v-else-if="nameExists" :class="[$style.cap, $style.warnText]">
+								同じ名前の絵文字がすでにあります。<br />このまま申請できますが、承認のときに名前を変えることがあります。
+							</div>
+							<div v-else :class="$style.cap">
+								<template v-if="megamojiSimple">MEGAMOJI のファイル名から入れました。<br /></template>
+								小文字の a-z・0-9・_ が使えます。<br />:: は不要です。
+							</div>
+							<div v-if="missingField === 'name'" :class="$style.missingText">絵文字名を入力してください</div>
+							<MkEmojiRequestSuggestion v-if="suggestionOf('name')" v-bind="suggestionOf('name')!" @apply="applySuggestion('name')" />
+						</div>
+						<div :class="$style.field">
+							<div :class="$style.lb"><i class="ph-text-aa ph-bold"></i> 表示名 <span :class="$style.opt">任意</span></div>
+							<MkInput v-model="d.alternateName" />
+							<div :class="$style.cap">絵文字名を日本語などで書いたもの。</div>
+							<MkEmojiRequestSuggestion v-if="suggestionOf('alternateName')" v-bind="suggestionOf('alternateName')!" @apply="applySuggestion('alternateName')" />
+						</div>
+						<div :class="$style.field">
+							<div :class="$style.lb"><i class="ph-text-t ph-bold"></i> 読み <span :class="$style.opt">任意</span></div>
+							<MkInput v-model="d.ruby" />
+							<div :class="$style.cap">ひらがなで書いた読み方。<br />絵文字の検索にも使われます</div>
+							<MkEmojiRequestSuggestion v-if="suggestionOf('ruby')" v-bind="suggestionOf('ruby')!" @apply="applySuggestion('ruby')" />
+						</div>
+						<div :class="$style.field">
+							<div :class="$style.lb"><i class="ph-file-text ph-bold"></i> 説明 <span :class="$style.opt">任意</span></div>
+							<MkTextarea v-model="d.description" />
+							<div :class="$style.cap">絵文字に関しての説明です。</div>
+							<MkEmojiRequestSuggestion v-if="suggestionOf('description')" v-bind="suggestionOf('description')!" @apply="applySuggestion('description')" />
+						</div>
+						<div :class="$style.field">
+							<div :class="$style.lb"><i class="ph-folder ph-bold"></i> カテゴリ <span :class="$style.opt">任意</span></div>
+							<MkInput v-model="d.category" :datalist="categories" />
+							<div v-if="!d.category.trim()" :class="$style.cap">今あるカテゴリが候補に出ます</div>
+							<div v-else-if="categoryCount > 0" :class="[$style.cap, $style.okText]">
+								<i class="ph-check ph-bold"></i> 現在 {{ categoryCount }} 件の絵文字があるカテゴリです
+							</div>
+							<div v-else :class="[$style.cap, $style.warnText]">
+								<i class="ph-folder-plus ph-bold"></i> そのカテゴリはまだ存在しません。<br />新規作成する予定です。
+							</div>
+							<MkEmojiRequestSuggestion v-if="suggestionOf('category')" v-bind="suggestionOf('category')!" @apply="applySuggestion('category')" />
+						</div>
+						<div :class="$style.field">
+							<div :class="$style.lb"><i class="ph-tag ph-bold"></i> タグ・エイリアス <span :class="$style.opt">任意</span></div>
+							<MkEmojiTagInput v-model="d.aliases" />
+							<div :class="$style.cap">絵文字の別名になります。<br />空白で区切って複数入力できます。</div>
+							<MkEmojiRequestSuggestion v-if="suggestionOf('aliases')" v-bind="suggestionOf('aliases')!" @apply="applySuggestion('aliases')" />
+						</div>
+						<div :class="$style.toggleRow">
+							<div>
+								<div>センシティブ</div>
+								<div :class="$style.cap">公開投稿で使えないような場合</div>
+							</div>
+							<MkSwitch v-model="d.sensitive" />
+						</div>
 						<MkEmojiRequestSuggestion v-if="suggestionOf('sensitive')" v-bind="suggestionOf('sensitive')!" @apply="applySuggestion('sensitive')" />
 					</section>
 					<!-- #endregion -->
 
 					<!-- #region 3. ライセンス情報を入力するか -->
 					<section v-else-if="step === 'licenseQ'">
-						<h2 :class="$style.h">ライセンス情報を入力しますか？</h2>
-						<div :class="$style.choices">
+						<div data-field="licenseMode" :class="fieldClass('licenseMode')">
+							<div :class="$style.question">ライセンス情報を入力しますか？ <span :class="$style.req">必須</span></div>
+							<div :class="$style.cap">可能ならば、分かる項目だけでも入力してください。</div>
 							<button
 								class="_button"
-								:class="[$style.choice, { [$style.choiceOn]: d.licenseMode === 'input' }]"
-								@click="d.licenseMode = 'input'"
-							>
-								<div :class="$style.choiceTitle">入力する</div>
-								<div :class="$style.caption">絵や写真などの絵文字</div>
-							</button>
-							<button
-								class="_button"
-								:class="[$style.choice, { [$style.choiceOn]: d.licenseMode === 'textOnly' }]"
+								:class="[$style.pick, { [$style.pickOn]: d.licenseMode === 'textOnly' }]"
 								@click="d.licenseMode = 'textOnly'"
 							>
-								<div :class="$style.choiceTitle">文字だけの絵文字なので不要（PD）</div>
-								<div :class="$style.caption">文字だけの絵文字は、誰でも自由に使えるもの（パブリックドメイン）として扱います。</div>
+								<i class="ph-text-aa ph-bold"></i> 文字だけの絵文字なので不要（PD）
 							</button>
+							<button
+								class="_button"
+								:class="[$style.pick, { [$style.pickOn]: d.licenseMode === 'input' }]"
+								@click="d.licenseMode = 'input'"
+							>
+								<i class="ph-pencil-simple ph-bold"></i> 入力する
+							</button>
+							<div v-if="missingField === 'licenseMode'" :class="$style.missingText">どちらかを選んでください</div>
+							<MkEmojiRequestSuggestion v-if="suggestionOf('licenseMode')" v-bind="suggestionOf('licenseMode')!" @apply="applySuggestion('licenseMode')" />
 						</div>
-						<MkEmojiRequestSuggestion :class="$style.afterChoices" v-if="suggestionOf('licenseMode')" v-bind="suggestionOf('licenseMode')!" @apply="applySuggestion('licenseMode')" />
 					</section>
 					<!-- #endregion -->
 
 					<!-- #region 4. モチーフ -->
 					<section v-else-if="step === 'motif'">
-						<h2 :class="$style.h">この絵文字は、あなた自身がモチーフですか？ <span :class="[$style.req, $style.required]">必須</span></h2>
-						<div :class="$style.choices">
-							<button
-								class="_button"
-								:class="[$style.choice, { [$style.choiceOn]: d.motifSelf === true }]"
-								@click="d.motifSelf = true"
-							>
-								<div :class="$style.choiceTitle">はい</div>
-							</button>
-							<button
-								class="_button"
-								:class="[$style.choice, { [$style.choiceOn]: d.motifSelf === false }]"
-								@click="d.motifSelf = false"
-							>
-								<div :class="$style.choiceTitle">いいえ</div>
-							</button>
-						</div>
-						<MkEmojiRequestSuggestion :class="$style.afterChoices" v-if="suggestionOf('motifSelf')" v-bind="suggestionOf('motifSelf')!" @apply="applySuggestion('motifSelf')" />
-						<template v-if="d.motifSelf === true">
-							<div :class="$style.subHead">この絵文字を使える人</div>
-							<div :class="$style.choices">
-								<button
-									v-for="m in MOTIF_MODES"
-									:key="m.value"
-									class="_button"
-									:class="[$style.choice, { [$style.choiceOn]: d.motifUserMode === m.value }]"
-									@click="d.motifUserMode = m.value"
-								>
-									<div :class="$style.choiceTitle">{{ m.label }}</div>
-									<div v-if="m.caption" :class="$style.caption">{{ m.caption }}</div>
-								</button>
+						<div data-field="motifSelf" :class="fieldClass('motifSelf')">
+							<div :class="$style.question">
+								<i class="ph-user-focus ph-bold"></i> この絵文字は、あなた自身がモチーフですか？ <span :class="$style.req">必須</span>
 							</div>
-							<MkEmojiRequestSuggestion :class="$style.afterChoices" v-if="suggestionOf('motifUserMode')" v-bind="suggestionOf('motifUserMode')!" @apply="applySuggestion('motifUserMode')" />
-						</template>
+							<div :class="$style.cap">
+								あなたのアイコンやキャラクターを元にした絵文字なら「はい」。はいにすると、この絵文字を使える人をあなたが決められます（あとから絵文字の詳細ページでも変えられます）。
+							</div>
+							<div :class="$style.yesNo">
+								<button class="_button" :class="[$style.yn, { [$style.pickOn]: d.motifSelf === true }]" @click="d.motifSelf = true">はい</button>
+								<button class="_button" :class="[$style.yn, { [$style.pickOn]: d.motifSelf === false }]" @click="d.motifSelf = false">いいえ</button>
+							</div>
+							<div v-if="missingField === 'motifSelf'" :class="$style.missingText">はい・いいえのどちらかを選んでください</div>
+							<MkEmojiRequestSuggestion v-if="suggestionOf('motifSelf')" v-bind="suggestionOf('motifSelf')!" @apply="applySuggestion('motifSelf')" />
+						</div>
+						<div v-if="d.motifSelf === true" :class="$style.field">
+							<div :class="$style.lb">この絵文字を使える人 <span :class="$style.req">必須</span></div>
+							<button
+								v-for="m in MOTIF_MODES"
+								:key="m.value"
+								class="_button"
+								:class="[$style.mode, { [$style.pickOn]: d.motifUserMode === m.value }]"
+								@click="d.motifUserMode = m.value"
+							>
+								<span :class="[$style.radio, { [$style.radioOn]: d.motifUserMode === m.value }]"></span>
+								<span>
+									<span>{{ m.label }}</span>
+									<span :class="[$style.cap, $style.block]">{{ m.caption }}</span>
+								</span>
+							</button>
+							<MkEmojiRequestSuggestion v-if="suggestionOf('motifUserMode')" v-bind="suggestionOf('motifUserMode')!" @apply="applySuggestion('motifUserMode')" />
+						</div>
 					</section>
 					<!-- #endregion -->
 
 					<!-- #region 5. ライセンス情報 -->
 					<section v-else-if="step === 'license'">
-						<h2 :class="$style.h">ライセンス情報</h2>
-						<MkButton full :class="$style.mb12" @click="openPresetSheet">
-							<i class="ph-hand-pointing ph-bold"></i> どう使ってほしいかで選ぶ
-						</MkButton>
+						<button class="_button" :class="$style.easy" @click="openPresetSheet">
+							<i class="ph-magic-wand ph-bold" :class="$style.easyIcon"></i>
+							<span>
+								<span :class="$style.easyTitle">どう使ってほしいかで選ぶ</span><br />
+								<span :class="$style.easySub">ライセンスがよく分からなくても、<br />下の 2 つをまとめて設定できます</span>
+							</span>
+							<i class="ph-caret-right ph-bold" :class="$style.easyArrow"></i>
+						</button>
+						<div v-if="chosenPreset" :class="$style.chosen">
+							<i class="ph-check ph-bold" :class="$style.okText"></i>
+							「{{ chosenPreset.title }}」{{ d.presetAsk ? "＋「一声かけてほしい」" : "" }}で設定しました
+							<div v-if="chosenPreset.note" :class="$style.cap">{{ chosenPreset.note }}</div>
+						</div>
 
-						<MkSelect v-model="d.copyPermission" class="_formBlock">
-							<template #label>コピー可否</template>
-							<option v-for="o in EMOJI_COPY_PERMISSION_REQUEST_OPTIONS" :key="o.value" :value="o.value">
-								{{ o.label }}
-							</option>
-						</MkSelect>
-						<MkEmojiRequestSuggestion v-if="suggestionOf('copyPermission')" v-bind="suggestionOf('copyPermission')!" @apply="applySuggestion('copyPermission')" />
+						<div :class="$style.field">
+							<div :class="$style.lb"><i class="ph-copy ph-bold"></i> 他サーバーへのコピー可否 <span :class="$style.req">必須</span></div>
+							<MkSelect :model-value="d.copyPermission" @update:model-value="onCopyPermissionInput">
+								<option v-for="o in EMOJI_COPY_PERMISSION_REQUEST_OPTIONS" :key="o.value" :value="o.value">
+									{{ o.label }}
+								</option>
+							</MkSelect>
+							<div :class="$style.cap">作者が自分ならば必ず設定してください。<br />必ず守られるわけではありません。</div>
+							<MkEmojiRequestSuggestion v-if="suggestionOf('copyPermission')" v-bind="suggestionOf('copyPermission')!" @apply="applySuggestion('copyPermission')" />
+						</div>
 
-						<MkSelect v-model="d.licenseSelect" class="_formBlock">
-							<template #label>ライセンス</template>
-							<option value="">{{ EMOJI_LICENSE_NONE_LABEL }}</option>
-							<option v-for="n in EMOJI_LICENSE_NAMES" :key="n" :value="n">{{ n }}</option>
-							<option :value="EMOJI_LICENSE_OTHER">{{ EMOJI_LICENSE_OTHER_LABEL }}</option>
-							<template #caption>
-								<span :class="$style.pre">{{ EMOJI_LICENSE_SHORT_DESCRIPTIONS[d.licenseSelect] }}</span>
-							</template>
-						</MkSelect>
-						<MkEmojiRequestSuggestion v-if="suggestionOf('licenseSelect')" v-bind="suggestionOf('licenseSelect')!" @apply="applySuggestion('licenseSelect')" />
-						<MkInput
-							v-if="d.licenseSelect === EMOJI_LICENSE_OTHER"
-							v-model="d.licenseOther"
-							class="_formBlock"
-						>
-							<template #label>ライセンス名 <span :class="[$style.req, $style.required]">必須</span></template>
-							<template #caption>例：Apache License 2.0</template>
-						</MkInput>
+						<div :class="$style.field">
+							<div :class="$style.lb"><i class="ph-certificate ph-bold"></i> ライセンス <span :class="$style.req">必須</span></div>
+							<MkSelect :model-value="d.licenseSelect" @update:model-value="onLicenseInput">
+								<option value="">{{ EMOJI_LICENSE_NONE_LABEL }}</option>
+								<option v-for="n in EMOJI_LICENSE_NAMES" :key="n" :value="n">{{ n }}</option>
+								<option :value="EMOJI_LICENSE_OTHER">{{ EMOJI_LICENSE_OTHER_LABEL }}</option>
+							</MkSelect>
+							<div :class="[$style.cap, $style.pre]">{{ EMOJI_LICENSE_SHORT_DESCRIPTIONS[d.licenseSelect] }}</div>
+							<MkEmojiRequestSuggestion v-if="suggestionOf('licenseSelect')" v-bind="suggestionOf('licenseSelect')!" @apply="applySuggestion('licenseSelect')" />
+						</div>
+						<div v-if="d.licenseSelect === EMOJI_LICENSE_OTHER" data-field="licenseOther" :class="fieldClass('licenseOther')">
+							<MkInput v-model="d.licenseOther" placeholder="ライセンス名（例：Apache License 2.0）" />
+							<div v-if="missingField === 'licenseOther'" :class="$style.missingText">ライセンス名を入力してください</div>
+						</div>
 
-						<MkInput v-model="d.creator" class="_formBlock">
-							<template #label>作者 <span :class="$style.req">任意</span></template>
-							<template #suffix>
-								<button class="_textButton" @click="d.creator = selfId">自分</button>
-							</template>
-							<template #caption>この絵文字を描いた（作った）人です。<br />fediverse 上の ID であることが望ましいです。</template>
-						</MkInput>
-						<MkEmojiRequestSuggestion v-if="suggestionOf('creator')" v-bind="suggestionOf('creator')!" @apply="applySuggestion('creator')" />
+						<div :class="$style.field">
+							<div :class="$style.lb"><i class="ph-user ph-bold"></i> 作者 <span :class="$style.opt">任意</span></div>
+							<div :class="$style.withMe">
+								<MkInput v-model="d.creator" placeholder="@user@host" :class="$style.grow" />
+								<button class="_button" :class="$style.me" @click="d.creator = selfId">
+									<i class="ph-user-check ph-bold"></i> 自分
+								</button>
+							</div>
+							<div :class="$style.cap">この絵文字を描いた（作った）人です。<br />fediverse 上の ID であることが望ましいです。</div>
+							<MkEmojiRequestSuggestion v-if="suggestionOf('creator')" v-bind="suggestionOf('creator')!" @apply="applySuggestion('creator')" />
+						</div>
 
-						<MkInput v-if="isAsk" v-model="d.askContact" class="_formBlock">
-							<template #label>許可を取る連絡先 <span :class="[$style.req, $style.required]">必須</span></template>
-							<template #suffix>
-								<button class="_textButton" @click="d.askContact = selfId">自分</button>
-							</template>
-							<template #caption>コピーしたい人が、許可を取るための連絡先です。</template>
-						</MkInput>
-						<MkEmojiRequestSuggestion v-if="suggestionOf('askContact')" v-bind="suggestionOf('askContact')!" @apply="applySuggestion('askContact')" />
-						<MkTextarea v-if="showUsageInfo" v-model="d.usageInfo" class="_formBlock">
-							<template #label>
-								使用情報
-								<span v-if="usageInfoRequired" :class="[$style.req, $style.required]">必須</span>
-								<span v-else :class="$style.req">任意</span>
-							</template>
-							<template #caption>絵文字をインポートする際の注意など。<br />「条件付きでコピー可」のときは、条件をここに書きます。</template>
-						</MkTextarea>
-						<MkEmojiRequestSuggestion v-if="suggestionOf('usageInfo')" v-bind="suggestionOf('usageInfo')!" @apply="applySuggestion('usageInfo')" />
+						<div v-if="isAsk" data-field="askContact" :class="fieldClass('askContact')">
+							<div :class="$style.lb"><i class="ph-chat-circle-dots ph-bold"></i> 許可を取る連絡先 <span :class="$style.req">必須</span></div>
+							<div :class="$style.withMe">
+								<MkInput v-model="d.askContact" placeholder="@user@host" :class="$style.grow" />
+								<button class="_button" :class="$style.me" @click="d.askContact = selfId">
+									<i class="ph-user-check ph-bold"></i> 自分
+								</button>
+							</div>
+							<div :class="$style.cap">保存するときに「{{ ASK_BEFORE_COPY_PREFIX }}」が先頭に付きます</div>
+							<div v-if="missingField === 'askContact'" :class="$style.missingText">許可を取る連絡先を入力してください（［自分］で入ります）</div>
+							<MkEmojiRequestSuggestion v-if="suggestionOf('askContact')" v-bind="suggestionOf('askContact')!" @apply="applySuggestion('askContact')" />
+						</div>
+
+						<div v-if="showUsageInfo" data-field="usageInfo" :class="fieldClass('usageInfo')">
+							<div :class="$style.lb">
+								<i class="ph-info ph-bold"></i> 使用情報
+								<span :class="usageInfoRequired ? $style.req : $style.opt">{{ usageInfoRequired ? "必須" : "任意" }}</span>
+							</div>
+							<MkTextarea v-model="d.usageInfo" placeholder="使うときの注意など" />
+							<div :class="$style.cap">絵文字をインポートする際の注意など。<br />「条件付きでコピー可」のときは必ず入力してください。</div>
+							<div v-if="missingField === 'usageInfo'" :class="$style.missingText">使用情報を入力してください</div>
+							<MkEmojiRequestSuggestion v-if="suggestionOf('usageInfo')" v-bind="suggestionOf('usageInfo')!" @apply="applySuggestion('usageInfo')" />
+						</div>
 
 						<!-- 詳細情報（どれも任意） -->
-						<button class="_button" :class="$style.foldHead" @click="showDetails = !showDetails">
-							<span>詳細情報</span>
-							<i :class="showDetails ? 'ph-caret-up ph-bold' : 'ph-caret-down ph-bold'"></i>
-						</button>
-						<div v-if="showDetails" :class="$style.fold">
-							<p :class="$style.caption">設定しなくても申請に問題はありませんが、<br />設定可能な項目です。</p>
-							<MkInput v-model="d.copyrightNotice" class="_formBlock">
-								<template #label>著作権の表示</template>
-								<template #caption>作者とは別に、元作品の権利者などを示したいときに書きます。<br />例「© 〇〇株式会社」</template>
-							</MkInput>
-							<MkEmojiRequestSuggestion v-if="suggestionOf('copyrightNotice')" v-bind="suggestionOf('copyrightNotice')!" @apply="applySuggestion('copyrightNotice')" />
-							<MkInput v-model="d.creditText" class="_formBlock">
-								<template #label>クレジット</template>
-								<template #caption>作成に使ったソフトやフォントなど。<br />例「〇〇フォントを使用」「Adobe Illustrator で作成」「Generated using MEGAMOJI」</template>
-							</MkInput>
-							<MkEmojiRequestSuggestion v-if="suggestionOf('creditText')" v-bind="suggestionOf('creditText')!" @apply="applySuggestion('creditText')" />
-							<MkTextarea v-model="d.relatedLinks" class="_formBlock">
-								<template #label>関連リンク</template>
-								<template #caption>1 行に 1 つずつ入力します。<br />例：絵文字の配布ページ、利用規約のページ、使ったフォントのページ</template>
-							</MkTextarea>
-							<MkEmojiRequestSuggestion v-if="suggestionOf('relatedLinks')" v-bind="suggestionOf('relatedLinks')!" @apply="applySuggestion('relatedLinks')" />
+						<div :class="$style.fold">
+							<button class="_button" :class="$style.foldHead" @click="showDetails = !showDetails">
+								<i :class="showDetails ? 'ph-caret-down ph-bold' : 'ph-caret-right ph-bold'"></i>
+								詳細情報 <span :class="$style.opt">任意</span>
+							</button>
+							<div v-if="showDetails" :class="$style.foldBody">
+								<div :class="$style.hint">設定しなくても申請に問題はありませんが、<br />設定可能な項目です。</div>
+								<div :class="$style.field">
+									<div :class="$style.lb"><i class="ph-copyright ph-bold"></i> 著作権の表示 <span :class="$style.opt">任意</span></div>
+									<MkInput v-model="d.copyrightNotice" />
+									<div :class="$style.cap">作者とは別に、元作品の権利者などを示したいときに書きます。<br />例：「© 〇〇株式会社」</div>
+									<MkEmojiRequestSuggestion v-if="suggestionOf('copyrightNotice')" v-bind="suggestionOf('copyrightNotice')!" @apply="applySuggestion('copyrightNotice')" />
+								</div>
+								<div :class="$style.field">
+									<div :class="$style.lb"><i class="ph-paint-brush ph-bold"></i> クレジット <span :class="$style.opt">任意</span></div>
+									<MkInput v-model="d.creditText" />
+									<div :class="$style.cap">作成に使ったソフトやフォントなど。<br />例：「〇〇フォントを使用」「Adobe Illustrator で作成」「Generated using MEGAMOJI」</div>
+									<MkEmojiRequestSuggestion v-if="suggestionOf('creditText')" v-bind="suggestionOf('creditText')!" @apply="applySuggestion('creditText')" />
+								</div>
+								<div :class="$style.field">
+									<div :class="$style.lb"><i class="ph-link ph-bold"></i> 関連リンク <span :class="$style.opt">任意</span></div>
+									<MkTextarea v-model="d.relatedLinks" placeholder="https://" />
+									<div :class="$style.cap">1 行に 1 つずつ入力します。<br />例：絵文字の配布ページ、利用規約のページ、使ったフォントのページ</div>
+									<MkEmojiRequestSuggestion v-if="suggestionOf('relatedLinks')" v-bind="suggestionOf('relatedLinks')!" @apply="applySuggestion('relatedLinks')" />
+								</div>
+							</div>
 						</div>
 					</section>
 					<!-- #endregion -->
 
 					<!-- #region 6. 確認 -->
 					<section v-else-if="step === 'confirm'">
-						<h2 :class="$style.h">申請内容の確認</h2>
+						<div :class="$style.cap">この内容で申請します。<br />直したいところがあれば「戻る」で戻れます。</div>
 						<div v-if="d.file" :class="$style.confirmImage">
 							<img :src="d.file.url" alt="" />
-							<button class="_textButton" @click="goTo('image')">変更</button>
 						</div>
 
-						<div :class="$style.section">
-							<div :class="$style.sectionHead">
-								<span>名前とタグ</span>
-								<button class="_textButton" @click="goTo('name')">変更</button>
+						<div :class="$style.sec">絵文字</div>
+						<div v-for="row in nameRows" :key="row.label" :class="$style.row">
+							<span :class="$style.rowLabel">{{ row.label }}</span>
+							<span :class="$style.rowValue">{{ row.value }}</span>
+						</div>
+
+						<template v-if="isTextOnly">
+							<div :class="$style.sec">ライセンス</div>
+							<div :class="$style.row">
+								<span :class="$style.rowLabel">ライセンス</span>
+								<span :class="$style.rowValue">
+									文字だけの絵文字（PD）
+									<button v-if="megamojiSimple" class="_button" :class="$style.tiny" @click="leaveMegamojiSimple()">
+										文字だけの絵文字ではない場合
+									</button>
+								</span>
 							</div>
-							<template v-for="row in nameRows" :key="row.label">
-								<div :class="$style.row">
-									<span :class="$style.rowLabel">{{ row.label }}</span>
-									<span :class="$style.rowValue">{{ row.value }}</span>
-								</div>
-							</template>
-						</div>
-
-						<div :class="$style.section">
-							<div :class="$style.sectionHead">
-								<span>ライセンス</span>
-								<button v-if="!megamojiSimple" class="_textButton" @click="goTo('licenseQ')">変更</button>
+						</template>
+						<template v-else>
+							<div :class="$style.sec">モチーフ</div>
+							<div :class="$style.row">
+								<span :class="$style.rowLabel">モチーフ</span>
+								<span :class="$style.rowValue">{{ motifText }}</span>
 							</div>
-							<template v-if="isTextOnly">
-								<div :class="$style.row">
-									<span :class="$style.rowLabel">ライセンス</span>
-									<span :class="$style.rowValue">文字だけの絵文字（PD）</span>
-								</div>
-								<button v-if="megamojiSimple" class="_textButton" :class="$style.smallLink" @click="leaveMegamojiSimple()">
-									文字だけの絵文字ではない場合
-								</button>
-							</template>
-							<template v-for="row in licenseRows" v-else :key="row.label">
-								<div :class="$style.row">
-									<span :class="$style.rowLabel">{{ row.label }}</span>
-									<span :class="$style.rowValue">{{ row.value }}</span>
-								</div>
-							</template>
-						</div>
+							<div :class="$style.sec">ライセンス</div>
+							<div v-for="row in licenseRows" :key="row.label" :class="$style.row">
+								<span :class="$style.rowLabel">{{ row.label }}</span>
+								<span :class="$style.rowValue">{{ row.value }}</span>
+							</div>
+						</template>
 
-						<MkTextarea v-model="d.message" class="_formBlock" placeholder="特に何もなければ空欄で結構です">
-							<template #label><span :class="$style.messageLabel">申請にあたって、承認者へ伝える必要があるメッセージ</span></template>
-						</MkTextarea>
+						<div :class="[$style.lb, $style.messageLabel]">
+							申請にあたって、承認者へ伝える必要があるメッセージ <span :class="$style.opt">任意</span>
+						</div>
+						<MkTextarea v-model="d.message" placeholder="特に何もなければ空欄で結構です" />
 					</section>
 					<!-- #endregion -->
 
 					<!-- 進む・戻る -->
 					<div :class="$style.nav">
-						<MkButton v-if="stepIndex > 0" :class="$style.navButton" @click="back()">
-							<i class="ph-caret-left ph-bold"></i> 戻る
-						</MkButton>
+						<MkButton v-if="stepIndex > 0" :class="$style.backButton" @click="back()">戻る</MkButton>
 						<MkButton
 							v-if="step !== 'confirm'"
 							primary
-							:class="$style.navButton"
-							:disabled="!canProceed"
+							:class="$style.nextButton"
+							:disabled="uploading"
 							@click="next()"
 						>
-							次へ <i class="ph-caret-right ph-bold"></i>
+							次へ
 						</MkButton>
 						<MkButton
 							v-else
 							primary
-							:class="$style.navButton"
-							:disabled="submitting || !d.file || !nameValid"
+							:class="$style.nextButton"
+							:disabled="submitting"
 							@click="submit()"
 						>
-							<i class="ph-paper-plane-tilt ph-bold"></i> {{ resubmitRequest ? "再申請する" : "申請する" }}
+							{{ resubmitRequest ? "再申請する" : "申請する" }}
 						</MkButton>
 					</div>
 				</template>
@@ -378,7 +408,7 @@
  *
  * @internal
  */
-import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, reactive, ref, watch } from "vue";
+import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, reactive, ref, useCssModule, watch } from "vue";
 import * as Misskey from "calckey-js";
 import MkButton from "@/components/MkButton.vue";
 import MkInfo from "@/components/MkInfo.vue";
@@ -388,6 +418,7 @@ import MkSelect from "@/components/form/select.vue";
 import MkSwitch from "@/components/form/switch.vue";
 import MkEmojiImageCheck from "@/components/emoji-request/MkEmojiImageCheck.vue";
 import MkEmojiRequestSuggestion from "@/components/emoji-request/MkEmojiRequestSuggestion.vue";
+import MkEmojiTagInput from "@/components/emoji-request/MkEmojiTagInput.vue";
 import * as os from "@/os";
 import { $i } from "@/account";
 import { host } from "@/config";
@@ -398,12 +429,14 @@ import { selectFile } from "@/scripts/select-file";
 import { uploadFile } from "@/scripts/upload";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import {
+	ASK_BEFORE_COPY_PREFIX,
 	COPY_PERMISSION_ASK,
 	EMOJI_COPY_PERMISSION_REQUEST_OPTIONS,
 	EMOJI_LICENSE_NAMES,
 	EMOJI_LICENSE_NONE_LABEL,
 	EMOJI_LICENSE_OTHER,
 	EMOJI_LICENSE_OTHER_LABEL,
+	EMOJI_LICENSE_PRESETS,
 	EMOJI_LICENSE_SHORT_DESCRIPTIONS,
 	MKCK_USAGE_INFO,
 	resolveLicenseSelectValue,
@@ -427,6 +460,9 @@ const props = defineProps<{
 
 const router = useRouter();
 
+/** スクリプト側でも CSS モジュールのクラス名を使う（必須の印のクラスなど） */
+const $style = useCssModule();
+
 // #region 定数
 
 /** MEGAMOJI の送り元。これ以外からの postMessage は受け取らない */
@@ -449,9 +485,9 @@ const STEP_LABELS: Record<Step, string> = {
 
 /** モチーフが自分のときの、使える人の選択肢（motifUserMode） */
 const MOTIF_MODES = [
-	{ value: "any", label: "誰でも使える", caption: "" },
-	{ value: "follow", label: "フォロー限定", caption: "あなたをフォローしている人が使えます。" },
-	{ value: "owner", label: "自分限定", caption: "あなただけが使えます。" },
+	{ value: "any", label: "誰でも使える", caption: "ほかの絵文字と同じように、誰でも使えます" },
+	{ value: "follow", label: "フォロー限定", caption: "あなたをフォローしている人だけが使えます" },
+	{ value: "owner", label: "自分限定", caption: "あなただけが使えます" },
 ] as const;
 
 // #endregion
@@ -551,45 +587,100 @@ const steps = computed<Step[]>(() => {
 });
 const stepIndex = computed(() => Math.max(0, steps.value.indexOf(step.value)));
 
-/** 今の画面で「次へ」を押せるか */
-const canProceed = computed(() => {
+/** 必須なのに入っていない項目（「次へ」を押したときに印を付けた項目。直ったら消える） */
+const missingField = ref<string | null>(null);
+
+/**
+ * 今の画面で、必須なのに入っていない最初の項目を返す（画面の上から順）。
+ *
+ * @returns 項目の名前（data-field の値）。無ければ null
+ */
+function findMissing(): string | null {
 	switch (step.value) {
 		case "image":
-			return d.file != null && !uploading.value;
+			return d.file == null ? "file" : null;
 		case "name":
-			return nameValid.value;
+			return nameValid.value ? null : "name";
 		case "licenseQ":
-			return d.licenseMode != null;
+			return d.licenseMode == null ? "licenseMode" : null;
 		case "motif":
-			return d.motifSelf != null;
+			return d.motifSelf == null ? "motifSelf" : null;
 		case "license":
-			if (isAsk.value && !d.askContact.trim()) return false;
-			if (usageInfoRequired.value && !d.usageInfo.trim()) return false;
-			if (d.licenseSelect === EMOJI_LICENSE_OTHER && !d.licenseOther.trim()) return false;
-			return true;
+			if (d.licenseSelect === EMOJI_LICENSE_OTHER && !d.licenseOther.trim()) return "licenseOther";
+			if (isAsk.value && !d.askContact.trim()) return "askContact";
+			if (usageInfoRequired.value && !d.usageInfo.trim()) return "usageInfo";
+			return null;
 		default:
-			return true;
+			return null;
 	}
-});
+}
+
+// 印を付けた項目が入力されたら、印を消す
+watch(
+	() => findMissing(),
+	(m) => {
+		if (missingField.value != null && m !== missingField.value) missingField.value = null;
+	},
+);
+
+/**
+ * 項目を囲む要素のクラス（印が付いていれば目立たせる）。
+ *
+ * @param f - 項目の名前
+ * @returns クラス
+ */
+function fieldClass(f: string) {
+	return [$style.field, { [$style.missing]: missingField.value === f }];
+}
 
 /**
  * 画面を移る。移ったら画面の先頭へ戻す（スマホで下のほうに居たままにならないように）。
  *
+ * @remarks
+ * ブラウザの履歴にも 1 つ積む。これで、ページ上部の戻るボタン（history.back）やスマホの戻る操作で、
+ * 申請ページを抜けずに 1 つ前の画面へ戻れる（{@link onPopState}）。
+ * 履歴にはページの key も入れる。別のページへ移ってから戻ってきたときに、ルーターがこのページを開き直せるようにするため。
+ *
  * @param s - 移る先
+ * @param push - 履歴に積むか（戻る操作で移るときは積まない）
  */
-function goTo(s: Step): void {
+function goTo(s: Step, push = true): void {
+	if (s === step.value) return;
 	step.value = s;
+	missingField.value = null;
+	if (push) window.history.pushState({ ...(pageKey ? { key: pageKey } : {}), emojiRequestStep: s }, "", location.href);
 	rootEl.value?.scrollIntoView({ block: "start" });
 }
 
+/** 次の画面へ。必須の項目が空なら、その項目に印を付けてそこまでスクロールする */
 function next(): void {
+	const m = findMissing();
+	if (m) {
+		missingField.value = m;
+		rootEl.value?.querySelector(`[data-field="${m}"]`)?.scrollIntoView({ block: "center", behavior: "smooth" });
+		return;
+	}
 	const i = stepIndex.value;
 	if (i < steps.value.length - 1) goTo(steps.value[i + 1]);
 }
 
+/** 前の画面へ（ブラウザの戻ると同じ動きにする） */
 function back(): void {
-	const i = stepIndex.value;
-	if (i > 0) goTo(steps.value[i - 1]);
+	window.history.back();
+}
+
+/** このページを開いたときの履歴の key（ルーターが付けたもの） */
+let pageKey: string | undefined;
+
+/**
+ * ブラウザの戻る・進むで、履歴に入れた画面へ移る。
+ *
+ * @param ev - popstate
+ */
+function onPopState(ev: PopStateEvent): void {
+	if (ev.state?.key !== pageKey) return;
+	const s = ev.state?.emojiRequestStep as Step | undefined;
+	goTo(s && steps.value.includes(s) ? s : steps.value[0], false);
 }
 
 /** MEGAMOJI の 3 ステップをやめて、「ライセンス情報を入力しますか？」からのふつうの流れに戻す（H5） */
@@ -651,6 +742,13 @@ function onProcessed(v: { file: Misskey.entities.DriveFile; original: { width: n
 	d.file = v.file;
 }
 
+/** 画像の確認部品が調べた今の画像のサイズ（確認画面に出す） */
+const imageSize = ref<{ width: number; height: number } | null>(null);
+
+function onAnalyzed(v: { width: number; height: number } | null): void {
+	imageSize.value = v ? { width: v.width, height: v.height } : null;
+}
+
 /** 加工をやめて元の画像に戻す */
 function onRestore(): void {
 	if (d.originalFile == null) return;
@@ -689,6 +787,31 @@ const isAsk = computed(() => d.copyPermission === COPY_PERMISSION_ASK);
  */
 const showUsageInfo = computed(() => !isAsk.value || (d.presetKey === "mkck" && d.presetAsk));
 const usageInfoRequired = computed(() => d.copyPermission === "conditional");
+
+/** ［どう使ってほしいかで選ぶ］で選んだカード（手で変えたら消える） */
+const chosenPreset = computed(() => EMOJI_LICENSE_PRESETS.find((p) => p.key === d.presetKey) ?? null);
+
+/**
+ * コピー可否を手で変えた。カードで決めた内容から外れるので、選んだカードの表示を消す。
+ *
+ * @param v - 選んだ値
+ */
+function onCopyPermissionInput(v: string): void {
+	d.copyPermission = v;
+	d.presetKey = null;
+	d.presetAsk = false;
+	if (v === COPY_PERMISSION_ASK && !d.askContact) d.askContact = selfId;
+}
+
+/**
+ * ライセンスを手で変えた。選んだカードの表示を消す。
+ *
+ * @param v - 選んだ値
+ */
+function onLicenseInput(v: string): void {
+	d.licenseSelect = v;
+	d.presetKey = null;
+}
 
 /** ［どう使ってほしいかで選ぶ］のパネルを開く */
 function openPresetSheet(): void {
@@ -751,6 +874,18 @@ function filled(rows: { label: string; value: string | null | undefined }[]): { 
 	return rows.filter((r): r is { label: string; value: string } => r.value != null && r.value.trim() !== "");
 }
 
+/** 確認画面の「画像」の行（サイズと、加工したときは元のサイズ） */
+const imageRowText = computed(() => {
+	const props = d.file?.properties as { width?: number; height?: number } | undefined;
+	const size = imageSize.value ?? (props?.width && props?.height ? { width: props.width, height: props.height } : null);
+	if (size == null) return null;
+	const f = (n: number) => n.toLocaleString();
+	const base = `${f(size.width)} × ${f(size.height)}`;
+	return d.originalFile && d.originalSize
+		? `${base}（加工済み。元: ${f(d.originalSize.width)} × ${f(d.originalSize.height)}）`
+		: base;
+});
+
 const nameRows = computed(() =>
 	filled([
 		{ label: "絵文字名", value: `:${d.name.trim().toLowerCase()}:` },
@@ -759,22 +894,31 @@ const nameRows = computed(() =>
 		{ label: "説明", value: d.description },
 		{ label: "カテゴリ", value: d.category },
 		{ label: "タグ", value: d.aliases.split(/[\s　]+/).filter(Boolean).join("、") },
-		{ label: "センシティブ", value: d.sensitive ? "はい" : null },
+		{ label: "センシティブ", value: d.sensitive ? "はい" : "いいえ" },
+		{ label: "画像", value: imageRowText.value },
 	]),
 );
 
+/** 確認画面の「モチーフ」の行 */
+const motifText = computed(() => {
+	if (d.motifSelf == null) return "（未回答）";
+	if (!d.motifSelf) return "いいえ";
+	return `自分（${MOTIF_MODES.find((m) => m.value === d.motifUserMode)?.label ?? ""}）`;
+});
+
+/** 確認画面の「使用情報」の行。保存される形（連絡先の前置きを付けた形）で見せる */
+const usageInfoPreview = computed(() => {
+	if (!isAsk.value) return d.usageInfo;
+	const head = `${ASK_BEFORE_COPY_PREFIX}${d.askContact.trim() || "（未入力）"}`;
+	return showUsageInfo.value && d.usageInfo.trim() ? `${head}\n${d.usageInfo}` : head;
+});
+
 const licenseRows = computed(() =>
 	filled([
-		{ label: "自分がモチーフ", value: d.motifSelf == null ? null : d.motifSelf ? "はい" : "いいえ" },
-		{
-			label: "使える人",
-			value: d.motifSelf ? MOTIF_MODES.find((m) => m.value === d.motifUserMode)?.label : null,
-		},
 		{ label: "コピー可否", value: copyPermissionLabel(d.copyPermission) },
 		{ label: "ライセンス", value: licenseName.value ?? EMOJI_LICENSE_NONE_LABEL },
 		{ label: "作者", value: d.creator },
-		{ label: "許可を取る連絡先", value: isAsk.value ? d.askContact : null },
-		{ label: "使用情報", value: showUsageInfo.value ? d.usageInfo : null },
+		{ label: "使用情報", value: usageInfoPreview.value },
 		{ label: "著作権の表示", value: d.copyrightNotice },
 		{ label: "クレジット", value: d.creditText },
 		{ label: "関連リンク", value: relatedLinkList.value.join("\n") },
@@ -1118,7 +1262,7 @@ function saveDraft(): void {
 	// 再申請の入力は下書きにしない（新しい申請の下書きを上書きしないため）
 	if (megamojiSimple.value || submittedId.value || props.resubmit) return;
 	try {
-		localStorage.setItem(DRAFT_KEY, JSON.stringify({ draft: d, step: step.value }));
+		localStorage.setItem(DRAFT_KEY, JSON.stringify({ draft: d }));
 	} catch {}
 }
 
@@ -1137,10 +1281,10 @@ function loadDraft(): boolean {
 	try {
 		const raw = localStorage.getItem(DRAFT_KEY);
 		if (!raw) return false;
-		const saved = JSON.parse(raw) as { draft: Partial<Draft>; step: Step };
+		const saved = JSON.parse(raw) as { draft: Partial<Draft> };
 		Object.assign(d, emptyDraft(), saved.draft);
-		// 下書きの画面が今の流れに無ければ（文字だけ↔ふつうの切り替えなど）、最初の画面から
-		step.value = steps.value.includes(saved.step) ? saved.step : "image";
+		// NOTE: 画面は最初（画像）から始める。途中の画面から始めると、ブラウザの履歴に前の画面が無く、
+		// 戻る操作で申請ページを抜けてしまうため。履歴に画面が残っているときは restoreStepFromHistory で移る
 		return true;
 	} catch {
 		return false;
@@ -1188,9 +1332,23 @@ async function onMessage(ev: MessageEvent): Promise<void> {
 	}
 }
 
-onMounted(() => {
+/**
+ * ブラウザの履歴に画面が入っていれば、その画面へ移る。
+ *
+ * @remarks
+ * 別のページへ移ってからブラウザの戻るで帰ってきたとき（ルーターがこのページを開き直す）に、元の画面から続けるため。
+ */
+function restoreStepFromHistory(): void {
+	const s = window.history.state?.emojiRequestStep as Step | undefined;
+	if (s && steps.value.includes(s)) step.value = s;
+}
+
+onMounted(async () => {
+	pageKey = window.history.state?.key;
+	window.addEventListener("popstate", onPopState);
 	if (props.resubmit) {
-		loadResubmit(props.resubmit);
+		await loadResubmit(props.resubmit);
+		restoreStepFromHistory();
 		return;
 	}
 	if (props.from === "megamoji") {
@@ -1205,10 +1363,12 @@ onMounted(() => {
 	}
 	restoredDraft.value = loadDraft();
 	if (props.name && !d.name) d.name = nameFromFileName(props.name);
+	restoreStepFromHistory();
 });
 
 onBeforeUnmount(() => {
 	window.removeEventListener("message", onMessage);
+	window.removeEventListener("popstate", onPopState);
 });
 
 // #endregion
@@ -1222,13 +1382,13 @@ definePageMetadata(
 </script>
 
 <style lang="scss" module>
+// NOTE: 見た目は試作（計画書の「申請画面の案」の最終版）に合わせている。色は各自のテーマの変数を使う
+
 .root {
 	scroll-margin-top: 80px;
 }
 
-.progress {
-	margin: 0 0 16px;
-}
+// #region 進み具合
 
 .bars {
 	display: flex;
@@ -1237,7 +1397,7 @@ definePageMetadata(
 
 .bar {
 	flex: 1;
-	height: 4px;
+	height: 3px;
 	border-radius: 2px;
 	background: var(--divider);
 }
@@ -1261,13 +1421,300 @@ definePageMetadata(
 	background: var(--accent);
 }
 
-.afterChoices {
-	margin-top: 8px !important;
+.stepHead {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	margin: 10px 0 4px;
+	font-weight: bold;
 }
 
-.commentTitle {
+.counter {
+	font-size: 0.85em;
+	font-weight: normal;
+	opacity: 0.7;
+}
+
+// #endregion
+
+// #region 項目
+
+.field {
+	margin: 14px 0 0;
+	border-radius: 8px;
+	transition: box-shadow 0.2s, background 0.2s;
+}
+
+/** 必須なのに入っていない項目（「次へ」を押したとき） */
+.missing {
+	box-shadow: 0 0 0 2px var(--error);
+	background: color-mix(in srgb, var(--error) 8%, transparent);
+	padding: 6px;
+	margin-left: -6px;
+	margin-right: -6px;
+}
+
+.missingText {
+	margin: 4px 0 0;
+	font-size: 0.85em;
 	font-weight: bold;
+	color: var(--error);
+}
+
+.lb {
+	display: flex;
+	align-items: center;
+	gap: 6px;
 	margin: 0 0 4px;
+	font-size: 0.9em;
+	opacity: 0.85;
+}
+
+.question {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin: 6px 0 2px;
+	font-weight: bold;
+}
+
+.req,
+.opt {
+	display: inline-block;
+	padding: 0 6px;
+	border-radius: 6px;
+	font-size: 0.75em;
+	font-weight: normal;
+	line-height: 1.6;
+}
+
+.req {
+	color: var(--error);
+	background: color-mix(in srgb, var(--error) 15%, transparent);
+}
+
+.opt {
+	border: solid 1px var(--divider);
+	opacity: 0.8;
+}
+
+.cap {
+	margin: 4px 0 0;
+	font-size: 0.8em;
+	line-height: 1.6;
+	opacity: 0.7;
+}
+
+.block {
+	display: block;
+	margin: 2px 0 0;
+}
+
+.pre {
+	white-space: pre-wrap;
+}
+
+.errorText {
+	color: var(--error);
+	opacity: 1;
+}
+
+.warnText {
+	color: var(--warn);
+	opacity: 1;
+}
+
+.okText {
+	color: var(--success);
+	opacity: 1;
+}
+
+.mono input {
+	font-family: monospace;
+}
+
+.withMe {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.grow {
+	flex: 1;
+	min-width: 0;
+}
+
+.me {
+	flex: none;
+	padding: 6px 10px;
+	border-radius: 6px;
+	font-size: 0.85em;
+	white-space: nowrap;
+	color: var(--accent);
+	background: var(--accentedBg);
+	border: solid 1px var(--accent);
+}
+
+.toggleRow {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	margin: 16px 0 0;
+	padding: 12px 0 0;
+	border-top: solid 1px var(--divider);
+}
+
+// #endregion
+
+// #region 選ぶ項目
+
+.pick {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	width: 100%;
+	margin: 8px 0 0;
+	padding: 12px;
+	text-align: left;
+	border: solid 1px var(--divider);
+	border-radius: 10px;
+}
+
+.pickOn {
+	border: solid 2px var(--accent);
+	padding: 11px;
+}
+
+.yesNo {
+	display: flex;
+	gap: 8px;
+	margin: 8px 0 0;
+}
+
+.yn {
+	flex: 1;
+	padding: 10px;
+	text-align: center;
+	border: solid 1px var(--divider);
+	border-radius: 10px;
+}
+
+.mode {
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+	width: 100%;
+	margin: 6px 0 0;
+	padding: 9px;
+	text-align: left;
+	border: solid 1px var(--divider);
+	border-radius: 8px;
+
+	&.pickOn {
+		padding: 8px;
+	}
+}
+
+.radio {
+	flex: none;
+	width: 14px;
+	height: 14px;
+	margin: 3px 0 0;
+	border-radius: 50%;
+	border: solid 2px var(--divider);
+	box-sizing: border-box;
+}
+
+.radioOn {
+	border: solid 5px var(--accent);
+}
+
+// #endregion
+
+// #region ライセンス情報
+
+.easy {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	width: 100%;
+	margin: 4px 0 0;
+	padding: 10px 12px;
+	text-align: left;
+	border-radius: 10px;
+	border: solid 1px var(--accent);
+	background: var(--accentedBg);
+	color: var(--accent);
+}
+
+.easyIcon {
+	font-size: 1.5em;
+}
+
+.easyTitle {
+	font-weight: bold;
+}
+
+.easySub {
+	font-size: 0.8em;
+	opacity: 0.85;
+}
+
+.easyArrow {
+	margin-left: auto;
+}
+
+.chosen {
+	margin: 8px 0 0;
+	padding: 6px 10px;
+	border-radius: 8px;
+	font-size: 0.9em;
+	line-height: 1.6;
+	background: var(--buttonBg);
+}
+
+.fold {
+	margin: 16px 0 0;
+	border: solid 1px var(--divider);
+	border-radius: 8px;
+}
+
+.foldHead {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	width: 100%;
+	padding: 10px;
+	font-size: 0.9em;
+}
+
+.foldBody {
+	padding: 0 10px 10px;
+	border-top: solid 1px var(--divider);
+}
+
+.hint {
+	margin: 10px 0 0;
+	font-size: 0.85em;
+	line-height: 1.6;
+	opacity: 0.8;
+}
+
+// #endregion
+
+// #region 画像・確認
+
+.from {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin: 0 0 8px;
+	padding: 6px 10px;
+	border-radius: 8px;
+	font-size: 0.9em;
+	background: var(--buttonBg);
 }
 
 .proposalImage {
@@ -1277,143 +1724,39 @@ definePageMetadata(
 		display: block;
 		max-width: 60%;
 		max-height: 64px;
-		margin: 0 0 12px;
+		margin: 0 0 8px;
 		object-fit: contain;
 	}
-}
-
-.progressText {
-	margin: 6px 0 0;
-	font-size: 0.85em;
-	opacity: 0.7;
-}
-
-.h {
-	margin: 0 0 12px;
-	font-size: 1.1em;
-}
-
-.subHead {
-	margin: 16px 0 8px;
-	font-weight: bold;
-}
-
-.caption {
-	margin: 6px 0 0;
-	font-size: 0.85em;
-	opacity: 0.7;
-	line-height: 1.6;
-}
-
-.pre {
-	white-space: pre-wrap;
-}
-
-.dim {
-	opacity: 0.6;
-}
-
-.req {
-	display: inline-block;
-	margin-left: 4px;
-	padding: 0 6px;
-	border-radius: 6px;
-	font-size: 0.75em;
-	font-weight: normal;
-	background: var(--buttonBg);
-	vertical-align: 0.1em;
-}
-
-.required {
-	background: var(--accent);
-	color: var(--fgOnAccent);
-}
-
-.errorText {
-	color: var(--error);
-}
-
-.warnText {
-	color: var(--warn);
-}
-
-.mono input {
-	font-family: monospace;
-}
-
-.choices {
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-}
-
-.choice {
-	display: block;
-	width: 100%;
-	text-align: left;
-	padding: 12px;
-	border: solid 1px var(--divider);
-	border-radius: 10px;
-}
-
-.choiceOn {
-	border: solid 2px var(--accent);
-	padding: 11px;
-}
-
-.choiceTitle {
-	font-weight: bold;
-}
-
-.foldHead {
-	display: flex;
-	width: 100%;
-	align-items: center;
-	justify-content: space-between;
-	margin: 16px 0 0;
-	padding: 10px 12px;
-	border-radius: 10px;
-	background: var(--buttonBg);
-	font-weight: bold;
-}
-
-.fold {
-	padding: 4px 4px 0;
 }
 
 .confirmImage {
 	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 12px;
-	margin: 0 0 12px;
+	justify-content: center;
+	margin: 10px 0 4px;
+	padding: 10px;
+	border-radius: 10px;
+	background: var(--buttonBg);
 
 	> img {
-		max-width: 70%;
-		max-height: 96px;
+		max-width: 100%;
+		height: 32px;
 		object-fit: contain;
 	}
 }
 
-.section {
-	margin: 0 0 16px;
-	padding: 10px 12px;
-	border: solid 1px var(--divider);
-	border-radius: 10px;
-}
-
-.sectionHead {
-	display: flex;
-	justify-content: space-between;
-	margin: 0 0 6px;
-	font-weight: bold;
+.sec {
+	margin: 14px 0 2px;
+	font-size: 0.8em;
+	opacity: 0.6;
 }
 
 .row {
 	display: flex;
-	gap: 12px;
-	padding: 4px 0;
+	gap: 8px;
+	padding: 5px 0;
 	font-size: 0.9em;
+	line-height: 1.6;
+	border-bottom: solid 1px var(--divider);
 }
 
 .rowLabel {
@@ -1428,23 +1771,39 @@ definePageMetadata(
 	overflow-wrap: anywhere;
 }
 
-.smallLink {
-	margin: 4px 0 0;
+.tiny {
+	display: block;
+	margin: 2px 0 0;
 	font-size: 0.8em;
-	opacity: 0.7;
+	text-decoration: underline;
+	opacity: 0.6;
 }
 
 .messageLabel {
-	font-size: 0.85em;
+	margin-top: 16px;
+	font-size: 0.8em;
 }
+
+.commentTitle {
+	font-weight: bold;
+	margin: 0 0 4px;
+}
+
+// #endregion
+
+// #region 進む・戻る、送信後
 
 .nav {
 	display: flex;
 	gap: 8px;
-	margin: 24px 0 0;
+	margin: 20px 0 0;
 }
 
-.navButton {
+.backButton {
+	flex: 0 0 76px;
+}
+
+.nextButton {
 	flex: 1;
 }
 
@@ -1469,6 +1828,8 @@ definePageMetadata(
 }
 
 .mb12 {
-	margin-bottom: 12px;
+	margin: 8px 0 12px;
 }
+
+// #endregion
 </style>

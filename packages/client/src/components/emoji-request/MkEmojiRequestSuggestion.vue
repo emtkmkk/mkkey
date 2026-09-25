@@ -45,7 +45,7 @@ const emit = defineEmits<{
 
 <style lang="scss" module>
 .root {
-	margin: -8px 0 16px;
+	margin: 4px 0 0;
 }
 
 .text {

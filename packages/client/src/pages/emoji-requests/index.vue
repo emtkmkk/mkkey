@@ -1,13 +1,9 @@
 <template>
 	<MkStickyContainer>
 		<template #header>
-			<MkPageHeader v-model:tab="tab" :tabs="headerTabs" :display-back-button="true" />
+			<MkPageHeader v-model:tab="tab" :tabs="headerTabs" :actions="headerActions" :display-back-button="true" />
 		</template>
 		<MkSpacer :content-max="700">
-			<MkButton primary full :class="$style.newButton" @click="router.push('/emoji-requests/new')">
-				<i class="ph-plus ph-bold"></i> 絵文字を申請
-			</MkButton>
-
 			<div v-if="loading" :class="$style.empty">読み込んでいます…</div>
 
 			<!-- #region 追加申請 -->
@@ -127,6 +123,15 @@ const router = useRouter();
 const PAGE_SIZE = 30;
 
 const tab = ref<"add" | "import">(props.kind === "import" ? "import" : "add");
+/** ヘッダー右上のボタン（［＋］で絵文字を申請） */
+const headerActions = computed(() => [
+	{
+		icon: "ph-plus ph-bold ph-lg",
+		text: "絵文字を申請",
+		handler: () => router.push("/emoji-requests/new"),
+	},
+]);
+
 const headerTabs = computed(() => [
 	{ key: "add", title: "追加申請", icon: "ph-plus-circle ph-bold ph-lg" },
 	{ key: "import", title: "インポート申請", icon: "ph-download-simple ph-bold ph-lg" },
@@ -205,10 +210,6 @@ definePageMetadata({
 </script>
 
 <style lang="scss" module>
-.newButton {
-	margin: 0 0 16px;
-}
-
 .empty {
 	padding: 16px 0;
 	text-align: center;

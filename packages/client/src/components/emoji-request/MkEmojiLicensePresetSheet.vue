@@ -1,22 +1,15 @@
 <template>
-	<MkModal
-		ref="modal"
-		v-slot="{ type, maxHeight }"
-		:prefer-type="'auto'"
-		@click="modal?.close()"
+	<MkModalWindow
+		ref="dialogRef"
+		:width="440"
+		:with-ok-button="true"
+		:ok-button-disabled="selected == null"
+		@close="dialogRef?.close()"
 		@closed="emit('closed')"
+		@ok="apply()"
 	>
-		<div
-			class="_popup"
-			:class="[$style.root, { [$style.asDrawer]: type === 'drawer' }]"
-			:style="{ maxHeight: maxHeight ? maxHeight + 'px' : '' }"
-		>
-			<div :class="$style.head">
-				<span :class="$style.title">どう使ってほしいですか？</span>
-				<button class="_button" :class="$style.close" aria-label="閉じる" @click="modal?.close()">
-					<i class="ph-x ph-bold ph-lg"></i>
-				</button>
-			</div>
+		<template #header>どう使ってほしいですか？</template>
+		<div :class="$style.root">
 			<p :class="$style.caption">
 				近いものを選ぶと、コピー可否とライセンスが入ります。<br />あとから変えられます。
 			</p>
@@ -67,7 +60,7 @@
 				この内容で設定する
 			</MkButton>
 		</div>
-	</MkModal>
+	</MkModalWindow>
 </template>
 
 <script lang="ts" setup>
@@ -78,7 +71,7 @@
  *
  * @remarks
  * ライセンスがよく分からない人でも、「どう使ってほしいか」のカードを選ぶだけでコピー可否とライセンスをまとめて決められるようにする（M1）。
- * - スマホでは画面の下から出るシート、それ以外ではダイアログ（MkModal の auto）
+ * - 他の設定ダイアログと同じウィンドウ（MkModalWindow）で開く。右上の ✓ か、下の［この内容で設定する］で決める
  * - 「コピーする前に一声かけてほしい」スイッチは、コピーを許すカードとだけ組み合わせられる（M4）。
  *   入れると札の「コピー」が「コピー（要許可）」に変わる
  * - ［この内容で設定する］で done を返して閉じる。設定した値は、申請画面で手で変えられる
@@ -87,7 +80,7 @@
  * @internal
  */
 import { computed, ref, watch } from "vue";
-import MkModal from "@/components/MkModal.vue";
+import MkModalWindow from "@/components/MkModalWindow.vue";
 import MkButton from "@/components/MkButton.vue";
 import MkSwitch from "@/components/form/switch.vue";
 import {
@@ -107,7 +100,7 @@ const emit = defineEmits<{
 	(ev: "closed"): void;
 }>();
 
-const modal = ref<InstanceType<typeof MkModal>>();
+const dialogRef = ref<InstanceType<typeof MkModalWindow>>();
 const selectedKey = ref<string | null>(props.initialKey ?? null);
 const ask = ref(props.initialAsk ?? false);
 
@@ -146,36 +139,18 @@ function badgesOf(preset: EmojiLicensePreset) {
 function apply(): void {
 	if (selected.value == null) return;
 	emit("done", { preset: selected.value, ask: ask.value });
-	modal.value?.close();
+	dialogRef.value?.close();
 }
 </script>
 
 <style lang="scss" module>
 .root {
-	width: min(440px, 100vw);
-	box-sizing: border-box;
-	padding: 12px 14px 16px;
-	overflow: auto;
+	padding: 12px 16px 16px;
 }
 
-.asDrawer {
-	width: 100%;
-	border-radius: 16px 16px 0 0;
-}
 
-.head {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-}
 
-.title {
-	font-weight: bold;
-}
 
-.close {
-	padding: 4px;
-}
 
 .caption {
 	margin: 4px 0 0;

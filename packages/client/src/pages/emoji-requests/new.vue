@@ -178,8 +178,8 @@
 								あなたのアイコンやキャラクターを元にした絵文字なら「はい」。はいにすると、この絵文字を使える人をあなたが決められます（あとから絵文字の詳細ページでも変えられます）。
 							</div>
 							<div :class="$style.yesNo">
-								<button class="_button" :class="[$style.yn, { [$style.pickOn]: d.motifSelf === true }]" @click="d.motifSelf = true">はい</button>
-								<button class="_button" :class="[$style.yn, { [$style.pickOn]: d.motifSelf === false }]" @click="d.motifSelf = false">いいえ</button>
+								<button class="_button" :class="[$style.yn, { [$style.pickOn]: d.motifSelf === true }]" @click="d.motifSelf = true"><i v-if="d.motifSelf === true" class="ph-check ph-bold"></i> はい</button>
+								<button class="_button" :class="[$style.yn, { [$style.pickOn]: d.motifSelf === false }]" @click="d.motifSelf = false"><i v-if="d.motifSelf === false" class="ph-check ph-bold"></i> いいえ</button>
 							</div>
 							<div v-if="missingField === 'motifSelf'" :class="$style.missingText">はい・いいえのどちらかを選んでください</div>
 							<MkEmojiRequestSuggestion v-if="suggestionOf('motifSelf')" v-bind="suggestionOf('motifSelf')!" @apply="applySuggestion('motifSelf')" />
@@ -1582,10 +1582,6 @@ definePageMetadata(
 	border-radius: 10px;
 }
 
-.pickOn {
-	border: solid 2px var(--accent);
-	padding: 11px;
-}
 
 .yesNo {
 	display: flex;
@@ -1612,9 +1608,22 @@ definePageMetadata(
 	border: solid 1px var(--divider);
 	border-radius: 8px;
 
-	&.pickOn {
-		padding: 8px;
-	}
+}
+
+/**
+ * 選んでいる項目。どれを選んだか一目で分かるよう、枠・背景・文字の色をまとめて変える。
+ *
+ * NB: 通常時のスタイル（.pick / .yn / .mode）より後に、より強い指定で書く。
+ * 同じ強さで前に書くと、通常時の border に上書きされて選んだ印が消える。
+ */
+.pick.pickOn,
+.yn.pickOn,
+.mode.pickOn {
+	border-color: var(--accent);
+	box-shadow: 0 0 0 1px var(--accent);
+	background: var(--accentedBg);
+	color: var(--accent);
+	font-weight: bold;
 }
 
 .radio {

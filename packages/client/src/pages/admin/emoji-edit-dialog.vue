@@ -76,10 +76,9 @@
 					:disabled="isTextOnly"
 				>
 					<template #label>{{ i18n.ts.copyPermission }}</template>
-					<option value="allow">{{ i18n.ts._copyPermission?.allow ?? "allow" }}</option>
-					<option value="deny">{{ i18n.ts._copyPermission?.deny ?? "deny" }}</option>
-					<option value="conditional">{{ i18n.ts._copyPermission?.conditional ?? "conditional" }}</option>
-					<option value="none">{{ i18n.ts._copyPermission?.none ?? "none" }}</option>
+					<option v-for="v in EMOJI_COPY_PERMISSIONS" :key="v" :value="v">
+						{{ i18n.ts._copyPermission?.[v] ?? v }}
+					</option>
 				</MkSelect>
 				<div class="_formBlock">
 					<MkSelect
@@ -88,21 +87,16 @@
 						:disabled="isTextOnly"
 					>
 						<template #label>{{ i18n.ts.licenseName ?? "ライセンス名" }}</template>
-						<option value="">設定しない</option>
-						<option value="CC0 1.0 Universal">CC0 1.0 Universal</option>
-						<option value="CC BY 4.0">CC BY 4.0</option>
-						<option value="CC BY-NC 4.0">CC BY-NC 4.0</option>
-						<option value="CC BY-NC-SA 4.0">CC BY-NC-SA 4.0</option>
-						<option value="CC BY-NC-ND 4.0">CC BY-NC-ND 4.0</option>
-						<option value="Public Domain">Public Domain</option>
-						<option value="__other__">その他</option>
+						<option value="">{{ EMOJI_LICENSE_NONE_LABEL }}</option>
+						<option v-for="name in EMOJI_LICENSE_NAMES" :key="name" :value="name">{{ name }}</option>
+						<option :value="EMOJI_LICENSE_OTHER">{{ EMOJI_LICENSE_OTHER_LABEL }}</option>
 					</MkSelect>
 					<p class="license-caption">他の人がこの絵文字を使う・他サーバへコピーする・改変するとき、どの条件で許可するかを示します。</p>
 					<div v-if="licenseSelectValue !== '' && !isTextOnly" class="license-description">
 						{{ licenseDescription }}
 					</div>
 					<MkInput
-						v-if="licenseSelectValue === '__other__' && !isTextOnly"
+						v-if="licenseSelectValue === EMOJI_LICENSE_OTHER && !isTextOnly"
 						v-model="licenseNameOther"
 						class="_formBlock"
 					>
@@ -182,6 +176,7 @@
  * @remarks
  * 使用可能状態・許可ユーザ・モチーフユーザー・モチーフモードの編集、ライセンス名のリスト選択と説明表示に対応。
  * Fedibird 互換項目（表示名・読み・関連リンク・著作権表示・クレジット・コピー元のカテゴリ）も編集できる。
+ * ライセンス・コピー可否の選択肢と説明文は、申請画面と共通の {@link "@/scripts/emoji-license"} から取る。
  * 一覧から渡される絵文字には詳細項目（関連リンク・著作権表示・クレジット・参考情報）が含まれないため、開いたときに `emoji` API で取り直す。
  * 取り直しが終わるまでは詳細項目の入力欄を無効にし、保存時も送らない（読み込み前の空の値で上書きしないため）。
  */
@@ -200,42 +195,19 @@ import { emojiCategories } from "@/instance";
 import { instance } from "@/instance";
 import { api } from "@/os";
 import { selectFile } from "@/scripts/select-file";
+import {
+	EMOJI_COPY_PERMISSIONS,
+	EMOJI_LICENSE_DESCRIPTIONS,
+	EMOJI_LICENSE_NAMES,
+	EMOJI_LICENSE_NONE_LABEL,
+	EMOJI_LICENSE_OTHER,
+	EMOJI_LICENSE_OTHER_LABEL,
+	resolveLicenseSelectValue,
+} from "@/scripts/emoji-license";
 
 const props = defineProps<{
 	emoji: any;
 }>();
-
-const LICENSE_DESCRIPTIONS: Record<string, string> = {
-	"": "この絵文字について、ライセンスを指定しません。二次創作物などでライセンス不明の場合は「設定しない」にしておく運用を推奨します。",
-	"CC0 1.0 Universal":
-		"作者が全ての権利を行使しないと宣言した状態です。作者の意思で「自由に使ってよい」と明示します。クレジット表示なしで商用・改変ともに自由に使えます。",
-	"CC BY 4.0":
-		"この絵文字を使用・コピーする際、作者のクレジット表示を条件とします。商用利用も改変も可能です。",
-	"CC BY-NC 4.0":
-		"この絵文字を使用・コピーする際、作者のクレジット表示が必要で、かつ商用利用は出来ないようにします。改変・二次創作は可能です。",
-	"CC BY-NC-SA 4.0":
-		"この絵文字を使用・コピーする際、作者のクレジット表示が必要で、かつ商用利用は出来ないようにします。改変・二次創作は可能ですが、改変した作品も CC BY-NC-SA で公開する必要があります。",
-	"CC BY-NC-ND 4.0":
-		"この絵文字を使用・コピーする際、クレジット表示が必要で、商用利用も改変もできません。そのままの形で使う（表示・配布）事のみ許可するライセンスです。",
-	"Public Domain":
-		"法律で著作権が切れた、または最初から権利が及ばない状態です。クレジット表示なしで商用・改変ともに自由に使えます。",
-	"__other__": "上記以外のライセンスを使う場合に選び、下の入力欄にライセンス名を記入してください。",
-};
-
-const KNOWN_LICENSE_VALUES = [
-	"",
-	"CC0 1.0 Universal",
-	"CC BY 4.0",
-	"CC BY-NC 4.0",
-	"CC BY-NC-SA 4.0",
-	"CC BY-NC-ND 4.0",
-	"Public Domain",
-];
-
-function resolveLicenseSelectValue(name: string | null | undefined): string {
-	if (name == null || name === "") return "";
-	return KNOWN_LICENSE_VALUES.includes(name) ? name : "__other__";
-}
 
 let dialog = $ref(null);
 let name: string = $ref(props.emoji.name);
@@ -289,7 +261,7 @@ let licenseSelectValue: string = $ref(
 	resolveLicenseSelectValue((props.emoji.isTextOnly ?? false) ? "CC0 1.0 Universal" : props.emoji.licenseName)
 );
 let licenseNameOther: string = $ref(
-	resolveLicenseSelectValue(props.emoji.licenseName) === "__other__" ? (props.emoji.licenseName ?? "") : ""
+	resolveLicenseSelectValue(props.emoji.licenseName) === EMOJI_LICENSE_OTHER ? (props.emoji.licenseName ?? "") : ""
 );
 
 if (!detailLoaded) {
@@ -441,13 +413,13 @@ const displayCopyPermission = computed({
 
 const effectiveLicenseName = computed(() => {
 	if (isTextOnly) return "CC0 1.0 Universal";
-	if (licenseSelectValue === "__other__") return licenseNameOther;
+	if (licenseSelectValue === EMOJI_LICENSE_OTHER) return licenseNameOther;
 	return licenseSelectValue;
 });
 
 const licenseDescription = computed(() => {
-	if (isTextOnly) return LICENSE_DESCRIPTIONS["CC0 1.0 Universal"];
-	return LICENSE_DESCRIPTIONS[licenseSelectValue] ?? "";
+	if (isTextOnly) return EMOJI_LICENSE_DESCRIPTIONS["CC0 1.0 Universal"];
+	return EMOJI_LICENSE_DESCRIPTIONS[licenseSelectValue] ?? "";
 });
 
 const displayCreator = computed({

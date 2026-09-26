@@ -424,8 +424,8 @@
  * - 3 で「文字だけの絵文字なので不要（PD）」なら 4 と 5 を飛ばす
  * - MEGAMOJI から来たとき（`?from=megamoji`）は文字だけの絵文字として「画像 → 名前とタグ → 確認」の 3 ステップにする（H4）。
  *   確認画面の「文字だけの絵文字ではない場合」で 3 から始まるふつうの流れに戻す（H5）
- * - MEGAMOJI が `window.open` でこのページを開いたときは、準備ができたら opener へ知らせ、`postMessage` で画像を受け取る（H1）。
- *   受け付けるのは {@link MEGAMOJI_ORIGIN} からの画像のデータだけ。受け取っても自動では申請しない
+ * - MEGAMOJI が `window.open` でこのページを開いたときは、準備ができたら opener へ知らせ、`postMessage` で画像と項目を受け取る（H1）。
+ *   受け付けるのは {@link MEGAMOJI_ORIGIN} からのものだけ。項目は空の欄にだけ入れ、受け取っても自動では申請しない
  * - 入力の途中は localStorage に下書きとして残し、次に開いたときに続きから始める（MEGAMOJI から来たときは使わない）
  * - 「許可の後、コピー可」は画面だけの選択肢。送るときは連絡先（askContact）を付け、サーバー側で conditional と前置きの文に変える（B5）
  * - 修正のお願いに応えるとき（`?resubmit={id}`）は、元の申請内容を入れた状態で開き、管理者の提案を入力欄の下に出す（R2）。
@@ -476,8 +476,14 @@ import {
 } from "@/scripts/emoji-request";
 
 const props = defineProps<{
-	/** 絵文字名の初期値（MEGAMOJI などから URL で渡す） */
+	/** 絵文字名の初期値（MEGAMOJI などから URL で渡す。ほかの項目も同じ） */
 	name?: string;
+	alternateName?: string;
+	ruby?: string;
+	description?: string;
+	category?: string;
+	/** タグ（空白区切り） */
+	tags?: string;
 	/** "megamoji" なら MEGAMOJI から来た */
 	from?: string;
 	/** 修正のお願いに応えて直す申請の ID（R2） */
@@ -1326,20 +1332,54 @@ watch([d, step], saveDraft, { deep: true });
 
 // #region MEGAMOJI からの受け取り
 
+/** 外から受け取る文字の項目と、その長さの上限（API の上限と同じ） */
+const INCOMING_TEXT_LIMITS = {
+	name: 128,
+	alternateName: 512,
+	ruby: 512,
+	description: 4096,
+	category: 128,
+	aliases: 4096,
+} as const;
+
+type IncomingFields = Partial<Record<keyof typeof INCOMING_TEXT_LIMITS, string>>;
+
 /**
- * MEGAMOJI から画像を受け取る。
+ * 外（MEGAMOJI の postMessage や URL）から受け取った項目を、まだ空の入力欄にだけ入れる。
  *
  * @remarks
- * 送り元が {@link MEGAMOJI_ORIGIN} で、`{ type: "mkkey:emoji-request:image", image: Blob }` の形のものだけを受け付ける。
- * 画像以外のデータ（名前など）は受け取らない（名前は URL で渡してもらう）。受け取った画像は自分のドライブへ上げる。
+ * 受け取るのは文字の項目だけ（{@link INCOMING_TEXT_LIMITS}）。文字列でないものは無視し、長さは上限で切る。
+ * 申請者が入力したものを上書きしないよう、空の欄にだけ入れる。どの値も確認画面で見直してから送る。
+ * クレジットなどには自動で文を入れない（H3）。
+ *
+ * @param fields - 受け取った項目
+ */
+function applyIncomingFields(fields: Record<string, unknown>): void {
+	for (const [key, limit] of Object.entries(INCOMING_TEXT_LIMITS) as [keyof typeof INCOMING_TEXT_LIMITS, number][]) {
+		const v = fields[key];
+		if (typeof v !== "string" || v.trim() === "") continue;
+		const value = key === "name" ? nameFromFileName(v) : v.trim().slice(0, limit);
+		// タグ（aliases）も空白区切りの文字列で受け取る。配列は受け付けない
+		if (d[key] === "") d[key] = value;
+	}
+}
+
+/**
+ * MEGAMOJI から画像と項目を受け取る。
+ *
+ * @remarks
+ * 送り元が {@link MEGAMOJI_ORIGIN} で、`{ type: "mkkey:emoji-request:image", image: Blob, fields?: {...} }` の形のものだけを受け付ける。
+ * fields には name・alternateName・ruby・description・category・aliases（空白区切り）を入れられる（{@link applyIncomingFields}）。
+ * 受け取った画像は自分のドライブへ上げる。受け取っても自動では申請しない。
  *
  * @param ev - 届いたメッセージ
  */
 async function onMessage(ev: MessageEvent): Promise<void> {
 	if (ev.origin !== MEGAMOJI_ORIGIN) return;
-	const data = ev.data as { type?: unknown; image?: unknown } | null;
+	const data = ev.data as { type?: unknown; image?: unknown; fields?: unknown } | null;
 	if (data?.type !== "mkkey:emoji-request:image" || !(data.image instanceof Blob)) return;
 	if (!data.image.type.startsWith("image/")) return;
+	if (data.fields && typeof data.fields === "object") applyIncomingFields(data.fields as Record<string, unknown>);
 	uploading.value = true;
 	try {
 		const ext = data.image.type.split("/")[1]?.replace(/[^a-z0-9]/g, "") || "png";
@@ -1359,6 +1399,22 @@ async function onMessage(ev: MessageEvent): Promise<void> {
 	} finally {
 		uploading.value = false;
 	}
+}
+
+/**
+ * URL のクエリで受け取った項目（MEGAMOJI や、お知らせのリンクから開いたとき）。
+ *
+ * @returns 受け取った項目（無いものは undefined）
+ */
+function urlFields(): IncomingFields {
+	return {
+		name: props.name,
+		alternateName: props.alternateName,
+		ruby: props.ruby,
+		description: props.description,
+		category: props.category,
+		aliases: props.tags,
+	};
 }
 
 /**
@@ -1384,14 +1440,14 @@ onMounted(async () => {
 		// MEGAMOJI から来たときは下書きを使わず、文字だけの絵文字の 3 ステップにする（H4）
 		megamojiSimple.value = true;
 		d.licenseMode = "textOnly";
-		if (props.name) d.name = nameFromFileName(props.name);
+		applyIncomingFields(urlFields());
 		window.addEventListener("message", onMessage);
 		// 開いた MEGAMOJI へ、画像を受け取る準備ができたことを知らせる
 		window.opener?.postMessage({ type: "mkkey:emoji-request:ready" }, MEGAMOJI_ORIGIN);
 		return;
 	}
 	restoredDraft.value = loadDraft();
-	if (props.name && !d.name) d.name = nameFromFileName(props.name);
+	applyIncomingFields(urlFields());
 	restoreStepFromHistory();
 });
 

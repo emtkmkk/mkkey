@@ -312,6 +312,89 @@ const lines = [
 ];
 fs.writeFileSync(path.join(outputDir, "candidates.md"), lines.join("\n"));
 
+// #region 画像つきの確認ページ
+
+/**
+ * HTML に埋め込む文字を安全にする。
+ *
+ * @param {unknown} v - 値
+ * @returns {string} エスケープした文字
+ */
+const h = (v) =>
+	String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+
+const COPY_LABELS = { allow: "コピー可", deny: "コピー不可", conditional: "条件付きでコピー可", none: "決めない" };
+
+/**
+ * 候補 1 件のカード。画像は黒・白の背景の両方で見せる。
+ *
+ * @param {{ note: any; entry: any }} c - 候補
+ * @param {number} i - 番号
+ * @returns {string} HTML
+ */
+function card({ note, entry: e }, i) {
+	const copy = e.isTextOnly ? "文字だけ（PD）" : e.askContact ? "許可の後、コピー可" : COPY_LABELS[e.copyPermission] ?? "";
+	const rows = [
+		["申請者", `@${e.requesterUsername ?? "（不明）"}`],
+		["送信日時", new Date(e.submittedAt).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })],
+		["カテゴリ", e.category],
+		["タグ", e.aliases.join(" ")],
+		["コピー可否", copy],
+		["ライセンス", e.licenseName],
+		["作者", e.creator],
+		["連絡先", e.askContact],
+		["使用情報", e.usageInfo],
+		["説明", e.description],
+		["メッセージ", e.message],
+	].filter(([, v]) => v);
+	const img = note.fileUrl ? `<img src="${h(note.fileUrl)}" alt="" loading="lazy">` : "（画像なし）";
+	return `<article>
+	<div class="no">#${i + 1}・シート ${note.row} 行目</div>
+	<div class="images"><div class="dark">${img}</div><div class="light">${img}</div></div>
+	<h2>:${h(e.name)}:</h2>
+	<dl>${rows.map(([k, v]) => `<dt>${h(k)}</dt><dd>${h(v)}</dd>`).join("")}</dl>
+</article>`;
+}
+
+const html = `<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>過去の追加申請の取り込み候補</title>
+<style>
+	:root { --bg: #f5f6f8; --card: #fff; --ink: #1d2430; --muted: #667085; --line: #dde1e8; color-scheme: light; }
+	@media (prefers-color-scheme: dark) { :root { --bg: #14171d; --card: #1c2129; --ink: #e6e9ef; --muted: #98a2b3; --line: #2d3440; color-scheme: dark; } }
+	body { margin: 0; padding: 24px 16px 48px; background: var(--bg); color: var(--ink); font-family: "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif; font-size: 14px; }
+	h1 { font-size: 20px; margin: 0 0 4px; }
+	.summary { color: var(--muted); margin: 0 0 20px; }
+	.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+	article { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+	.no { font-size: 12px; color: var(--muted); }
+	.images { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+	.images > div { display: flex; align-items: center; justify-content: center; height: 88px; border-radius: 6px; padding: 6px; box-sizing: border-box; }
+	.dark { background: #222; } .light { background: #f2f2f2; }
+	.images img { max-width: 100%; max-height: 100%; object-fit: contain; }
+	h2 { font-size: 15px; margin: 0; font-family: ui-monospace, Consolas, monospace; overflow-wrap: anywhere; }
+	dl { display: grid; grid-template-columns: 6.5em 1fr; gap: 2px 8px; margin: 0; font-size: 13px; }
+	dt { color: var(--muted); } dd { margin: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+	h3 { font-size: 16px; margin: 32px 0 8px; }
+	ul { margin: 0; padding-left: 1.2em; color: var(--muted); }
+</style>
+<h1>過去の追加申請の取り込み候補</h1>
+<p class="summary">取り込む ${candidates.length} 件（画像は左が暗い背景、右が明るい背景）／ 除いたもの ${excluded.length} 件</p>
+<div class="grid">
+${candidates.map(card).join("\n")}
+</div>
+<h3>除いたもの</h3>
+<ul>
+${excluded.map((x) => `<li>${h(x.label)}（@${h(x.requester ?? "")}）：${h(x.reason)}</li>`).join("\n")}
+</ul>
+</html>
+`;
+fs.writeFileSync(path.join(outputDir, "preview.html"), html);
+
+// #endregion
+
 console.log(`取り込む候補 ${candidates.length} 件、除いたもの ${excluded.length} 件`);
 console.log(`→ ${path.join(outputDir, "candidates.md")}`);
 console.log(`→ ${path.join(outputDir, "payload.json")}`);

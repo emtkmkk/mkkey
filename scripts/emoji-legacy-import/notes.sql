@@ -29,6 +29,7 @@ SELECT json_agg(json_build_object(
   'requesterExists', EXISTS (SELECT 1 FROM "user" u WHERE u.username = p.requester AND u.host IS NULL),
   'fileId', p."fileIds"[1],
   'fileExists', EXISTS (SELECT 1 FROM drive_file f WHERE f.id = p."fileIds"[1]),
+  'fileUrl', (SELECT coalesce(f."webpublicUrl", f.url) FROM drive_file f WHERE f.id = p."fileIds"[1]),
   'row', p.row,
   'localExists', EXISTS (SELECT 1 FROM emoji e WHERE e.name = p.name AND e.host IS NULL)
 ) ORDER BY p."createdAt")

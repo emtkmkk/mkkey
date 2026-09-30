@@ -8,6 +8,7 @@
  * 入力（input/ に置く。どちらも git に入れない）
  * - input/sheet.csv：回答シート「絵文字申請」を CSV で書き出したもの（メールアドレスとトークンの列を含むが、出力には書かない）
  * - input/notes.json：申請チャンネルのノートの一覧（notes.sql の結果）
+ * - input/exclude.txt：（任意）手で外す絵文字名。1 行 1 つ
  *
  * 出力（output/ に書く。git に入れない）
  * - output/candidates.md：確認用の一覧（取り込む候補と、除いたものとその理由）
@@ -211,11 +212,33 @@ function findSheetRow(n) {
 	return best;
 }
 
+/**
+ * 手で外す絵文字名（input/exclude.txt に 1 行 1 つ。# から後はメモ）。
+ * 確認のうえ取り込まないと決めたものを入れる。
+ */
+const manualExcludes = (() => {
+	try {
+		return new Set(
+			fs
+				.readFileSync(path.join(inputDir, "exclude.txt"), "utf8")
+				.split(/\r?\n/)
+				.map((l) => l.replace(/#.*$/, "").trim().replace(/^:|:$/g, ""))
+				.filter(Boolean),
+		);
+	} catch {
+		return new Set();
+	}
+})();
+
 const excluded = [];
 const picked = new Map();
 for (const n of notes) {
 	const label = n.name ? `:${n.name}:` : "（名前なし）";
 	if (n.localExists) continue; // 今は同じ名前の絵文字がある（承認済み）。一覧にも出さない
+	if (n.name && manualExcludes.has(n.name)) {
+		excluded.push({ label, requester: n.requester, reason: "確認のうえ取り込まないことにした（exclude.txt）" });
+		continue;
+	}
 	if (n.name == null || n.row == null) {
 		excluded.push({ label, requester: n.requester, reason: "シートの行と対応づけられない（「登録する」のノートが無い。初期のテスト送信など）" });
 		continue;

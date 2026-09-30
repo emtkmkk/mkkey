@@ -1,13 +1,13 @@
 <template>
 	<component
-		:is="self ? 'MkA' : 'a'"
+		:is="self && !emojiLink ? 'MkA' : 'a'"
 		ref="el"
 		class="ieqqeuvs _link"
-		:[attr]="self ? props.url.substring(local.length) : props.url"
+		:[attr]="self && !emojiLink ? props.url.substring(local.length) : props.url"
 		:rel="rel"
 		:target="target"
 		@contextmenu.stop="() => {}"
-		@click.stop
+		@click.stop="onClick"
 	>
 		<template v-if="!self">
 			<span class="schema">{{ schema }}//</span>
@@ -34,6 +34,7 @@ import { defineAsyncComponent, ref } from "vue";
 import { toUnicode as decodePunycode } from "punycode/";
 import { url as local } from "@/config";
 import * as os from "@/os";
+import { emojiOfInternalLink, openEmojiDialog } from "@/scripts/open-emoji-dialog";
 import { useTooltip } from "@/scripts/use-tooltip";
 import { safeURIDecode } from "@/scripts/safe-uri-decode";
 
@@ -43,6 +44,8 @@ const props = defineProps<{
 }>();
 
 const self = props.url.startsWith(local);
+/** もこきーの絵文字の情報の画面の URL なら、その絵文字（押したらページを移動せずダイアログで開く） */
+const emojiLink = self ? emojiOfInternalLink(props.url) : null;
 const url = new URL(props.url);
 if (!["http:", "https:"].includes(url.protocol)) throw new Error("invalid url");
 const el = ref();
@@ -68,8 +71,19 @@ const port = url.port;
 const pathname = safeURIDecode(url.pathname);
 const query = safeURIDecode(url.search);
 const hash = safeURIDecode(url.hash);
-const attr = self ? "to" : "href";
+const attr = self && !emojiLink ? "to" : "href";
 const target = self ? null : "_blank";
+
+/**
+ * 押したとき。絵文字の情報の URL だけ、ページを移動せずに絵文字の詳細のダイアログを開く。
+ *
+ * @param ev - クリック
+ */
+function onClick(ev: MouseEvent): void {
+	if (emojiLink == null) return;
+	ev.preventDefault();
+	openEmojiDialog(emojiLink);
+}
 </script>
 
 <style lang="scss" scoped>

@@ -131,7 +131,14 @@ export interface Schema extends OfSchema {
 	readonly example?: any;
 	readonly format?: string;
 	readonly ref?: keyof typeof refs;
-	readonly enum?: ReadonlyArray<string>;
+	/**
+	 * 取りうる値の一覧。
+	 *
+	 * @remarks
+	 * NB: Ajv は `nullable: true` でも enum に null を足さないので、null を受け付けるときは null もここに入れる。
+	 * 型の上では null を除いて扱い、null かどうかは `nullable` で決める。
+	 */
+	readonly enum?: ReadonlyArray<string | null>;
 	readonly default?:
 		| (this["type"] extends TypeStringef ? StringDefToType<this["type"]> : any)
 		| null;
@@ -203,8 +210,8 @@ export type SchemaTypeDef<p extends Schema> = p["type"] extends "null"
 	: p["type"] extends "number"
 	? number
 	: p["type"] extends "string"
-	? p["enum"] extends readonly string[]
-		? p["enum"][number]
+	? p["enum"] extends readonly (string | null)[]
+		? Exclude<p["enum"][number], null>
 		: p["format"] extends "date-time"
 		? string
 		: // Dateにする？？

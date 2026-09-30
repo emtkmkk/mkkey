@@ -1,10 +1,10 @@
 {
-	"generatedAt": "2026-09-06T05:22:05.232Z",
+	"generatedAt": "2026-09-30T05:58:40.411Z",
 	"note": "型エラーの既知一覧。scripts/typecheck.js が「増えていないか」を判定するために使う。減ったときは --update で更新する。",
-	"total": 758,
+	"total": 750,
 	"packages": {
 		"backend": {
-			"total": 464,
+			"total": 456,
 			"files": {
 				"node_modules/.pnpm/@bull-board+api@4.6.4/node_modules/@bull-board/api/dist/typings/app.d.ts": {
 					"TS7016": 1
@@ -364,10 +364,6 @@
 				},
 				"packages/backend/src/server/api/endpoints/i/swarm/update-settings.ts": {
 					"TS2322": 1
-				},
-				"packages/backend/src/server/api/endpoints/i/update.ts": {
-					"TS2345": 1,
-					"TS7006": 7
 				},
 				"packages/backend/src/server/api/endpoints/i/webhooks/update.ts": {
 					"TS2345": 1

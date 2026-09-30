@@ -83,7 +83,8 @@ export const emojiAddRequestFieldsParamDef = {
 	sensitive: { type: "boolean" },
 	isTextOnly: { type: "boolean" },
 	motifSelf: { type: "boolean", nullable: true },
-	motifUserMode: { type: "string", nullable: true, enum: ["any", "follow", "owner"] },
+	// NB: Ajv は nullable: true でも enum に null を足さない。null を候補に入れないと null を送ったときに 400 になる
+	motifUserMode: { type: "string", nullable: true, enum: ["any", "follow", "owner", null] },
 	copyPermission: { type: "string", enum: ["allow", "deny", "conditional", "none"] },
 	askContact: { type: "string", nullable: true, maxLength: 256 },
 	licenseName: { type: "string", nullable: true, maxLength: 256 },

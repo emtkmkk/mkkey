@@ -19,6 +19,8 @@ declare module "virtual:route-titles" {
 		parents: RouteLinkTitle[];
 		/** 特別な表示をする画面の種類 */
 		kind?: "emoji";
+		/** 今までどおり Web プレビューを出す画面 */
+		keep?: boolean;
 	};
 
 	const entries: RouteTitleEntry[];

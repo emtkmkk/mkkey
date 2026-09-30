@@ -13,7 +13,9 @@
  * - 画面のファイルの `definePageMetadata` の `title` が、`i18n.ts.キー` か文字列のときだけ画面名として使う。
  *   中身で変わる名前（ユーザー名、リスト名など）は読み取らない
  * - ルートの定義に `linkTitle` があれば、それを優先する（中身で名前を切り替える画面の分を手で指定する）
- * - `keepLinkPreview: true` のルートは表に入れない（今までどおり Web プレビューを出す）
+ * - `keepLinkPreview: true` のルートは `keep` の印を付ける（今までどおり Web プレビューを出す）
+ * - 画面名が無いルートや `keep` のルートも、ルーターと同じ順で表に入れる。URL を先頭から照らし合わせて最初に合ったものを使うので、
+ *   ルーターが別の画面として扱う URL を、うっかり後ろの画面の形に合わせてしまわないようにするため
  * - `linkKind: "emoji"` のルートは、絵文字の情報の画面として印を付ける
  *
  * 出力
@@ -40,6 +42,8 @@ export type RouteTitleEntry = {
 	parents: RouteLinkTitle[];
 	/** 特別な表示をする画面の種類 */
 	kind?: "emoji";
+	/** 今までどおり Web プレビューを出す画面（OGP を持つ画面、中身が特に無い URL） */
+	keep?: boolean;
 };
 
 const VIRTUAL_ID = "virtual:route-titles";
@@ -221,7 +225,8 @@ function flatten(routes: RawRoute[], srcDir: string, base = "", parents: RouteLi
 	for (const r of routes) {
 		const full = base + r.path;
 		const title = r.linkTitle ?? (r.file ? readPageTitle(path.join(srcDir, r.file)) : null);
-		if (!r.keep && (title || r.kind)) out.push({ path: full, title, parents, ...(r.kind ? { kind: r.kind } : {}) });
+		// NB: 名前の無い画面・keep の画面も、ルーターと同じ順で入れる（照らし合わせは最初に合ったものを使うため）
+		out.push({ path: full, title, parents, ...(r.kind ? { kind: r.kind } : {}), ...(r.keep ? { keep: true } : {}) });
 		if (r.children.length > 0) out.push(...flatten(r.children, srcDir, full, title ? [...parents, title] : parents));
 	}
 	// 同じ URL の形が 2 回書かれていたら、先のものを使う（ルーターも先に書いた方に合う）
@@ -277,6 +282,7 @@ export default function routeTitles(opts: { srcDir: string; ja: Record<string, u
 						title: toJa(e.title, opts.ja),
 						parents: e.parents.map((p) => toJa(p, opts.ja)).filter((x): x is string => x != null),
 						...(e.kind ? { kind: e.kind } : {}),
+						...(e.keep ? { keep: true } : {}),
 					})),
 					settingLabels,
 				}),

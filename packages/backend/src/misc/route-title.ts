@@ -19,6 +19,8 @@ export type RouteTitleJsonEntry = {
 	title: string | null;
 	parents: string[];
 	kind?: "emoji";
+	/** 今までどおりの表示にする画面（OGP を持つ画面、中身が特に無い URL） */
+	keep?: boolean;
 };
 
 /** `route-titles.json` の中身 */
@@ -80,7 +82,8 @@ export function matchRoutePattern(pattern: string, pathname: string): Map<string
  * URL から画面名を引く。
  *
  * @remarks
- * - 表の先に書いたものから順に照らし合わせる（クライアントのルーターと同じく、先に書いた方が優先）
+ * - 表の先に書いたものから順に照らし合わせ、最初に合ったもので決める（表はクライアントのルーターと同じ順）
+ * - 最初に合ったのが keep の画面や、名前の無い画面なら null（今までどおりの表示）
  * - 親の画面名を「設定 > タイムライン」のようにつなぐ
  * - 画面名の `{param}` は URL のパラメータに置き換える（例：`#{tag}`）
  * - 設定の画面に `?setting=キー` があれば、その設定項目の名前もつなぐ
@@ -97,12 +100,14 @@ export function resolveRouteTitle(table: RouteTitleTable, pathname: string, sear
 	for (const e of table.entries) {
 		const params = matchRoutePattern(e.path, path);
 		if (params == null) continue;
+		if (e.keep) return null;
 		if (e.kind === "emoji") {
 			const emoji = params.get("emoji");
 			return emoji ? { kind: "emoji", emoji: emoji.replace(/^:|:$/g, "") } : null;
 		}
 		const fill = (s: string) => s.replace(/\{(\w+)\}/g, (_, k: string) => params.get(k) ?? "");
-		const names = [...e.parents, ...(e.title ? [e.title] : [])].map(fill).filter(Boolean);
+		if (e.title == null) return null;
+		const names = [...e.parents, e.title].map(fill).filter(Boolean);
 		if (names.length === 0) return null;
 		const settingKey = new URLSearchParams(search).get("setting");
 		if (settingKey && e.path.startsWith("/settings") && table.settingLabels[settingKey]) {

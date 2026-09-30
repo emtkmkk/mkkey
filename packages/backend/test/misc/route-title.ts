@@ -11,6 +11,8 @@ import { matchRoutePattern, resolveRouteTitle, type RouteTitleTable } from "../.
 /** テスト用の画面名の表 */
 const table: RouteTitleTable = {
 	entries: [
+		{ path: "/notes/:noteId", title: null, parents: [], keep: true },
+		{ path: "/my/lists/:listId", title: null, parents: [] },
 		{ path: "/settings", title: "設定", parents: [] },
 		{ path: "/settings/timeline", title: "タイムライン", parents: ["設定"] },
 		{ path: "/tags/:tag", title: "#{tag}", parents: [] },
@@ -82,8 +84,16 @@ describe("route-title", () => {
 			});
 		});
 
-		it("異常系：表に無い URL は null", () => {
+		it("異常系：最初に合ったのが keep の画面なら null（今までどおりの表示）", () => {
 			assert.strictEqual(resolveRouteTitle(table, "/notes/abc"), null);
+		});
+
+		it("異常系：最初に合ったのが名前の無い画面なら null", () => {
+			assert.strictEqual(resolveRouteTitle(table, "/my/lists/xyz"), null);
+		});
+
+		it("異常系：表に無い URL は null", () => {
+			assert.strictEqual(resolveRouteTitle(table, "/unknown/path"), null);
 		});
 	});
 });

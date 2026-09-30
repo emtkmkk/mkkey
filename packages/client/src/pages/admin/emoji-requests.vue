@@ -89,7 +89,7 @@ import * as os from "@/os";
 import { useRouter } from "@/router";
 import { emojiMap } from "@/instance";
 import { definePageMetadata } from "@/scripts/page-metadata";
-import { analyzeEmojiImage } from "@/scripts/emoji-image-tools";
+import { analyzeEmojiImage, fetchImageBlob } from "@/scripts/emoji-image-tools";
 import { isOverRecommendedPixels } from "@/scripts/emoji-image-analysis";
 import { formatRequestDate, type PackedEmojiAddRequest } from "@/scripts/emoji-request";
 
@@ -198,7 +198,7 @@ async function checkMargins(list: PackedEmojiAddRequest[]): Promise<void> {
 	for (const r of list) {
 		if (r.file == null) continue;
 		try {
-			const blob = await (await fetch(r.file.url)).blob();
+			const blob = await fetchImageBlob(r.file.url);
 			if ((await analyzeEmojiImage(blob)).marginWarning) {
 				marginWarned.value = new Set(marginWarned.value).add(r.id);
 			}

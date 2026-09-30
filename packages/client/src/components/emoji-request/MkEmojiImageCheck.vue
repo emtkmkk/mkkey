@@ -119,6 +119,7 @@ import { uploadFile } from "@/scripts/upload";
 import {
 	analyzeEmojiImage,
 	cropEmojiHorizontalMargins,
+	fetchImageBlob,
 	shrinkEmojiToRecommended,
 	type EmojiImageAnalysis,
 } from "@/scripts/emoji-image-tools";
@@ -201,15 +202,13 @@ function num(n: number): string {
 }
 
 /**
- * 画像を読み込む。
+ * 画像を読み込む（キャッシュを使わない。理由は {@link fetchImageBlob}）。
  *
  * @param f - ドライブのファイル
  * @returns 画像の中身
  */
-async function fetchBlob(f: Misskey.entities.DriveFile): Promise<Blob> {
-	const res = await fetch(f.url);
-	if (!res.ok) throw new Error(`fetch failed: ${res.status}`);
-	return await res.blob();
+function fetchBlob(f: Misskey.entities.DriveFile): Promise<Blob> {
+	return fetchImageBlob(f.url);
 }
 
 /** 今の画像を調べ直す */

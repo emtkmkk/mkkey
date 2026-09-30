@@ -39,6 +39,26 @@ export type EmojiImageAnalysis = {
 };
 
 /**
+ * 調べたり加工したりするために、画像の中身を URL から取る。
+ *
+ * @remarks
+ * NB: ブラウザのキャッシュを使わず、必ずサーバーから取り直す（`cache: "no-store"`）。
+ * 画像の置き場（オブジェクトストレージ）は、Origin 付きで頼まれたときだけ CORS の許可を返すのに、
+ * `Vary: Origin` を付けずに長期間キャッシュさせる。同じ画像を先に `<img>`（Origin なし）で表示していると、
+ * キャッシュに残った「許可の無い応答」を fetch が使ってしまい、CORS エラーで読めなくなるため。
+ *
+ * @param url - 画像の URL
+ * @returns 画像の中身
+ * @throws Error 取れなかったとき
+ * @internal
+ */
+export async function fetchImageBlob(url: string): Promise<Blob> {
+	const res = await fetch(url, { cache: "no-store" });
+	if (!res.ok) throw new Error(`fetch failed: ${res.status}`);
+	return await res.blob();
+}
+
+/**
  * 画像を読み込む。
  *
  * @param blob - 画像

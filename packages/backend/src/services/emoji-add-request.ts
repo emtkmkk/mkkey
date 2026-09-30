@@ -26,15 +26,18 @@ export * from "@/misc/emoji-add-request-fields.js";
 // #region 通知
 
 /**
- * 申請の画像の URL を返す（通知のアイコンに使う）。
+ * 申請の画像の URL を返す（通知のアイコンと、修正案の画像に使う）。
+ *
+ * @remarks
+ * 表示用に変換した画像（webpublic）ではなく、元の画像を返す。理由は {@link packEmojiAddRequest} を参照。
  *
  * @param fileId - 申請の画像
- * @returns 公開用の URL、または null
+ * @returns 元の画像の URL、または null
  */
 async function getRequestImageUrl(fileId: string | null): Promise<string | null> {
 	if (fileId == null) return null;
 	const file = await DriveFiles.findOneBy({ id: fileId });
-	return file ? (file.webpublicUrl ?? file.url) : null;
+	return file ? file.url : null;
 }
 
 /**
@@ -116,7 +119,10 @@ export async function packEmojiAddRequest(r: EmojiAddRequest) {
 		file: file
 			? {
 					id: file.id,
-					url: file.webpublicUrl ?? file.url,
+					// NB: 表示用に変換した画像（webpublic）ではなく元の画像を返す。
+					// 審査画面・申請画面は、この画像を読んでサイズを調べ、余白カットや縮小をする。
+					// webpublic は WebP に変換・縮小されていることがあり、サイズがずれたり加工で画質が落ちたりするため
+					url: file.url,
 					type: file.type,
 					width: props.width ?? null,
 					height: props.height ?? null,

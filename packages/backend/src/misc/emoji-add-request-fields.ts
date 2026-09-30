@@ -19,6 +19,8 @@ import type {
 	EmojiAddRequestEditableFields,
 	EmojiAddRequestHistoryEntry,
 	EmojiAddRequestProposal,
+	EmojiImageEdit,
+	EmojiImageEditOp,
 } from "@/models/entities/emoji-add-request.js";
 import type { Emoji } from "@/models/entities/emoji.js";
 
@@ -324,6 +326,53 @@ export function buildEmojiRowFromRequest(
 // #endregion
 
 // #region 経緯
+
+/** 幅・高さの paramDef（画像の操作の前後） */
+const imageSizeParamDef = {
+	type: "object",
+	nullable: true,
+	properties: {
+		width: { type: "integer", minimum: 1 },
+		height: { type: "integer", minimum: 1 },
+	},
+	required: ["width", "height"],
+} as const;
+
+/**
+ * 画像をどう変えたか（{@link EmojiImageEdit}）の paramDef。create・resubmit・request-changes・approve で受け取る。
+ */
+export const emojiImageEditParamDef = {
+	type: "object",
+	nullable: true,
+	properties: {
+		ops: {
+			type: "array",
+			maxItems: 10,
+			items: { type: "string", enum: ["cut", "shrink", "replace"] },
+		},
+		from: imageSizeParamDef,
+		to: imageSizeParamDef,
+	},
+	required: ["ops"],
+} as const;
+
+/**
+ * 受け取った「画像をどう変えたか」をそろえる。操作が 1 つも無ければ null。
+ *
+ * @param v - API のパラメータ
+ * @returns 経緯に残す値、または null
+ * @internal
+ */
+export function normalizeImageEdit(
+	v: { ops: string[]; from?: { width: number; height: number } | null; to?: { width: number; height: number } | null } | null | undefined,
+): EmojiImageEdit | null {
+	if (v == null) return null;
+	const ops = v.ops.filter((x): x is EmojiImageEditOp => x === "cut" || x === "shrink" || x === "replace");
+	if (ops.length === 0) return null;
+	const size = (s: { width: number; height: number } | null | undefined) =>
+		s ? { width: s.width, height: s.height } : null;
+	return { ops, from: size(v.from), to: size(v.to) };
+}
 
 /**
  * 経緯に 1 件足した配列を返す（元の配列は変えない）。

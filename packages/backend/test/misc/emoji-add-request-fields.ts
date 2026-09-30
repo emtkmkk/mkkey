@@ -14,6 +14,7 @@ import {
 	diffEditableFields,
 	findEmojiAddRequestProblem,
 	normalizeEmojiAddRequestFields,
+	normalizeImageEdit,
 } from "../../src/misc/emoji-add-request-fields.js";
 import type {
 	EmojiAddRequest,
@@ -189,6 +190,26 @@ describe("emoji-add-request-fields", () => {
 			assert.strictEqual(before.length, 1);
 			assert.strictEqual(after.length, 2);
 			assert.strictEqual(after[1].action, "approved");
+		});
+	});
+
+	describe("normalizeImageEdit", () => {
+		it("正常系：操作と前後のサイズがある場合、そのまま返す", () => {
+			const v = normalizeImageEdit({ ops: ["cut", "shrink"], from: { width: 2560, height: 256 }, to: { width: 1260, height: 126 } });
+			assert.deepStrictEqual(v, { ops: ["cut", "shrink"], from: { width: 2560, height: 256 }, to: { width: 1260, height: 126 } });
+		});
+
+		it("正常系：サイズが無い場合、null で返す", () => {
+			assert.deepStrictEqual(normalizeImageEdit({ ops: ["replace"] }), { ops: ["replace"], from: null, to: null });
+		});
+
+		it("異常系：知らない操作は取り除く", () => {
+			assert.deepStrictEqual(normalizeImageEdit({ ops: ["rotate", "cut"] }), { ops: ["cut"], from: null, to: null });
+		});
+
+		it("境界値：操作が 1 つも無い場合、null を返す", () => {
+			assert.strictEqual(normalizeImageEdit({ ops: [] }), null);
+			assert.strictEqual(normalizeImageEdit(null), null);
 		});
 	});
 });

@@ -471,6 +471,7 @@ import {
 import {
 	formatEmojiAddRequestField,
 	toCopyPermissionChoice,
+	type EmojiImageEditOp,
 	type EmojiAddRequestFields,
 	type PackedEmojiAddRequest,
 } from "@/scripts/emoji-request";
@@ -557,6 +558,8 @@ type Draft = {
 	/** ［どう使ってほしいかで選ぶ］で最後に選んだカード */
 	presetKey: string | null;
 	presetAsk: boolean;
+	/** この画面で画像に行った操作（余白カット・縮小・差し替え。経緯に残す） */
+	imageOps: EmojiImageEditOp[];
 };
 
 /**
@@ -591,6 +594,7 @@ function emptyDraft(): Draft {
 		message: "",
 		presetKey: null,
 		presetAsk: false,
+		imageOps: [],
 	};
 }
 
@@ -751,6 +755,8 @@ function setFile(file: Misskey.entities.DriveFile): void {
 	d.file = file;
 	d.originalFile = null;
 	d.originalSize = null;
+	// 再申請で画像を選び直したときは「差し替え」。新しい申請では、選んだ画像がそのまま元の画像
+	d.imageOps = resubmitRequest.value ? ["replace"] : [];
 	if (!d.name) d.name = nameFromFileName(file.name);
 }
 
@@ -770,10 +776,15 @@ function chooseFile(ev: MouseEvent): void {
 }
 
 /** 余白カット・縮小をした（最初の画像は元として残す） */
-function onProcessed(v: { file: Misskey.entities.DriveFile; original: { width: number; height: number } }): void {
+function onProcessed(v: {
+	file: Misskey.entities.DriveFile;
+	original: { width: number; height: number };
+	op: EmojiImageEditOp;
+}): void {
 	if (d.originalFile == null) d.originalFile = d.file;
 	d.originalSize = v.original;
 	d.file = v.file;
+	d.imageOps = [...d.imageOps, v.op];
 }
 
 /** 画像の確認部品が調べた今の画像のサイズ（確認画面に出す） */
@@ -789,6 +800,8 @@ function onRestore(): void {
 	d.file = d.originalFile;
 	d.originalFile = null;
 	d.originalSize = null;
+	// 差し替えた画像に戻るときは「差し替え」だけを残す
+	d.imageOps = d.imageOps.includes("replace") ? ["replace"] : [];
 }
 
 // #endregion
@@ -1148,6 +1161,8 @@ function applySuggestion(a: Anchor): void {
 			d.file = asDriveFile({ id: r.proposal.fileId, url: r.proposalFileUrl }, d.name);
 			d.originalFile = null;
 			d.originalSize = null;
+			// 管理者が直した画像を使うので、申請者の操作としては残さない
+			d.imageOps = [];
 		}
 		return;
 	}
@@ -1237,6 +1252,11 @@ function buildFields(file: Misskey.entities.DriveFile) {
 		imageProcessed: d.originalFile != null,
 		originalWidth: d.originalFile != null ? d.originalSize?.width ?? null : null,
 		originalHeight: d.originalFile != null ? d.originalSize?.height ?? null : null,
+		// 余白カット・縮小・差し替えをしたときは、何をしたかと前後のサイズ（経緯の表示に使う）
+		imageEdit:
+			d.imageOps.length > 0
+				? { ops: d.imageOps, from: d.originalSize, to: imageSize.value }
+				: null,
 	};
 }
 

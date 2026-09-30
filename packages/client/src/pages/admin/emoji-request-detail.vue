@@ -41,6 +41,7 @@
 					<section :class="$style.section">
 						<h2 :class="$style.h">
 							画像 <span v-if="changes.fileId !== undefined" :class="$style.changed">変更</span>
+							<span v-if="changes.fileId !== undefined" :class="$style.imageEditText">{{ describeImageEdit(imageEdit, true) }}</span>
 						</h2>
 						<p v-if="request.imageProcessed" :class="$style.caption">
 							申請者が加工済み（元: {{ request.originalWidth }} × {{ request.originalHeight }}）
@@ -50,7 +51,7 @@
 							:file="currentFile"
 							:original-file="editedFile ? requestFile : null"
 							@processed="onProcessed"
-							@restore="editedFile = null"
+							@restore="onRestore"
 							@reselect="chooseFile"
 						/>
 						<MkButton v-else @click="chooseFile">画像を選ぶ</MkButton>
@@ -244,7 +245,9 @@ import {
 	EMOJI_ADD_REQUEST_FIELD_LABELS,
 	EMOJI_REQUEST_STATUS,
 	MOTIF_USER_MODE_LABELS,
+	describeImageEdit,
 	diffRequestFields,
+	findLatestImageEdit,
 	formToRequestFields,
 	formatEmojiAddRequestField,
 	formatRequestDate,
@@ -252,6 +255,9 @@ import {
 	requestFieldsToForm,
 	type EmojiAddRequestFields,
 	type EmojiAddRequestForm,
+	type EmojiImageEdit,
+	type EmojiImageEditOp,
+	type EmojiImageSize,
 	type PackedEmojiAddRequest,
 } from "@/scripts/emoji-request";
 
@@ -345,10 +351,14 @@ function orig(k: keyof EmojiAddRequestFields): string {
 	return formatEmojiAddRequestField(k, base[k], base) || "（なし）";
 }
 
-/** 今の修正案に入っている項目の名前 */
+/** 今の修正案に入っている項目の名前（画像は「余白カット」など、何をしたかで出す） */
 const proposalLabels = computed(() =>
 	Object.keys(request.value?.proposal ?? {})
-		.map((k) => EMOJI_ADD_REQUEST_FIELD_LABELS[k as keyof EmojiAddRequestFields])
+		.map((k) =>
+			k === "fileId"
+				? describeImageEdit(findLatestImageEdit(request.value?.history ?? [], "changesRequested"))
+				: EMOJI_ADD_REQUEST_FIELD_LABELS[k as keyof EmojiAddRequestFields],
+		)
 		.join("、"),
 );
 
@@ -373,14 +383,43 @@ const categoryCount = computed(() => {
 
 // #region 画像
 
-function onProcessed(v: { file: Misskey.entities.DriveFile }): void {
+/** この画面で画像に行った操作（余白カット・縮小・差し替え。経緯に残す） */
+const imageOps = ref<EmojiImageEditOp[]>([]);
+/** 今の画像の幅・高さ（操作の後。分からなければ null） */
+const imageAfter = ref<EmojiImageSize | null>(null);
+
+/** 申請の画像の幅・高さ（操作の前） */
+const requestImageSize = computed<EmojiImageSize | null>(() => {
+	const f = request.value?.file;
+	return f?.width && f?.height ? { width: f.width, height: f.height } : null;
+});
+
+/** 画像をどう変えたか（画像を変えていなければ null） */
+const imageEdit = computed<EmojiImageEdit | null>(() =>
+	editedFile.value ? { ops: imageOps.value, from: requestImageSize.value, to: imageAfter.value } : null,
+);
+
+function onProcessed(v: { file: Misskey.entities.DriveFile; op: EmojiImageEditOp; after: EmojiImageSize }): void {
 	editedFile.value = v.file;
+	imageOps.value = [...imageOps.value, v.op];
+	imageAfter.value = v.after;
+}
+
+/** 加工をやめて、申請の画像に戻す */
+function onRestore(): void {
+	editedFile.value = null;
+	imageOps.value = [];
+	imageAfter.value = null;
 }
 
 /** 画像を差し替える（管理者のドライブから選ぶ） */
 function chooseFile(ev: MouseEvent): void {
 	selectFile(ev.currentTarget ?? ev.target, null, false, true, "emoji", { force: true }).then((file) => {
 		editedFile.value = file;
+		// 差し替えた後に余白カットなどをしたら、その操作も後ろに足していく
+		imageOps.value = ["replace"];
+		const props = file.properties as { width?: number; height?: number } | undefined;
+		imageAfter.value = props?.width && props?.height ? { width: props.width, height: props.height } : null;
 	});
 }
 
@@ -388,9 +427,9 @@ function chooseFile(ev: MouseEvent): void {
 
 // #region 審査の操作
 
-/** 送る内容（直した項目と、画像を変えたときはその画像） */
+/** 送る内容（直した項目と、画像を変えたときはその画像と、何をしたか） */
 function changedParams(): Record<string, unknown> {
-	return { ...changes.value };
+	return { ...changes.value, ...(changes.value.fileId !== undefined && imageEdit.value ? { imageEdit: imageEdit.value } : {}) };
 }
 
 /**
@@ -467,7 +506,7 @@ async function load(): Promise<void> {
 		const r = (await os.api("emoji-add-request/show", { requestId: props.id })) as PackedEmojiAddRequest;
 		base = pickRequestFields(r);
 		Object.assign(form, requestFieldsToForm(base));
-		editedFile.value = null;
+		onRestore();
 		comment.value = "";
 		request.value = r;
 	} catch {
@@ -604,6 +643,13 @@ definePageMetadata(
 	margin: 8px 0 0;
 	font-size: 0.85em;
 	opacity: 0.7;
+}
+
+.imageEditText {
+	margin-left: 6px;
+	font-size: 0.8em;
+	font-weight: normal;
+	color: var(--accent);
 }
 
 .changed {

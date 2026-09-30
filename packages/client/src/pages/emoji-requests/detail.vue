@@ -34,6 +34,7 @@
 									<i class="ph-arrow-right ph-bold"></i>
 									<img v-if="addRequest.proposalFileUrl" :src="addRequest.proposalFileUrl" alt="" />
 								</div>
+								<div :class="$style.diffAfter">{{ row.after }}</div>
 							</template>
 							<template v-else>
 								<div :class="$style.diffBefore">{{ row.before || "（なし）" }}</div>
@@ -75,7 +76,7 @@
 						<div v-for="row in approvedChanges" :key="row.key" :class="$style.diff">
 							<div :class="$style.diffLabel">{{ row.label }}</div>
 							<div v-if="row.key !== 'fileId'" :class="$style.diffAfter">{{ row.after || "（なし）" }}</div>
-							<div v-else :class="$style.diffAfter">画像を直しました</div>
+							<div v-else :class="$style.diffAfter">{{ row.after }}</div>
 						</div>
 					</template>
 					<p v-if="addRequest.reviewComment" :class="$style.comment">{{ addRequest.reviewComment }}</p>
@@ -164,9 +165,12 @@ import {
 	EMOJI_ADD_REQUEST_FIELD_LABELS,
 	EMOJI_ADD_REQUEST_FIELD_ORDER,
 	EMOJI_REQUEST_STATUS,
+	describeImageEdit,
+	findLatestImageEdit,
 	formatEmojiAddRequestField,
 	formatRequestDate,
 	type EmojiAddRequestFields,
+	type EmojiImageEdit,
 	type PackedEmojiAddRequest,
 	type PackedEmojiImportRequest,
 } from "@/scripts/emoji-request";
@@ -200,27 +204,33 @@ function statusOf(status: string) {
 /**
  * 変わった項目を「今の値」と「新しい値」の行にする。
  *
+ * @remarks
+ * 画像は、余白カット・サイズ変更・差し替えのどれかと、サイズの変化を文にして出す（経緯に残した imageEdit から）。
+ *
  * @param changes - 変わった項目
+ * @param imageEdit - 画像をどう変えたか（画像を変えていなければ null）
  * @returns 行の一覧（申請画面の並び順）
  */
-function toDiffRows(changes: Partial<EmojiAddRequestFields> | null | undefined) {
+function toDiffRows(changes: Partial<EmojiAddRequestFields> | null | undefined, imageEdit: EmojiImageEdit | null = null) {
 	const r = addRequest.value;
 	if (r == null || changes == null) return [];
 	const merged = { ...r, ...changes };
 	return EMOJI_ADD_REQUEST_FIELD_ORDER.filter((k) => k in changes).map((k) => ({
 		key: k,
 		label: EMOJI_ADD_REQUEST_FIELD_LABELS[k],
-		before: formatEmojiAddRequestField(k, r[k], r),
-		after: formatEmojiAddRequestField(k, changes[k], merged),
+		before: k === "fileId" ? "" : formatEmojiAddRequestField(k, r[k], r),
+		after: k === "fileId" ? describeImageEdit(imageEdit, true) : formatEmojiAddRequestField(k, changes[k], merged),
 	}));
 }
 
-const proposalRows = computed(() => toDiffRows(addRequest.value?.proposal));
+const proposalRows = computed(() =>
+	toDiffRows(addRequest.value?.proposal, findLatestImageEdit(addRequest.value?.history ?? [], "changesRequested")),
+);
 
 /** 直して承認されたときに、直した項目 */
 const approvedChanges = computed(() => {
 	const last = [...(addRequest.value?.history ?? [])].reverse().find((h) => h.action === "approvedWithChanges");
-	return toDiffRows(last?.changes);
+	return toDiffRows(last?.changes, last?.imageEdit ?? null);
 });
 
 // #endregion

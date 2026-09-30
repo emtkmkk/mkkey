@@ -22,8 +22,10 @@ import {
 	appendHistory,
 	applyAskContactRule,
 	emojiAddRequestFieldsParamDef,
+	emojiImageEditParamDef,
 	findEmojiAddRequestProblem,
 	normalizeEmojiAddRequestFields,
+	normalizeImageEdit,
 	notifyAddRequestReviewers,
 	pickEditableFields,
 } from "@/services/emoji-add-request.js";
@@ -58,6 +60,8 @@ export const paramDef = {
 		imageProcessed: { type: "boolean" },
 		originalWidth: { type: "integer", nullable: true, minimum: 1 },
 		originalHeight: { type: "integer", nullable: true, minimum: 1 },
+		/** 画像をどう変えたか（余白カット・縮小・差し替え。経緯の表示に使う） */
+		imageEdit: emojiImageEditParamDef,
 	},
 	required: ["requestId"],
 } as const;
@@ -110,7 +114,14 @@ export default define(meta, paramDef, async (ps, me) => {
 		proposal: null,
 		reviewComment: null,
 		updatedAt: new Date(),
-		history: appendHistory(request.history, { by: me.id, action: "resubmitted" }),
+		history: appendHistory(request.history, {
+			by: me.id,
+			action: "resubmitted",
+			// 画像を変えて出し直したときだけ、何をしたかを残す
+			...(next.fileId !== current.fileId && normalizeImageEdit(ps.imageEdit)
+				? { imageEdit: normalizeImageEdit(ps.imageEdit)! }
+				: {}),
+		}),
 	});
 
 	notifyAddRequestReviewers(

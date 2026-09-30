@@ -21,7 +21,10 @@
 				</div>
 				<div v-if="h.comment" :class="$style.historyComment">{{ h.comment }}</div>
 				<div v-if="viewer === 'reviewer' && h.changes && Object.keys(h.changes).length > 0" :class="$style.historyComment">
-					変えた項目：{{ changedLabels(h.changes) }}
+					変えた項目：{{ changedLabels(h.changes, h.imageEdit) }}
+				</div>
+				<div v-else-if="h.imageEdit" :class="$style.historyComment">
+					画像：{{ describeImageEdit(h.imageEdit) }}
 				</div>
 			</div>
 		</div>
@@ -39,6 +42,7 @@
  * - 経緯の「誰が」は、申請者が見るときは「あなた／管理者」、管理者が見るときは「申請者／管理者」とだけ出す
  *   （管理者の名前は申請者に見せない）
  * - 管理者が見るときだけ、経緯ごとに変えた項目の名前も出す
+ * - 画像を変えたときは「画像の変更」ではなく、何をしたか（余白カット・サイズ変更・差し替え）で出す。経緯ではサイズは出さない
  *
  * @internal
  */
@@ -47,9 +51,11 @@ import {
 	EMOJI_ADD_REQUEST_FIELD_LABELS,
 	EMOJI_ADD_REQUEST_FIELD_ORDER,
 	HISTORY_ACTION_LABELS,
+	describeImageEdit,
 	formatEmojiAddRequestField,
 	formatRequestDate,
 	type EmojiAddRequestFields,
+	type EmojiImageEdit,
 	type PackedEmojiAddRequest,
 } from "@/scripts/emoji-request";
 
@@ -93,14 +99,15 @@ function actorOf(by: string | null): string {
 }
 
 /**
- * 変えた項目の名前を並べる。
+ * 変えた項目の名前を並べる。画像は、何をしたか（余白カット・サイズ変更・差し替え）で出す。
  *
  * @param changes - 変えた項目
- * @returns 例「絵文字名、カテゴリ」
+ * @param imageEdit - 画像をどう変えたか
+ * @returns 例「絵文字名、カテゴリ、サイズ変更」
  */
-function changedLabels(changes: Partial<EmojiAddRequestFields>): string {
+function changedLabels(changes: Partial<EmojiAddRequestFields>, imageEdit?: EmojiImageEdit): string {
 	return (Object.keys(changes) as Array<keyof EmojiAddRequestFields>)
-		.map((k) => EMOJI_ADD_REQUEST_FIELD_LABELS[k])
+		.map((k) => (k === "fileId" ? describeImageEdit(imageEdit) : EMOJI_ADD_REQUEST_FIELD_LABELS[k]))
 		.join("、");
 }
 </script>

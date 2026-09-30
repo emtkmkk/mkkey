@@ -29,8 +29,10 @@ import {
 	buildEmojiRowFromRequest,
 	diffEditableFields,
 	emojiAddRequestFieldsParamDef,
+	emojiImageEditParamDef,
 	findEmojiAddRequestProblem,
 	normalizeEmojiAddRequestFields,
+	normalizeImageEdit,
 	notifyAddRequestRequester,
 	pickEditableFields,
 } from "@/services/emoji-add-request.js";
@@ -73,6 +75,8 @@ export const paramDef = {
 		...emojiAddRequestFieldsParamDef,
 		/** 申請者へのコメント（直した理由など） */
 		comment: { type: "string", nullable: true, maxLength: 4096 },
+		/** 画像をどう変えたか（余白カット・縮小・差し替え。経緯の表示に使う） */
+		imageEdit: emojiImageEditParamDef,
 	},
 	required: ["requestId"],
 } as const;
@@ -139,6 +143,8 @@ export default define(meta, paramDef, async (ps, me) => {
 			action: changed ? "approvedWithChanges" : "approved",
 			comment,
 			...(changed ? { changes } : {}),
+			// 直して承認で画像を変えたときだけ、何をしたか（余白カット・縮小・差し替え）を残す
+			...(changes.fileId && normalizeImageEdit(ps.imageEdit) ? { imageEdit: normalizeImageEdit(ps.imageEdit)! } : {}),
 		}),
 	});
 

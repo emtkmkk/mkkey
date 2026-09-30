@@ -46,6 +46,24 @@ export type EmojiAddRequestFields = {
 	fileId: string | null;
 };
 
+/** 画像に対して行った操作（cut：左右の余白カット、shrink：目安サイズへの縮小、replace：別の画像への差し替え） */
+export type EmojiImageEditOp = "cut" | "shrink" | "replace";
+
+/** 幅と高さ */
+export type EmojiImageSize = { width: number; height: number };
+
+/**
+ * 画像をどう変えたか（サーバー側の EmojiImageEdit と同じ形）。
+ *
+ * @remarks
+ * 画像（fileId）が変わっただけでは、余白カット・縮小と差し替えを見分けられないので、操作と前後のサイズを経緯に残している。
+ */
+export type EmojiImageEdit = {
+	ops: EmojiImageEditOp[];
+	from: EmojiImageSize | null;
+	to: EmojiImageSize | null;
+};
+
 /** 経緯の 1 件 */
 export type EmojiAddRequestHistoryEntry = {
 	at: string;
@@ -53,6 +71,8 @@ export type EmojiAddRequestHistoryEntry = {
 	action: "created" | "changesRequested" | "resubmitted" | "approved" | "approvedWithChanges" | "rejected" | "withdrawn";
 	comment?: string | null;
 	changes?: Partial<EmojiAddRequestFields>;
+	/** 画像をどう変えたか（画像を変えたときだけ） */
+	imageEdit?: EmojiImageEdit;
 };
 
 /** API（emoji-add-request/show・my-list・list）が返す追加申請 */
@@ -210,6 +230,60 @@ export function formatEmojiAddRequestField(
 		default:
 			return String(value);
 	}
+}
+
+/** 画像の操作の表示名 */
+export const IMAGE_EDIT_OP_LABELS: Readonly<Record<EmojiImageEditOp, string>> = {
+	cut: "余白カット",
+	shrink: "サイズ変更",
+	replace: "画像の差し替え",
+};
+
+/**
+ * 幅・高さを「2,048 × 144」の形にする。
+ *
+ * @param s - 幅と高さ
+ * @returns 表示する文
+ * @internal
+ */
+export function formatImageSize(s: EmojiImageSize): string {
+	return `${s.width.toLocaleString()} × ${s.height.toLocaleString()}`;
+}
+
+/**
+ * 画像をどう変えたかを文にする。
+ *
+ * @remarks
+ * 経緯では操作の名前だけ（例「余白カット・サイズ変更」）、差分の表示ではサイズの変化も付ける
+ * （例「サイズ変更（2,048 × 144 → 1,260 × 88）」）。操作が分からない（古い経緯など）ときは「画像の変更」とする。
+ * 差し替えのときはサイズの変化を付けない（別の画像なので比べても意味が薄いため）。
+ *
+ * @param edit - 画像をどう変えたか（分からなければ null）
+ * @param withSize - サイズの変化も付けるか
+ * @returns 表示する文
+ * @internal
+ */
+export function describeImageEdit(edit: EmojiImageEdit | null | undefined, withSize = false): string {
+	if (edit == null || edit.ops.length === 0) return "画像の変更";
+	const ops = [...new Set(edit.ops)];
+	const label = ops.map((op) => IMAGE_EDIT_OP_LABELS[op]).join("・");
+	if (!withSize || ops.includes("replace") || edit.from == null || edit.to == null) return label;
+	return `${label}（${formatImageSize(edit.from)} → ${formatImageSize(edit.to)}）`;
+}
+
+/**
+ * 経緯から、いちばん新しい「その操作」の画像の変え方を探す。
+ *
+ * @param history - 経緯
+ * @param action - 探す操作（修正のお願い・直して承認など）
+ * @returns 画像をどう変えたか（無ければ null）
+ * @internal
+ */
+export function findLatestImageEdit(
+	history: EmojiAddRequestHistoryEntry[],
+	action: EmojiAddRequestHistoryEntry["action"],
+): EmojiImageEdit | null {
+	return [...history].reverse().find((h) => h.action === action)?.imageEdit ?? null;
 }
 
 /**

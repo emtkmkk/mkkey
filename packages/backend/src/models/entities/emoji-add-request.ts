@@ -81,6 +81,25 @@ export type EmojiAddRequestEditableFields = {
 /** 修正案（変えた項目だけ） */
 export type EmojiAddRequestProposal = Partial<EmojiAddRequestEditableFields>;
 
+/** 画像に対して行った操作（cut：左右の余白カット、shrink：目安サイズへの縮小、replace：別の画像への差し替え） */
+export type EmojiImageEditOp = "cut" | "shrink" | "replace";
+
+/**
+ * 画像をどう変えたか（経緯と差分の表示用）。
+ *
+ * @remarks
+ * 画像そのもの（fileId）が変わっただけでは、余白カット・縮小と、別の画像への差し替えを見分けられないので、
+ * 画面から操作の種類と前後のサイズを送ってもらって経緯に残す。表示のためだけの情報で、処理には使わない。
+ */
+export type EmojiImageEdit = {
+	/** 行った操作（行った順。余白カットの後に縮小、など） */
+	ops: EmojiImageEditOp[];
+	/** 変える前の幅・高さ（分からなければ null） */
+	from: { width: number; height: number } | null;
+	/** 変えた後の幅・高さ（分からなければ null） */
+	to: { width: number; height: number } | null;
+};
+
 /** 経緯の 1 件 */
 export type EmojiAddRequestHistoryEntry = {
 	/** ISO 8601 の日時 */
@@ -99,6 +118,8 @@ export type EmojiAddRequestHistoryEntry = {
 	comment?: string | null;
 	/** その操作で変わった項目（修正案・直して承認のとき） */
 	changes?: EmojiAddRequestProposal;
+	/** 画像をどう変えたか（画像を変えたときだけ） */
+	imageEdit?: EmojiImageEdit;
 };
 
 // #endregion

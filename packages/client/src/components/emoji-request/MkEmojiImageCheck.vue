@@ -133,7 +133,19 @@ const props = defineProps<{
 
 const emit = defineEmits<{
 	/** 加工した画像をドライブへ上げた。original は加工前の幅・高さ */
-	(ev: "processed", v: { file: Misskey.entities.DriveFile; original: { width: number; height: number } }): void;
+	(
+		ev: "processed",
+		v: {
+			file: Misskey.entities.DriveFile;
+			/** 最初の画像の幅・高さ（何度加工しても、最初のもの） */
+			original: { width: number; height: number };
+			/** 今回の操作（余白カットか縮小か。経緯に残す） */
+			op: "cut" | "shrink";
+			/** 今回の操作の前と後の幅・高さ */
+			before: { width: number; height: number };
+			after: { width: number; height: number };
+		},
+	): void;
 	/** 元の画像に戻したい */
 	(ev: "restore"): void;
 	/** 画像を選び直したい */
@@ -251,14 +263,16 @@ watch(() => [props.file.id, props.originalFile?.id], measureOriginal, { immediat
 /**
  * 加工した画像をドライブへ上げて、processed で返す。
  *
+ * @param op - 操作の種類（経緯に「余白カット」「サイズ変更」と残すため）
  * @param make - 今の画像から加工した画像を作る処理
  */
-async function process(make: (blob: Blob) => Promise<Blob>): Promise<void> {
+async function process(op: "cut" | "shrink", make: (blob: Blob) => Promise<Blob>): Promise<void> {
 	if (analysis.value == null) return;
 	working.value = true;
 	try {
 		const before = { width: analysis.value.width, height: analysis.value.height };
 		const blob = await make(await fetchBlob(props.file));
+		const made = await analyzeEmojiImage(blob);
 		const name = props.file.name.replace(/\.\w+$/, "") + ".png";
 		const uploaded = await uploadFile(
 			new File([blob], name, { type: "image/png" }),
@@ -273,6 +287,9 @@ async function process(make: (blob: Blob) => Promise<Blob>): Promise<void> {
 			file: uploaded,
 			// 何度か加工しても、最初の画像のサイズを元として記録する
 			original: originalSize.value ?? before,
+			op,
+			before,
+			after: { width: made.width, height: made.height },
 		});
 	} catch (err) {
 		os.alert({ type: "error", text: "画像の加工に失敗しました。" });
@@ -286,12 +303,12 @@ async function process(make: (blob: Blob) => Promise<Blob>): Promise<void> {
 function cut(): void {
 	const margins = analysis.value?.margins;
 	if (margins == null) return;
-	process((blob) => cropEmojiHorizontalMargins(blob, margins));
+	process("cut", (blob) => cropEmojiHorizontalMargins(blob, margins));
 }
 
 /** 目安のサイズまで縮める */
 function shrink(): void {
-	process((blob) => shrinkEmojiToRecommended(blob));
+	process("shrink", (blob) => shrinkEmojiToRecommended(blob));
 }
 </script>
 

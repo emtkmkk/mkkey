@@ -167,6 +167,7 @@ export const paramDef = {
 		receiveAnnouncementEmail: { type: "boolean" },
 		receiveUnreadSummaryEmail: { type: "boolean" },
 		alwaysMarkNsfw: { type: "boolean" },
+		showDonateBadges: { type: "boolean" },
 		autoSensitive: { type: "boolean" },
 		ffVisibility: { type: "string", enum: ["public", "followers", "private"] },
 		blockPostPublic: { type: "boolean" },
@@ -251,18 +252,18 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 		profileUpdates.description = ps.description;
 	}
 	if (ps.fixedName != null) {
-		if (!_user.isAdmin && ps.name.toLowerCase().includes("admin"))
+		if (!_user.isAdmin && ps.fixedName.toLowerCase().includes("admin"))
 			throw new ApiError(meta.errors.detectBannedWords, {
 				reason: "You are not the admin.",
 			});
 		if (
 			!(_user.isAdmin || _user.isModerator) &&
-			ps.name.toLowerCase().includes("moderator")
+			ps.fixedName.toLowerCase().includes("moderator")
 		)
 			throw new ApiError(meta.errors.detectBannedWords, {
 				reason: "You are not a moderator.",
 			});
-		if (isIncludeNgWord(ps.name))
+		if (isIncludeNgWord(ps.fixedName))
 			throw new ApiError(meta.errors.detectBannedWords);
 		updates.fixedName = ps.fixedName;
 	}

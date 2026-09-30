@@ -16,6 +16,7 @@ import { defineConfig, type PluginOption } from "vite";
 
 import locales from "../../locales";
 import pluginJson5 from "./vite.json5";
+import pluginRouteTitles from "./vite.route-titles";
 import viteCompression from "vite-plugin-compression";
 
 const extensions = [
@@ -89,6 +90,8 @@ export default defineConfig({
 				reactivityTransform: true,
 			}),
 			pluginJson5(),
+			// もこきー自身の URL を貼ったときの「〇〇に移動」と、サーバーの OGP に使う画面名の表を作る
+			pluginRouteTitles({ srcDir: __dirname + "/src", ja: locales["ja-JP"] }),
 			viteCompression({
 				algorithm: "brotliCompress",
 			}),

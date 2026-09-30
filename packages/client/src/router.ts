@@ -32,37 +32,45 @@ export const routes = [
 	},
 	{
 		path: "/@:username/pages/:pageName",
+		keepLinkPreview: true,
 		component: page(() => import("./pages/page.vue")),
 	},
 	{
 		path: "/@:username/categories/:categoryId",
+		keepLinkPreview: true,
 		component: page(() => import("./pages/category.vue")),
 	},
 	{
 		path: "/@:acct/following",
+		keepLinkPreview: true,
 		component: page(() => import("./pages/user/following.vue")),
 	},
 	{
 		path: "/@:acct/followers",
+		keepLinkPreview: true,
 		component: page(() => import("./pages/user/followers.vue")),
 	},
 	{
 		name: "user",
 		path: "/@:acct/:page?",
+		keepLinkPreview: true,
 		component: page(() => import("./pages/user/index.vue")),
 	},
 	{
 		name: "note",
 		path: "/notes/:noteId",
+		keepLinkPreview: true,
 		component: page(() => import("./pages/note.vue")),
 	},
 	{
 		name: "note-option",
 		path: "/notes/:noteId/:option",
+		keepLinkPreview: true,
 		component: page(() => import("./pages/note.vue")),
 	},
 	{
 		path: "/clips/:clipId",
+		keepLinkPreview: true,
 		component: page(() => import("./pages/clip.vue")),
 	},
 	{
@@ -76,6 +84,7 @@ export const routes = [
 	{
 		name: "settings",
 		path: "/settings",
+		linkTitle: { key: "settings" },
 		component: page(() => import("./pages/settings/index.vue")),
 		loginRequired: true,
 		children: [
@@ -302,6 +311,7 @@ export const routes = [
 			},
 			{
 				path: "/preferences-backups",
+				linkTitle: { key: "preferencesBackups" },
 				name: "preferences-backups",
 				component: page(
 					() => import("./pages/settings/preferences-backups.vue"),
@@ -405,6 +415,7 @@ export const routes = [
 	},
 	{
 		path: "/explore/tags/:tag",
+		linkTitle: { text: "#{tag}" },
 		component: page(() => import("./pages/explore.vue")),
 	},
 	{
@@ -413,6 +424,7 @@ export const routes = [
 	},
 	{
 		path: "/search",
+		linkTitle: { key: "search" },
 		component: page(() => import("./pages/search.vue")),
 		loginRequired: true,
 		query: {
@@ -423,11 +435,13 @@ export const routes = [
 	},
 	{
 		path: "/authorize-follow",
+		keepLinkPreview: true,
 		component: page(() => import("./pages/follow.vue")),
 		loginRequired: true,
 	},
 	{
 		path: "/share",
+		keepLinkPreview: true,
 		component: page(() => import("./pages/share.vue")),
 		loginRequired: true,
 	},
@@ -454,10 +468,12 @@ export const routes = [
 	},
 	{
 		path: "/auth/:token",
+		keepLinkPreview: true,
 		component: page(() => import("./pages/auth.vue")),
 	},
 	{
 		path: "/miauth/:session",
+		keepLinkPreview: true,
 		component: page(() => import("./pages/miauth.vue")),
 		query: {
 			callback: "callback",
@@ -468,6 +484,7 @@ export const routes = [
 	},
 	{
 		path: "/tags/:tag",
+		linkTitle: { text: "#{tag}" },
 		component: page(() => import("./pages/tag.vue")),
 		loginRequired: true,
 		query: {
@@ -514,6 +531,7 @@ export const routes = [
 	},
 	{
 		path: "/gallery/:postId",
+		keepLinkPreview: true,
 		component: page(() => import("./pages/gallery/post.vue")),
 	},
 	{
@@ -532,6 +550,7 @@ export const routes = [
 	},
 	{
 		path: "/channels/:channelId",
+		keepLinkPreview: true,
 		component: page(() => import("./pages/channel.vue")),
 	},
 	{
@@ -558,6 +577,7 @@ export const routes = [
 	},
 	{
 		path: "/admin",
+		linkTitle: { key: "controlPanel" },
 		component: iAmModerator
 			? page(() => import("./pages/admin/index.vue"))
 			: page(() => import("./pages/not-found.vue")),
@@ -585,6 +605,7 @@ export const routes = [
 			{
 				// 絵文字申請 1 件の審査（通知を押したときにも開く）。kind は add / import
 				path: "/emoji-requests/:kind/:id",
+				linkTitle: { text: "絵文字申請の審査" },
 				name: "emoji-request-detail",
 				component: page(() => import("./pages/admin/emoji-request-detail.vue")),
 			},
@@ -726,11 +747,13 @@ export const routes = [
 	},
 	{
 		path: "/my/drive/folder/:folder",
+		linkTitle: { key: "drive" },
 		component: page(() => import("./pages/drive.vue")),
 		loginRequired: true,
 	},
 	{
 		path: "/my/drive",
+		linkTitle: { key: "drive" },
 		component: page(() => import("./pages/drive.vue")),
 		loginRequired: true,
 	},
@@ -782,6 +805,7 @@ export const routes = [
 	{
 		// 絵文字の追加申請（ステップ式）。MEGAMOJI からは ?from=megamoji&name=…&alternateName=…&ruby=…&tags=… で開く
 		path: "/emoji-requests/new",
+		linkTitle: { text: "絵文字を申請" },
 		component: page(() => import("./pages/emoji-requests/new.vue")),
 		loginRequired: true,
 		query: {
@@ -798,6 +822,7 @@ export const routes = [
 	{
 		// 申請の詳細（通知を押したときにも開く）。kind は add / import
 		path: "/emoji-requests/:kind/:id",
+		linkTitle: { text: "絵文字申請" },
 		component: page(() => import("./pages/emoji-requests/detail.vue")),
 		loginRequired: true,
 	},
@@ -827,33 +852,40 @@ export const routes = [
 	},
 	{
 		path: "/emoji/:emoji",
+		keepLinkPreview: true,
 		component: page(() => import("./components/MkCustomEmojiDetailed.vue")),
 	},
 	{
 		path: "/emoji_license/:emoji",
+		linkKind: "emoji",
 		component: page(() => import("./components/MkCustomEmojiDetailed.vue")),
 	},
 	{
 		path: "/emoji_dialog/:emoji",
+		linkKind: "emoji",
 		component: page(
 			() => import("./components/MkCustomEmojiDetailedDialog.vue"),
 		),
 	},
 	{
 		path: "/light",
+		keepLinkPreview: true,
 		component: page(() => import("./pages/external-app-redirect.vue")),
 	},
 	{
 		path: "/cli",
+		keepLinkPreview: true,
 		component: page(() => import("./pages/external-app-redirect.vue")),
 	},
 	{
 		path: "/sc",
+		keepLinkPreview: true,
 		component: page(() => import("./pages/external-app-redirect.vue")),
 	},
 	{
 		name: "index",
 		path: "/",
+		keepLinkPreview: true,
 		component: $i
 			? page(() => import("./pages/timeline.vue"))
 			: page(() => import("./pages/welcome.vue")),
@@ -861,6 +893,7 @@ export const routes = [
 	},
 	{
 		path: "/:(*)",
+		keepLinkPreview: true,
 		component: page(() => import("./pages/not-found.vue")),
 	},
 ];

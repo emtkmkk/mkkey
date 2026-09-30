@@ -1,6 +1,8 @@
 <template>
+	<!-- もこきー自身の画面の URL は、Web プレビューの代わりに「〇〇に移動」を出す -->
+	<MkInternalLinkCard v-if="internalLink" :info="internalLink" />
 	<div
-	  v-if="playerEnabled && isPlayerUrlSafe"
+	  v-else-if="playerEnabled && isPlayerUrlSafe"
 	  class="player"
 	  :style="`padding: ${
 		((player.height || 0) / (player.width || 1)) * 100
@@ -325,6 +327,8 @@
   import { i18n } from "@/i18n";
   import { defaultStore } from "@/store";
   import MkButton from "@/components/MkButton.vue";
+  import MkInternalLinkCard from "@/components/MkInternalLinkCard.vue";
+  import { resolveInternalLink } from "@/scripts/internal-link";
   import { normalizeUrlForPreviewFetch } from "@/scripts/normalize-url-for-preview-fetch";
 
   const props = withDefaults(
@@ -340,6 +344,11 @@
   );
 
 const self = props.url.startsWith(local);
+/**
+ * もこきー自身の画面の URL なら、どの画面か（Web プレビューを取らずに「〇〇に移動」を出す）。
+ * OGP を持つ画面や、中身が特に無い URL は null（今までどおり Web プレビュー）。
+ */
+const internalLink = self ? resolveInternalLink(props.url) : null;
 const attr = self ? "to" : "href";
 const target = self ? null : "_blank";
 const normalizedLang = (lang || "ja-JP")
@@ -744,7 +753,8 @@ const fetchUrlData = async () => {
   };
 
   // 初期化時にデータを取得
-  fetchUrlData();
+  // もこきー自身の画面の URL は、Web プレビューを取りに行かない
+  if (!internalLink) fetchUrlData();
 
   function adjustTweetHeight(message: any) {
 	if (message.origin !== "https://platform.twitter.com") return;

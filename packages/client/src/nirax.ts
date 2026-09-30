@@ -15,6 +15,16 @@ type RouteDef = {
 	hash?: string;
 	globalCacheKey?: string;
 	children?: RouteDef[];
+	/**
+	 * この画面の URL が投稿に貼られたときの画面名（「〇〇に移動」・OGP に使う）。
+	 * ふだんは画面の見出しから自動で読むので要らない。中身で見出しを切り替える画面だけ書く。
+	 * `text` には `{param}` でルートのパラメータを入れられる（例：`#{tag}`）
+	 */
+	linkTitle?: { key?: string; text?: string };
+	/** true なら、この画面の URL が貼られても今までどおり Web プレビューを出す（OGP を持つ画面、中身が特に無い画面） */
+	keepLinkPreview?: boolean;
+	/** 特別な表示をする画面の種類（emoji：絵文字の情報の画面） */
+	linkKind?: "emoji";
 };
 
 type ParsedPath = (

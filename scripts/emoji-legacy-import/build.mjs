@@ -104,16 +104,29 @@ const COPY_PERMISSION = {
 };
 
 /**
- * フォームの送信時刻（日本時間の「2024/01/07 19:41:41」）を ISO 8601 にする。
+ * フォームの送信時刻を ISO 8601 にする。
+ *
+ * @remarks
+ * 書き出した CSV では「2024/01/07 7:41:40 午後 GMT+9」（12 時間表記・時差つき）になっている。
+ * シート上の表示の「2024/01/07 19:41:41」（24 時間表記・日本時間）も読めるようにしておく。
  *
  * @param {string} s - 送信時刻
  * @returns {string | null} ISO 8601（読めなければ null）
  */
 function toIso(s) {
-	const m = s.trim().match(/^(\d{4})\/(\d{1,2})\/(\d{1,2}) (\d{1,2}):(\d{2}):(\d{2})$/);
+	const m = s
+		.trim()
+		.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2}) (\d{1,2}):(\d{2}):(\d{2})(?: (午前|午後))?(?: GMT([+-]\d{1,2}))?$/);
 	if (!m) return null;
-	const p = (x) => x.padStart(2, "0");
-	return new Date(`${m[1]}-${p(m[2])}-${p(m[3])}T${p(m[4])}:${m[5]}:${m[6]}+09:00`).toISOString();
+	let hour = Number(m[4]);
+	// 12 時間表記：午前 12 時は 0 時、午後は 12 を足す（午後 12 時は 12 時のまま）
+	if (m[7] === "午前" && hour === 12) hour = 0;
+	if (m[7] === "午後" && hour !== 12) hour += 12;
+	const offset = Number(m[8] ?? 9);
+	const p = (x) => String(x).padStart(2, "0");
+	const tz = `${offset >= 0 ? "+" : "-"}${p(Math.abs(offset))}:00`;
+	const d = new Date(`${m[1]}-${p(m[2])}-${p(m[3])}T${p(hour)}:${m[5]}:${m[6]}${tz}`);
+	return Number.isNaN(d.getTime()) ? null : d.toISOString();
 }
 
 /**
@@ -167,6 +180,37 @@ const sheetRow = (n) => (rows[n - 1] ? Object.fromEntries(header.map((h, i) => [
 
 const notes = JSON.parse(fs.readFileSync(path.join(inputDir, "notes.json"), "utf8"));
 
+/** ノートの row=N と、実際に対応づけた行がずれていたもの（初期は行番号が 1 つずれている。確認用に出す） */
+const rowShifted = [];
+
+/** ノートが送信から何ミリ秒以内に投稿されていれば、同じ申請とみなすか */
+const MATCH_WINDOW_MS = 10 * 60 * 1000;
+
+/**
+ * ノートに対応する回答シートの行を探す。
+ *
+ * @remarks
+ * 「登録する」のノートの row=N は、初期のころ実際の行と 1 つずれている（途中でシートの行が消えたため）。
+ * そのため、同じ絵文字名の行のうち、送信時刻がノートの投稿時刻の直前（10 分以内）でいちばん近い行を選ぶ。
+ *
+ * @param {{ name: string; createdAt: string }} n - ノート
+ * @returns {{ rowNo: number; r: Record<string, string> } | null} 行番号（見出しが 1 行目）と中身
+ */
+function findSheetRow(n) {
+	const noteAt = new Date(n.createdAt).getTime();
+	let best = null;
+	for (let i = 1; i < rows.length; i++) {
+		const r = sheetRow(i + 1);
+		if (r[COL.name].trim().toLowerCase() !== n.name) continue;
+		const iso = toIso(r[COL.timestamp]);
+		if (iso == null) continue;
+		const diff = noteAt - new Date(iso).getTime();
+		if (diff < -60 * 1000 || diff > MATCH_WINDOW_MS) continue;
+		if (best == null || Math.abs(diff) < best.diff) best = { rowNo: i + 1, r, diff: Math.abs(diff) };
+	}
+	return best;
+}
+
 const excluded = [];
 const picked = new Map();
 for (const n of notes) {
@@ -176,9 +220,15 @@ for (const n of notes) {
 		excluded.push({ label, requester: n.requester, reason: "シートの行と対応づけられない（「登録する」のノートが無い。初期のテスト送信など）" });
 		continue;
 	}
-	const r = sheetRow(n.row);
-	if (r == null || r[COL.name].trim().toLowerCase() !== n.name) {
-		excluded.push({ label, requester: n.requester, reason: `シートの ${n.row} 行目と絵文字名が合わない` });
+	const found = findSheetRow(n);
+	if (found == null) {
+		excluded.push({ label, requester: n.requester, reason: "シートに、同じ名前で送信時刻の近い行が無い" });
+		continue;
+	}
+	const { rowNo, r } = found;
+	if (rowNo !== n.row) rowShifted.push({ label, noteRow: n.row, sheetRow: rowNo });
+	if (toIso(r[COL.timestamp]) == null) {
+		excluded.push({ label, requester: n.requester, reason: `シートの ${rowNo} 行目の送信時刻が読めない` });
 		continue;
 	}
 	if (!n.fileExists) {
@@ -191,7 +241,7 @@ for (const n of notes) {
 		// 同じ名前・同じ申請者は新しい方だけ残す（D5）。ノートは古い順に並んでいる
 		excluded.push({ label, requester: n.requester, reason: `同じ申請者の同じ名前の申請がある（${prev.note.row} 行目を除き、${n.row} 行目を残す）` });
 	}
-	picked.set(key, { note: n, entry: toEntry(r, { requester: n.requesterExists ? n.requester : null, fileId: n.fileId }) });
+	picked.set(key, { note: { ...n, row: rowNo }, entry: toEntry(r, { requester: n.requesterExists ? n.requester : null, fileId: n.fileId }) });
 }
 
 const candidates = [...picked.values()];
@@ -220,6 +270,16 @@ const lines = [
 		`| ${note.row} | :${esc(e.name)}: | ${esc(e.requesterUsername ?? "（不明）")} | ${esc(e.submittedAt)} | ${e.isTextOnly ? "はい" : ""} | ${esc(e.copyPermission ?? "")}${e.askContact ? `（連絡先 ${esc(e.askContact)}）` : ""} | ${esc(e.licenseName ?? "")} | ${esc(e.category ?? "")} | ${esc(e.aliases.join(" "))} |`,
 	),
 	"",
+	...(rowShifted.length > 0
+		? [
+				"## 行番号がずれていたもの（名前と送信時刻で対応づけ直した）",
+				"",
+				"| 絵文字名 | ノートの row | 対応づけた行 |",
+				"| --- | --- | --- |",
+				...rowShifted.map((x) => `| ${esc(x.label)} | ${x.noteRow} | ${x.sheetRow} |`),
+				"",
+		  ]
+		: []),
 	"## 除いたもの",
 	"",
 	"| 絵文字名 | 申請者 | 理由 |",

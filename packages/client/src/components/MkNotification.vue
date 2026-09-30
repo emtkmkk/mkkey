@@ -839,6 +839,13 @@ useTooltip(reactionRef, (showing) => {
 				pointer-events: none;
 			}
 
+			// 絵文字申請（追加・インポートの申請、審査の結果）
+			&.emojiRequest {
+				padding: 0.1875rem;
+				background: #d7827e;
+				pointer-events: none;
+			}
+
 			&.defaultReaction {
 				padding: 0.1875rem;
 				background: #31748f;

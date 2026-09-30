@@ -27,9 +27,13 @@
 			</MkKeyValue>
 			<MkKeyValue v-if="_emoji.alternateName">
 				<template #key>表示名</template>
-				<template #value>{{ _emoji.alternateName }}</template>
+				<template #value>
+					<!-- 読みもあるときは、読みを表示名のふりがな（ルビ）として 1 行にまとめる -->
+					<ruby v-if="_emoji.ruby" :class="$style.ruby">{{ _emoji.alternateName }}<rp>（</rp><rt>{{ _emoji.ruby }}</rt><rp>）</rp></ruby>
+					<template v-else>{{ _emoji.alternateName }}</template>
+				</template>
 			</MkKeyValue>
-			<MkKeyValue v-if="_emoji.ruby">
+			<MkKeyValue v-if="_emoji.ruby && !_emoji.alternateName">
 				<template #key>読み</template>
 				<template #value>{{ _emoji.ruby }}</template>
 			</MkKeyValue>
@@ -149,15 +153,11 @@
 					</div>
 				</template>
 			</MkKeyValue>
-			<MkKeyValue v-if="!_emoji.license || licenseText">
-				<template #key>{{
-					Object.keys(licenseDetail).filter((x) => licenseDetail[x])
-						.length < 2
-						? i18n.ts.license
-						: i18n.ts.licenseText
-				}}</template>
+			<!-- 補足の文があるときだけ出す。ライセンスの情報が何も無い絵文字だけは「ライセンス：なし」と出す -->
+			<MkKeyValue v-if="licenseText?.trim() || !hasLicenseInfo">
+				<template #key>{{ hasLicenseInfo ? i18n.ts.licenseText : i18n.ts.license }}</template>
 				<template #value>
-					<Mfm :text="licenseText ?? i18n.ts.none" />
+					<Mfm :text="licenseText?.trim() || i18n.ts.none" />
 				</template>
 			</MkKeyValue>
 			<MkKeyValue v-if="_emoji.sourceLicenseText">
@@ -248,6 +248,8 @@
  *
  * @remarks
  * Fedibird 互換項目（表示名・読み・関連リンク・著作権表示・クレジット・コピー元のカテゴリ）も表示する。
+ * 表示名と読みが両方あるときは、読みを表示名のルビとして「表示名」の 1 行にまとめる。
+ * 「ライセンス補足情報」は補足の文があるときだけ出す（ライセンスの情報が何も無い絵文字だけ「ライセンス：なし」と出す）。
  * 「コピー元のライセンス情報（参考）」はリモートから届いた `_misskey_license.freeText` をそのまま出すだけで、
  * 書き方が信用できないため MFM としては解釈せず、ただの文字として表示する。
  */
@@ -281,6 +283,18 @@ let _emoji = $ref<object | undefined>(undefined);
 let licenseDetail = $ref<object | undefined>(undefined);
 
 let licenseText = $ref<string | undefined>("");
+
+/**
+ * コピー可否・ライセンス・作者などの情報が 2 つ以上あるか。
+ *
+ * @remarks
+ * コピー可否は「決めない」でも値が入るので、1 つだけでは「情報あり」とみなさない（今までの判定と同じ）。
+ * 情報があるときは、補足の文（license）が空なら「ライセンス補足情報」の行を出さない。
+ * 情報が何も無い絵文字だけは、「ライセンス：なし」と出してライセンスが無いことを示す。
+ */
+const hasLicenseInfo = $computed(
+	() => Object.values(licenseDetail ?? {}).filter((x) => x).length >= 2,
+);
 
 const load = async (emoji) => {
 	_emoji = typeof emoji === "string" ? await fetchData() : emoji;
@@ -352,6 +366,16 @@ onMounted(async () => {
 </script>
 
 <style lang="scss" module>
+/** 表示名と、その上に付ける読み（ルビ） */
+.ruby {
+	ruby-position: over;
+
+	> rt {
+		font-size: 0.65em;
+		opacity: 0.75;
+	}
+}
+
 .plainText {
 	white-space: pre-wrap;
 	word-break: break-word;

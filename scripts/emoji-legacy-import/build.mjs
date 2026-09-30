@@ -216,19 +216,33 @@ function findSheetRow(n) {
  * 手で外す絵文字名（input/exclude.txt に 1 行 1 つ。# から後はメモ）。
  * 確認のうえ取り込まないと決めたものを入れる。
  */
-const manualExcludes = (() => {
+const manualExcludes = readNameList("exclude.txt") ?? new Set();
+
+/**
+ * 取り込む絵文字名だけを書いたもの（input/include.txt。書き方は exclude.txt と同じ）。
+ * このファイルがあるときは、ここに書いた名前だけを取り込み、ほかは外す。
+ */
+const manualIncludes = readNameList("include.txt");
+
+/**
+ * input/ にある、絵文字名を 1 行 1 つ書いたファイルを読む（# から後はメモ。前後の : は外す）。
+ *
+ * @param {string} file - ファイル名
+ * @returns {Set<string> | null} 絵文字名（ファイルが無ければ null）
+ */
+function readNameList(file) {
 	try {
 		return new Set(
 			fs
-				.readFileSync(path.join(inputDir, "exclude.txt"), "utf8")
+				.readFileSync(path.join(inputDir, file), "utf8")
 				.split(/\r?\n/)
 				.map((l) => l.replace(/#.*$/, "").trim().replace(/^:|:$/g, ""))
 				.filter(Boolean),
 		);
 	} catch {
-		return new Set();
+		return null;
 	}
-})();
+}
 
 const excluded = [];
 const picked = new Map();
@@ -237,6 +251,10 @@ for (const n of notes) {
 	if (n.localExists) continue; // 今は同じ名前の絵文字がある（承認済み）。一覧にも出さない
 	if (n.name && manualExcludes.has(n.name)) {
 		excluded.push({ label, requester: n.requester, reason: "確認のうえ取り込まないことにした（exclude.txt）" });
+		continue;
+	}
+	if (n.name && manualIncludes && !manualIncludes.has(n.name)) {
+		excluded.push({ label, requester: n.requester, reason: "確認のうえ取り込まないことにした（include.txt に無い）" });
 		continue;
 	}
 	if (n.name == null || n.row == null) {

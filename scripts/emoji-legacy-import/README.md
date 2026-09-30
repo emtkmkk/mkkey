@@ -19,7 +19,8 @@ Google フォームで受け付けていた過去の絵文字の追加申請の�
    ```sh
    node scripts/emoji-legacy-import/build.mjs
    ```
-   `output/candidates.md` で、取り込む候補と除いたもの（理由つき）を確かめる。
+   `output/candidates.md` で、取り込む候補と除いたもの（理由つき）を確かめる。画像つきで見るなら `output/preview.html` をブラウザで開く。
+   取り込むものを絞るときは、`input/include.txt`（取り込む絵文字名だけ）か `input/exclude.txt`（外す絵文字名）に 1 行 1 つ書いて、もう一度実行する。
 5. **取り込む**
    管理者のアカウントで API コンソール（`/api-console`）を開き、エンドポイントに `admin/emoji-add-request/import-legacy`、パラメータに `output/payload.json` の中身を貼って送る。
    結果の `created` が取り込んだもの、`skipped` が飛ばしたもの（理由つき）。同じ内容を 2 回送っても、取り込み済みのものは飛ばされる。

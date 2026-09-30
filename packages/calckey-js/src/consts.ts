@@ -19,6 +19,7 @@ export const notificationTypes = [
 	"wasUnblocked",
 	"followedAccountWasDeleted",
 	"badge",
+	"emojiRequest",
 ] as const;
 
 /** dev モード時のみ設定画面に表示する通知種別（デフォルトはミュート） */

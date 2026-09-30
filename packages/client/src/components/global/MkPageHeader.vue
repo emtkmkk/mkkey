@@ -420,6 +420,10 @@ onUnmounted(() => {
 		align-items: center;
 		justify-content: center;
 		margin-left: 1rem;
+		// NB: 幅が狭いとき（slim）はタブの列が margin-left をマイナスにして左へはみ出し、戻るボタンに重なる。
+		// タブの方が後ろにあるので上に来てしまい、戻るボタンが押せなくなるため、戻るボタンを上に出す
+		position: relative;
+		z-index: 1;
 	}
 
 	> .titleContainer {

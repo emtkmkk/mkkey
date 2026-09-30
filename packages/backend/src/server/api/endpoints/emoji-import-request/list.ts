@@ -20,6 +20,8 @@ export const meta = {
 				type: "array",
 				items: { type: "object" },
 			},
+			/** 状態ごとの件数（例：{ pending: 3, rejected: 10 }） */
+			counts: { type: "object" },
 		},
 	},
 } as const;
@@ -30,8 +32,8 @@ export const paramDef = {
 		status: {
 			type: "string",
 			enum: ["pending", "approved", "rejected"],
+			// NB: default: null を付けると、省略時に null が入って enum の検査で 400 になる
 			nullable: true,
-			default: null,
 		},
 		limit: { type: "integer", minimum: 1, maximum: 100, default: 20 },
 		offset: { type: "integer", minimum: 0, default: 0 },
@@ -50,7 +52,17 @@ export default define(meta, paramDef, async (ps, me) => {
 		q.andWhere("r.status = :status", { status: ps.status });
 	}
 
-	const requests = await q.getMany();
+	// 審査画面のタブに状態ごとの件数を出すため、件数もいっしょに返す（追加申請の list と同じ形）
+	const [requests, countRows] = await Promise.all([
+		q.getMany(),
+		EmojiImportRequests.createQueryBuilder("r")
+			.select("r.status", "status")
+			.addSelect("COUNT(*)", "count")
+			.groupBy("r.status")
+			.getRawMany<{ status: string; count: string }>(),
+	]);
+	const counts: Record<string, number> = {};
+	for (const row of countRows) counts[row.status] = Number(row.count);
 
 	const items = requests.map((r) => ({
 		id: r.id,
@@ -72,5 +84,5 @@ export default define(meta, paramDef, async (ps, me) => {
 		processedAt: r.processedAt?.toISOString() ?? null,
 	}));
 
-	return { items };
+	return { items, counts };
 });

@@ -2698,6 +2698,7 @@ _notification:
     wasUnblocked: "Unblocked you (dev)"
     followedAccountWasDeleted: "Followed account was deleted"
     badge: "Badge earned"
+    emojiRequest: "Emoji requests"
   _actions:
     view: "View"
     profile: "Profile"

@@ -2764,6 +2764,7 @@ _notification:
     wasUnblocked: "【dev】ブロック解除"
     followedAccountWasDeleted: "アカウント削除"
     badge: "バッジ獲得"
+    emojiRequest: "絵文字申請"
   _actions:
     view: "表示"
     profile: "プロフィール"

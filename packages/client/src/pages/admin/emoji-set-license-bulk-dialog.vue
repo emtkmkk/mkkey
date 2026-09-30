@@ -43,20 +43,14 @@
 			<MkSelect v-model="copyPermission" class="_formBlock" :disabled="isTextOnly">
 				<template #label>{{ i18n.ts.copyPermission }}</template>
 				<option value="">変更しない</option>
-				<option value="allow">{{ i18n.ts._copyPermission?.allow ?? "allow" }}</option>
-				<option value="deny">{{ i18n.ts._copyPermission?.deny ?? "deny" }}</option>
-				<option value="conditional">{{ i18n.ts._copyPermission?.conditional ?? "conditional" }}</option>
-				<option value="none">{{ i18n.ts._copyPermission?.none ?? "none" }}</option>
+				<option v-for="v in EMOJI_COPY_PERMISSIONS" :key="v" :value="v">
+					{{ i18n.ts._copyPermission?.[v] ?? v }}
+				</option>
 			</MkSelect>
 			<MkSelect v-model="licenseName" class="_formBlock" :disabled="isTextOnly">
 				<template #label>{{ i18n.ts.licenseName ?? "ライセンス名" }}</template>
 				<option value="">変更しない</option>
-				<option value="CC0 1.0 Universal">CC0 1.0 Universal</option>
-				<option value="CC BY 4.0">CC BY 4.0</option>
-				<option value="CC BY-NC 4.0">CC BY-NC 4.0</option>
-				<option value="CC BY-NC-SA 4.0">CC BY-NC-SA 4.0</option>
-				<option value="CC BY-NC-ND 4.0">CC BY-NC-ND 4.0</option>
-				<option value="Public Domain">Public Domain</option>
+				<option v-for="name in EMOJI_LICENSE_NAMES" :key="name" :value="name">{{ name }}</option>
 			</MkSelect>
 			<MkInput v-model="creator" class="_formBlock" :disabled="isTextOnly">
 				<template #label>{{ i18n.ts.emojiAuthor ?? "製作者" }}</template>
@@ -93,6 +87,7 @@
  *
  * 絵文字一括ライセンス設定ダイアログ。選択した絵文字に対し、入力した項目のみを set-license-bulk で反映する。
  * 空欄の項目は API に渡さず変更しない。
+ * ライセンス・コピー可否の選択肢は {@link "@/scripts/emoji-license"} の共通の一覧を使う。
  *
  * @public
  */
@@ -103,6 +98,7 @@ import MkTextarea from "@/components/form/textarea.vue";
 import MkSelect from "@/components/form/select.vue";
 import * as os from "@/os";
 import { i18n } from "@/i18n";
+import { EMOJI_COPY_PERMISSIONS, EMOJI_LICENSE_NAMES } from "@/scripts/emoji-license";
 
 const props = defineProps<{
 	emojiIds: string[];

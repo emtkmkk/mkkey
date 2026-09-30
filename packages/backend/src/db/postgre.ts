@@ -92,6 +92,7 @@ import { UserMemo } from "@/models/entities/user-memo.js";
 import { UserSupport } from "@/models/entities/user-support.js";
 import { PasskeyLoginChallenge } from "@/models/entities/passkey-login-challenge.js";
 import { EmojiImportRequest } from "@/models/entities/emoji-import-request.js";
+import { EmojiAddRequest } from "@/models/entities/emoji-add-request.js";
 import { EmojiImportDenied } from "@/models/entities/emoji-import-denied.js";
 
 import { entities as charts } from "@/services/chart/entities.js";
@@ -186,6 +187,7 @@ export const entities = [
 	Emoji,
 	EmojiCustomCategory,
 	EmojiImportRequest,
+	EmojiAddRequest,
 	EmojiImportDenied,
 	Hashtag,
 	SwSubscription,

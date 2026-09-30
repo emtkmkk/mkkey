@@ -6,6 +6,7 @@
  * @remarks
  * - `view` は原則タップ既定と同じ。R5（renote / reaction）のみノートを開く。
  * - R4 種別のタップ・表示は通知一覧へ遷移する。
+ * - 絵文字申請（emojiRequest）のタップは、その申請のページ（emojiRequest.url）を開く。
  *
  * @internal
  */
@@ -160,6 +161,15 @@ export async function resolveNotificationTapDefault(
 	}
 	if (type === "groupInvited") {
 		return swos.openClient("push", "/my/groups", loginId);
+	}
+	if (type === "emojiRequest") {
+		// 絵文字申請はその申請のページを開く（url はサーバーが決めた同じオリジンのパス）
+		const url = (body as { emojiRequest?: { url?: string } | null }).emojiRequest?.url;
+		return swos.openClient(
+			"push",
+			typeof url === "string" && url.startsWith("/") ? url : "/my/notifications",
+			loginId,
+		);
 	}
 	if (
 		type === "app" &&

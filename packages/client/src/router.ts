@@ -583,9 +583,24 @@ export const routes = [
 				component: page(() => import("./pages/admin/emojis.vue")),
 			},
 			{
+				// 絵文字申請 1 件の審査（通知を押したときにも開く）。kind は add / import
+				path: "/emoji-requests/:kind/:id",
+				name: "emoji-request-detail",
+				component: page(() => import("./pages/admin/emoji-request-detail.vue")),
+			},
+			{
+				path: "/emoji-requests",
+				name: "emoji-requests",
+				component: page(() => import("./pages/admin/emoji-requests.vue")),
+				query: {
+					kind: "kind",
+				},
+			},
+			{
+				// 古い URL。開くと /admin/emoji-requests?kind=import に置き換える
 				path: "/emoji-import-requests",
-				name: "emoji-import-requests",
-				component: page(() => import("./pages/admin/emoji-import-requests.vue")),
+				name: "emoji-requests",
+				component: page(() => import("./pages/admin/emoji-requests.vue")),
 			},
 			{
 				path: "/federation",
@@ -765,8 +780,39 @@ export const routes = [
 		loginRequired: true,
 	},
 	{
+		// 絵文字の追加申請（ステップ式）。MEGAMOJI からは ?from=megamoji&name=…&alternateName=…&ruby=…&tags=… で開く
+		path: "/emoji-requests/new",
+		component: page(() => import("./pages/emoji-requests/new.vue")),
+		loginRequired: true,
+		query: {
+			name: "name",
+			alternateName: "alternateName",
+			ruby: "ruby",
+			description: "description",
+			category: "category",
+			tags: "tags",
+			from: "from",
+			resubmit: "resubmit",
+		},
+	},
+	{
+		// 申請の詳細（通知を押したときにも開く）。kind は add / import
+		path: "/emoji-requests/:kind/:id",
+		component: page(() => import("./pages/emoji-requests/detail.vue")),
+		loginRequired: true,
+	},
+	{
+		path: "/emoji-requests",
+		component: page(() => import("./pages/emoji-requests/index.vue")),
+		loginRequired: true,
+		query: {
+			kind: "kind",
+		},
+	},
+	{
+		// 古い URL。開くと /emoji-requests?kind=import に置き換える
 		path: "/my/emoji-import-requests",
-		component: page(() => import("./pages/emoji-import-requests.vue")),
+		component: page(() => import("./pages/emoji-requests/index.vue")),
 		loginRequired: true,
 	},
 	{

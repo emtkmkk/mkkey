@@ -339,6 +339,23 @@ export type Notification = {
 			/** バッジのメインアイコン（絵文字。周年は数字絵文字） */
 			icon?: string | null;
 	  }
+	| {
+			type: "emojiRequest";
+			/** 見出し（例: 絵文字の追加申請に修正のお願いがあります） */
+			header?: string | null;
+			body: string;
+			/** 申請した絵文字の画像（申請者宛て） */
+			icon?: string | null;
+			/** 管理者宛てのときは申請者 */
+			user?: User | null;
+			/** どの申請か。url は押したときに開くページ */
+			emojiRequest: {
+				kind: "add" | "import" | "edit";
+				id: string;
+				role: "requester" | "reviewer";
+				url: string;
+			} | null;
+	  }
 );
 
 export type MessagingMessage = {

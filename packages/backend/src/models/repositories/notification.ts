@@ -10,6 +10,7 @@
  * @see {@link models/entities/notification} 通知エンティティ
  * @internal
  */
+import { getEmojiRequestPath } from "@/misc/emoji-request-link.js";
 import { In } from "typeorm";
 import { Notification } from "@/models/entities/notification.js";
 import { awaitAll } from "@/prelude/await-all.js";
@@ -222,6 +223,28 @@ export const NotificationRepository = db.getRepository(Notification).extend({
 						body: notification.customBody,
 						header: notification.customHeader,
 						icon: notification.customIcon,
+				  }
+				: {}),
+			...(notification.type === "emojiRequest"
+				? {
+						body: notification.customBody,
+						header: notification.customHeader,
+						// 申請した絵文字の画像
+						icon: notification.customIcon,
+						emojiRequest:
+							notification.emojiRequestKind && notification.emojiRequestId
+								? {
+										kind: notification.emojiRequestKind,
+										id: notification.emojiRequestId,
+										role: notification.emojiRequestRole ?? "requester",
+										// 押したときに開くページ（ブラウザとプッシュ通知で共通）
+										url: getEmojiRequestPath(
+											notification.emojiRequestKind,
+											notification.emojiRequestId,
+											notification.emojiRequestRole ?? "requester",
+										),
+								  }
+								: null,
 				  }
 				: {}),
 		});

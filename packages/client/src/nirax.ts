@@ -236,6 +236,12 @@ export class Router extends EventEmitter<{
 		if (requiresLogin) {
 			// NOTE: 認証必須ページはログイン要求のみ表示し、遷移自体は中止する。
 			pleaseLogin("/");
+			if (this.current == null) {
+				// NOTE: 最初に開いたページが認証必須のとき（外部サイトや通知のリンクから直接開いたときなど）は、
+				// 中止すると表示するページが無くなり画面が壊れる。代わりにトップ（未ログインなら紹介ページ）を裏に表示しておく。
+				// URL はそのままなので、ログインするとこの URL で読み直され、元のページが開く
+				return this.navigate("/", key, emitChange);
+			}
 			this.currentPath = beforePath;
 			return null;
 		}

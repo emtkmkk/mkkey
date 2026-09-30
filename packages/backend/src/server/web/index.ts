@@ -63,6 +63,7 @@ import { MINUTE, DAY } from "@/const.js";
 import type { Note } from "@/models/entities/note.js";
 import Logger from "@/services/logger.js";
 import { pickMediaProxy } from "@/misc/media-proxy.js";
+import { resolvePageOgp } from "./page-ogp.js";
 
 const webLogger = new Logger("web");
 
@@ -1417,11 +1418,19 @@ router.get("(.*)", async (ctx) => {
 			Math.floor(Math.random() * meta.customSplashIcons.length)
 			];
 	}
+	// 画面名が分かる画面（設定・絵文字申請・絵文字の情報など）は、タイトルと OGP をその画面のものにする
+	const pageOgp = await resolvePageOgp(
+		assets,
+		ctx.path,
+		ctx.querystring,
+		meta.name || "Cluckey",
+		meta.privateMode ?? false,
+	);
 	await ctx.render("base", {
-		img: meta.iconUrl,
-		title: meta.name || "Cluckey",
+		img: pageOgp?.img ?? meta.iconUrl,
+		title: pageOgp?.title ?? (meta.name || "Cluckey"),
 		instanceName: meta.name || "Cluckey",
-		desc: `FediverseのSNSサーバーの${meta.name}です\n\n${nowDate}時点の\nユーザ数 : ${usersCount.toLocaleString("ja-JP")}\n合計投稿数 : ${notesCount.toLocaleString("ja-JP")}\n絵文字数 : ${emojisCount.toLocaleString("ja-JP")}\n連合ユーザ数 : ${gUsersCount.toLocaleString("ja-JP")}\n連合投稿数 : ${gNotesCount.toLocaleString("ja-JP")}\n連合絵文字数 : ${gEmojisCount.toLocaleString("ja-JP")}`,
+		desc: pageOgp?.desc ?? `FediverseのSNSサーバーの${meta.name}です\n\n${nowDate}時点の\nユーザ数 : ${usersCount.toLocaleString("ja-JP")}\n合計投稿数 : ${notesCount.toLocaleString("ja-JP")}\n絵文字数 : ${emojisCount.toLocaleString("ja-JP")}\n連合ユーザ数 : ${gUsersCount.toLocaleString("ja-JP")}\n連合投稿数 : ${gNotesCount.toLocaleString("ja-JP")}\n連合絵文字数 : ${gEmojisCount.toLocaleString("ja-JP")}`,
 		icon: meta.iconUrl,
 		splashIcon: splashIconUrl,
 		themeColor: meta.themeColor,

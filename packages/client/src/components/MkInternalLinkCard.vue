@@ -1,7 +1,7 @@
 <template>
 	<!-- 絵文字の情報はページを移動せず、ほかの場所と同じく絵文字の詳細のダイアログで開く -->
 	<component
-		:is="info.kind === 'emoji' ? 'button' : MkA"
+		:is="info.kind === 'emoji' ? 'button' : 'MkA'"
 		v-bind="info.kind === 'emoji' ? { type: 'button' } : { to: info.to }"
 		:class="['_button', $style.root]"
 		@click.stop="onClick"
@@ -33,9 +33,12 @@
  * 絵文字の情報の画面は、絵文字の画像と名前を出し、押すとページを移動せずに絵文字の詳細のダイアログを開く（ほかの場所と同じ）。
  * どの URL をこの枠にするかは {@link resolveInternalLink} が決める。
  *
+ * WARNING: `MkA` を import しないこと（グローバル登録の名前 `'MkA'` で指定する）。
+ * MkA はルーターを読み込み、ルーターは読み込んだ時点で os の api を呼ぶ。この枠は os → 投稿フォーム → … → URL のプレビュー から読まれるため、
+ * import すると os の初期化が終わる前に api が呼ばれ、クライアント全体が起動しなくなる（2026-10-02 に実際に起きた）。
+ *
  * @internal
  */
-import MkA from "@/components/global/MkA.vue";
 import MkEmoji from "@/components/global/MkEmoji.vue";
 import type { InternalLinkInfo } from "@/scripts/internal-link";
 import { openEmojiDialog } from "@/scripts/open-emoji-dialog";

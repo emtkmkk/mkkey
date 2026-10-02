@@ -17,6 +17,7 @@
  *     ふつうの文では起きないので、今は手を入れない。
  *   - プロフィールに成人向けなどの印が付いていたら、アイコン・バナーをセンシティブとして取り込む。
  * - `isExplorable` は false にする。本人が mkkey 側の「おすすめ」などに出ることに同意していないため。
+ * - 管理者が仮想ホスト（`bridgeHost`）をインスタンスとしてブロックしたら、解決そのものをしない（ブリッジ全体を止める手段）。
  * - 新しく取り込めるかは呼び出し側が決める（`allowCreate`）。一般公開の前（`atproto.publicAccess` が false）は、
  *   管理者用 API からだけ新しく取り込む。すでに取り込んだ人を探して返すことは、いつでもできる。
  *
@@ -40,6 +41,7 @@ import { uploadFromUrl } from "@/services/drive/upload-from-url.js";
 import { registerOrFetchInstanceDoc } from "@/services/register-or-fetch-instance-doc.js";
 import { instanceChart, usersChart } from "@/services/chart/index.js";
 import { publishInternalEvent } from "@/services/stream.js";
+import { shouldBlockInstance } from "@/misc/should-block-instance.js";
 import { remoteLogger } from "../logger.js";
 import { fetchPdsHost, fetchProfile, type BlueskyProfile } from "./appview.js";
 import { getAtprotoConfig } from "./config.js";
@@ -76,6 +78,9 @@ const DESCRIPTION_LENGTH = 8192;
 
 /** これが付いたプロフィールは、アイコン・バナーをセンシティブとして取り込む */
 const SENSITIVE_LABELS = ["porn", "sexual", "nudity", "graphic-media"];
+
+/** `bsky.app` のプロフィールの URL（`https://bsky.app/profile/<ハンドルか DID>`） */
+const BSKY_APP_PROFILE_URL = /^https:\/\/bsky\.app\/profile\/([^/?#]+)\/?(?:[?#].*)?$/;
 
 /** `did:plc` の識別子の形（base32 の小文字 24 文字） */
 const PLC_ID_PATTERN = /^[a-z2-7]{24}$/;
@@ -146,6 +151,28 @@ export function didToUsername(did: string): string {
 }
 
 /**
+ * Bluesky のプロフィールの URL から、ハンドルか DID を取り出す。
+ *
+ * @remarks
+ * 照会（`ap/show`）に `https://bsky.app/profile/alice.bsky.social` のような URL が貼られたときに使う。
+ * 末尾の `/`・クエリ・`#` は付いていてもよい。投稿の URL（`.../post/...`）は対象外（実装手順 9 で扱う）。
+ *
+ * @param url - 調べる URL
+ * @returns ハンドルか DID。プロフィールの URL でなければ null
+ * @internal
+ */
+export function parseBlueskyProfileUrl(url: string): string | null {
+	const match = url.trim().match(BSKY_APP_PROFILE_URL);
+	if (match == null) return null;
+	try {
+		return decodeURIComponent(match[1]);
+	} catch {
+		// %xx の形が壊れている URL は、プロフィールの URL ではないものとして扱う
+		return null;
+	}
+}
+
+/**
  * `@username@host` から Bluesky ユーザーを解決する（`resolveUser` から呼ばれる）。
  *
  * @remarks
@@ -191,6 +218,7 @@ export async function resolveBlueskyAcct(username: string, host: string): Promis
  * @defaultValue `opts.forceRefresh` は false
  * @returns ユーザー
  * @throws AppView に見つからないとき、`allowCreate` が false で取り込んでいない人のとき
+ * @throws 管理者が仮想ホスト（`bridgeHost`）をインスタンスとしてブロックしているとき
  * @internal
  */
 export async function resolveBlueskyActor(
@@ -198,6 +226,11 @@ export async function resolveBlueskyActor(
 	opts: { allowCreate: boolean; forceRefresh?: boolean },
 ): Promise<User> {
 	assertEnabled();
+
+	// 管理者が仮想ホストをインスタンスとしてブロックしていたら、ブリッジ全体を止める（2026-10-02 決定）
+	if (await shouldBlockInstance(getAtprotoConfig().bridgeHost)) {
+		throw new Error("the Bluesky bridge host is blocked");
+	}
 	const normalized = actor.trim().replace(/^@/, "").toLowerCase();
 
 	// 取り込み済みなら、まずそれを使う（ハンドルは同じ人が 1 人だけのときに限る）

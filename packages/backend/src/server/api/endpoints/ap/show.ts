@@ -6,6 +6,7 @@
  * @remarks
  * - **API パス**: `ap/show`（GET `/api/ap/show` で呼び出し）
  * - 認証不要。uri で指定した ActivityPub のオブジェクトを解決し、ローカル用の表現で返す。
+ * - `https://bsky.app/profile/<ハンドルか DID>` は Bluesky ユーザーとして解決する（Bluesky ブリッジが有効なとき）。
  *
  * @see {@link define} エンドポイント登録
  * @internal
@@ -27,6 +28,8 @@ import { shouldBlockInstance } from "@/misc/should-block-instance.js";
 import { updateQuestion } from "@/remote/activitypub/models/question.js";
 import { populatePoll } from "@/models/repositories/note.js";
 import { redisClient } from "@/db/redis.js";
+import { getAtprotoConfig } from "@/remote/atproto/config.js";
+import { parseBlueskyProfileUrl, resolveBlueskyActor } from "@/remote/atproto/actor.js";
 
 export const meta = {
 	tags: ["federation"],
@@ -113,6 +116,15 @@ async function fetchAny(
 	uri: string,
 	me: CacheableLocalUser | null | undefined,
 ): Promise<SchemaType<typeof meta["res"]> | null> {
+	// Bluesky のプロフィールの URL は、ActivityPub ではなく Bluesky 側で解決する
+	const blueskyActor = parseBlueskyProfileUrl(uri);
+	if (blueskyActor != null && getAtprotoConfig().enabled) {
+		const user = await resolveBlueskyActor(blueskyActor, {
+			allowCreate: getAtprotoConfig().publicAccess,
+		}).catch(() => null);
+		return await mergePack(me, user, null);
+	}
+
 	// ブロック中なら待機する。
 	if (await shouldBlockInstance(extractDbHost(uri))) return null;
 

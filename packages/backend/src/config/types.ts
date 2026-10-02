@@ -268,6 +268,43 @@ export type Source = {
 	};
 	userAgent2?: string;
 	specialServerHosts?: string[];
+
+	/**
+	 * Bluesky（AT Protocol）とのブリッジの設定。
+	 *
+	 * @remarks
+	 * - 未指定、または `enabled` が true 以外のときは、ブリッジの機能をすべて止める（既定: 無効）。
+	 * - 値は必ず {@link ../remote/atproto/config.ts | getAtprotoConfig} を通して読むこと。既定値はそこで補う。
+	 * - 送信は follow と like だけで、mkkey の投稿は Bluesky へ送らない。
+	 */
+	atproto?: {
+		/** true のときだけブリッジを動かす（既定: false）。 */
+		enabled?: boolean;
+		/**
+		 * 自前 PDS のホスト名。ハンドルは `<名前>.<pdsHostname>` になる。
+		 *
+		 * @remarks
+		 * このホスト名とワイルドカード（`*.<pdsHostname>`）の DNS・TLS 証明書・nginx の振り分けが必要。
+		 * 運用開始後に変えると、発行済みの DID とハンドルが合わなくなるので変えないこと。
+		 */
+		pdsHostname?: string;
+		/**
+		 * Bluesky ユーザーを保存するときの `user.host`（既定: `pdsHostname` と同じ）。
+		 *
+		 * @remarks
+		 * 画面には `bluesky` と見せるが、データベースにはこの値を入れる。
+		 * 運用開始後に変えると、取り込み済みの Bluesky ユーザーを見失うので変えないこと。
+		 */
+		bridgeHost?: string;
+		/** DID:plc のディレクトリ（既定: `https://plc.directory`）。 */
+		plcUrl?: string;
+		/** プロフィールや関係の確認に使う公開 AppView（既定: `https://public.api.bsky.app`）。 */
+		appViewUrl?: string;
+		/** 投稿の受信に使う Jetstream の URL（既定: `wss://jetstream2.us-east.bsky.network/subscribe`）。 */
+		jetstreamUrl?: string;
+		/** レポジトリの更新を知らせる（requestCrawl する）Relay のホスト名（既定: `["bsky.network"]`）。 */
+		relayHosts?: string[];
+	};
 };
 
 /**

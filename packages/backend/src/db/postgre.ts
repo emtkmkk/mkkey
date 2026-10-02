@@ -94,6 +94,9 @@ import { PasskeyLoginChallenge } from "@/models/entities/passkey-login-challenge
 import { EmojiImportRequest } from "@/models/entities/emoji-import-request.js";
 import { EmojiAddRequest } from "@/models/entities/emoji-add-request.js";
 import { EmojiImportDenied } from "@/models/entities/emoji-import-denied.js";
+import { AtprotoIdentity } from "@/models/entities/atproto-identity.js";
+import { AtprotoRepoBlock } from "@/models/entities/atproto-repo-block.js";
+import { AtprotoRecordMap } from "@/models/entities/atproto-record-map.js";
 
 import { entities as charts } from "@/services/chart/entities.js";
 import { envOption } from "../env.js";
@@ -189,6 +192,9 @@ export const entities = [
 	EmojiImportRequest,
 	EmojiAddRequest,
 	EmojiImportDenied,
+	AtprotoIdentity,
+	AtprotoRepoBlock,
+	AtprotoRecordMap,
 	Hashtag,
 	SwSubscription,
 	AbuseUserReport,

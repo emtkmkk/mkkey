@@ -77,6 +77,9 @@ import { EmojiAddRequest } from "./entities/emoji-add-request.js";
 import { EmojiImportDenied } from "./entities/emoji-import-denied.js";
 import { ModerationWarningPopupAck } from "./entities/moderation-warning-popup-ack.js";
 import { NoteReferenceCache } from "./entities/note-reference-cache.js";
+import { AtprotoIdentity } from "./entities/atproto-identity.js";
+import { AtprotoRepoBlock } from "./entities/atproto-repo-block.js";
+import { AtprotoRecordMap } from "./entities/atproto-record-map.js";
 
 export const Announcements = db.getRepository(Announcement);
 export const AnnouncementReads = db.getRepository(AnnouncementRead);
@@ -154,3 +157,7 @@ export const Ads = db.getRepository(Ad);
 export const PasswordResetRequests = db.getRepository(PasswordResetRequest);
 export const UserMemos = db.getRepository(UserMemo);
 export const UserSupports = db.getRepository(UserSupport);
+// Bluesky ブリッジ（AT Protocol）
+export const AtprotoIdentities = db.getRepository(AtprotoIdentity);
+export const AtprotoRepoBlocks = db.getRepository(AtprotoRepoBlock);
+export const AtprotoRecordMaps = db.getRepository(AtprotoRecordMap);

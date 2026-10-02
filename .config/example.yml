@@ -211,6 +211,20 @@ reservedUsernames: [
 # 完成ファイルを組み立てる。進行中のファイル分だけ一時ディスク容量が必要になる。
 #maxFileSize: 262144000
 
+# Bluesky（AT Protocol）とのブリッジ（既定: 無効）
+# 送るのは follow と like だけで、mkkey の投稿は Bluesky へ送らない。
+# 有効にするには、pdsHostname とワイルドカード（*.pdsHostname）の DNS・TLS 証明書と、
+# /xrpc/ と /.well-known/atproto-did をこのサーバへ振り分ける設定が必要。
+# NB: pdsHostname と bridgeHost は、運用を始めた後に変えないこと（発行済みの DID や取り込んだユーザーと合わなくなる）。
+#atproto:
+#  enabled: true
+#  pdsHostname: bsky.example.com     # ハンドルは <名前>.bsky.example.com になる
+#  bridgeHost: bsky.example.com      # Bluesky ユーザーを保存するときの host（既定: pdsHostname と同じ）
+#  plcUrl: https://plc.directory
+#  appViewUrl: https://public.api.bsky.app
+#  jetstreamUrl: wss://jetstream2.us-east.bsky.network/subscribe
+#  relayHosts: ['bsky.network']
+
 # Managed hosting settings
 # !!!!!!!!!!
 # >>>>>> NORMAL SELF-HOSTERS, STAY AWAY! <<<<<<

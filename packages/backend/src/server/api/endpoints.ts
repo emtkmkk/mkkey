@@ -436,6 +436,7 @@ import * as ep___admin_atproto_enableUser from "./endpoints/admin/atproto/enable
 import * as ep___admin_atproto_disableUser from "./endpoints/admin/atproto/disable-user.js";
 import * as ep___admin_atproto_showUser from "./endpoints/admin/atproto/show-user.js";
 import * as ep___admin_atproto_requestCrawl from "./endpoints/admin/atproto/request-crawl.js";
+import * as ep___admin_atproto_refreshProfile from "./endpoints/admin/atproto/refresh-profile.js";
 
 // アカウント移行・known-as 用
 import * as ep___i_move from "./endpoints/i/move.js";
@@ -862,6 +863,7 @@ const eps = [
 	["admin/atproto/disable-user", ep___admin_atproto_disableUser],
 	["admin/atproto/show-user", ep___admin_atproto_showUser],
 	["admin/atproto/request-crawl", ep___admin_atproto_requestCrawl],
+	["admin/atproto/refresh-profile", ep___admin_atproto_refreshProfile],
 	["health/live", ep___health_live],
 	["health/db", ep___health_db],
 	["health/redis", ep___health_redis],

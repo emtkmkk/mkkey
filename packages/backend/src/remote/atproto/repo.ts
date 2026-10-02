@@ -173,6 +173,45 @@ export async function ensureRepo(
 	]);
 }
 
+/**
+ * プロフィールを今の表示名で書き直す。
+ *
+ * @remarks
+ * - レポジトリがまだ無ければ {@link ensureRepo} と同じく作成する。
+ * - Relay が「今から後」だけを購読しているときに、最初のコミットを見逃した場合のやり直しにも使う。
+ *   書き直すと新しい `#commit` が firehose に流れる。
+ *
+ * @param identity - 対象の身元
+ * @param user - プロフィールに使うユーザー情報
+ * @returns 新しいコミット
+ * @internal
+ */
+export async function upsertProfile(
+	identity: Pick<AtprotoIdentity, "userId" | "repoCommitCid">,
+	user: Pick<User, "username" | "name">,
+): Promise<{ commitCid: string; rev: string }> {
+	// レポジトリがまだ無ければ、プロフィールの作成そのものが新しい #commit になる
+	if (identity.repoCommitCid == null) {
+		return await writeRecords(identity.userId, [
+			{
+				action: WriteOpAction.Create,
+				collection: "app.bsky.actor.profile",
+				rkey: "self",
+				record: buildProfileRecord(user),
+			},
+		]);
+	}
+
+	return await writeRecords(identity.userId, [
+		{
+			action: WriteOpAction.Update,
+			collection: "app.bsky.actor.profile",
+			rkey: "self",
+			record: buildProfileRecord(user),
+		},
+	]);
+}
+
 // #endregion
 
 // #region コミットの組み立て

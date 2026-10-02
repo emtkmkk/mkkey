@@ -37,6 +37,7 @@ import { AtprotoIdentity } from "@/models/entities/atproto-identity.js";
 import type { User } from "@/models/entities/user.js";
 import { DbRepoStorage } from "./repo-storage.js";
 import { appendEvent, lockSequencer } from "./sequencer.js";
+import { nextTid } from "./tid.js";
 
 // #region 型
 
@@ -59,6 +60,16 @@ type CommitOp = {
 	cid: Cid | null;
 	prev?: Cid;
 };
+
+// #endregion
+
+// #region 定数
+
+/** {@link deleteBridgeRecord} で消してよいレコードの種類 */
+const DELETABLE_COLLECTIONS: readonly string[] = [
+	"app.bsky.graph.follow",
+	"app.bsky.feed.like",
+];
 
 // #endregion
 
@@ -209,6 +220,105 @@ export async function upsertProfile(
 			rkey: "self",
 			record: buildProfileRecord(user),
 		},
+	]);
+}
+
+/**
+ * `app.bsky.graph.follow` を書き込む。
+ *
+ * @remarks
+ * - 同じ相手への follow がすでにあるかは見ない（何件でも書ける）。重複を防ぐのは呼び出し側の役目
+ *   （本番の流れでは `atproto_record_map` の一意の索引で防ぐ）。
+ * - レコードキーは TID。書いた順に並ぶ。
+ *
+ * @param userId - follow するローカルユーザー
+ * @param subjectDid - follow する相手の DID
+ * @returns 書いたレコードの URI と CID、新しいコミット
+ * @throws {@link writeRecords} と同じ
+ * @internal
+ */
+export async function createFollowRecord(
+	userId: string,
+	subjectDid: string,
+): Promise<RepoWriteResult & { rev: string }> {
+	const { rev, results } = await writeRecords(userId, [
+		{
+			action: WriteOpAction.Create,
+			collection: "app.bsky.graph.follow",
+			rkey: nextTid(),
+			record: {
+				$type: "app.bsky.graph.follow",
+				subject: subjectDid,
+				createdAt: new Date().toISOString(),
+			},
+		},
+	]);
+	return { ...results[0], rev };
+}
+
+/**
+ * `app.bsky.feed.like` を書き込む。
+ *
+ * @remarks
+ * 重複の扱いとレコードキーは {@link createFollowRecord} と同じ。
+ *
+ * @param userId - like するローカルユーザー
+ * @param subject - like する投稿の URI と CID
+ * @returns 書いたレコードの URI と CID、新しいコミット
+ * @throws {@link writeRecords} と同じ
+ * @internal
+ */
+export async function createLikeRecord(
+	userId: string,
+	subject: { uri: string; cid: string },
+): Promise<RepoWriteResult & { rev: string }> {
+	const { rev, results } = await writeRecords(userId, [
+		{
+			action: WriteOpAction.Create,
+			collection: "app.bsky.feed.like",
+			rkey: nextTid(),
+			record: {
+				$type: "app.bsky.feed.like",
+				subject: { uri: subject.uri, cid: subject.cid },
+				createdAt: new Date().toISOString(),
+			},
+		},
+	]);
+	return { ...results[0], rev };
+}
+
+/**
+ * 自分のレポジトリの follow / like を消す。
+ *
+ * @remarks
+ * - 消せるのは {@link DELETABLE_COLLECTIONS} の種類だけ。プロフィールは消させない
+ *   （消すと Bluesky 側でアカウントの表示が崩れるため）。
+ * - URI の DID が、このユーザーの DID と違うときは消さない（他人のレコードは消せないため）。
+ *
+ * @param identity - レポジトリの持ち主の身元
+ * @param uri - 消すレコードの URI（`at://<自分の DID>/<collection>/<rkey>`）
+ * @returns 新しいコミット
+ * @throws URI の形がおかしいとき、他人の DID のとき、消せない種類のとき
+ * @throws {@link writeRecords} と同じ（レコードが無いときを含む）
+ * @internal
+ */
+export async function deleteBridgeRecord(
+	identity: Pick<AtprotoIdentity, "userId" | "did">,
+	uri: string,
+): Promise<{ commitCid: string; rev: string }> {
+	const match = uri.trim().match(/^at:\/\/([^/]+)\/([^/]+)\/([^/]+)$/);
+	if (match == null) throw new Error(`not an at:// record URI: ${uri}`);
+	const [, did, collection, rkey] = match;
+
+	// #region 入力チェック
+	if (did !== identity.did) throw new Error("the record belongs to another DID");
+	if (!DELETABLE_COLLECTIONS.includes(collection)) {
+		throw new Error(`cannot delete records of ${collection}`);
+	}
+	// #endregion
+
+	return await writeRecords(identity.userId, [
+		{ action: WriteOpAction.Delete, collection, rkey },
 	]);
 }
 

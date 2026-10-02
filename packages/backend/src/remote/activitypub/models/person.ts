@@ -58,6 +58,7 @@ import {
 } from "../type.js";
 import Resolver from "../resolver.js";
 import { extractApHashtags } from "./tag.js";
+import { updateBlueskyUserByUri } from "../../atproto/actor.js";
 import { resolveNote, extractEmojis } from "./note.js";
 import { resolveImage } from "./image.js";
 
@@ -250,6 +251,11 @@ export async function createPerson(
 	resolver?: Resolver,
 ): Promise<User> {
 	if (typeof uri !== "string") throw new Error("uri is not string");
+
+	// Bluesky ユーザー（at://）は ActivityPub では取りに行けない。取り込みは remote/atproto/actor.ts で行う
+	if (uri.startsWith("at://")) {
+		throw new Error("cannot create a Bluesky user as an ActivityPub actor");
+	}
 
 	if (uri.startsWith(config.url)) {
 		throw new StatusError(
@@ -483,6 +489,12 @@ export async function updatePerson(
 
 	// URI が当サーバーを指す場合はスキップ
 	if (uri.startsWith(`${config.url}/`)) {
+		return;
+	}
+
+	// Bluesky ユーザー（at://）は Bluesky 側から取り直す
+	if (uri.startsWith("at://")) {
+		await updateBlueskyUserByUri(uri);
 		return;
 	}
 

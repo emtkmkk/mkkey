@@ -19,6 +19,7 @@ import { getJson, getHtml, getAgentByUrl } from "@/misc/fetch.js";
 import type { Instance } from "@/models/entities/instance.js";
 import { NoteReactions, Instances } from "@/models/index.js";
 import { getFetchInstanceMetadataLock } from "@/misc/app-lock.js";
+import { isBlueskyHost } from "@/remote/atproto/actor.js";
 import { getFallbackReaction } from "@/misc/reaction-lib.js";
 import Logger from "./logger.js";
 import type { DOMWindow } from "jsdom";
@@ -29,6 +30,9 @@ export async function fetchInstanceMetadata(
         instance: Instance,
         force = false,
 ): Promise<boolean> {
+        // Bluesky ブリッジの仮想ホストには nodeinfo などが無い。情報は remote/atproto/actor.ts で入れる
+        if (isBlueskyHost(instance.host)) return true;
+
         let success = false;
         if (!force) {
                 const _instance = await Instances.findOneBy({ host: instance.host });

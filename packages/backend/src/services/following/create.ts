@@ -6,6 +6,7 @@
  * @remarks
  * - **役割**: フォロー API や Accept(Follow) から呼ばれ、フォロー関係を保存し AP 配信する。
  * - follower 向け followRequestAccepted は Followings 新規成立時のみ（リクエスト送信のみでは送らない）。
+ * - Bluesky ユーザーが関わるフォローは、今はエラーにする（実装手順 8 で自前 PDS への follow の書き込みに置き換える）。
  *
  * @see {@link server/api/endpoints/following/create} フォロー API
  * @internal
@@ -49,6 +50,7 @@ import { webhookDeliver } from "@/queue/index.js";
 import { shouldSilenceInstance } from "@/misc/should-block-instance.js";
 import { invalidateDormantFollowerSkipCache } from "@/remote/activitypub/dormant-follower-check.js";
 import { invalidateUserShowRelationCache } from "../invalidate-user-show-relation-cache.js";
+import { isBlueskyHost } from "@/remote/atproto/actor.js";
 
 const logger = new Logger("following/create");
 
@@ -232,6 +234,15 @@ export default async function (
 		Users.findOneByOrFail({ id: _follower.id }),
 		Users.findOneByOrFail({ id: _followee.id }),
 	]);
+
+	// Bluesky ユーザーへのフォローはまだ作っていない（ActivityPub の Follow を送ろうとして失敗するので先に止める）
+	// TODO: 実装手順 8 で、自前 PDS への follow の書き込みとフォロー申請の流れに置き換える
+	if (isBlueskyHost(followee.host) || isBlueskyHost(follower.host)) {
+		throw new IdentifiableError(
+			"5b6c9a8e-2f4d-4b1e-9c3a-7d8e1f0a2b3c",
+			"following Bluesky users is not supported yet",
+		);
+	}
 
 	// ブロック関係を確認
 	const [blocking, blocked, followBlocking] = await Promise.all([

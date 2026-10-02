@@ -82,6 +82,7 @@ import { AtprotoRepoBlock } from "./entities/atproto-repo-block.js";
 import { AtprotoRecordMap } from "./entities/atproto-record-map.js";
 import { AtprotoRepoSeq } from "./entities/atproto-repo-seq.js";
 import { AtprotoBlob } from "./entities/atproto-blob.js";
+import { AtprotoActor } from "./entities/atproto-actor.js";
 
 export const Announcements = db.getRepository(Announcement);
 export const AnnouncementReads = db.getRepository(AnnouncementRead);
@@ -165,3 +166,4 @@ export const AtprotoRepoBlocks = db.getRepository(AtprotoRepoBlock);
 export const AtprotoRecordMaps = db.getRepository(AtprotoRecordMap);
 export const AtprotoRepoSeqs = db.getRepository(AtprotoRepoSeq);
 export const AtprotoBlobs = db.getRepository(AtprotoBlob);
+export const AtprotoActors = db.getRepository(AtprotoActor);

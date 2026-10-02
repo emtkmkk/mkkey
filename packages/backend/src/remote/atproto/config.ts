@@ -39,6 +39,8 @@ export type AtprotoConfig = {
 	jetstreamUrl: string;
 	/** requestCrawl を送る Relay のホスト名 */
 	relayHosts: string[];
+	/** 一般公開するか。false の間は、Bluesky ユーザーを新しく取り込めるのは管理者用 API だけ */
+	publicAccess: boolean;
 };
 
 // #endregion
@@ -91,6 +93,7 @@ export function getAtprotoConfig(): AtprotoConfig {
 		appViewUrl: trimTrailingSlash(src.appViewUrl ?? DEFAULT_APPVIEW_URL),
 		jetstreamUrl: src.jetstreamUrl ?? DEFAULT_JETSTREAM_URL,
 		relayHosts: src.relayHosts ?? DEFAULT_RELAY_HOSTS,
+		publicAccess: src.publicAccess === true,
 	};
 	return cached;
 }

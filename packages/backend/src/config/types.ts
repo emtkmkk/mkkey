@@ -304,6 +304,15 @@ export type Source = {
 		jetstreamUrl?: string;
 		/** レポジトリの更新を知らせる（requestCrawl する）Relay のホスト名（既定: `["bsky.network"]`）。 */
 		relayHosts?: string[];
+		/**
+		 * 一般公開するか（既定: false）。
+		 *
+		 * @remarks
+		 * false の間は、Bluesky ユーザーを新しく取り込める（`@ハンドル@bluesky` などから解決できる）のは
+		 * 管理者用 API（`admin/atproto/resolve-actor`）だけになる。true にすると、誰の検索・メンションからでも取り込まれる。
+		 * 連携は全員既定でオンなので、公開前はこれが唯一の歯止めになる。
+		 */
+		publicAccess?: boolean;
 	};
 };
 

@@ -1,14 +1,13 @@
 /**
  * @packageDocumentation
  *
- * 公開 AppView（ログイン無しで使える Bluesky の読み取り API）に問い合わせ、follow / like の宛先を調べる。
+ * 公開 AppView（ログイン無しで使える Bluesky の読み取り API）などに問い合わせ、Bluesky ユーザーや投稿の情報を調べる。
  *
  * @remarks
  * - follow には相手の DID、like には投稿の URI と CID の組（`subject`）が要る。
  *   人が渡しやすいハンドルや `bsky.app` の URL から、これらを引くのがこのファイルの役目。
  * - 問い合わせ先は設定の `atproto.appViewUrl`（既定は `https://public.api.bsky.app`）。
- * - 今は試験用の管理者 API（`admin/atproto/test-write`）だけが使う。
- *   NOTE: Bluesky ユーザーの解決（実装手順 6）でも使い回す想定。
+ * - Bluesky ユーザーの取り込み（{@link ./actor.ts}）でも、プロフィールと PDS の場所を引くのに使う。
  *
  * @see {@link ./config.ts} 問い合わせ先の設定
  * @internal
@@ -29,6 +28,31 @@ export type StrongRef = {
 	uri: string;
 	/** 投稿の CID */
 	cid: string;
+};
+
+/**
+ * AppView の `app.bsky.actor.getProfile` が返すプロフィール（使う項目だけ）。
+ *
+ * @remarks
+ * AppView が返す値をそのまま信じず、使う側で形を確かめること（{@link fetchProfile} が最低限の確認をする）。
+ *
+ * @internal
+ */
+export type BlueskyProfile = {
+	did: string;
+	/** 今のハンドル。確かめられなかった人は `handle.invalid` */
+	handle: string;
+	displayName?: string;
+	description?: string;
+	/** アイコンの画像 URL（Bluesky の CDN） */
+	avatar?: string;
+	/** バナーの画像 URL（Bluesky の CDN） */
+	banner?: string;
+	followersCount?: number;
+	followsCount?: number;
+	postsCount?: number;
+	/** プロフィールに付いた印（本人が付けたものと、モデレーションが付けたもの） */
+	labels?: { val: string; src: string }[];
 };
 
 // #endregion
@@ -59,6 +83,22 @@ const AT_POST_URI = /^at:\/\/([^/]+)\/app\.bsky\.feed\.post\/([^/?#]+)$/;
  * @internal
  */
 export async function resolveActorDid(actor: string): Promise<string> {
+	return (await fetchProfile(actor)).did;
+}
+
+/**
+ * ハンドルか DID から、プロフィールを引く。
+ *
+ * @remarks
+ * - 先頭の `@` は付いていてもよい。
+ * - AppView はハンドルを確かめた結果を返す（確かめられなければ `handle.invalid`）ので、ハンドルは自分で確かめ直さない。
+ *
+ * @param actor - ハンドルか DID
+ * @returns プロフィール
+ * @throws AppView に見つからないとき（停止・削除されたアカウントを含む）、応答の形がおかしいとき
+ * @internal
+ */
+export async function fetchProfile(actor: string): Promise<BlueskyProfile> {
 	const { appViewUrl } = getAtprotoConfig();
 	const normalized = actor.trim().replace(/^@/, "");
 
@@ -66,11 +106,52 @@ export async function resolveActorDid(actor: string): Promise<string> {
 		`${appViewUrl}/xrpc/app.bsky.actor.getProfile?actor=${encodeURIComponent(
 			normalized,
 		)}`,
-	)) as { did?: unknown };
-	if (typeof profile.did !== "string" || !profile.did.startsWith("did:")) {
+	)) as Partial<BlueskyProfile>;
+	if (
+		typeof profile.did !== "string" ||
+		!profile.did.startsWith("did:") ||
+		typeof profile.handle !== "string"
+	) {
 		throw new Error(`actor not found: ${actor}`);
 	}
-	return profile.did;
+	return profile as BlueskyProfile;
+}
+
+/**
+ * DID の文書から、アカウントを置いている PDS のホスト名を引く。
+ *
+ * @remarks
+ * - `did:plc` は plc.directory に、`did:web` はそのドメインの `/.well-known/did.json` に問い合わせる。
+ * - 記録のためだけに使うので、調べられなかったときは例外にせず null を返す。
+ *
+ * @param did - 対象の DID
+ * @returns PDS のホスト名。調べられなかったときは null
+ * @internal
+ */
+export async function fetchPdsHost(did: string): Promise<string | null> {
+	const { plcUrl } = getAtprotoConfig();
+
+	let url: string;
+	if (did.startsWith("did:plc:")) {
+		url = `${plcUrl}/${encodeURIComponent(did)}`;
+	} else if (did.startsWith("did:web:")) {
+		url = `https://${did.slice("did:web:".length)}/.well-known/did.json`;
+	} else {
+		return null;
+	}
+
+	try {
+		const doc = (await getJson(url)) as {
+			service?: { id?: unknown; serviceEndpoint?: unknown }[];
+		};
+		const pds = doc.service?.find((s) => s.id === "#atproto_pds");
+		return typeof pds?.serviceEndpoint === "string"
+			? new URL(pds.serviceEndpoint).hostname
+			: null;
+	} catch {
+		// 記録用の値なので、取れなくても先に進める
+		return null;
+	}
 }
 
 /**

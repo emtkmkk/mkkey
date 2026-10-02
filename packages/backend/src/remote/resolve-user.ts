@@ -6,6 +6,7 @@
  * @remarks
  * - **役割**: フォロー・メンション等で username@host からリモートユーザーを取得・登録する。
  * - **並行制御**: リモート解決は acct 単位のインフライト結合で重複 resync を抑える（{@link remote/resolve-user-inflight}）。
+ * - **Bluesky ユーザー**: ホスト名が Bluesky ブリッジのもの（`bsky.mkkey.net` / `bluesky`）なら、{@link remote/atproto/actor} で解決する。
  *
  * @see {@link remote/activitypub/models/person} Person 作成・更新
  * @internal
@@ -25,6 +26,7 @@ import {
 	withResolveUserInflight,
 } from "./resolve-user-inflight.js";
 import { remoteLogger } from "./logger.js";
+import { isBlueskyHost, resolveBlueskyAcct } from "./atproto/actor.js";
 
 const logger = remoteLogger.createSubLogger("resolve-user");
 
@@ -78,6 +80,14 @@ export async function resolveUser(
 	}
 
 	const acctKey = buildResolveUserInflightKey(usernameLower, punyHost);
+
+	// Bluesky ユーザー（`@固定の ID@bsky.mkkey.net` か `@ハンドル@bluesky`）は WebFinger ではなく Bluesky 側で解決する
+	if (isBlueskyHost(punyHost)) {
+		return await withResolveUserInflight(acctKey, () =>
+			resolveBlueskyAcct(username, punyHost),
+		);
+	}
+
 	return await withResolveUserInflight(acctKey, () =>
 		resolveRemoteUser(username, usernameLower, punyHost),
 	);

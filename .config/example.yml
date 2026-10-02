@@ -224,6 +224,7 @@ reservedUsernames: [
 #  appViewUrl: https://public.api.bsky.app
 #  jetstreamUrl: wss://jetstream2.us-east.bsky.network/subscribe
 #  relayHosts: ['bsky.network']
+#  publicAccess: false             # true にすると誰でも Bluesky ユーザーを取り込める（false の間は管理者用 API だけ）
 
 # Managed hosting settings
 # !!!!!!!!!!

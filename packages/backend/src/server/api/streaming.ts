@@ -6,6 +6,8 @@
  * @remarks
  * - **役割**: HTTP サーバに WebSocket を張り、`/streaming` 等で接続を受付。認証後に MainStreamConnection を生成する。
  * - クライアントは WebSocket で接続し、チャンネル購読でリアルタイム通知を受信する。
+ * - Bluesky ブリッジの firehose（`/xrpc/com.atproto.sync.subscribeRepos`）も同じ WebSocket サーバーに来るので、
+ *   最初にパスを見て {@link ../atproto/subscribe-repos.ts} に回す。
  *
  * @see {@link stream/index} MainStreamConnection
  * @see {@link authenticate} トークン認証
@@ -25,6 +27,7 @@ import MainStreamConnection from "./stream/index.js";
 import authenticate from "./authenticate.js";
 import { maybeInvalidateDormantFollowerCacheOnActivity } from "@/remote/activitypub/dormant-follower-check.js";
 import { isModerationWarningAckPending } from "@/misc/moderation-warning-ack.js";
+import { tryHandleSubscribeRepos } from "../atproto/subscribe-repos.js";
 
 export const initializeStreamingServer = (server: http.Server) => {
 	// WebSocket サーバ初期化
@@ -33,6 +36,9 @@ export const initializeStreamingServer = (server: http.Server) => {
 	});
 
 	ws.on("request", async (request) => {
+		// Bluesky ブリッジの firehose は認証が要らず、送るものも違うので、ここで別の処理に回す
+		if (tryHandleSubscribeRepos(request)) return;
+
 		const q = request.resourceURL.query as ParsedUrlQuery;
 		const headers = request.httpRequest.headers["sec-websocket-protocol"] || "";
 		const cred = q.i || q.access_token || headers;

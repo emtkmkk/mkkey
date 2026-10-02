@@ -28,6 +28,8 @@
 	"dependencies": {
 		"@atproto/crypto": "0.5.6",
 		"@atproto/lex-cbor": "0.1.6",
+		"@atproto/lex-data": "0.1.7",
+		"@atproto/repo": "0.10.15",
 		"@bull-board/api": "^4.6.4",
 		"@bull-board/koa": "^4.6.4",
 		"@bull-board/ui": "^4.6.4",

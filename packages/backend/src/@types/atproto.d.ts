@@ -48,7 +48,26 @@ declare module "@atproto/crypto" {
 	): Promise<boolean>;
 }
 
+declare module "@atproto/lex-data" {
+	/**
+	 * CID（中身から決まる識別子）。
+	 *
+	 * @remarks
+	 * `toString()` で `bafyrei...` の形になる。比べるときは `equals` か文字列にしてから比べる（オブジェクトの `===` は使えない）。
+	 */
+	export interface Cid {
+		readonly bytes: Uint8Array;
+		toString(): string;
+		equals(other: unknown): boolean;
+	}
+
+	/** 文字列の CID を読む。形が正しくなければ例外 */
+	export function parseCid(input: string): Cid;
+}
+
 declare module "@atproto/lex-cbor" {
+	import type { Cid } from "@atproto/lex-data";
+
 	/** AT Protocol で使う値（JSON に近いが、バイト列と CID も入れられる） */
 	export type LexValue =
 		| null
@@ -56,20 +75,176 @@ declare module "@atproto/lex-cbor" {
 		| number
 		| string
 		| Uint8Array
+		| Cid
 		| LexValue[]
 		| { [key: string]: LexValue | undefined };
-
-	/** CID（中身から決まる識別子）。`toString()` で `bafyrei...` の形になる */
-	export interface CborCid {
-		toString(): string;
-	}
 
 	/** DAG-CBOR で符号化する（キーの順番などは規則どおりにそろえられる） */
 	export function cborEncode(value: LexValue): Uint8Array;
 
-	/** DAG-CBOR を読む */
+	/** DAG-CBOR を読む（CID は {@link Cid} として戻る） */
 	export function cborDecode(bytes: Uint8Array): LexValue;
 
 	/** 値を DAG-CBOR にしたときの CID を計算する */
-	export function cidForLex(value: LexValue): Promise<CborCid>;
+	export function cidForLex(value: LexValue): Promise<Cid>;
+}
+
+declare module "@atproto/repo" {
+	import type { Cid } from "@atproto/lex-data";
+	import type { LexValue } from "@atproto/lex-cbor";
+	import type { Secp256k1Keypair } from "@atproto/crypto";
+
+	// #region 値の入れ物
+
+	/** レコードの中身（キーが文字列のオブジェクト） */
+	export type LexMap = { [key: string]: LexValue | undefined };
+
+	/** CID → バイト列の入れ物 */
+	export class BlockMap implements Iterable<[Cid, Uint8Array]> {
+		constructor(entries?: Iterable<readonly [Cid, Uint8Array]>);
+		set(cid: Cid, bytes: Uint8Array): BlockMap;
+		get(cid: Cid): Uint8Array | undefined;
+		has(cid: Cid): boolean;
+		/** ほかの入れ物の中身を足す（自分自身を返す） */
+		addMap(toAdd: BlockMap): BlockMap;
+		get size(): number;
+		[Symbol.iterator](): Iterator<[Cid, Uint8Array]>;
+	}
+
+	/** CID の集まり */
+	export class CidSet {
+		size(): number;
+		toList(): Cid[];
+	}
+
+	// #endregion
+
+	// #region 書き込み
+
+	/** 書き込みの種類。実際の値は `"create"` / `"update"` / `"delete"` */
+	export enum WriteOpAction {
+		Create = "create",
+		Update = "update",
+		Delete = "delete",
+	}
+
+	export type RecordCreateOp = {
+		action: WriteOpAction.Create;
+		collection: string;
+		rkey: string;
+		record: LexMap;
+	};
+	export type RecordUpdateOp = {
+		action: WriteOpAction.Update;
+		collection: string;
+		rkey: string;
+		record: LexMap;
+	};
+	export type RecordDeleteOp = {
+		action: WriteOpAction.Delete;
+		collection: string;
+		rkey: string;
+	};
+	export type RecordWriteOp = RecordCreateOp | RecordUpdateOp | RecordDeleteOp;
+
+	/**
+	 * 作ったコミット。
+	 *
+	 * @remarks
+	 * - `newBlocks` にはコミット自身のブロックも入る。
+	 * - `relevantBlocks` は、変更を確かめるのに要る既存の MST のブロック（Sync v1.1 の firehose で一緒に送る）。
+	 */
+	export type CommitData = {
+		cid: Cid;
+		rev: string;
+		since: string | null;
+		prev: Cid | null;
+		newBlocks: BlockMap;
+		relevantBlocks: BlockMap;
+		removedCids: CidSet;
+	};
+
+	// #endregion
+
+	// #region 保存先
+
+	/** ブロックを読む側の土台。`getBytes` / `has` / `getBlocks` を書けば、ほかの読み方は用意される */
+	export abstract class ReadableBlockstore {
+		abstract getBytes(cid: Cid): Promise<Uint8Array | null>;
+		abstract has(cid: Cid): Promise<boolean>;
+		abstract getBlocks(
+			cids: Cid[],
+		): Promise<{ blocks: BlockMap; missing: Cid[] }>;
+	}
+
+	/** レポジトリの保存先（使う分だけ） */
+	export interface RepoStorage extends ReadableBlockstore {
+		getRoot(): Promise<Cid | null>;
+		putBlock(cid: Cid, block: Uint8Array, rev: string): Promise<void>;
+		putMany(blocks: BlockMap, rev: string): Promise<void>;
+		updateRoot(cid: Cid, rev: string): Promise<void>;
+		applyCommit(commit: CommitData): Promise<void>;
+	}
+
+	// #endregion
+
+	// #region レポジトリ
+
+	/** MST（レコードの索引の木） */
+	export class MST {
+		/** `<collection>/<rkey>` のレコードの CID。無ければ null */
+		get(key: string): Promise<Cid | null>;
+		/** 木の根の CID */
+		getPointer(): Promise<Cid>;
+	}
+
+	/** 署名済みのコミットの中身 */
+	export type Commit = {
+		did: string;
+		version: 3;
+		/** MST の根の CID（Sync v1.1 の `prevData` に使う） */
+		data: Cid;
+		rev: string;
+		prev: Cid | null;
+		sig: Uint8Array;
+	};
+
+	export class Repo {
+		cid: Cid;
+		commit: Commit;
+		data: MST;
+		/** 最初のコミットを作る（保存はしない） */
+		static formatInitCommit(
+			storage: RepoStorage,
+			did: string,
+			keypair: Secp256k1Keypair,
+			initialWrites?: RecordCreateOp[],
+		): Promise<CommitData>;
+		/** 保存先からレポジトリを読む */
+		static load(storage: RepoStorage, cid?: Cid): Promise<Repo>;
+		/** 次のコミットを作る（保存はしない） */
+		formatCommit(
+			toWrite: RecordWriteOp | RecordWriteOp[],
+			keypair: Secp256k1Keypair,
+		): Promise<CommitData>;
+	}
+
+	// #endregion
+
+	// #region CAR
+
+	/** ブロックを CAR 形式のバイト列にする */
+	export function blocksToCarFile(
+		root: Cid | null,
+		blocks: BlockMap,
+	): Promise<Uint8Array>;
+
+	/** レコードと、コミットからそのレコードまでの証明（MST の経路）を CAR で書き出す */
+	export function getRecords(
+		storage: ReadableBlockstore,
+		commitCid: Cid,
+		paths: { collection: string; rkey: string }[],
+	): AsyncIterable<Uint8Array>;
+
+	// #endregion
 }

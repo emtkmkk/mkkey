@@ -5,11 +5,13 @@
  *
  * @remarks
  * - **役割**: HTTP サーバを立て、Koa で api・file・proxy・web を mount。ストリーミング WebSocket・activitypub・nodeinfo・well-known のルートを登録する。起動時のエントリの一つ。
+ * - Bluesky ブリッジの自前 PDS の窓口（`/xrpc/*`、`/.well-known/atproto-did`）も登録する。PDS のホスト名で来たときだけ応える。
  *
  * @see {@link api/index} API サーバ
  * @see {@link activitypub} ActivityPub ルート
  * @see {@link nodeinfo} Nodeinfo
  * @see {@link well-known} .well-known
+ * @see {@link atproto/index} Bluesky ブリッジの自前 PDS
  * @internal
  */
 import cluster from "node:cluster";
@@ -35,6 +37,7 @@ import megalodon, { MegalodonInterface } from "@calckey/megalodon";
 import activityPub from "./activitypub.js";
 import nodeinfo from "./nodeinfo.js";
 import wellKnown from "./well-known.js";
+import atproto from "./atproto/index.js";
 import apiServer from "./api/index.js";
 import fileServer from "./file/index.js";
 import proxyServer from "./proxy/index.js";
@@ -127,6 +130,9 @@ mastoRouter.use(async (ctx, next) => {
 // Routing
 router.use(activityPub.routes());
 router.use(nodeinfo.routes());
+// Bluesky ブリッジの自前 PDS（XRPC と /.well-known/atproto-did）。
+// NB: well-known は知らない .well-known をすべて 404 にするので、それより前に登録する
+router.use(atproto.routes());
 router.use(wellKnown.routes());
 
 router.get("/avatar/@:acct", async (ctx) => {

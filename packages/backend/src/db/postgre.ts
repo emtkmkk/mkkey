@@ -97,6 +97,7 @@ import { EmojiImportDenied } from "@/models/entities/emoji-import-denied.js";
 import { AtprotoIdentity } from "@/models/entities/atproto-identity.js";
 import { AtprotoRepoBlock } from "@/models/entities/atproto-repo-block.js";
 import { AtprotoRecordMap } from "@/models/entities/atproto-record-map.js";
+import { AtprotoRepoSeq } from "@/models/entities/atproto-repo-seq.js";
 
 import { entities as charts } from "@/services/chart/entities.js";
 import { envOption } from "../env.js";
@@ -195,6 +196,7 @@ export const entities = [
 	AtprotoIdentity,
 	AtprotoRepoBlock,
 	AtprotoRecordMap,
+	AtprotoRepoSeq,
 	Hashtag,
 	SwSubscription,
 	AbuseUserReport,

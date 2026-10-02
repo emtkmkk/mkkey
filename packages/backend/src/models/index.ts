@@ -80,6 +80,7 @@ import { NoteReferenceCache } from "./entities/note-reference-cache.js";
 import { AtprotoIdentity } from "./entities/atproto-identity.js";
 import { AtprotoRepoBlock } from "./entities/atproto-repo-block.js";
 import { AtprotoRecordMap } from "./entities/atproto-record-map.js";
+import { AtprotoRepoSeq } from "./entities/atproto-repo-seq.js";
 
 export const Announcements = db.getRepository(Announcement);
 export const AnnouncementReads = db.getRepository(AnnouncementRead);
@@ -161,3 +162,4 @@ export const UserSupports = db.getRepository(UserSupport);
 export const AtprotoIdentities = db.getRepository(AtprotoIdentity);
 export const AtprotoRepoBlocks = db.getRepository(AtprotoRepoBlock);
 export const AtprotoRecordMaps = db.getRepository(AtprotoRecordMap);
+export const AtprotoRepoSeqs = db.getRepository(AtprotoRepoSeq);

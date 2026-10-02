@@ -9,9 +9,10 @@
  * - 発行の順番: 鍵を作る → データベースに保存する → plc.directory に登録する。
  *   先に保存するのは、登録だけ成功して鍵を失う（＝二度と操作できない DID ができる）のを避けるため。
  *   登録に失敗したら `plcRegisteredAt` が null のまま残り、もう一度呼べば登録し直す。
- * - 停止は `status` を deactivated にするだけで、DID は残す。もう一度有効にすれば同じ DID とハンドルに戻る。
+ * - 有効にしたら、firehose に `#identity` と `#account`（使える）を流し、レポジトリが無ければプロフィールだけの最初のコミットを作る。
+ * - 停止は `status` を deactivated にして、firehose に `#account`（止めた）を流すだけ。DID は残す。
+ *   もう一度有効にすれば同じ DID とハンドルに戻る。
  *   TODO: 停止したときに、書いた follow / like を消す（実装手順 8 の記録ジョブができてから）
- *   TODO: 停止・再開を firehose の `#account` イベントで Relay に知らせる（実装手順 4）
  *
  * @see {@link ./plc.ts} PLC の操作
  * @see {@link ../../models/entities/atproto-identity.ts} 保存先
@@ -29,6 +30,8 @@ import {
 	isPlcRegistered,
 	submitPlcOperation,
 } from "./plc.js";
+import { ensureRepo } from "./repo.js";
+import { emitAccountEvent, emitIdentityEvent } from "./sequencer.js";
 
 /** このモジュールのログ */
 const logger = remoteLogger.createSubLogger("atproto", "cyan");
@@ -84,7 +87,10 @@ export function toPdsHandle(user: Pick<User, "id" | "username">): string {
  * @internal
  */
 export async function enableAtprotoIdentity(
-	user: Pick<User, "id" | "username" | "host" | "isSuspended" | "isDeleted">,
+	user: Pick<
+		User,
+		"id" | "username" | "name" | "host" | "isSuspended" | "isDeleted"
+	>,
 ): Promise<AtprotoIdentity> {
 	assertEnabled();
 
@@ -100,6 +106,9 @@ export async function enableAtprotoIdentity(
 		identity = await createIdentityRow(user);
 	}
 
+	// 新しく登録した・再開したときだけ、firehose で Relay に知らせる
+	let becameActive = false;
+
 	// plc.directory に未登録なら登録する
 	if (identity.plcRegisteredAt == null) {
 		await registerToPlc(identity);
@@ -108,6 +117,7 @@ export async function enableAtprotoIdentity(
 			plcRegisteredAt: identity.plcRegisteredAt,
 			updatedAt: new Date(),
 		});
+		becameActive = true;
 	}
 
 	// 停止していたら再開する
@@ -117,7 +127,16 @@ export async function enableAtprotoIdentity(
 			status: "active",
 			updatedAt: new Date(),
 		});
+		becameActive = true;
 	}
+
+	if (becameActive) {
+		await emitIdentityEvent(identity.did, identity.handle);
+		await emitAccountEvent(identity.did, true);
+	}
+
+	// レポジトリがまだ無ければ、プロフィールだけの最初のコミットを作る（失敗しても、もう一度呼べば作り直す）
+	await ensureRepo(identity, user);
 
 	return identity;
 }
@@ -127,7 +146,8 @@ export async function enableAtprotoIdentity(
  *
  * @remarks
  * - DID と鍵は残す（もう一度有効にすれば元に戻る）。身元が無ければ何もしない。
- * - TODO: 書いた follow / like を消す処理と、Relay への `#account` イベントは、それぞれの仕組みができてから足す。
+ * - firehose に `#account`（止めた）を流す。Relay はこれを見て、このアカウントの中身を配らなくなる。
+ * - TODO: 書いた follow / like を消す処理は、記録ジョブができてから足す（実装手順 8）。
  *
  * @param user - 対象のローカルユーザー
  * @returns 止めた身元。もともと無ければ null
@@ -147,6 +167,11 @@ export async function disableAtprotoIdentity(
 		status: "deactivated",
 		updatedAt: new Date(),
 	});
+
+	// plc.directory に登録済みのときだけ知らせる（未登録なら Relay はこの DID を知らない）
+	if (identity.plcRegisteredAt != null) {
+		await emitAccountEvent(identity.did, false);
+	}
 	return identity;
 }
 

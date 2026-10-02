@@ -50,7 +50,7 @@ import { webhookDeliver } from "@/queue/index.js";
 import { shouldSilenceInstance } from "@/misc/should-block-instance.js";
 import { invalidateDormantFollowerSkipCache } from "@/remote/activitypub/dormant-follower-check.js";
 import { invalidateUserShowRelationCache } from "../invalidate-user-show-relation-cache.js";
-import { isBlueskyHost } from "@/remote/atproto/actor.js";
+import { isBlueskyHost } from "@/remote/atproto/display.js";
 
 const logger = new Logger("following/create");
 

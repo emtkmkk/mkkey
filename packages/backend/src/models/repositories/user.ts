@@ -5,6 +5,8 @@
  *
  * @remarks
  * - **役割**: ユーザーの pack・検索・関係取得を提供し、API やサービス層で広く利用する。
+ * - **Bluesky ユーザー**: pack の出口でだけ、`username` を今のハンドル、`host` を `bluesky` に差し替える
+ *   （{@link remote/atproto/display}）。データベースの値は変えない。
  *
  * @see {@link models/entities/user} ユーザーエンティティ
  * @internal
@@ -87,6 +89,26 @@ import { remoteLogger } from "@/remote/logger.js";
 
 const resolveUserLogger = remoteLogger.createSubLogger("resolve-user");
 import { redisClient } from "@/db/redis.js";
+import {
+	isBlueskyUser,
+	prefetchBlueskyHandles,
+	toDisplayAcct,
+} from "@/remote/atproto/display.js";
+
+/**
+ * Bluesky ユーザーに付けるバッジ。
+ *
+ * @remarks
+ * プロフィール画面（detail）にだけ出す。ノートの名前の横・マウスオーバーのプロフィールには出さない（2026-10-02 決定）。
+ * アイコンは mkkey に登録したカスタム絵文字 `:bluesky:`。
+ */
+const BLUESKY_BADGE = {
+	id: "3000000031",
+	key: "bluesky",
+	name: "Bluesky",
+	emoji: ":bluesky:",
+	showBadgeNote: false,
+} as const;
 
 /** /i の base キャッシュ TTL（秒）。キャッシュヒット率向上のため 20 分に設定。 */
 const ME_DETAILED_BASE_CACHE_TTL_SEC = 60 * 20;
@@ -999,9 +1021,11 @@ export const UserRepository = db.getRepository(User).extend({
 					(x): x is NonNullable<typeof x> =>
 						x !== undefined && (opts.detail || x.showBadgeNote),
 			  )
-			: rankBadges
-			? [rankBadges]
-			: undefined;
+			: [
+					rankBadges,
+					// Bluesky のバッジはプロフィール画面だけに出す（ノートの名前の横には出さない）
+					opts.detail && isBlueskyUser(user) ? BLUESKY_BADGE : undefined,
+			  ].filter((x): x is NonNullable<typeof x> => x !== undefined);
 		let roles =
 			badges?.map((x, i) => ({
 				id: x.id,
@@ -1055,11 +1079,14 @@ export const UserRepository = db.getRepository(User).extend({
                                                 targetUserId: user.id,
                                   }).then((row) => row ?? null);
 
+		// Bluesky ユーザーは、画面では `@ハンドル@bluesky` と見せる（データベースの値は変えない）
+		const displayAcct = await toDisplayAcct(user);
+
 		const packed = {
 			id: user.id,
 			name: isDeleted ? "🗑" : memo?.customName ? memo.customName : user.name,
-			username: user.username,
-			host: user.host,
+			username: displayAcct.username,
+			host: displayAcct.host,
 			avatarUrl: this.getAvatarUrlSync(user),
 			avatarBlurhash: user.avatar?.blurhash || null,
 			avatarColor: null, // 後方互換性のため
@@ -1414,6 +1441,13 @@ export const UserRepository = db.getRepository(User).extend({
                         .map((u) => (typeof u === "object" ? u.id : u))
                         .filter((id): id is User["id"] => id != null);
                 const uniqueIds = Array.from(new Set(ids));
+
+                // Bluesky ユーザーのハンドルをまとめて引いておく（pack で 1 人ずつ引かないため）
+                await prefetchBlueskyHandles(
+                        users.filter(
+                                (u): u is User => typeof u === "object" && u != null && "host" in u,
+                        ),
+                );
 
                 const targetUsers = users.map((u) =>
                         typeof u === "object" ? (u as Pick<User, "id" | "inviteUserId">) : undefined,

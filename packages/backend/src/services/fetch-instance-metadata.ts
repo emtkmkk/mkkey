@@ -19,7 +19,7 @@ import { getJson, getHtml, getAgentByUrl } from "@/misc/fetch.js";
 import type { Instance } from "@/models/entities/instance.js";
 import { NoteReactions, Instances } from "@/models/index.js";
 import { getFetchInstanceMetadataLock } from "@/misc/app-lock.js";
-import { isBlueskyHost } from "@/remote/atproto/actor.js";
+import { isBlueskyHost } from "@/remote/atproto/display.js";
 import { getFallbackReaction } from "@/misc/reaction-lib.js";
 import Logger from "./logger.js";
 import type { DOMWindow } from "jsdom";

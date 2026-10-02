@@ -45,19 +45,12 @@ import { shouldBlockInstance } from "@/misc/should-block-instance.js";
 import { remoteLogger } from "../logger.js";
 import { fetchPdsHost, fetchProfile, type BlueskyProfile } from "./appview.js";
 import { getAtprotoConfig } from "./config.js";
+import { BLUESKY_DISPLAY_HOST } from "./display.js";
 
 /** このモジュールのログ */
 const logger = remoteLogger.createSubLogger("atproto-actor", "cyan");
 
 // #region 定数
-
-/**
- * 画面で Bluesky ユーザーのホスト名として見せる値。
- *
- * @remarks
- * ドットを含まないので、本物のドメインとはぶつからない。入口では `bridgeHost` と同じものとして扱う。
- */
-export const BLUESKY_DISPLAY_HOST = "bluesky";
 
 /**
  * プロフィールを取り直す間隔（2026-10-02 決定）。
@@ -102,27 +95,13 @@ const BLUESKY_INSTANCE_INFO = {
 	iconUrl: "https://bsky.app/static/apple-touch-icon.png",
 	faviconUrl: "https://bsky.app/static/favicon-32x32.png",
 	themeColor: "#1185fe",
+	// 絵文字リアクションは受け付けず、いいね（like）として送る。画面は Mastodon などと同じ扱いになる
+	maxReactionsPerAccount: 0,
 };
 
 // #endregion
 
 // #region 公開メソッド
-
-/**
- * ホスト名が Bluesky ユーザーを表すものか。
- *
- * @remarks
- * 保存に使う `bridgeHost`（例: `bsky.mkkey.net`）と、画面で見せる `bluesky` の両方を Bluesky として扱う。
- * ブリッジが無効なときは常に false。
- *
- * @param host - 調べるホスト名（小文字・punycode 済み）
- * @returns Bluesky ユーザーのホスト名なら true
- * @internal
- */
-export function isBlueskyHost(host: string | null | undefined): boolean {
-	const { enabled, bridgeHost } = getAtprotoConfig();
-	return enabled && host != null && (host === bridgeHost || host === BLUESKY_DISPLAY_HOST);
-}
 
 /**
  * DID から、`user.username` に入れる固定の ID を作る。
@@ -181,7 +160,7 @@ export function parseBlueskyProfileUrl(url: string): string | null {
  * - まだ取り込んでいない人は、`atproto.publicAccess` が true のときだけ新しく取り込む。
  *
  * @param username - ユーザー名（固定の ID かハンドル）
- * @param host - ホスト名（小文字・punycode 済み）。{@link isBlueskyHost} が true のもの
+ * @param host - ホスト名（小文字・punycode 済み）。`display.ts` の `isBlueskyHost` が true のもの
  * @returns ユーザー
  * @throws 見つからない・取り込めないとき
  * @internal

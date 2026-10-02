@@ -26,7 +26,8 @@ import {
 	withResolveUserInflight,
 } from "./resolve-user-inflight.js";
 import { remoteLogger } from "./logger.js";
-import { isBlueskyHost, resolveBlueskyAcct } from "./atproto/actor.js";
+import { resolveBlueskyAcct } from "./atproto/actor.js";
+import { isBlueskyHost } from "./atproto/display.js";
 
 const logger = remoteLogger.createSubLogger("resolve-user");
 

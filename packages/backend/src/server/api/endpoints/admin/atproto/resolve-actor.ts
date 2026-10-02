@@ -7,7 +7,7 @@
  * - **API パス**: `admin/atproto/resolve-actor`
  * - 一般公開の前（`atproto.publicAccess` が false）は、Bluesky ユーザーを新しく取り込めるのはこの API だけ。
  *   取り込んだ人は `@<固定の ID>@<bridgeHost>` として、誰からでも見られる。
- * - 取り込み済みなら、プロフィールを取り直して返す（24 時間以内に取り直していれば、そのまま返す）。
+ * - 取り込み済みなら、間隔に関係なくプロフィールを取り直して返す。
  *
  * @see {@link ../../../../../remote/atproto/actor.ts} 取り込み
  * @internal
@@ -36,7 +36,7 @@ export const paramDef = {
 } as const;
 
 export default define(meta, paramDef, async (ps, me) => {
-	const user = await resolveBlueskyActor(ps.actor, { allowCreate: true });
+	const user = await resolveBlueskyActor(ps.actor, { allowCreate: true, forceRefresh: true });
 	const actor = await AtprotoActors.findOneByOrFail({ userId: user.id });
 
 	return {

@@ -57,8 +57,18 @@ const logger = remoteLogger.createSubLogger("atproto-actor", "cyan");
  */
 export const BLUESKY_DISPLAY_HOST = "bluesky";
 
-/** プロフィールを取り直す間隔（24 時間。ActivityPub のリモートユーザーと同じ） */
-const RESYNC_INTERVAL_MS = 1000 * 60 * 60 * 24;
+/**
+ * プロフィールを取り直す間隔（2026-10-02 決定）。
+ *
+ * @remarks
+ * - 開いたとき（`@ハンドル@bluesky` などから解決したとき）は 72 時間。
+ * - 新しい投稿を取り込んだときは 24 時間（{@link refreshBlueskyUserOnNewPost}。実装手順 9 の取り込みから呼ぶ）。
+ * - 管理者用 API では、間隔に関係なくすぐ取り直す。
+ * - フォローされている人の表示名・アイコン・ハンドルの変更は、Jetstream から変わった時点で届く予定（実装手順 9）。
+ *   間隔で取り直すのは、主にフォロワー数などの数字を追いかけるため。
+ */
+const VIEW_RESYNC_INTERVAL_MS = 1000 * 60 * 60 * 72;
+const POST_RESYNC_INTERVAL_MS = 1000 * 60 * 60 * 24;
 
 /** 表示名と自己紹介の長さの上限（ActivityPub のリモートユーザーと同じ） */
 const NAME_LENGTH = 128;
@@ -155,7 +165,7 @@ export async function resolveBlueskyAcct(username: string, host: string): Promis
 
 	if (host === bridgeHost) {
 		const user = await Users.findOneBy({ usernameLower, host: bridgeHost });
-		if (user != null) return await refreshIfStale(user);
+		if (user != null) return await refreshIfStale(user, VIEW_RESYNC_INTERVAL_MS);
 
 		// 固定の ID から DID に戻せるのは did:plc だけ（did:web は取り込み済みの人しか探せない）
 		if (!PLC_ID_PATTERN.test(usernameLower)) throw new Error("user not found");
@@ -171,19 +181,21 @@ export async function resolveBlueskyAcct(username: string, host: string): Promis
  * ハンドルか DID から Bluesky ユーザーを解決する。必要なら取り込み、古ければ更新する。
  *
  * @remarks
- * - 取り込み済みで、取り直してから 24 時間たっていなければ、問い合わせずに返す。
+ * - 取り込み済みで、取り直してから 72 時間たっていなければ、問い合わせずに返す（`forceRefresh` ならすぐ取り直す）。
  * - ハンドルで探したときに、同じハンドルの人が複数いる（入れ替わりがあった）ときや、1 人もいないときは、
  *   AppView で今の持ち主を確かめる。
  *
  * @param actor - ハンドル（例: `alice.bsky.social`）か DID
  * @param opts.allowCreate - まだ取り込んでいない人を新しく取り込むか
+ * @param opts.forceRefresh - 取り込み済みの人も、間隔に関係なくすぐ取り直すか（管理者用 API 向け）
+ * @defaultValue `opts.forceRefresh` は false
  * @returns ユーザー
  * @throws AppView に見つからないとき、`allowCreate` が false で取り込んでいない人のとき
  * @internal
  */
 export async function resolveBlueskyActor(
 	actor: string,
-	opts: { allowCreate: boolean },
+	opts: { allowCreate: boolean; forceRefresh?: boolean },
 ): Promise<User> {
 	assertEnabled();
 	const normalized = actor.trim().replace(/^@/, "").toLowerCase();
@@ -192,9 +204,9 @@ export async function resolveBlueskyActor(
 	const known = normalized.startsWith("did:")
 		? await AtprotoActors.findBy({ did: normalized })
 		: await AtprotoActors.findBy({ handle: normalized });
-	if (known.length === 1) {
+	if (known.length === 1 && !opts.forceRefresh) {
 		const user = await Users.findOneBy({ id: known[0].userId });
-		if (user != null) return await refreshIfStale(user);
+		if (user != null) return await refreshIfStale(user, VIEW_RESYNC_INTERVAL_MS);
 	}
 
 	// 取り込んでいない・ハンドルが重なっているときは、AppView で今の持ち主を確かめる
@@ -372,20 +384,35 @@ async function applyProfile(userId: User["id"], profile: BlueskyProfile): Promis
 }
 
 /**
- * 取り直してから 24 時間たっていれば更新し、そうでなければそのまま返す。
+ * 新しい投稿を取り込んだときに、取り直してから 24 時間たっていればプロフィールを更新する。
+ *
+ * @remarks
+ * 実装手順 9 の投稿の取り込みから呼ぶ。失敗しても例外にしない（{@link refreshIfStale}）。
+ *
+ * @param user - 投稿した Bluesky ユーザー
+ * @returns ユーザー（更新できたら更新後のもの）
+ * @internal
+ */
+export async function refreshBlueskyUserOnNewPost(user: User): Promise<User> {
+	return await refreshIfStale(user, POST_RESYNC_INTERVAL_MS);
+}
+
+/**
+ * 取り直してから指定の時間がたっていれば更新し、そうでなければそのまま返す。
  *
  * @remarks
  * 更新に失敗しても（AppView が落ちているなど）、手元にあるユーザーを返す。
  * 何度も問い合わせないよう、試す前に `lastFetchedAt` を進める（ActivityPub のリモートユーザーと同じ）。
  *
  * @param user - 対象のユーザー
+ * @param intervalMs - 取り直す間隔（ミリ秒）
  * @returns ユーザー（更新できたら更新後のもの）
  * @internal
  */
-async function refreshIfStale(user: User): Promise<User> {
+async function refreshIfStale(user: User, intervalMs: number): Promise<User> {
 	if (
 		user.lastFetchedAt != null &&
-		Date.now() - user.lastFetchedAt.getTime() <= RESYNC_INTERVAL_MS
+		Date.now() - user.lastFetchedAt.getTime() <= intervalMs
 	) {
 		return user;
 	}

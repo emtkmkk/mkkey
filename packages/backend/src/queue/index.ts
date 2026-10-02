@@ -512,6 +512,30 @@ export function createBroadcastPushNoticeJob(payload: PushNoticePayload) {
 	);
 }
 
+/**
+ * Bluesky ブリッジの follow / like を書く・消すジョブを積む。
+ *
+ * @remarks
+ * 中身とやり直しの設定は {@link remote/atproto/records} が決める。処理は bg キューで行う。
+ *
+ * @param name - ジョブの種類
+ * @param data - 操作したユーザーと対象
+ * @param opts - やり直しの設定
+ * @returns 積んだジョブ
+ * @internal
+ */
+export function createAtprotoRecordJob(
+	name: "atprotoFollow" | "atprotoUnfollow" | "atprotoLike" | "atprotoUnlike",
+	data: { userId: string; targetId: string },
+	opts: { attempts: number; backoff: { type: string; delay: number } },
+) {
+	return backgroundQueue.add(name, data, {
+		...opts,
+		removeOnComplete: true,
+		removeOnFail: true,
+	});
+}
+
 export function createIndexAllNotesJob(data = {}) {
 	return backgroundQueue.add("indexAllNotes", data, {
 		removeOnComplete: true,

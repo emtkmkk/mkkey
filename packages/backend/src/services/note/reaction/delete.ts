@@ -5,6 +5,7 @@
  *
  * @remarks
  * - **役割**: ノートへのリアクション削除時に呼ばれ、Undo Like を配信し DB とストリームを更新する。
+ * - **Bluesky のノート**: Undo Like は送らず、自前 PDS に書いた like を消すジョブを積む（{@link remote/atproto/records}）。
  *
  * @see {@link note/reaction/create} リアクション追加
  * @internal
@@ -20,6 +21,8 @@ import type { Note } from "@/models/entities/note.js";
 import { NoteReactions, Users, Notes, UserProfiles } from "@/models/index.js";
 import { toDbReaction, decodeReaction } from "@/misc/reaction-lib.js";
 import { checkReactionMute } from "@/misc/check-word-mute.js";
+import { isBlueskyUser } from "@/remote/atproto/display.js";
+import { onBlueskyUnreaction } from "@/remote/atproto/records.js";
 
 export default async (
 	user: { id: User["id"]; host: User["host"] },
@@ -137,7 +140,10 @@ export default async (
 
 	if (!isMutedReaction) {
 		//#region 配信
-		if (Users.isLocalUser(user) && !(note.channelId && note.localOnly)) {
+		if (Users.isLocalUser(user) && isBlueskyUser({ host: note.userHost })) {
+			// Bluesky のノートへのリアクションの取り消しは、自前 PDS に書いた like を消す
+			await onBlueskyUnreaction(user.id, note.id);
+		} else if (Users.isLocalUser(user) && !(note.channelId && note.localOnly)) {
 			const content = renderActivity(
 				renderUndo(await renderLike(exist, note), user),
 			);

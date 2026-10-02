@@ -3,6 +3,7 @@ import type { User } from "@/models/entities/user.js";
 import { Users, Followings, FollowRequests, UserListJoinings } from "@/models/index.js";
 import { fetchProxyAccount } from "@/misc/fetch-proxy-account.js";
 import createFollowing from "../following/create.js";
+import { isBlueskyUser } from "@/remote/atproto/display.js";
 
 const logger = new Logger("user-list/proxy-follow");
 
@@ -23,6 +24,11 @@ export async function ensureProxyFollowsListedUser(targetInput: Target): Promise
         }
 
         if (!Users.isRemoteUser(user)) {
+                return;
+        }
+
+        // Bluesky ユーザーはプロキシにフォローさせない（本人以外の名義で Bluesky に follow を書くことになるため）
+        if (isBlueskyUser(user)) {
                 return;
         }
 

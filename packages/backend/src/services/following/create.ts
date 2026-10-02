@@ -6,7 +6,8 @@
  * @remarks
  * - **役割**: フォロー API や Accept(Follow) から呼ばれ、フォロー関係を保存し AP 配信する。
  * - follower 向け followRequestAccepted は Followings 新規成立時のみ（リクエスト送信のみでは送らない）。
- * - Bluesky ユーザーが関わるフォローは、今はエラーにする（実装手順 8 で自前 PDS への follow の書き込みに置き換える）。
+ * - Bluesky ユーザーへのフォローは、ActivityPub の Follow ではなく、自前 PDS への follow の書き込みとフォロー申請にする
+ *   （{@link remote/atproto/records}）。相手側から見えると確かめた時点で成立する。
  *
  * @see {@link server/api/endpoints/following/create} フォロー API
  * @internal
@@ -50,7 +51,8 @@ import { webhookDeliver } from "@/queue/index.js";
 import { shouldSilenceInstance } from "@/misc/should-block-instance.js";
 import { invalidateDormantFollowerSkipCache } from "@/remote/activitypub/dormant-follower-check.js";
 import { invalidateUserShowRelationCache } from "../invalidate-user-show-relation-cache.js";
-import { isBlueskyHost } from "@/remote/atproto/display.js";
+import { isBlueskyUser } from "@/remote/atproto/display.js";
+import { requestBlueskyFollow } from "@/remote/atproto/records.js";
 
 const logger = new Logger("following/create");
 
@@ -235,12 +237,11 @@ export default async function (
 		Users.findOneByOrFail({ id: _followee.id }),
 	]);
 
-	// Bluesky ユーザーへのフォローはまだ作っていない（ActivityPub の Follow を送ろうとして失敗するので先に止める）
-	// TODO: 実装手順 8 で、自前 PDS への follow の書き込みとフォロー申請の流れに置き換える
-	if (isBlueskyHost(followee.host) || isBlueskyHost(follower.host)) {
+	// Bluesky ユーザーが mkkey のユーザーをフォローすることは無い（Bluesky 側のフォローは取り込まない）
+	if (isBlueskyUser(follower)) {
 		throw new IdentifiableError(
 			"5b6c9a8e-2f4d-4b1e-9c3a-7d8e1f0a2b3c",
-			"following Bluesky users is not supported yet",
+			"Bluesky users cannot follow mkkey users",
 		);
 	}
 
@@ -314,6 +315,12 @@ export default async function (
 				"already following",
 			);
 		}
+	}
+
+	// Bluesky ユーザーへのフォローは、自前 PDS に follow を書き、相手側から見えたら成立させる（フォロー申請として扱う）
+	if (isBlueskyUser(followee)) {
+		await requestBlueskyFollow(follower, followee, requestId);
+		return;
 	}
 
 	const followeeProfile = await UserProfiles.findOneByOrFail({

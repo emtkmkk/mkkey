@@ -54,12 +54,15 @@
  * @remarks
  * API 応答と WebSocket（follow / unfollow）の双方で relation を同期する。
  * 親の user オブジェクトも更新し、プロフィール全体の表示と揃える。
+ * Bluesky ユーザーへの初めてのフォローは、同意の確認（OK を 7 秒押せない）を出してから送る（{@link scripts/bluesky-follow}）。
+ * Bluesky ユーザーへのフォローは、相手側から見えると確かめるまで「フォロー申請中」として表示される。
  *
  * @public
  */
 import { computed, onBeforeUnmount, onMounted, watch } from "vue";
 import type * as Misskey from "calckey-js";
 import * as os from "@/os";
+import { followWithBlueskyConsent } from "@/scripts/bluesky-follow";
 import { stream } from "@/stream";
 import { i18n } from "@/i18n";
 import { $i } from "@/account";
@@ -266,9 +269,9 @@ async function onClick() {
 				if (canceled) return;
 			}
 
-			const packed = await os.api("following/create", {
-				userId: props.user.id,
-			});
+			// Bluesky ユーザーへの初めてのフォローなら、同意の確認を出してから送り直す
+			const packed = await followWithBlueskyConsent(props.user.id);
+			if (packed == null) return;
 			applyRelationFromPacked(packed);
 			if (hadFollowReconfirm) {
 				const acked = await ackFollowReconfirmAfterFollow(props.user.id);

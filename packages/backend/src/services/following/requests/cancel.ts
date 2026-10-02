@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * フォロー申請（承認待ち）の取り消し処理。
+ *
+ * @remarks
+ * - フォロー先がリモートなら、ActivityPub の Undo(Follow) を送る。
+ * - フォロー先が Bluesky ユーザーなら、自前 PDS に書いた follow を消すジョブを積む（{@link remote/atproto/records}）。
+ *   相手側から見えると確かめられなかったときも、この取り消しを通る。
+ *
+ * @internal
+ */
 import { renderActivity } from "@/remote/activitypub/renderer/index.js";
 import renderFollow from "@/remote/activitypub/renderer/follow.js";
 import renderUndo from "@/remote/activitypub/renderer/undo.js";
@@ -8,6 +20,8 @@ import type { User } from "@/models/entities/user.js";
 import { ILocalUser } from "@/models/entities/user.js";
 import { Users, FollowRequests } from "@/models/index.js";
 import { invalidateUserShowRelationCache } from "../../invalidate-user-show-relation-cache.js";
+import { isBlueskyUser } from "@/remote/atproto/display.js";
+import { onBlueskyUnfollow } from "@/remote/atproto/records.js";
 
 export default async function (
 	followee: {
@@ -47,6 +61,11 @@ export default async function (
 	});
 
 	await invalidateUserShowRelationCache(followee.id, follower.id);
+
+	// Bluesky ユーザーへの申請なら、書いた follow があれば消す（ActivityPub の Undo は宛先が無いので送られない）
+	if (Users.isLocalUser(follower) && isBlueskyUser(followee)) {
+		await onBlueskyUnfollow(follower.id, followee.id);
+	}
 
 	Users.pack(followee.id, followee, {
 		detail: true,

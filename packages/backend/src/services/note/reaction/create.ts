@@ -5,6 +5,7 @@
  *
  * @remarks
  * - **役割**: API や AP の Like 受信時にリアクションを DB に保存し、通知・配信を行う。
+ * - **Bluesky のノート**: ActivityPub には送らず、自前 PDS に like を書くジョブを積む（{@link remote/atproto/records}）。
  *
  * @see {@link server/api/endpoints/notes/reactions} リアクション API
  * @internal
@@ -52,6 +53,8 @@ import { checkReactionMute } from "@/misc/check-word-mute.js";
 import { buildReactionDeliverManager } from "./deliver.js";
 import { Cache } from "@/misc/cache.js";
 import { CACHE_MAX_USER } from "@/misc/cache-limits.js";
+import { isBlueskyUser } from "@/remote/atproto/display.js";
+import { onBlueskyReaction } from "@/remote/atproto/records.js";
 
 const INSTANCE_MAX_REACTIONS_CACHE_TTL_MS = 30 * 1000;
 const instanceMaxReactionsPerAccountCache = new Cache<number>(
@@ -533,7 +536,10 @@ export default async (
 		}
 
 		//#region 配信
-		if (
+		if (Users.isLocalUser(user) && isBlueskyUser({ host: note.userHost })) {
+			// Bluesky のノートへのリアクションは、ActivityPub に送らず自前 PDS に like として書く
+			await onBlueskyReaction(user.id, note.id);
+		} else if (
 			Users.isLocalUser(user) &&
 			!(note.channelId && note.localOnly) &&
 			note.visibility !== "hidden"

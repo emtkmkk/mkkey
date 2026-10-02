@@ -118,6 +118,55 @@ export async function fetchProfile(actor: string): Promise<BlueskyProfile> {
 }
 
 /**
+ * 相手（`actor`）から見た、こちら（`other`）との関係。
+ *
+ * @remarks
+ * 値はどれも、その関係を表すレコードの URI（無ければ undefined）。
+ *
+ * @internal
+ */
+export type BlueskyRelationship = {
+	/** `other` が `actor` をフォローしている（`other` の follow レコード） */
+	followedBy?: string;
+	/** `actor` が `other` をブロックしている */
+	blocking?: string;
+	/** `actor` が、`other` を入れたブロックリストを使っている */
+	blockingByList?: string;
+	/** `other` が `actor` をブロックしている */
+	blockedBy?: string;
+};
+
+/**
+ * 相手から見た、こちらとの関係を引く。
+ *
+ * @remarks
+ * 「こちらの follow が相手側から見えているか」「相手にブロックされていないか」の確認に使う（計画書「取り込みの条件」）。
+ * AppView が相手側の視点で返すので、相手の画面でフォロワーに出ているかとほぼ同じ意味になる。
+ *
+ * @param actorDid - 相手の DID
+ * @param otherDid - こちら（自前 PDS の身元）の DID
+ * @returns 関係。相手が見つからないときは null
+ * @throws AppView に問い合わせられなかったとき
+ * @internal
+ */
+export async function fetchRelationship(
+	actorDid: string,
+	otherDid: string,
+): Promise<BlueskyRelationship | null> {
+	const { appViewUrl } = getAtprotoConfig();
+
+	const res = (await getJson(
+		`${appViewUrl}/xrpc/app.bsky.graph.getRelationships?actor=${encodeURIComponent(
+			actorDid,
+		)}&others=${encodeURIComponent(otherDid)}`,
+	)) as { relationships?: (BlueskyRelationship & { did?: string; notFound?: boolean })[] };
+
+	const rel = res.relationships?.find((r) => r.did === otherDid);
+	if (rel == null || rel.notFound) return null;
+	return rel;
+}
+
+/**
  * DID の文書から、アカウントを置いている PDS のホスト名を引く。
  *
  * @remarks

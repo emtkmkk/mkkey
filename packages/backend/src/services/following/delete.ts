@@ -34,6 +34,8 @@ import { getActiveWebhooks } from "@/misc/webhook-cache.js";
 import { createNotification } from "@/services/create-notification.js";
 import { notifyWasForciblyUnfollowed } from "./notify-forcibly-unfollowed.js";
 import { invalidateUserShowRelationCache } from "../invalidate-user-show-relation-cache.js";
+import { isBlueskyUser } from "@/remote/atproto/display.js";
+import { onBlueskyUnfollow } from "@/remote/atproto/records.js";
 
 const logger = new Logger("following/delete");
 
@@ -129,7 +131,10 @@ export default async function (
 		await notifyWasForciblyUnfollowed(follower, followee);
 	}
 
-	if (Users.isLocalUser(follower) && Users.isRemoteUser(followee)) {
+	// Bluesky ユーザーのフォロー解除は、自前 PDS に書いた follow を消す（ActivityPub には送らない）
+	if (Users.isLocalUser(follower) && isBlueskyUser(followee)) {
+		await onBlueskyUnfollow(follower.id, followee.id);
+	} else if (Users.isLocalUser(follower) && Users.isRemoteUser(followee)) {
 		const content = renderActivity(
 			renderUndo(renderFollow(follower, followee), follower),
 		);

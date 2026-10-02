@@ -30,7 +30,7 @@ import {
 	isPlcRegistered,
 	submitPlcOperation,
 } from "./plc.js";
-import { ensureRepo } from "./repo.js";
+import { ensureRepo, upsertProfile } from "./repo.js";
 import { emitAccountEvent, emitIdentityEvent } from "./sequencer.js";
 
 /** このモジュールのログ */
@@ -89,7 +89,14 @@ export function toPdsHandle(user: Pick<User, "id" | "username">): string {
 export async function enableAtprotoIdentity(
 	user: Pick<
 		User,
-		"id" | "username" | "name" | "host" | "isSuspended" | "isDeleted"
+		| "id"
+		| "username"
+		| "name"
+		| "avatarId"
+		| "bannerId"
+		| "host"
+		| "isSuspended"
+		| "isDeleted"
 	>,
 ): Promise<AtprotoIdentity> {
 	assertEnabled();
@@ -173,6 +180,45 @@ export async function disableAtprotoIdentity(
 		await emitAccountEvent(identity.did, false);
 	}
 	return identity;
+}
+
+/**
+ * mkkey 側のプロフィールの変更を、Bluesky のプロフィールに反映する。
+ *
+ * @remarks
+ * - mkkey のプロフィール更新（`services/i/update.ts` の `publishToFollowers`）から、待たずに呼ばれる。
+ * - 身元が無い・止まっている・まだレポジトリが無いユーザーでは何もしない。オプトインしていない人がほとんどなので、
+ *   その場合は身元を 1 回引くだけで終わる。
+ * - 表示名・アイコン・バナーが変わっていなければ書かない（{@link upsertProfile}）。
+ * - 失敗はログに残すだけにする。プロフィールの保存そのものは済んでいて、利用者に返すエラーが無いため。
+ *   次にプロフィールを更新したとき、または `admin/atproto/refresh-profile` で書き直せる。
+ *
+ * @param user - 対象のローカルユーザー
+ * @internal
+ */
+export async function syncAtprotoProfile(
+	user: Pick<User, "id" | "username" | "name" | "avatarId" | "bannerId">,
+): Promise<void> {
+	if (!getAtprotoConfig().enabled) return;
+
+	const identity = await AtprotoIdentities.findOneBy({ userId: user.id });
+	if (
+		identity == null ||
+		identity.status !== "active" ||
+		identity.plcRegisteredAt == null ||
+		identity.repoCommitCid == null
+	) {
+		return;
+	}
+
+	try {
+		const commit = await upsertProfile(identity, user);
+		if (commit != null) {
+			logger.info(`Updated the Bluesky profile of ${identity.handle} (rev ${commit.rev})`);
+		}
+	} catch (err) {
+		logger.warn(`Failed to update the Bluesky profile of ${identity.handle}: ${err}`);
+	}
 }
 
 /**

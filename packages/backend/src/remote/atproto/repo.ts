@@ -11,7 +11,8 @@
  * - ロックの順番は「採番のロック → 身元の行」で固定する。ほかの書き込みも同じ順番にすること（逆にすると止まり合う）。
  * - Sync v1.1 に合わせて、`#commit` には `prevData`（直前の MST の根）と、更新・削除の `prev`（直前のレコードの CID）、
  *   変更を確かめるのに要る既存のブロック（`relevantBlocks`）を入れる。
- * - TODO: プロフィールを、mkkey 側の名前の変更に合わせて書き直す（今は最初に作ったときのまま）。
+ * - プロフィールは、mkkey 側で名前・アイコン・バナーを変えたときに {@link upsertProfile} で書き直す
+ *   （`services/i/update.ts` の `publishToFollowers` から呼ばれる）。
  *
  * @see {@link ./repo-storage.ts} ブロックの置き場
  * @see {@link ./sequencer.ts} firehose の採番
@@ -36,6 +37,8 @@ import { db } from "@/db/postgre.js";
 import { AtprotoIdentity } from "@/models/entities/atproto-identity.js";
 import type { User } from "@/models/entities/user.js";
 import { DbRepoStorage } from "./repo-storage.js";
+import { fetchMeta } from "@/misc/fetch-meta.js";
+import { blobRefCid, prepareImageBlob } from "./blob.js";
 import { appendEvent, lockSequencer } from "./sequencer.js";
 import { nextTid } from "./tid.js";
 
@@ -52,6 +55,13 @@ export type RepoWriteResult = {
 	/** レコードの CID。削除したときは null */
 	cid: string | null;
 };
+
+/**
+ * プロフィールを作るのに使う、ローカルユーザーの項目。
+ *
+ * @internal
+ */
+export type ProfileSourceUser = Pick<User, "username" | "name" | "avatarId" | "bannerId">;
 
 /** firehose の `#commit` に入れる、レコード 1 件分の変更 */
 type CommitOp = {
@@ -166,11 +176,12 @@ export async function writeRecords(
  *
  * @param identity - 対象の身元
  * @param user - プロフィールに使うユーザー情報
+ * @throws アイコン・バナーの変換に失敗したとき（{@link prepareImageBlob}）
  * @internal
  */
 export async function ensureRepo(
 	identity: Pick<AtprotoIdentity, "userId" | "repoCommitCid">,
-	user: Pick<User, "username" | "name">,
+	user: ProfileSourceUser,
 ): Promise<void> {
 	if (identity.repoCommitCid != null) return;
 
@@ -179,28 +190,35 @@ export async function ensureRepo(
 			action: WriteOpAction.Create,
 			collection: "app.bsky.actor.profile",
 			rkey: "self",
-			record: buildProfileRecord(user),
+			record: await buildProfileRecord(identity.userId, user, null),
 		},
 	]);
 }
 
 /**
- * プロフィールを今の表示名で書き直す。
+ * プロフィールを、mkkey 側の今の表示名・アイコン・バナーで書き直す。
  *
  * @remarks
  * - レポジトリがまだ無ければ {@link ensureRepo} と同じく作成する。
- * - Relay が「今から後」だけを購読しているときに、最初のコミットを見逃した場合のやり直しにも使う。
- *   書き直すと新しい `#commit` が firehose に流れる。
+ * - `force` でなければ、今のレコードと表示名・説明文・アイコン・バナーが同じときは書かない（null を返す）。
+ *   mkkey のプロフィール更新は、設定を 1 つ変えただけでも呼ばれるので、そのたびにコミットを作らないため。
+ * - `force` は、Relay が最初のコミットを見逃したときのやり直しに使う。書き直すと新しい `#commit` が firehose に流れる。
+ * - `createdAt` は最初に書いたときの値を引き継ぐ。
  *
  * @param identity - 対象の身元
  * @param user - プロフィールに使うユーザー情報
- * @returns 新しいコミット
+ * @param opts.force - 変わっていなくても書き直すか
+ * @defaultValue `opts.force` は false
+ * @returns 新しいコミット。書かなかったときは null
+ * @throws アイコン・バナーの変換に失敗したとき（{@link prepareImageBlob}）
+ * @throws {@link writeRecords} と同じ
  * @internal
  */
 export async function upsertProfile(
 	identity: Pick<AtprotoIdentity, "userId" | "repoCommitCid">,
-	user: Pick<User, "username" | "name">,
-): Promise<{ commitCid: string; rev: string }> {
+	user: ProfileSourceUser,
+	opts: { force?: boolean } = {},
+): Promise<{ commitCid: string; rev: string } | null> {
 	// レポジトリがまだ無ければ、プロフィールの作成そのものが新しい #commit になる
 	if (identity.repoCommitCid == null) {
 		return await writeRecords(identity.userId, [
@@ -208,17 +226,26 @@ export async function upsertProfile(
 				action: WriteOpAction.Create,
 				collection: "app.bsky.actor.profile",
 				rkey: "self",
-				record: buildProfileRecord(user),
+				record: await buildProfileRecord(identity.userId, user, null),
 			},
 		]);
 	}
 
+	const current = await readProfileRecord(identity.userId, identity.repoCommitCid);
+	const next = await buildProfileRecord(
+		identity.userId,
+		user,
+		typeof current?.createdAt === "string" ? current.createdAt : null,
+	);
+	if (!opts.force && current != null && isSameProfile(current, next)) return null;
+
 	return await writeRecords(identity.userId, [
 		{
-			action: WriteOpAction.Update,
+			// 何かの理由でプロフィールが無くなっていたら、作り直す
+			action: current == null ? WriteOpAction.Create : WriteOpAction.Update,
 			collection: "app.bsky.actor.profile",
 			rkey: "self",
-			record: buildProfileRecord(user),
+			record: next,
 		},
 	]);
 }
@@ -417,25 +444,106 @@ const PROFILE_DISPLAY_NAME_MAX = 64;
  * プロフィールのレコードを作る。
  *
  * @remarks
- * - 表示名と、mkkey のプロフィールへのリンクだけを入れる。アイコンは入れない（画像の blob を扱わないため）。
+ * - 表示名・固定の説明文・アイコン・バナーを入れる。mkkey の自己紹介は入れない（どういうアカウントかを分かりやすくするため）。
  * - 文字数は、書記素ではなく文字（コードポイント）で数えて切る。絵文字の組み合わせでは少し短めに切れるが、上限は超えない。
  *
+ * @param userId - レポジトリの持ち主（blob の持ち主）
  * @param user - 対象のユーザー
+ * @param createdAt - 引き継ぐ作成日時。初めて作るときは null
  * @returns `app.bsky.actor.profile` のレコード
+ * @throws アイコン・バナーの変換に失敗したとき（{@link prepareImageBlob}）
  * @internal
  */
-function buildProfileRecord(user: Pick<User, "username" | "name">): LexMap {
+async function buildProfileRecord(
+	userId: string,
+	user: ProfileSourceUser,
+	createdAt: string | null,
+): Promise<LexMap> {
 	const displayName = [...(user.name || user.username)]
 		.slice(0, PROFILE_DISPLAY_NAME_MAX)
 		.join("");
-	const profileUrl = `${config.url}/@${user.username}`;
+	const instanceName = (await fetchMeta()).name || config.host;
+
+	const avatar = user.avatarId
+		? await prepareImageBlob(userId, user.avatarId, "avatar")
+		: null;
+	const banner = user.bannerId
+		? await prepareImageBlob(userId, user.bannerId, "banner")
+		: null;
 
 	return {
 		$type: "app.bsky.actor.profile",
 		displayName,
-		description: `${config.host} のユーザーです（Bluesky ブリッジ）。このアカウントは follow と like だけを行います。\n${profileUrl}`,
-		createdAt: new Date().toISOString(),
+		description: buildProfileDescription(instanceName, `${config.url}/@${user.username}`),
+		...(avatar ? { avatar } : {}),
+		...(banner ? { banner } : {}),
+		createdAt: createdAt ?? new Date().toISOString(),
 	};
+}
+
+/**
+ * プロフィールの説明文（固定文）を作る。
+ *
+ * @remarks
+ * - 相手が「誰が、なぜフォローしてきたのか」と「嫌なときにどうすればよいか」が分かるようにする。
+ * - 取り込んだ投稿はフォロワー限定のノートなので、ブロックされたら、そのアカウントの持ち主の mkkey 上のフォローを外せば
+ *   その人にだけ見えなくなる。ほかにフォローしている人がいれば、その人には見え続けるので「取り込みを止める」とは書かない。
+ * - Bluesky の上限は 256 書記素。今の文は 220 文字ほど（サーバー名とユーザー名による。ユーザー名は最大 20 文字なので 240 文字ほどまで）。文言を変えるときは上限に注意すること。
+ *
+ * @param instanceName - サーバーの名前（例: `もこきー`）
+ * @param profileUrl - mkkey 上のプロフィールの URL
+ * @returns 説明文
+ * @internal
+ */
+function buildProfileDescription(instanceName: string, profileUrl: string): string {
+	return [
+		`Fediverse サーバー「${instanceName}」(${config.host}) のユーザーです。`,
+		profileUrl,
+		"",
+		`このユーザは、あなたの投稿を${instanceName}内で見たいと思っている様です。`,
+		`${instanceName}内であなたの投稿が確認できるのは、このアカウントのようにあなたをフォローしている人だけです。`,
+		"ご希望でない場合は、お手数ですがこのアカウントをブロックしてください。",
+		"このアカウントの持ち主に対して、あなたの投稿を表示しないようにします。",
+	].join("\n");
+}
+
+/**
+ * 今のプロフィールのレコードを読む。
+ *
+ * @param userId - レポジトリの持ち主
+ * @param commitCid - 今の最新のコミットの CID
+ * @returns レコード。無ければ null
+ * @internal
+ */
+async function readProfileRecord(
+	userId: string,
+	commitCid: string,
+): Promise<Record<string, unknown> | null> {
+	const repo = await Repo.load(new DbRepoStorage(userId, db.manager), parseCid(commitCid));
+	const record = await repo.getRecord("app.bsky.actor.profile", "self");
+	return record != null && typeof record === "object"
+		? (record as Record<string, unknown>)
+		: null;
+}
+
+/**
+ * 2 つのプロフィールで、見た目に関わる中身が同じかを比べる。
+ *
+ * @remarks
+ * `createdAt` は比べない。アイコン・バナーは CID で比べる。
+ *
+ * @param a - 今のレコード
+ * @param b - 新しく作ったレコード
+ * @returns 同じなら true
+ * @internal
+ */
+function isSameProfile(a: Record<string, unknown>, b: LexMap): boolean {
+	return (
+		a.displayName === b.displayName &&
+		a.description === b.description &&
+		blobRefCid(a.avatar) === blobRefCid(b.avatar) &&
+		blobRefCid(a.banner) === blobRefCid(b.banner)
+	);
 }
 
 // #endregion

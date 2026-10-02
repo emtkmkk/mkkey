@@ -98,6 +98,7 @@ import { AtprotoIdentity } from "@/models/entities/atproto-identity.js";
 import { AtprotoRepoBlock } from "@/models/entities/atproto-repo-block.js";
 import { AtprotoRecordMap } from "@/models/entities/atproto-record-map.js";
 import { AtprotoRepoSeq } from "@/models/entities/atproto-repo-seq.js";
+import { AtprotoBlob } from "@/models/entities/atproto-blob.js";
 
 import { entities as charts } from "@/services/chart/entities.js";
 import { envOption } from "../env.js";
@@ -197,6 +198,7 @@ export const entities = [
 	AtprotoRepoBlock,
 	AtprotoRecordMap,
 	AtprotoRepoSeq,
+	AtprotoBlob,
 	Hashtag,
 	SwSubscription,
 	AbuseUserReport,

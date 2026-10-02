@@ -7,7 +7,7 @@
  * - 応えるのは、ホスト名が `atproto.pdsHostname`（例: `bsky.mkkey.net`）か、その下のハンドル（例: `alice.bsky.mkkey.net`）のときだけ。
  *   ほかのホスト名（`mkkey.net` など）では何もせず、次の処理に回す。ブリッジが無効なときも同じ。
  *   NB: このルーターは `well-known.ts` より前に登録すること。`well-known.ts` は知らない `.well-known` をすべて 404 にするため。
- * - 用意するのは、Relay と AppView がレポジトリを読むのに要る読み取り用の窓口だけ。書き込みの窓口（ログイン・createRecord など）は無い。
+ * - 用意するのは、Relay と AppView がレポジトリと blob（アイコン・バナー）を読むのに要る読み取り用の窓口だけ。書き込みの窓口（ログイン・createRecord など）は無い。
  *   書き込みは mkkey の中からだけ行う（{@link ../../remote/atproto/repo.ts}）。
  * - firehose（`subscribeRepos`）は WebSocket なので、ここではなく {@link ./subscribe-repos.ts} で扱う。
  * - エラーは XRPC の決まりどおり `{ error, message }` の JSON で返す。
@@ -25,7 +25,7 @@ import { parseCid, type Cid } from "@atproto/lex-data";
 import { BlockMap, Repo, blocksToCarFile, getRecords } from "@atproto/repo";
 import config from "@/config/index.js";
 import { db } from "@/db/postgre.js";
-import { AtprotoIdentities, AtprotoRepoBlocks } from "@/models/index.js";
+import { AtprotoBlobs, AtprotoIdentities, AtprotoRepoBlocks } from "@/models/index.js";
 import type { AtprotoIdentity } from "@/models/entities/atproto-identity.js";
 import { getAtprotoConfig } from "@/remote/atproto/config.js";
 import { DbRepoStorage } from "@/remote/atproto/repo-storage.js";
@@ -43,6 +43,10 @@ const LIST_REPOS_MAX_LIMIT = 1000;
 
 /** getBlocks で 1 回に受け付ける CID の上限 */
 const GET_BLOCKS_MAX = 1000;
+
+/** listBlobs で 1 回に返す数の既定値と上限 */
+const LIST_BLOBS_DEFAULT_LIMIT = 500;
+const LIST_BLOBS_MAX_LIMIT = 1000;
 
 // #endregion
 
@@ -391,6 +395,75 @@ router.get("/xrpc/com.atproto.sync.getBlocks", async (ctx, next) => {
 	}
 	ctx.type = CAR_CONTENT_TYPE;
 	ctx.body = Buffer.from(await blocksToCarFile(null, blocks));
+});
+
+// #endregion
+
+// #region blob
+
+/**
+ * blob（プロフィールのアイコン・バナー）の中身を返す。
+ *
+ * @remarks
+ * - Bluesky の画像配信（CDN）は、DID の文書に書いた PDS（ここ）へ、この窓口で画像を取りに来る。
+ * - 中身は CID で決まって変わらないので、長くキャッシュさせてよい。
+ * - 公式 PDS と同じく、ブラウザがこの応答を HTML などとして解釈しないようにするヘッダーを付ける。
+ */
+router.get("/xrpc/com.atproto.sync.getBlob", async (ctx, next) => {
+	if (!isPdsHost(ctx)) return await next();
+	const identity = await findRepo(ctx);
+	if (identity == null) return;
+
+	const cid = queryString(ctx, "cid");
+	if (!cid) return xrpcError(ctx, 400, "InvalidRequest", "cid is required");
+
+	const blob = await AtprotoBlobs.findOne({
+		where: { userId: identity.userId, cid },
+		select: ["mimeType", "content"],
+	});
+	if (blob == null) return xrpcError(ctx, 404, "BlobNotFound", "Blob not found");
+
+	ctx.set("Cache-Control", "public, max-age=31536000, immutable");
+	ctx.set("X-Content-Type-Options", "nosniff");
+	ctx.set("Content-Security-Policy", "default-src 'none'; sandbox");
+	ctx.type = blob.mimeType;
+	ctx.body = blob.content;
+});
+
+/**
+ * レポジトリの持ち主の blob の CID を一覧で返す。
+ *
+ * @remarks
+ * - 並びは CID の文字列順。`cursor` には、前の応答の最後の CID を渡す。
+ * - NOTE: `since`（ある rev より後に足した blob だけ）は見ない。blob は rev を持っていないため。
+ *   全部を返しても、受け取る側は余分なものを取りに来るだけで困らない。
+ */
+router.get("/xrpc/com.atproto.sync.listBlobs", async (ctx, next) => {
+	if (!isPdsHost(ctx)) return await next();
+	const identity = await findRepo(ctx);
+	if (identity == null) return;
+
+	const limit = Math.min(
+		Math.max(Number(queryString(ctx, "limit")) || LIST_BLOBS_DEFAULT_LIMIT, 1),
+		LIST_BLOBS_MAX_LIMIT,
+	);
+	const cursor = queryString(ctx, "cursor");
+
+	const rows = await AtprotoBlobs.find({
+		where: {
+			userId: identity.userId,
+			...(cursor ? { cid: MoreThan(cursor) } : {}),
+		},
+		select: ["cid"],
+		order: { cid: "ASC" },
+		take: limit,
+	});
+
+	ctx.body = {
+		cids: rows.map((r) => r.cid),
+		// 1 回分いっぱいに返したときだけ、続きがあるかもしれないので cursor を付ける
+		...(rows.length === limit ? { cursor: rows[rows.length - 1].cid } : {}),
+	};
 });
 
 // #endregion

@@ -63,6 +63,9 @@ declare module "@atproto/lex-data" {
 
 	/** 文字列の CID を読む。形が正しくなければ例外 */
 	export function parseCid(input: string): Cid;
+
+	/** バイト列そのもの（raw 形式）の CID を計算する。blob の CID に使う（`bafkrei...` の形になる） */
+	export function cidForRawBytes(bytes: Uint8Array): Promise<Cid>;
 }
 
 declare module "@atproto/lex-cbor" {
@@ -222,6 +225,13 @@ declare module "@atproto/repo" {
 		): Promise<CommitData>;
 		/** 保存先からレポジトリを読む */
 		static load(storage: RepoStorage, cid?: Cid): Promise<Repo>;
+		/**
+		 * レコードを読む。無ければ null
+		 *
+		 * @remarks
+		 * 中身は DAG-CBOR を読んだままの値。blob の `ref` などの CID は {@link Cid} のオブジェクトになっている。
+		 */
+		getRecord(collection: string, rkey: string): Promise<unknown | null>;
 		/** 次のコミットを作る（保存はしない） */
 		formatCommit(
 			toWrite: RecordWriteOp | RecordWriteOp[],

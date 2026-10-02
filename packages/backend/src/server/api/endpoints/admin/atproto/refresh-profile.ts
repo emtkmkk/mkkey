@@ -6,6 +6,7 @@
  * @remarks
  * - **API パス**: `admin/atproto/refresh-profile`
  * - Relay が「今から後」だけを購読しているときに、最初のコミットを見逃した場合のやり直しに使う。
+ * - 表示名・アイコン・バナーも、mkkey 側の今の値で書き直す。
  * - 身元が無い・止まっているユーザーでは失敗する（先に `admin/atproto/enable-user` を呼ぶこと）。
  *
  * @see {@link ../../../../../remote/atproto/repo.ts} プロフィールの書き直し
@@ -49,7 +50,9 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	// ハンドルの確認を促してから、プロフィールを書き直す（新しい #commit が firehose に流れる）
 	await emitIdentityEvent(identity.did, identity.handle);
-	const commit = await upsertProfile(identity, user);
+	// 変わっていなくても書き直す（新しい #commit を流すのが目的のため）。force なので null にはならない
+	const commit = await upsertProfile(identity, user, { force: true });
+	if (commit == null) throw new Error("the profile was not written");
 
 	await insertModerationLog(me, "atprotoRefreshProfile", {
 		targetId: user.id,

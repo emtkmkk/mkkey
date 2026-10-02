@@ -431,6 +431,11 @@ import * as ep___admin_showSupports from "./endpoints/admin/show-supports.js";
 import * as ep___admin_grantEmojiBonus from "./endpoints/admin/grant-emoji-bonus.js";
 import * as ep___admin_setEmojiGrantCount from "./endpoints/admin/set-emoji-grant-count.js";
 
+// Bluesky ブリッジ（AT Protocol）の管理用
+import * as ep___admin_atproto_enableUser from "./endpoints/admin/atproto/enable-user.js";
+import * as ep___admin_atproto_disableUser from "./endpoints/admin/atproto/disable-user.js";
+import * as ep___admin_atproto_showUser from "./endpoints/admin/atproto/show-user.js";
+
 // アカウント移行・known-as 用
 import * as ep___i_move from "./endpoints/i/move.js";
 import * as ep___i_known_as from "./endpoints/i/known-as.js";
@@ -852,6 +857,9 @@ const eps = [
 	["admin/show-supports", ep___admin_showSupports],
 	["admin/grant-emoji-bonus", ep___admin_grantEmojiBonus],
 	["admin/set-emoji-grant-count", ep___admin_setEmojiGrantCount],
+	["admin/atproto/enable-user", ep___admin_atproto_enableUser],
+	["admin/atproto/disable-user", ep___admin_atproto_disableUser],
+	["admin/atproto/show-user", ep___admin_atproto_showUser],
 	["health/live", ep___health_live],
 	["health/db", ep___health_db],
 	["health/redis", ep___health_redis],

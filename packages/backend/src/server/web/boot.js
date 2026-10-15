@@ -759,18 +759,39 @@
 	}
 
 	/**
-	 * Service Worker とページを再初期化して最新アセットへ揃える。
+	 * Service Worker のキャッシュを捨て、SW を更新してから reload する。
 	 *
 	 * @remarks
-	 * キャッシュ不整合が疑われる起動失敗時に、SW登録解除と reload を連続実行する。
+	 * キャッシュ不整合が疑われる起動失敗時（主にデプロイ直後の APP_IMPORT）に呼ぶ。
+	 *
+	 * CHANGED: 以前は SW の登録を `unregister()` していたが、**SW 登録を解除すると
+	 * それに紐づく PushSubscription もブラウザが破棄する**。デプロイのたびに一部の
+	 * ユーザーのプッシュ通知が「知らないうちに解除される」原因になっていたため、
+	 * `update()` に置き換えた。
+	 *
+	 * NOTE: unregister しなくても復旧には足りる。SW が横取りするのはナビゲーションと
+	 * 共有ターゲットだけで `/assets` は素通しであり、Cache Storage は "clear" で消える。
+	 * 新しい sw.js は install で skipWaiting し、activate で旧キャッシュを消して claim する。
 	 */
 	function refresh(withCacheBust) {
-		// Clear cache (service worker)
+		// Cache Storage を消す（SW 側の "clear" ハンドラ）
 		try {
-			navigator.serviceWorker.controller.postMessage("clear");
-			navigator.serviceWorker.getRegistrations().then((registrations) => {
-				registrations.forEach((registration) => registration.unregister());
-			});
+			if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+				navigator.serviceWorker.controller.postMessage("clear");
+			}
+		} catch (e) {
+			console.error(e);
+		}
+
+		// SW 自体は登録を残したまま最新版の取得だけ促す（購読を壊さないため）
+		try {
+			if (navigator.serviceWorker) {
+				navigator.serviceWorker.getRegistrations().then((registrations) => {
+					registrations.forEach((registration) => {
+						registration.update().catch((e) => console.warn(e));
+					});
+				});
+			}
 		} catch (e) {
 			console.error(e);
 		}

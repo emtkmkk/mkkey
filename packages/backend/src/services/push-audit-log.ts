@@ -20,11 +20,24 @@ import { redisClient } from "@/db/redis.js";
 import type { User } from "@/models/entities/user.js";
 import { isDeveloperUser } from "@/misc/is-developer-user.js";
 
-/** ユーザーごとの保持件数 */
+/** ユーザーごとの保持件数（送信・skip） */
 const PER_USER_LIMIT = 200;
 
-/** ログの保持期間 */
+/** ログの保持期間（送信・skip） */
 const TTL_SECONDS = 60 * 60 * 24 * 7;
+
+/**
+ * 購読変更ログの保持件数。
+ *
+ * @remarks
+ * 送信・skip とは別のキーに分けている。よく使う人ほど `already-read` の skip が
+ * 1 日に数十件たまり、同じリングに入れると数日で購読変更（登録・解除）が押し出されて
+ * 「いつ・なぜ購読が消えたか」が追えなくなっていたため。
+ */
+const SUBSCRIPTION_LOG_LIMIT = 100;
+
+/** 購読変更ログの保持期間。めったに起きないので長めに持つ */
+const SUBSCRIPTION_LOG_TTL_SECONDS = 60 * 60 * 24 * 60;
 
 export type PushAuditLogKind = "send" | "subscription" | "skip";
 
@@ -42,6 +55,8 @@ export type PushSubscriptionChangeCause =
 	| "api-call"
 	| "web-push-error"
 	| "pushsubscriptionchange"
+	/** クライアント起動時の自己修復による再登録・作り直し */
+	| "boot-reconcile"
 	| "unknown";
 
 /**
@@ -99,6 +114,10 @@ function logKey(userId: User["id"]): string {
 	return `pushLog:${userId}`;
 }
 
+function subscriptionLogKey(userId: User["id"]): string {
+	return `pushSubLog:${userId}`;
+}
+
 /**
  * endpoint URL をマスク用ハッシュに変換する。
  *
@@ -135,12 +154,18 @@ async function append(entry: PushAuditLogEntry): Promise<void> {
 	try {
 		if (!(await shouldRecord(entry.userId, entry))) return;
 
-		const key = logKey(entry.userId);
+		const isSubscription = entry.kind === "subscription";
+		const key = isSubscription
+			? subscriptionLogKey(entry.userId)
+			: logKey(entry.userId);
+		const limit = isSubscription ? SUBSCRIPTION_LOG_LIMIT : PER_USER_LIMIT;
+		const ttl = isSubscription ? SUBSCRIPTION_LOG_TTL_SECONDS : TTL_SECONDS;
+
 		await redisClient
 			.multi()
 			.lpush(key, JSON.stringify(entry))
-			.ltrim(key, 0, PER_USER_LIMIT - 1)
-			.expire(key, TTL_SECONDS)
+			.ltrim(key, 0, limit - 1)
+			.expire(key, ttl)
 			.exec();
 	} catch {
 		// NOTE: 監査ログの失敗でプッシュ本体を止めない
@@ -209,13 +234,32 @@ export async function getPushAuditLogs(
 		return [];
 	}
 
-	const limit = Math.min(options.limit ?? 50, PER_USER_LIMIT);
+	const limit = Math.min(
+		options.limit ?? 50,
+		PER_USER_LIMIT + SUBSCRIPTION_LOG_LIMIT,
+	);
 	const since = options.since ?? 0;
 	const kind = options.kind ?? "all";
 
+	// 必要なキーだけ読む（購読変更は別キー）
+	const wantMain = kind === "all" || kind === "send" || kind === "skip";
+	const wantSubscription = kind === "all" || kind === "subscription";
+
 	let raw: string[];
 	try {
-		raw = await redisClient.lrange(logKey(userId), 0, PER_USER_LIMIT - 1);
+		const [main, subscription] = await Promise.all([
+			wantMain
+				? redisClient.lrange(logKey(userId), 0, PER_USER_LIMIT - 1)
+				: Promise.resolve([] as string[]),
+			wantSubscription
+				? redisClient.lrange(
+						subscriptionLogKey(userId),
+						0,
+						SUBSCRIPTION_LOG_LIMIT - 1,
+					)
+				: Promise.resolve([] as string[]),
+		]);
+		raw = [...main, ...subscription];
 	} catch {
 		return [];
 	}
@@ -231,9 +275,9 @@ export async function getPushAuditLogs(
 		if (entry.at < since) continue;
 		if (kind !== "all" && entry.kind !== kind) continue;
 		entries.push(entry);
-		if (entries.length >= limit) break;
 	}
 
-	// LPUSH なので Redis の並びが既に新しい順
-	return entries;
+	// 2 つのキーをまとめたので時刻で並べ直す（新しい順）
+	entries.sort((a, b) => b.at - a.at);
+	return entries.slice(0, limit);
 }

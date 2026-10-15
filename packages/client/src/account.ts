@@ -10,6 +10,7 @@ import { mergeMkkeyApiClientHeaders } from "@/scripts/mkkey-api-client-headers";
 import { waiting, api, popup, popupMenu, success, alert } from "@/os";
 import { clearAppBadge } from "@/scripts/app-badge";
 import { resetAppBadgeReceivedCount } from "@/scripts/app-badge-counter";
+import { setPushWanted } from "@/scripts/push-opt-out";
 import { unisonReload, reloadChannel } from "@/scripts/unison-reload";
 
 // TODO: 他のタブと永続化されたstateを同期
@@ -86,6 +87,10 @@ export async function signout() {
 	localStorage.removeItem("account");
 
 	await removeAccount(signingOutUserId);
+
+	// ログアウトは「この端末でこのアカウントを使わない」意思表示。
+	// 起動時の自己修復がプッシュ購読を勝手に作り直さないよう、印を消す。
+	setPushWanted(signingOutUserId, false);
 
 	const accounts = await getAccounts();
 

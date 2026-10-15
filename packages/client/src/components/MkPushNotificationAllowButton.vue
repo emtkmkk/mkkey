@@ -77,6 +77,7 @@ import { getAccounts } from "@/account";
 import {
 	isPushServerOptOut,
 	setPushServerOptOut,
+	setPushWanted,
 } from "@/scripts/push-opt-out";
 import {
 	encodePushKey,
@@ -179,6 +180,8 @@ async function unsubscribe() {
 
 	await api("sw/unregister", { endpoint, cause: "api-call" });
 	setPushServerOptOut($i.id, true);
+	// 自分で解除したので、起動時の自己修復で作り直さない
+	setPushWanted($i.id, false);
 }
 
 /**

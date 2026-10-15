@@ -73,7 +73,7 @@ export const paramDef = {
 		/** 購読変更の理由（dev ログ用・任意） */
 		cause: {
 			type: "string",
-			enum: ["api-call", "pushsubscriptionchange", "unknown"],
+			enum: ["api-call", "pushsubscriptionchange", "boot-reconcile", "unknown"],
 			default: "api-call",
 		},
 	},
@@ -126,8 +126,11 @@ export default define(meta, paramDef, async (ps, me) => {
 		sendReadMessage: ps.sendReadMessage,
 	});
 
+	// NOTE: boot-reconcile は起動時の自己修復。件数を見れば購読がどれだけ失われているか分かる
 	const cause =
-		ps.cause === "pushsubscriptionchange" ? "pushsubscriptionchange" : "api-call";
+		ps.cause === "pushsubscriptionchange" || ps.cause === "boot-reconcile"
+			? ps.cause
+			: "api-call";
 
 	await invalidateSwSubscriptionsCache(me.id);
 

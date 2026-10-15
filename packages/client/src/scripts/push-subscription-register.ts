@@ -11,7 +11,11 @@
 import { $i } from "@/account";
 import { instance } from "@/instance";
 import { api } from "@/os";
-import { isPushServerOptOut } from "@/scripts/push-opt-out";
+import {
+	isPushServerOptOut,
+	isPushWanted,
+	setPushWanted,
+} from "@/scripts/push-opt-out";
 
 /**
  * ArrayBuffer を base64 文字列にエンコードする。
@@ -47,6 +51,17 @@ export function urlBase64ToUint8Array(base64String: string): Uint8Array {
 }
 
 /**
+ * `sw/register` に渡す登録理由。
+ *
+ * @remarks
+ * サーバーの監査ログに残り、購読がどれくらいの頻度で失われ・自己修復されているかの
+ * 計測に使う。`boot-reconcile` は起動時の自己修復による登録。
+ *
+ * @internal
+ */
+export type PushRegisterCause = "api-call" | "pushsubscriptionchange" | "boot-reconcile";
+
+/**
  * 購読情報をサーバーへ登録する。
  *
  * @param subscription - ブラウザの PushSubscription
@@ -55,16 +70,19 @@ export function urlBase64ToUint8Array(base64String: string): Uint8Array {
  */
 export async function registerPushSubscription(
 	subscription: PushSubscription,
-	cause: "api-call" | "pushsubscriptionchange" = "api-call",
+	cause: PushRegisterCause = "api-call",
 ) {
 	if (!$i?.token) return null;
 
-	return await api("sw/register", {
+	const res = await api("sw/register", {
 		endpoint: subscription.endpoint,
 		auth: encodePushKey(subscription.getKey("auth")),
 		publickey: encodePushKey(subscription.getKey("p256dh")),
 		cause,
 	});
+	// 登録できたら「この端末でこのアカウントはプッシュを使う」と覚えておく
+	if (res != null) setPushWanted($i.id, true);
+	return res;
 }
 
 /** `sw/show-registration` の応答 */
@@ -114,9 +132,29 @@ export async function reconcilePushSubscriptionOnBoot(): Promise<void> {
 
 	try {
 		const registration = await navigator.serviceWorker.ready;
-		const subscription = await registration.pushManager.getSubscription();
-		// 購読が無い場合は勝手に作らない（通知許可を求めることになるため）
-		if (subscription == null) return;
+		let subscription = await registration.pushManager.getSubscription();
+
+		if (subscription == null) {
+			// ブラウザ側の購読が消えている。SW の登録解除やブラウザによる破棄で起きる。
+			// NOTE: 作り直すのは「この端末でこのアカウントがプッシュを使っていた」かつ
+			// 通知が既に許可されている場合だけ。許可済みなら subscribe() は
+			// ダイアログを出さないので、ユーザーの操作なしに元へ戻せる。
+			if (!isPushWanted($i.id)) return;
+			if (!("Notification" in window) || Notification.permission !== "granted") {
+				return;
+			}
+
+			subscription = await registration.pushManager.subscribe({
+				userVisibleOnly: true,
+				applicationServerKey: urlBase64ToUint8Array(instance.swPublickey),
+			});
+			await registerPushSubscription(subscription, "boot-reconcile");
+			console.info("[mkkey-push] ブラウザの購読が失われていたため作り直しました");
+			return;
+		}
+
+		// 既に購読している端末は、以後の自己修復の対象として覚えておく
+		setPushWanted($i.id, true);
 
 		const auth = encodePushKey(subscription.getKey("auth"));
 		const publickey = encodePushKey(subscription.getKey("p256dh"));
@@ -128,7 +166,7 @@ export async function reconcilePushSubscriptionOnBoot(): Promise<void> {
 		});
 		if (existing != null) return;
 
-		await registerPushSubscription(subscription, "api-call");
+		await registerPushSubscription(subscription, "boot-reconcile");
 		console.info("[mkkey-push] サーバー登録が失われていたため再登録しました");
 	} catch (err) {
 		console.warn("[mkkey-push] 起動時の購読照合に失敗しました", err);

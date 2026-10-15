@@ -73,3 +73,38 @@ export function setPushServerOptOut(userId: string, optOut: boolean): void {
 export function isPushServerOptOut(userId: string): boolean {
 	return localStorage.getItem(storageKey(userId)) === "1";
 }
+
+const wantedStorageKey = (userId: string): string => `pushWanted:${userId}`;
+
+/**
+ * このアカウントで、端末がプッシュ通知を使っていたことを記録する。
+ *
+ * @remarks
+ * - ブラウザの購読が外部要因（SW の登録解除、ブラウザによる破棄など）で消えたとき、
+ *   起動時に作り直してよいかの判断材料にする。
+ * - 通知の許可状態だけでは判断できない。`init.ts` が起動時に許可を求めるため、
+ *   「許可済み」でもプッシュを使っていたとは限らない。
+ * - 明示的な解除は {@link setPushServerOptOut} が優先される。
+ *
+ * @param userId - ローカルユーザー ID
+ * @param wanted - true で記録、false で消去
+ * @internal
+ */
+export function setPushWanted(userId: string, wanted: boolean): void {
+	const key = wantedStorageKey(userId);
+	if (wanted) {
+		localStorage.setItem(key, "1");
+	} else {
+		localStorage.removeItem(key);
+	}
+}
+
+/**
+ * この端末でこのアカウントがプッシュ通知を使っていたか。
+ *
+ * @param userId - ローカルユーザー ID
+ * @internal
+ */
+export function isPushWanted(userId: string): boolean {
+	return localStorage.getItem(wantedStorageKey(userId)) === "1";
+}

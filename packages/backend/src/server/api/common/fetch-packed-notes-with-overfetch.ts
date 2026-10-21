@@ -7,7 +7,10 @@
  * - pack 後に件数が減るため 1.5 倍 overfetch し、不足時は同一リクエスト内で追い取る。
  * - 追い取りは OFFSET ではなく id キーセットカーソル（{@link makePaginationQuery} の ORDER BY と整合）。
  * - NOTE: 2 ラウンド目以降の `take` は不足件数ベース（`floor(remaining * 1.5)`）とする。
- * - OPTIMIZE: 標準モードでは `limit` 到達後は同一バッチ内の残りノートを pack しない。
+ * - 標準モードでは不足件数ぶんだけまとめて pack し、pack 落ちで足りなければ同一バッチの残りを追加で pack する。
+ *   `limit` 到達後の残りは pack しない。
+ *   NOTE: 以前は 1 件ずつ `packMany([note])` を呼んでいたため、packMany 冒頭の一括取得
+ *   （relation・profile・file・絵文字など）がノート数ぶん繰り返され、1 リクエストで 100 本超のクエリになっていた。
  *
  * @see {@link makePaginationQuery}
  * @internal
@@ -120,19 +123,22 @@ export async function fetchPackedNotesWithOverfetch<TState = undefined>(
 			const { userMap, noteMap } = buildUserAndNoteMapsFromNotes(notes);
 			const packHint = { userMap, noteMap };
 
-			/** 標準モードは limit 到達後に同一バッチの pack を打ち切る。LTL フックはバッチ全件処理が必要。 */
+			/** 標準モードは不足件数ぶんをまとめて pack し、limit 到達後の残りは pack しない。LTL フックはバッチ全件処理が必要。 */
 			let packedNotes: Packed<"Note">[] = [];
 			if (onBatchPacked) {
 				packedNotes = await Notes.packMany(notes, me, {
 					_hint_: packHint,
 				});
 			} else {
-				for (const note of notes) {
-					if (found.length >= limit) {
-						break;
-					}
+				// packMany は順序を保ち、pack に失敗したノートだけを除くので、
+				// 不足分（limit - found.length）を切り出して渡せば 1 件ずつ呼ぶのと同じ結果になる。
+				// pack 落ちで足りなかったときだけ、同じバッチの続きを追加で pack する。
+				let offset = 0;
+				while (found.length < limit && offset < notes.length) {
+					const chunk = notes.slice(offset, offset + (limit - found.length));
+					offset += chunk.length;
 					found.push(
-						...(await Notes.packMany([note], me, {
+						...(await Notes.packMany(chunk, me, {
 							_hint_: packHint,
 						})),
 					);

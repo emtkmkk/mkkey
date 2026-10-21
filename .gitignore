@@ -41,7 +41,9 @@ api-docs.json
 *.log
 *.code-workspace
 .DS_Store
-files
+# ローカル保存のドライブファイル置き場（services/drive/internal-storage.ts）。
+# NB: 先頭の / を外すと、どの階層の files にも一致し、endpoints/drive/files まで除外されてしまう
+/files/
 ormconfig.json
 packages/backend/assets/instance.css
 packages/backend/assets/badges/*

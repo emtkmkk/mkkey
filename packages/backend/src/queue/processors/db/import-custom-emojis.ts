@@ -20,7 +20,7 @@ import { DriveFiles, Emojis } from "@/models/index.js";
 import type { DbUserImportJobData } from "@/queue/types.js";
 import { addFile } from "@/services/drive/add-file.js";
 import { genId } from "@/misc/gen-id.js";
-import { db } from "@/db/postgre.js";
+import { clearEmojiQueryCache } from "@/misc/emoji-query-cache.js";
 
 const logger = queueLogger.createSubLogger("import-custom-emojis");
 
@@ -94,7 +94,7 @@ export async function importCustomEmojis(
 			}).then((x) => Emojis.findOneByOrFail(x.identifiers[0]));
 		}
 
-		await db.queryResultCache!.remove(["meta_emojis"]);
+		await clearEmojiQueryCache();
 
 		cleanup();
 

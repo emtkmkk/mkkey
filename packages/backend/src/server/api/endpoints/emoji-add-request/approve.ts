@@ -18,7 +18,7 @@ import define from "../../define.js";
 import { ApiError } from "../../error.js";
 import { EmojiAddRequests, DriveFiles, Emojis } from "@/models/index.js";
 import { genId } from "@/misc/gen-id.js";
-import { db } from "@/db/postgre.js";
+import { clearEmojiQueryCache } from "@/misc/emoji-query-cache.js";
 import { bumpReactionNormalizeCacheVersion } from "@/misc/reaction-normalize-cache.js";
 import { publishBroadcastStream } from "@/services/stream.js";
 import { insertModerationLog } from "@/services/insert-moderation-log.js";
@@ -123,7 +123,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		...buildEmojiRowFromRequest(merged, file),
 	} as Parameters<typeof Emojis.insert>[0]).then((x) => Emojis.findOneByOrFail(x.identifiers[0]));
 
-	await db.queryResultCache!.remove(["meta_emojis"]);
+	await clearEmojiQueryCache();
 	await bumpReactionNormalizeCacheVersion();
 	publishBroadcastStream("emojiAdded", { emoji: await Emojis.pack(emoji.id) });
 

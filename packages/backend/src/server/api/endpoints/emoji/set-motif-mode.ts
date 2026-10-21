@@ -9,7 +9,7 @@ import define from "../../define.js";
 import { Emojis } from "@/models/index.js";
 import { ApiError } from "../../error.js";
 import { publishBroadcastStream } from "@/services/stream.js";
-import { db } from "@/db/postgre.js";
+import { clearEmojiQueryCache } from "@/misc/emoji-query-cache.js";
 import { bumpReactionNormalizeCacheVersion } from "@/misc/reaction-normalize-cache.js";
 
 export const meta = {
@@ -72,7 +72,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		emoji: pack,
 		emojis: [pack],
 	});
-	await db.queryResultCache!.remove(["meta_emojis"]);
+	await clearEmojiQueryCache();
 	await bumpReactionNormalizeCacheVersion();
 
 	return pack;

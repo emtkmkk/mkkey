@@ -18,7 +18,7 @@ import { insertModerationLog } from "@/services/insert-moderation-log.js";
 import { ApiError } from "../../../error.js";
 import rndstr from "rndstr";
 import { publishBroadcastStream } from "@/services/stream.js";
-import { db } from "@/db/postgre.js";
+import { clearEmojiQueryCache } from "@/misc/emoji-query-cache.js";
 import { bumpReactionNormalizeCacheVersion } from "@/misc/reaction-normalize-cache.js";
 import {
 	emojiExtraFieldsParamDef,
@@ -221,7 +221,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		(x) => Emojis.findOneByOrFail(x.identifiers[0]),
 	);
 
-	await db.queryResultCache!.remove(["meta_emojis"]);
+	await clearEmojiQueryCache();
 	await bumpReactionNormalizeCacheVersion();
 
 	if (getEffectiveUsageVisibility(emoji) !== "private") {

@@ -15,7 +15,7 @@ import { getEffectiveUsageVisibility } from "@/models/repositories/emoji.js";
 import { toStoredCopyPermission } from "@/misc/copy-permission.js";
 import { ApiError } from "../../../error.js";
 import { publishBroadcastStream } from "@/services/stream.js";
-import { db } from "@/db/postgre.js";
+import { clearEmojiQueryCache } from "@/misc/emoji-query-cache.js";
 import { bumpReactionNormalizeCacheVersion } from "@/misc/reaction-normalize-cache.js";
 import {
 	emojiExtraFieldsParamDef,
@@ -200,6 +200,6 @@ export default define(meta, paramDef, async (ps) => {
 		});
 	}
 
-	await db.queryResultCache!.remove(["meta_emojis"]);
+	await clearEmojiQueryCache();
 	await bumpReactionNormalizeCacheVersion();
 });

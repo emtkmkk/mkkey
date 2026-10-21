@@ -19,7 +19,7 @@ import { buildCopiedEmojiExtraFields } from "@/misc/emoji-fedibird.js";
 import { ApiError } from "../../error.js";
 import type { DriveFile } from "@/models/entities/drive-file.js";
 import { uploadFromUrl } from "@/services/drive/upload-from-url.js";
-import { db } from "@/db/postgre.js";
+import { clearEmojiQueryCache } from "@/misc/emoji-query-cache.js";
 import { bumpReactionNormalizeCacheVersion } from "@/misc/reaction-normalize-cache.js";
 import { insertModerationLog } from "@/services/insert-moderation-log.js";
 import { publishBroadcastStream } from "@/services/stream.js";
@@ -193,7 +193,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		motifUserMode: "any",
 	}).then((x) => Emojis.findOneByOrFail(x.identifiers[0]));
 
-	await db.queryResultCache!.remove(["meta_emojis"]);
+	await clearEmojiQueryCache();
 	await bumpReactionNormalizeCacheVersion();
 	publishBroadcastStream("emojiAdded", {
 		emoji: await Emojis.pack(copied.id),

@@ -280,6 +280,32 @@ const statsExtraFromConfig = (() => {
 	return rest;
 })();
 
+/**
+ * TypeORM のクエリ結果キャッシュ設定（Redis）。メイン接続と集計用接続で共有する。
+ *
+ * @remarks
+ * - `keyPrefix` を両接続で同じにしているのは意図的。`db.queryResultCache.remove([...])` による
+ *   無効化（絵文字一覧など）が、集計用接続側で書かれたキャッシュにも効くようにするため。
+ *   同じ SQL・同じ ID なら同じデータなので、共有しても問題ない。
+ * - NB: TypeORM は `cache: false` の DataSource では `.cache()` / `find({ cache })` を**黙って無視**する。
+ *   以前は集計用接続が `cache: false` だったため、`emojis` / `users/stats` / `hashtags/trend` 等に
+ *   書かれていたキャッシュ指定が statsUser 有効時に一切効いていなかった。
+ * @internal
+ */
+const queryResultCacheOptions = !config.db.disableCache
+	? ({
+			type: "ioredis",
+			options: {
+				host: config.redis.host,
+				port: config.redis.port,
+				family: config.redis.family == null ? 0 : config.redis.family,
+				password: config.redis.pass,
+				keyPrefix: `${config.redis.prefix}:query:`,
+				db: config.redis.db || 0,
+			},
+	  } as const)
+	: false;
+
 export const dbStats: DataSource | null = isStatsPoolEnabled
 	? new DataSource({
 			type: "postgres",
@@ -298,7 +324,7 @@ export const dbStats: DataSource | null = isStatsPoolEnabled
 			},
 			synchronize: false,
 			dropSchema: false,
-			cache: false,
+			cache: queryResultCacheOptions,
 			logging: log,
 			logger: log ? new MyCustomLogger() : undefined,
 			maxQueryExecutionTime: Math.min(25000, statsStatementTimeoutMs),
@@ -328,19 +354,7 @@ export const db = new DataSource({
 	},
 	synchronize: process.env.NODE_ENV === "test",
 	dropSchema: process.env.NODE_ENV === "test",
-	cache: !config.db.disableCache
-		? {
-				type: "ioredis",
-				options: {
-					host: config.redis.host,
-					port: config.redis.port,
-					family: config.redis.family == null ? 0 : config.redis.family,
-					password: config.redis.pass,
-					keyPrefix: `${config.redis.prefix}:query:`,
-					db: config.redis.db || 0,
-				},
-		  }
-		: false,
+	cache: queryResultCacheOptions,
 	logging: log,
 	logger: log ? new MyCustomLogger() : undefined,
 	maxQueryExecutionTime: 25000,

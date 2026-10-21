@@ -1,3 +1,20 @@
+/**
+ * @packageDocumentation
+ *
+ * 投稿検索 API（`notes/search`）。
+ *
+ * @remarks
+ * - クエリ文字列をスペースまたは `+` で区切り、各トークンを AND 条件として解釈する。
+ *   `key:value` 形式のトークンは絞り込み条件として扱う
+ *   （`user:` / `channel:` / `file:` / `host:` / `visibility:` / `local:` / `score:` / `filter:` / `since:` / `until:`、
+ *   および `from:me` / `-user:` / `-語`）。
+ * - `file:<ドライブファイルID>` は、そのファイルを添付している投稿だけに絞る。
+ *   ドライブのファイルメニューの「このファイルを使った投稿を検索」から使われる。
+ * - Elasticsearch も Sonic も無いときは DB を直接検索する（mkkey.net の本番はこの経路）。
+ *   ES / Sonic の経路では、検索結果を `createNoteMatcher` で後から絞り込む。
+ *
+ * @internal
+ */
 import { In, Brackets } from "typeorm";
 import { Followings, Notes } from "@/models/index.js";
 import { Note } from "@/models/entities/note.js";
@@ -43,7 +60,8 @@ export const paramDef = {
 	properties: {
 		query: {
 			type: "string",
-			description: "検索クエリ。スペースや + で区切った複数トークンは AND 検索。",
+			description:
+				"検索クエリ。スペースや + で区切った複数トークンは AND 検索。file:<ドライブファイルID> でそのファイルを添付した投稿に絞れる。",
 		},
 		sinceId: {
 			type: "string",
@@ -127,6 +145,8 @@ export default define(meta, paramDef, async (ps, me) => {
         let visibility = ps.visibility ?? null;
         let localOnly = ps.local === true ? true : null;
         let minScore = ps.minScore ?? null;
+        // file:<ドライブファイルID> で指定された「このファイルを添付している投稿」の絞り込み
+        let fileId: string | null = null;
         let sinceDate: Date | null = null;
         let untilDate: Date | null = null;
 
@@ -174,6 +194,9 @@ export default define(meta, paramDef, async (ps, me) => {
                                 break;
                         case "channel":
                                 if (value) channelId = value;
+                                break;
+                        case "file":
+                                if (value) fileId = value;
                                 break;
                         case "host":
                                 if (value === "." || value === "" || value.toLowerCase() === "null") {
@@ -237,6 +260,7 @@ export default define(meta, paramDef, async (ps, me) => {
                 excludeUserIds.length > 0 ||
                 userId != null ||
                 channelId != null ||
+                fileId != null ||
                 host !== undefined ||
                 visibility != null ||
                 localOnly === true ||
@@ -278,6 +302,7 @@ export default define(meta, paramDef, async (ps, me) => {
                         if (userId && note.userId !== userId) return false;
                         if (excludeUserIds.includes(note.userId)) return false;
                         if (channelId && note.channelId !== channelId) return false;
+                        if (fileId && !note.fileIds?.includes(fileId)) return false;
                         if (host !== undefined) {
                                 if (host === null || host === config.host) {
                                         if (note.userHost != null) return false;
@@ -384,6 +409,17 @@ export default define(meta, paramDef, async (ps, me) => {
 
                 if (channelId) {
                         query.andWhere("note.channelId = :channelId", { channelId });
+                }
+
+                if (fileId) {
+                        // NB: `:fileId = ANY(note.fileIds)` と書くと GIN インデックス IDX_NOTE_FILE_IDS が使われず、
+                        // note 全件のシーケンシャルスキャンになる。必ず `@>` で書くこと（本番で最悪 36ms を確認済み）。
+                        // NB: 値を見ない汎用プラン（名前付き PREPARE を繰り返したとき）だと主キーの逆順スキャンが選ばれ、
+                        // 未使用ファイルで全件を舐める。node-postgres は名前なしの prepared statement で毎回値を見て
+                        // プランを立てるので問題ないが、名前付きの prepared statement にはしないこと。
+                        query.andWhere('note."fileIds" @> ARRAY[:fileId]::varchar[]', {
+                                fileId,
+                        });
                 }
 
                 if (host !== undefined) {

@@ -6,7 +6,8 @@
  * @remarks
  * - **API パス**: `drive/files/attached-notes`
  * - `countOnly: true` のときはノートを pack せず `COUNT` のみ返す（削除確認用）。
- * - `= ANY(note.fileIds)` は既存 GIN `IDX_NOTE_FILE_IDS` を利用する。
+ * - `note.fileIds @> ARRAY[:file]` で既存 GIN `IDX_NOTE_FILE_IDS` を利用する。
+ * - NB: `= ANY(note.fileIds)` と書くと GIN が使われず note 全件スキャンになる（2026-07 に削除確認で重くなった原因）。
  *
  * @see {@link define} エンドポイント登録
  * @internal
@@ -68,13 +69,13 @@ export default define(meta, paramDef, async (ps, user) => {
 	// 件数のみ（削除確認用）。GIN インデックスを使う COUNT。
 	if (ps.countOnly) {
 		const count = await Notes.createQueryBuilder("note")
-			.where(":file = ANY(note.fileIds)", { file: file.id })
+			.where('note."fileIds" @> ARRAY[:file]::varchar[]', { file: file.id })
 			.getCount();
 		return { count };
 	}
 
 	const notes = await Notes.createQueryBuilder("note")
-		.where(":file = ANY(note.fileIds)", { file: file.id })
+		.where('note."fileIds" @> ARRAY[:file]::varchar[]', { file: file.id })
 		.getMany();
 
 	return await Notes.packMany(notes, user, {

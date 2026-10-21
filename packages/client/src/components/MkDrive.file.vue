@@ -47,6 +47,10 @@
  * 削除確認では pack 済みの `usageCount` から添付投稿件数を表示し、
  * 投稿は残って添付だけ消える旨を伝える（件数取得のための API 呼び出しはしない）。
  *
+ * 「このファイルを使った投稿を検索」は `/search?q=file:<ID>` へ移動するだけで、
+ * 絞り込みは検索 API（`notes/search`）の `file:` トークンが行う。
+ * NOTE: `usageCount` が 0 でもメニューは出す。古いファイルでは件数が実態と合っていない可能性があるため。
+ *
  * @public
  */
 import { computed, defineAsyncComponent, ref } from "vue";
@@ -104,6 +108,13 @@ function getMenu() {
 			action: describe,
 		},
 		null,
+		{
+			// 検索の file: トークンで、このファイルを添付している投稿を一覧する
+			type: "link",
+			to: `/search?q=${encodeURIComponent(`file:${props.file.id}`)}`,
+			text: i18n.ts.searchNotesUsingFile,
+			icon: "ph-magnifying-glass ph-bold ph-lg",
+		},
 		{
 			text: i18n.ts.copyUrl,
 			icon: "ph-link-simple ph-bold ph-lg",

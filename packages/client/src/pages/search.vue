@@ -28,7 +28,7 @@
 						:pagination="notesPagination"
 					/>
 				</swiper-slide>
-				<swiper-slide>
+				<swiper-slide v-if="showMediaTab">
 					<XNotes
 						v-if="tab === 'medianotes'"
 						key="medianotes"
@@ -50,6 +50,18 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * 検索結果ページ（`/search?q=...`）。投稿・メディア付き投稿・ユーザーをタブで切り替えて表示する。
+ *
+ * @remarks
+ * - 投稿の絞り込み構文（`user:` / `file:` / `filter:` など）は検索 API（`notes/search`）が解釈する。
+ * - NB: タブ（`tabs`）とスライド（`swiper-slide`）は並び順で対応している。
+ *   タブを条件付きで隠すときは、対応するスライドにも同じ条件の `v-if` を付けること（付けないと番号がずれる）。
+ *
+ * @internal
+ */
 import { computed, watch, onMounted } from "vue";
 import { Virtual } from "swiper";
 import { Swiper, SwiperSlide } from "swiper/vue";
@@ -100,9 +112,22 @@ const usersPagination = {
 	})),
 };
 
+/**
+ * 「メディア」タブを出すかどうか
+ *
+ * @remarks
+ * `filter:media` 指定済み、または `file:`（特定ファイルを添付した投稿）指定のときは、
+ * 「投稿」タブと結果が同じになるため出さない。
+ *
+ * @internal
+ */
+const showMediaTab =
+	!props.query?.includes("filter:media") &&
+	!/(^|[\s+])file:/i.test(props.query ?? "");
+
 let tabs = [
 	"notes",
-	...(!props.query?.includes("filter:media") ? ["medianotes"] : []),
+	...(showMediaTab ? ["medianotes"] : []),
 	...(!props.user && !props.channel ? ["users"] : []),
 ];
 let tab = $ref(tabs[0]);
@@ -116,15 +141,15 @@ const headerTabs = $computed(() => [
 		icon: "ph-magnifying-glass ph-bold ph-lg",
 		title: i18n.ts.notes,
 	},
-	...(props.query?.includes("filter:media")
-		? []
-		: [
+	...(showMediaTab
+		? [
 				{
 					key: "medianotes",
 					icon: "ph-images ph-bold ph-lg",
 					title: i18n.ts._timelines.media,
 				},
-		  ]),
+		  ]
+		: []),
 	...(props.user
 		? []
 		: [

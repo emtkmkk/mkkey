@@ -38,7 +38,7 @@ import { toArray } from "@/prelude/array.js";
 import { fetchInstanceMetadata } from "@/services/fetch-instance-metadata.js";
 import { normalizeForSearch } from "@/misc/normalize-for-search.js";
 import { truncate } from "@/misc/truncate.js";
-import { StatusError } from "@/misc/fetch.js";
+import { StatusError, getResponse } from "@/misc/fetch.js";
 import { appendMisskeyIoSkebFieldIfNeeded } from "./misskey-io-skeb-fields.js";
 import { uriPersonCache } from "@/services/user-cache.js";
 import { publishInternalEvent } from "@/services/stream.js";
@@ -162,7 +162,25 @@ function validateActor(x: IObject, uri: string): IActor {
 }
 
 /**
+ * コレクション本体の読み込み上限（バイト）。
+ *
+ * @remarks
+ * 必要なのは `totalItems` だけで、通常のコレクションは数百バイトに収まる。
+ * outbox に投稿本体を埋め込む実装（Lemmy のコミュニティなど）はこの上限を超えるが、
+ * その場合は件数が取れないだけで Person 本体に埋め込まれた値か既存値が使われる。
+ * @internal
+ */
+const COLLECTION_TOTAL_ITEMS_MAX_BYTES = 64 * 1024;
+
+/**
  * コレクション URI から totalItems を取得する。
+ *
+ * @remarks
+ * - 共通の {@link getResponse} を使うので、SSRF 検査・timeout（10 秒）・プロキシ・User-Agent が他の AP 通信と同じになる。
+ * - 以前はグローバル `fetch` で上限も timeout も無く本体を丸ごと `text()` していたため、
+ *   相手が巨大な outbox 本体を返すと web ワーカーが一度に数百 MB を確保し得た（5GB 膨張の候補）。
+ * - 上限超過・timeout・非 2xx はすべて `undefined` に落とし、呼び出し側のフォールバック
+ *   （Person 埋め込みの `totalItems` → 既存値維持）に任せる。
  *
  * @param uri - followers / following / outbox 等の URI
  * @returns totalItems。取得失敗時は `undefined`
@@ -172,11 +190,20 @@ async function fetchCollectionTotalItems(
 	uri: string,
 ): Promise<number | undefined> {
 	try {
-		const data = await fetch(uri, {
-			headers: { Accept: "application/json" },
+		const res = await getResponse({
+			url: uri,
+			method: "GET",
+			headers: {
+				Accept: "application/json",
+				"User-Agent": config.userAgent,
+			},
+			size: COLLECTION_TOTAL_ITEMS_MAX_BYTES,
 		});
-		const jsonData = JSON.parse(await data.text()) as { totalItems?: number };
-		return jsonData.totalItems;
+		// size 超過は text() の時点で例外になるので、ここで巨大確保は起きない
+		const jsonData = JSON.parse(await res.text()) as { totalItems?: number };
+		return typeof jsonData.totalItems === "number"
+			? jsonData.totalItems
+			: undefined;
 	} catch {
 		return undefined;
 	}

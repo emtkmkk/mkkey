@@ -1105,9 +1105,13 @@ FROM "user" u WHERE u."id" = $1`,
 			});
 		}
 
-		// 追跡状態はリモートユーザーのときだけ載せる（ローカルユーザーは常にこのサーバーにいるため意味がない）
-		const trackingStatus =
-			opts.detail && user.host ? await this.getTrackingStatus(user.id) : null;
+		// 追跡状態はプロフィール画面（detail）にだけ載せる。
+		// ローカルユーザーの投稿は最初からこのサーバーにあるので、常に追跡中・開始はアカウント作成日とする
+		const trackingStatus = !opts.detail
+			? null
+			: user.host
+				? await this.getTrackingStatus(user.id)
+				: { isTracked: true, trackedSince: user.createdAt };
 
 		const truthy = opts.detail ? true : undefined;
 		const falsy = opts.detail ? false : undefined;
@@ -1211,7 +1215,9 @@ FROM "user" u WHERE u."id" = $1`,
 							: null,
 						isTracked: trackingStatus?.isTracked,
 						trackedSince: trackingStatus
-							? trackingStatus.trackedSince?.toISOString() ?? null
+							? trackingStatus.trackedSince
+								? new Date(trackingStatus.trackedSince).toISOString()
+								: null
 							: undefined,
 						...(me
 							? {

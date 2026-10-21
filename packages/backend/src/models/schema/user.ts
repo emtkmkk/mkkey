@@ -193,13 +193,13 @@ export const packedUserDetailedNotMeOnlySchema = {
 			optional: false,
 			format: "date-time",
 		},
-		// リモートユーザーのときだけ入る。このサーバーの誰かがフォローしていて、投稿が届いている状態か
+		// このサーバーの誰かがフォローしていて、投稿が届いている状態か（ローカルユーザーは常に true）
 		isTracked: {
 			type: "boolean",
 			nullable: false,
 			optional: true,
 		},
-		// isTracked が true のとき、途切れずに追跡している期間の開始時刻（最後に 0→1 人以上になった時刻）
+		// isTracked が true のとき、途切れずに追跡している期間の開始時刻（最後に 0→1 人以上になった時刻。ローカルユーザーはアカウント作成日）
 		trackedSince: {
 			type: "string",
 			nullable: true,

@@ -22,10 +22,8 @@ import { LessThan } from "typeorm";
 import { subscriber as redisClient } from "@/db/redis.js";
 import { USER_ONLINE_THRESHOLD } from "@/const.js";
 import { Users } from "@/models/index.js";
-import { touchLastActiveDate } from "@/services/update-last-active-date.js";
 import MainStreamConnection from "./stream/index.js";
 import authenticate from "./authenticate.js";
-import { maybeInvalidateDormantFollowerCacheOnActivity } from "@/remote/activitypub/dormant-follower-check.js";
 import { isModerationWarningAckPending } from "@/misc/moderation-warning-ack.js";
 import { tryHandleSubscribeRepos } from "../atproto/subscribe-repos.js";
 
@@ -100,18 +98,8 @@ export const initializeStreamingServer = (server: http.Server) => {
 					).catch(() => {});
 			  }, 1000 * 60 * 2.5)
 			: null;
-		if (user) {
-			const prev = await Users.findOneBy(
-				{ id: user.id },
-				{ select: ["lastActiveDate", "host"] },
-			);
-			await maybeInvalidateDormantFollowerCacheOnActivity(
-				user.id,
-				prev?.host ?? user.host ?? null,
-				prev?.lastActiveDate ?? null,
-			);
-			touchLastActiveDate(user.id);
-		}
+		// NOTE: 接続直後の lastActiveDate 更新と休眠キャッシュの無効化は、直前の authenticate()
+		// 内の touchLastActiveDateOnLogin が済ませているので、ここでは行わない。
 
 		connection.once("close", () => {
 			ev.removeAllListeners();

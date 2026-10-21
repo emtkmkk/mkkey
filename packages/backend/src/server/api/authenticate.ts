@@ -16,7 +16,8 @@
  * - **notes/create** は `services/note/create` の投稿処理へ認証ユーザを渡し、`blockPost*` / `isSilenced` / `maxRankPoint` / `isBot` / `isPublicLikeList` / `avatarId` 等で可視性・スパム系の分岐を行う。
  *   なお周年バッジの進捗・通知（`notesPostDays` 等）は、キャッシュされた本オブジェクトではなく
  *   `updateAnniversaryProgress` 側で DB の現在値をアトミックに読んで判定する（キャッシュ由来の二重通知を防ぐため）。
- * - 認証成功時の `updateLastActiveDateOnLogin` で `lastActiveDate` 更新に加え、休眠削除予告の `inactiveDeletionWarnedAt` をクリアする。
+ * - 認証成功時の {@link touchLastActiveDateOnLogin} で `lastActiveDate` 更新に加え、休眠削除予告の `inactiveDeletionWarnedAt` をクリアする。
+ *   以前は毎リクエスト SELECT + UPDATE していたが、索引付き列への高頻度更新を避けるため 1 分間引きにした。
  *
  * @see {@link api-handler} API 認証
  * @see {@link streaming} ストリーム接続認証
@@ -30,7 +31,7 @@ import { Cache } from "@/misc/cache.js";
 import { CACHE_MAX_APP } from "@/misc/cache-limits.js";
 import type { App } from "@/models/entities/app.js";
 import { fetchAuthUserByTokenCache } from "@/services/user-cache.js";
-import { maybeInvalidateDormantFollowerCacheOnActivity } from "@/remote/activitypub/dormant-follower-check.js";
+import { touchLastActiveDateOnLogin } from "@/services/update-last-active-date.js";
 import { hydrateModerationWarningPopupAtForAuthUser } from "@/misc/moderation-warning-ack.js";
 
 const appCache = new Cache<App>(Infinity, { maxEntries: CACHE_MAX_APP });
@@ -88,39 +89,6 @@ const AUTH_USER_SELECT = {
 	followingCount: true,
 } as const;
 
-/**
- * ログイン成功時に lastActiveDate を更新し、休眠だった場合のみ休眠スキップキャッシュを無効化する。
- *
- * @param user - 認証に成功したローカルユーザー
- * @returns Promise
- * @remarks
- * - `inactiveDeletionWarnedAt` も同時に `null` へ戻す。
- *   これにより、再度3ヶ月以上未活動になったときに警告メールを再送できる。
- * - NOTE: ストリーミング接続だけの活動更新ではここは通らないため、
- *   日次ジョブ側でも再活動ユーザーのフラグ掃除を行う。
- * @see {@link warnInactiveDeletion}
- * @internal
- */
-async function updateLastActiveDateOnLogin(user: {
-	id: CacheableLocalUser["id"];
-	host: CacheableLocalUser["host"];
-}): Promise<void> {
-	const prev = await Users.findOneBy(
-		{ id: user.id },
-		{ select: ["lastActiveDate", "host"] },
-	);
-	await maybeInvalidateDormantFollowerCacheOnActivity(
-		user.id,
-		prev?.host ?? user.host ?? null,
-		prev?.lastActiveDate ?? null,
-	);
-	// 再ログインで休眠サイクルを終了し、警告メールの「1回限り」フラグをリセットする
-	Users.update(user.id, {
-		lastActiveDate: new Date(),
-		inactiveDeletionWarnedAt: null,
-	});
-}
-
 export default async (
 	authorization: string | null | undefined,
 	bodyToken: string | null,
@@ -165,7 +133,7 @@ export default async (
 			throw new AuthenticationError("unknown token");
 		}
 
-		await updateLastActiveDateOnLogin(user);
+		await touchLastActiveDateOnLogin(user);
 		return [user, null];
 	} else {
 		const accessToken = await AccessTokens.findOne({
@@ -205,7 +173,7 @@ export default async (
 			throw new AuthenticationError("unknown token");
 		}
 
-		await updateLastActiveDateOnLogin(user);
+		await touchLastActiveDateOnLogin(user);
 
 		if (accessToken.appId) {
 			const app = await appCache.fetch(accessToken.appId, () =>

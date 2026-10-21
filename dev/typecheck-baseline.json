@@ -1,10 +1,10 @@
 {
-	"generatedAt": "2026-09-30T05:58:40.411Z",
+	"generatedAt": "2026-10-21T08:25:18.474Z",
 	"note": "型エラーの既知一覧。scripts/typecheck.js が「増えていないか」を判定するために使う。減ったときは --update で更新する。",
-	"total": 750,
+	"total": 748,
 	"packages": {
 		"backend": {
-			"total": 456,
+			"total": 454,
 			"files": {
 				"node_modules/.pnpm/@bull-board+api@4.6.4/node_modules/@bull-board/api/dist/typings/app.d.ts": {
 					"TS7016": 1
@@ -232,7 +232,6 @@
 					"TS2345": 1
 				},
 				"packages/backend/src/server/api/authenticate.ts": {
-					"TS2554": 1,
 					"TS2322": 1
 				},
 				"packages/backend/src/server/api/call.ts": {
@@ -514,9 +513,6 @@
 				},
 				"packages/backend/src/server/api/stream/index.ts": {
 					"TS2551": 1
-				},
-				"packages/backend/src/server/api/streaming.ts": {
-					"TS2554": 1
 				},
 				"packages/backend/src/server/web/index.ts": {
 					"TS2322": 1,

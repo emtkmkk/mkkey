@@ -30,9 +30,32 @@ export {
 	CHUNKED_UPLOAD_PART_SIZE,
 	CHUNKED_UPLOAD_THRESHOLD,
 } from "./chunked-upload-constants.js";
-/** 最終操作からセッションを保持する秒数。 */
+/**
+ * 最終操作からセッションを保持する秒数。
+ *
+ * @remarks
+ * Redis のキー期限と、janitor が一時ディレクトリを消す基準の両方に使う。
+ * 予約枠の解放はこれより早く {@link IDLE_SESSION_MS} と追い出しで行うため、
+ * この値は「一時ファイルを確実に捨てる上限」として残している。
+ */
 const SESSION_TTL_SECONDS = 24 * 60 * 60;
-/** 1 ユーザーが同時に予約できるセッション数。 */
+/**
+ * 最後の操作からこの時間だけ操作が無い uploading セッションを、放置されたものとみなす。
+ *
+ * @remarks
+ * ページを閉じてパート送信が途切れると abort は呼ばれず、セッションと予約だけが残る。
+ * 24 時間の TTL をそのまま待つと {@link MAX_ACTIVE_SESSIONS_PER_USER} に当たり続けて
+ * ユーザーが丸一日アップロードできなくなるため、init 時にこの時間を越えたものは
+ * 上限に達していなくても追い出す。
+ */
+const IDLE_SESSION_MS = 60 * 60 * 1000;
+/**
+ * 1 ユーザーが同時に予約できるセッション数。
+ *
+ * @remarks
+ * 上限に達していても、state が uploading のセッションは最終操作が古い順に追い出してから
+ * 新しいセッションを作る。processing（complete の処理中）は追い出さない。
+ */
 const MAX_ACTIVE_SESSIONS_PER_USER = 2;
 /** 分割アップロード全体で予約できる一時ディスク容量。 */
 const MAX_RESERVED_BYTES = 8 * 1024 * 1024 * 1024;
@@ -95,6 +118,11 @@ const globalReservationsKey = "drive:chunked-upload:reservations:global";
 /** 予約一覧の member。サイズを含め、期限切れ Redis セッション後も集計できる。 */
 const reservationMember = (uploadId: string, size: number) =>
 	`${uploadId}:${size}`;
+/** 同一アップロードの part / complete / 追い出しを直列化するロックのキーを返す。 */
+const sessionLockKey = (uploadId: string) =>
+	`drive:chunked-upload:lock:${uploadId}`;
+/** 予約の取得・追い出しを直列化するロックのキー。 */
+const reservationsLockKey = "drive:chunked-upload:reservations:lock";
 
 /** uploadId が固定長の UUID であることを検証する。 */
 function assertUploadId(uploadId: string): void {
@@ -217,12 +245,136 @@ function reservedSize(member: string): number {
 	return Number.isSafeInteger(size) && size > 0 ? size : 0;
 }
 
+/** 予約 member から uploadId 部分を取り出す。 */
+function reservedUploadId(member: string): string {
+	return member.slice(0, member.lastIndexOf(":"));
+}
+
+/** ユーザーの予約 1 件と、それに対応する Redis 上のセッション本体。 */
+type UserReservation = {
+	member: string;
+	session: ChunkedUploadSession;
+};
+
+/**
+ * ユーザーの予約一覧をセッション本体と突き合わせる。
+ *
+ * @remarks
+ * 予約 zset の期限とセッションキーの TTL は同じ長さだが、別々に書き込むため
+ * セッションだけ先に消えていることがあり得る。本体が無い予約は数えても意味が無いので、
+ * その場で zrem して結果から外す。
+ *
+ * @param userId - 予約を持つユーザー
+ * @param members - zset から取り出した予約 member
+ * @returns 本体が存在する予約だけの一覧
+ */
+async function loadUserReservations(
+	userId: User["id"],
+	members: string[],
+): Promise<UserReservation[]> {
+	const reservations: UserReservation[] = [];
+	for (const member of members) {
+		const uploadId = reservedUploadId(member);
+		const raw = UPLOAD_ID_PATTERN.test(uploadId)
+			? await redisClient.get(sessionKey(uploadId))
+			: null;
+		if (raw == null) {
+			// セッション本体が TTL 切れなどで無いので、予約だけを捨てる
+			await redisClient
+				.multi()
+				.zrem(globalReservationsKey, member)
+				.zrem(userReservationsKey(userId), member)
+				.exec()
+				.catch(() => {});
+			continue;
+		}
+		reservations.push({
+			member,
+			session: JSON.parse(raw) as ChunkedUploadSession,
+		});
+	}
+	return reservations;
+}
+
+/**
+ * 放置された uploading セッションを追い出す。
+ *
+ * @remarks
+ * part / complete と同じセッション単位のロックを取ってから消す。別ワーカーが
+ * ちょうどパートを書き込んでいる最中ならロックが取れないので、そのセッションは
+ * 生きているものとみなして追い出さない（戻り値 false）。
+ *
+ * @param session - 追い出し対象。呼び出し側で state が uploading であることを確認する
+ * @returns 追い出せたら true
+ */
+async function tryEvictSession(session: ChunkedUploadSession): Promise<boolean> {
+	try {
+		await withLock(sessionLockKey(session.uploadId), () =>
+			cleanupSession(session),
+		);
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+/**
+ * ユーザーの予約枠を空けるため、不要になった uploading セッションを追い出す。
+ *
+ * @remarks
+ * 処理の順番:
+ * 1. {@link IDLE_SESSION_MS} を越えて操作が無い uploading セッションは、上限に関係なく追い出す。
+ * 2. それでも {@link MAX_ACTIVE_SESSIONS_PER_USER} に達していれば、残りの uploading
+ *    セッションを最終操作が古い順に、枠が空くまで追い出す。
+ *
+ * state が processing のものは complete が一時ファイルを読んでいる最中なので対象にしない。
+ * processing だけで上限が埋まっている場合は空けられず、呼び出し側が TOO_MANY_UPLOADS にする。
+ *
+ * @param reservations - 本体が存在するユーザーの予約一覧
+ * @param now - 判定に使う現在時刻（ミリ秒）
+ * @returns 追い出し後に残った予約一覧
+ */
+async function evictStaleSessions(
+	reservations: UserReservation[],
+	now: number,
+): Promise<UserReservation[]> {
+	let remaining: UserReservation[] = [];
+	for (const reservation of reservations) {
+		const { session } = reservation;
+		const idle =
+			session.state === "uploading" &&
+			now - session.touchedAt >= IDLE_SESSION_MS;
+		if (idle && (await tryEvictSession(session))) continue;
+		remaining.push(reservation);
+	}
+	if (remaining.length < MAX_ACTIVE_SESSIONS_PER_USER) return remaining;
+
+	// 古い順に並べ、枠が空くまで追い出す
+	const candidates = remaining
+		.filter((reservation) => reservation.session.state === "uploading")
+		.sort((a, b) => a.session.touchedAt - b.session.touchedAt);
+	for (const candidate of candidates) {
+		if (remaining.length < MAX_ACTIVE_SESSIONS_PER_USER) break;
+		if (await tryEvictSession(candidate.session)) {
+			remaining = remaining.filter((reservation) => reservation !== candidate);
+		}
+	}
+	return remaining;
+}
+
 /**
  * 分割アップロードを開始する。
+ *
+ * @remarks
+ * ユーザーのセッション数が上限に達していても即エラーにはせず、
+ * {@link evictStaleSessions} で放置された uploading セッションを追い出してから作る。
+ * それでも枠が空かない（processing で埋まっている、またはロック中）ときだけ
+ * TOO_MANY_UPLOADS を投げる。
  *
  * @param userId - 所有ユーザー
  * @param input - ファイル情報と Drive 保存条件
  * @returns クライアントが使用するセッション情報
+ * @throws {@link ChunkedUploadError} INVALID_FILE_SIZE / TOO_MANY_UPLOADS / TEMPORARY_STORAGE_FULL / UPLOAD_BUSY
  * @public
  */
 export async function initChunkedUpload(
@@ -241,23 +393,36 @@ export async function initChunkedUpload(
 		);
 	}
 
-	return await withLock("drive:chunked-upload:reservations:lock", async () => {
+	return await withLock(reservationsLockKey, async () => {
 		const now = Date.now();
+		// 期限切れの予約を先に落とす
 		await redisClient
 			.multi()
 			.zremrangebyscore(globalReservationsKey, 0, now)
 			.zremrangebyscore(userReservationsKey(userId), 0, now)
 			.exec();
-		const [userMembers, globalMembers] = await Promise.all([
-			redisClient.zrangebyscore(userReservationsKey(userId), now, "+inf"),
-			redisClient.zrangebyscore(globalReservationsKey, now, "+inf"),
-		]);
-		if (userMembers.length >= MAX_ACTIVE_SESSIONS_PER_USER) {
+		const userMembers = await redisClient.zrangebyscore(
+			userReservationsKey(userId),
+			now,
+			"+inf",
+		);
+		// 本体の無い予約を捨て、放置セッションを追い出してから上限を判定する
+		const active = await evictStaleSessions(
+			await loadUserReservations(userId, userMembers),
+			now,
+		);
+		if (active.length >= MAX_ACTIVE_SESSIONS_PER_USER) {
 			throw new ChunkedUploadError(
 				"TOO_MANY_UPLOADS",
 				"Too many active uploads",
 			);
 		}
+		// 追い出しで global の予約も減っているので、容量はここで取り直す
+		const globalMembers = await redisClient.zrangebyscore(
+			globalReservationsKey,
+			now,
+			"+inf",
+		);
 		const reserved = globalMembers.reduce(
 			(total, member) => total + reservedSize(member),
 			0,
@@ -322,7 +487,7 @@ export async function writeChunkedUploadPart(
 	partPath: string,
 ): Promise<number> {
 	assertUploadId(uploadId);
-	return await withLock(`drive:chunked-upload:lock:${uploadId}`, async () => {
+	return await withLock(sessionLockKey(uploadId), async () => {
 		const session = await getOwnedSession(uploadId, userId);
 		if (session.state !== "uploading") {
 			throw new ChunkedUploadError(
@@ -397,7 +562,7 @@ export async function completeChunkedUpload(
 	) => DriveFileProgressReporter | null,
 ): Promise<DriveFile> {
 	assertUploadId(uploadId);
-	return await withLock(`drive:chunked-upload:lock:${uploadId}`, async () => {
+	return await withLock(sessionLockKey(uploadId), async () => {
 		const session = await getOwnedSession(uploadId, user.id);
 		if (session.state !== "uploading") {
 			throw new ChunkedUploadError(
@@ -454,7 +619,7 @@ export async function abortChunkedUpload(
 		throw error;
 	});
 	if (session == null) return;
-	await withLock(`drive:chunked-upload:lock:${uploadId}`, async () => {
+	await withLock(sessionLockKey(uploadId), async () => {
 		await cleanupSession(session);
 	});
 }

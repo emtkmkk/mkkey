@@ -19,6 +19,7 @@ import {
 import { HOUR } from "@/const.js";
 import define from "../../../../define.js";
 import { ApiError } from "../../../../error.js";
+import { apiLogger } from "../../../../logger.js";
 
 export const meta = {
 	tags: ["drive"],
@@ -76,6 +77,10 @@ export default define(
 			return await DriveFiles.pack(file, { self: true });
 		} catch (error) {
 			if (error instanceof ChunkedUploadError) {
+				// ApiError の info はログに出ないため、調査に必要な reason をここで 1 行残す
+				apiLogger.warn(
+					`chunked upload rejected: ep=drive/files/upload/complete reason=${error.code} userId=${user.id} uploadId=${ps.uploadId}`,
+				);
 				throw new ApiError(meta.errors.invalidUpload, { reason: error.code });
 			}
 			if (error instanceof IdentifiableError) {

@@ -150,7 +150,31 @@ class ChunkedUploadPartError extends Error {
 }
 
 /**
+ * サーバーが ApiError の info.reason に入れる分割アップロード固有の理由と、利用者向け文言の対応。
+ *
+ * @remarks
+ * ここに無い reason（INVALID_PART など、クライアントの不具合でしか起きないもの）は
+ * 汎用の chunkedUploadFailed に落とす。文言は「次に何をすればよいか」が分かるものにする。
+ *
+ * @internal
+ */
+const chunkedUploadReasonMessages: Record<string, () => string> = {
+	// 前回のセッションが残って枠を使い切っている（サーバー側で 1 時間無操作なら自動で追い出される）
+	TOO_MANY_UPLOADS: () => i18n.ts.chunkedUploadTooManyUploads,
+	// サーバー全体の一時ディスクの予約が埋まっている
+	TEMPORARY_STORAGE_FULL: () => i18n.ts.chunkedUploadStorageFull,
+	// セッションが期限切れか、追い出し・中止で消えている
+	UPLOAD_EXPIRED: () => i18n.ts.chunkedUploadExpired,
+	// 同じセッションを別のリクエストが更新中
+	UPLOAD_BUSY: () => i18n.ts.chunkedUploadBusy,
+};
+
+/**
  * 分割経路の失敗理由を既存アップロードと同じ利用者向け文言へ変換する。
+ *
+ * @remarks
+ * 判定の順番は「既存アップロードと共通のエラー ID」→「ファイルサイズ超過」→
+ * 「分割アップロード固有の reason」→ 汎用文言。
  *
  * @param error - API またはパート送信のエラー
  * @returns ダイアログに表示する文言
@@ -172,6 +196,10 @@ function chunkedUploadErrorMessage(error: unknown): string {
 		(error instanceof ChunkedUploadPartError && error.status === 413)
 	) {
 		return i18n.ts.cannotUploadBecauseExceedsFileSizeLimit;
+	}
+	const reason = apiError.info?.reason;
+	if (reason != null && reason in chunkedUploadReasonMessages) {
+		return chunkedUploadReasonMessages[reason]();
 	}
 	return i18n.ts.chunkedUploadFailed;
 }

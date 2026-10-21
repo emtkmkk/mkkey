@@ -8,6 +8,8 @@
  * - follower 向け followRequestAccepted は Followings 新規成立時のみ（リクエスト送信のみでは送らない）。
  * - Bluesky ユーザーへのフォローは、ActivityPub の Follow ではなく、自前 PDS への follow の書き込みとフォロー申請にする
  *   （{@link remote/atproto/records}）。相手側から見えると確かめた時点で成立する。
+ * - ローカル → リモートのフォローが成立したら、追跡開始時刻（user.localFollowedSince）も更新する。
+ *   フォローの行を作るのはここ（{@link insertFollowingDoc}）だけなので、0→1 の瞬間を取りこぼさない。
  *
  * @see {@link server/api/endpoints/following/create} フォロー API
  * @internal
@@ -56,6 +58,42 @@ import { requestBlueskyFollow } from "@/remote/atproto/records.js";
 
 const logger = new Logger("following/create");
 
+/**
+ * リモートユーザーへのローカルからのフォローが 0→1 人になったとき、その時刻を user.localFollowedSince に残す。
+ *
+ * @remarks
+ * - 「自分より前からフォローしているローカルユーザーが他にいない」ときだけ書く。
+ *   件数ではなくフォロー日時で比べるのは、2 人がほぼ同時にフォローしたときに、
+ *   お互いの行が見えて両方とも書かない（古い値が残る）ことを避けるため。
+ * - フォロー解除では消さない理由は {@link User.localFollowedSince} を参照。
+ *
+ * @param followeeId - フォローされたリモートユーザーの ID
+ * @param followingId - 今作った following の行の ID
+ * @param followedAt - 今作った following の行の createdAt
+ * @internal
+ */
+async function recordLocalFollowedSince(
+	followeeId: User["id"],
+	followingId: string,
+	followedAt: Date,
+): Promise<void> {
+	await Users.createQueryBuilder()
+		.update()
+		.set({ localFollowedSince: followedAt })
+		.where("id = :followeeId", { followeeId })
+		.andWhere(
+			`NOT EXISTS (
+				SELECT 1 FROM "following" f
+				WHERE f."followeeId" = :followeeId
+					AND f."followerHost" IS NULL
+					AND f."id" <> :followingId
+					AND f."createdAt" <= :followedAt
+			)`,
+			{ followingId, followedAt },
+		)
+		.execute();
+}
+
 export async function insertFollowingDoc(
 	followee: {
 		id: User["id"];
@@ -76,9 +114,12 @@ export async function insertFollowingDoc(
 
 	let alreadyFollowed = false;
 
+	const followingId = genId();
+	const followedAt = new Date();
+
 	await Followings.insert({
-		id: genId(),
-		createdAt: new Date(),
+		id: followingId,
+		createdAt: followedAt,
 		followerId: follower.id,
 		followeeId: followee.id,
 
@@ -154,6 +195,7 @@ export async function insertFollowingDoc(
 	// ローカルがリモートを新規フォローした場合、そのリモートの休眠スキップキャッシュを無効化
 	if (Users.isLocalUser(follower) && Users.isRemoteUser(followee)) {
 		await invalidateDormantFollowerSkipCache(followee.id);
+		await recordLocalFollowedSince(followee.id, followingId, followedAt);
 	}
 
 	//#region インスタンス統計更新

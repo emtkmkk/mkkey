@@ -719,6 +719,47 @@ export const UserRepository = db.getRepository(User).extend({
 		};
 	},
 
+	/**
+	 * このサーバーがリモートユーザーの投稿を今追跡しているか（ローカルからのフォローが 1 人以上いるか）と、
+	 * 途切れずに追跡している期間の開始時刻を返す。
+	 *
+	 * @remarks
+	 * - 追跡中かどうかは、following にローカルからの行があるかで決める（{@link User.localFollowedSince} は解除で消えないため）。
+	 * - 開始時刻は localFollowedSince を使う。ただし今いるローカルフォロワーの最古のフォロー日時より後になっていたら、
+	 *   記録の方がおかしい（記録を始める前のフォローなど）ので、最古のフォロー日時を使う。
+	 *   最古のフォロー日時からは、その人がずっとフォローしているので、少なくともそこからは途切れていないと言える。
+	 * - 誰がフォローしているかは返さない（公開情報として出すため）。
+	 * - 1 本のクエリで済ませる。following は followeeId に索引があり、1 ユーザー分の行は少ない。
+	 *
+	 * @param userId - 調べるユーザーの ID（リモートユーザーを想定）
+	 * @returns 追跡中かどうかと、追跡中なら開始時刻（追跡していなければ null）
+	 * @internal
+	 */
+	async getTrackingStatus(
+		userId: User["id"],
+	): Promise<{ isTracked: boolean; trackedSince: Date | null }> {
+		const rows = await db.query(
+			`SELECT u."localFollowedSince" AS "recorded",
+  (SELECT MIN(f."createdAt") FROM following f WHERE f."followeeId" = u."id" AND f."followerHost" IS NULL) AS "oldest"
+FROM "user" u WHERE u."id" = $1`,
+			[userId],
+		);
+		const r = rows[0] as { recorded: Date | null; oldest: Date | null } | undefined;
+
+		// ローカルからのフォローが 1 人もいなければ追跡していない
+		if (r?.oldest == null) return { isTracked: false, trackedSince: null };
+
+		const oldest = new Date(r.oldest);
+		const recorded = r.recorded != null ? new Date(r.recorded) : null;
+		return {
+			isTracked: true,
+			trackedSince:
+				recorded != null && recorded.getTime() <= oldest.getTime()
+					? recorded
+					: oldest,
+		};
+	},
+
         async getOnlineStatus(
                 user: User,
                 meId?: string | null,
@@ -1064,6 +1105,10 @@ export const UserRepository = db.getRepository(User).extend({
 			});
 		}
 
+		// 追跡状態はリモートユーザーのときだけ載せる（ローカルユーザーは常にこのサーバーにいるため意味がない）
+		const trackingStatus =
+			opts.detail && user.host ? await this.getTrackingStatus(user.id) : null;
+
 		const truthy = opts.detail ? true : undefined;
 		const falsy = opts.detail ? false : undefined;
 
@@ -1164,6 +1209,10 @@ export const UserRepository = db.getRepository(User).extend({
 						lastFetchedAt: user.lastFetchedAt
 							? user.lastFetchedAt.toISOString()
 							: null,
+						isTracked: trackingStatus?.isTracked,
+						trackedSince: trackingStatus
+							? trackingStatus.trackedSince?.toISOString() ?? null
+							: undefined,
 						...(me
 							? {
 									isExplorable: user.isExplorable,

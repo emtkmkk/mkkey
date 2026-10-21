@@ -33,6 +33,27 @@ export class User {
 	})
 	public lastFetchedAt: Date | null;
 
+	/**
+	 * ローカルユーザーからのフォローが最後に 0 人から 1 人以上になった時刻（リモートユーザー用）。
+	 *
+	 * @remarks
+	 * - 「このサーバーが投稿を追跡し始めた時刻」として、`users/show` の `trackedSince` の元になる。
+	 * - 書き込むのは {@link insertFollowingDoc} だけ。フォローを外したときは消さない
+	 *   （アカウント削除の CASCADE など、サービスを通らない削除があり、ここを追いかけきれないため）。
+	 *   代わりに、次に 0→1 になったときに上書きされる。
+	 * - そのため「今も追跡中か」はこの列ではなく following の行があるかで判断すること。
+	 * - 列を追加する前から続いているフォローは、マイグレーションで「今いるローカルフォロワーの最古のフォロー日時」で埋めた。
+	 *   実際の開始はそれより前のことがある（途中で入れ替わったフォロワーの分は分からない）。
+	 *
+	 * @see {@link UserRepository.getTrackingStatus} 読み出し側
+	 * @internal
+	 */
+	@Column('timestamp with time zone', {
+		nullable: true,
+		comment: 'When local followers of this remote user last went from 0 to 1 or more.',
+	})
+	public localFollowedSince: Date | null;
+
 	@Index()
 	@Column('timestamp with time zone', {
 		nullable: true,

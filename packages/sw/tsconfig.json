@@ -29,7 +29,8 @@
 		],
 		"lib": [
 			"esnext",
-			"webworker"
+			"webworker",
+			"webworker.iterable"
 		]
 	},
 	"compileOnSave": false,

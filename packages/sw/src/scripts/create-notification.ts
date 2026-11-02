@@ -13,7 +13,7 @@
 declare var self: ServiceWorkerGlobalScope;
 
 import { swLang } from "@/scripts/lang";
-import { pushNotificationDataMap } from "@/types";
+import type { pushNotificationDataMap, pushNotificationDataUnion } from "@/types";
 import getUserName from "@/scripts/get-user-name";
 import { I18n } from "@/scripts/i18n";
 import {
@@ -115,17 +115,21 @@ function resolveEffectiveTypeFromBody(body: {
  * @internal
  */
 function composeWithDisplayText<
-	T extends { body: { displayTitle?: string | null; displayBody?: string | null } },
+	T extends {
+		body: { displayTitle?: string | null; displayBody?: string | null };
+		dateTime: number;
+	},
 >(
 	data: T,
 	fallbackTitle: string,
-	t: (key: string, ...args: unknown[]) => string,
+	t: (key: string, args?: Record<string, string>) => string,
 	options: ComposeNotificationOptions,
 ): [string, NotificationOptions] {
 	const { actionRule = "r1", actions, clickMeta, ...rest } = options;
 	let notificationData = data;
 	if ((data as { type?: string }).type === "notification") {
-		const pushData = data as pushNotificationDataMap["notification"];
+		// NOTE: T は body の表示用フィールドしか保証しないため、unknown を経由して変換する
+		const pushData = data as unknown as pushNotificationDataMap["notification"];
 		const body = pushData.body as {
 			viewNoteId?: string;
 			type?: string;
@@ -139,7 +143,7 @@ function composeWithDisplayText<
 				viewNoteId:
 					clickMeta?.viewNoteId ?? body.viewNoteId,
 			},
-		);
+		) as unknown as T;
 	}
 	const display = getPushDisplayText(notificationData.body);
 	return [
@@ -152,9 +156,7 @@ function composeWithDisplayText<
 	];
 }
 
-export async function createNotification<
-	K extends keyof pushNotificationDataMap,
->(data: pushNotificationDataMap[K]) {
+export async function createNotification(data: pushNotificationDataUnion) {
 	const n = await composeNotification(data);
 
 	if (n) {
@@ -166,8 +168,8 @@ export async function createNotification<
 	}
 }
 
-async function composeNotification<K extends keyof pushNotificationDataMap>(
-	data: pushNotificationDataMap[K],
+async function composeNotification(
+	data: pushNotificationDataUnion,
 ): Promise<[string, NotificationOptions] | null> {
 	if (!swLang.i18n) swLang.fetchLocale();
 	const i18n = (await swLang.i18n) as I18n<any>;
@@ -175,9 +177,7 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 	switch (data.type) {
 		// 管理者からの一斉告知（プッシュ専用）
 		case "pushNotice": {
-			// NOTE: data は generic な pushNotificationDataMap[K] のため
-			// switch では絞り込めない。この case では型が確定しているので明示する。
-			const notice = data.body as pushNotificationDataMap["pushNotice"]["body"];
+			const notice = data.body;
 			return [
 				notice.title,
 				{
@@ -202,14 +202,17 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 			}];
 		*/
 		case "notification": {
-			// pack 上は `note` だが実体は unreadAntenna のことがある
-			const notificationType =
+			// pack 上は `note` だが実体は unreadAntenna のことがある。
+			// NOTE: 種別名だけ別変数にすると switch で body の型が絞り込めないため、
+			// 型も含めて unreadAntenna に寄せた body を作り、以降はそれで分岐する。
+			// showNotification に渡す `data` は元のまま（中身は変えない）。
+			const notificationBody: typeof data.body =
 				data.body.type === "note" &&
-				typeof (data.body as { reaction?: string }).reaction ===
-					"string" &&
-				(data.body as { reaction?: string }).reaction
-					? "unreadAntenna"
-					: data.body.type;
+				typeof data.body.reaction === "string" &&
+				data.body.reaction
+					? { ...data.body, type: "unreadAntenna" }
+					: data.body;
+			const notificationType = notificationBody.type;
 
 			/** notificationclick 用の実効種別メタ */
 			const buildClickMeta = (extra?: { viewNoteId?: string }) => ({
@@ -217,41 +220,41 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 				...extra,
 			});
 
-			switch (notificationType) {
+			switch (notificationBody.type) {
 				case "follow":
 					return composeWithDisplayText(
 						data,
 						t("_notification.youWereFollowed"),
 						t,
 						{
-							body: getUserName(data.body.user),
-							icon: data.body.user.avatarUrl,
+							body: getUserName(notificationBody.user),
+							icon: notificationBody.user.avatarUrl,
 							badge: notificationBadgeUrl("user-plus"),
-							tag: `follow:${data.body.userId}`,
+							tag: `follow:${notificationBody.userId}`,
 							data,
 							actions: r4Actions(
 								t,
-								hasValidNotificationUser(data.body.user),
+								hasValidNotificationUser(notificationBody.user),
 							),
 							actionRule: "r4",
 						},
 					);
 
 				case "userWasUnfollowed": {
-					const name = safeUserName(data.body.user);
+					const name = safeUserName(notificationBody.user);
 					return composeWithDisplayText(
 						data,
 						t("_notification.youWereUnfollowed"),
 						t,
 						{
 							body: name || undefined,
-							icon: data.body.user?.avatarUrl,
+							icon: notificationBody.user?.avatarUrl,
 							badge: notificationBadgeUrl("user-plus"),
-							tag: `unfollowed:${data.body.userId}`,
+							tag: `unfollowed:${notificationBody.userId}`,
 							data,
 							actions: r4Actions(
 								t,
-								hasValidNotificationUser(data.body.user),
+								hasValidNotificationUser(notificationBody.user),
 							),
 							actionRule: "r4",
 						},
@@ -259,20 +262,20 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 				}
 
 				case "wasForciblyUnfollowed": {
-					const name = safeUserName(data.body.user);
+					const name = safeUserName(notificationBody.user);
 					return composeWithDisplayText(
 						data,
 						t("_notification.youWereForciblyUnfollowed"),
 						t,
 						{
 							body: name || undefined,
-							icon: data.body.user?.avatarUrl,
+							icon: notificationBody.user?.avatarUrl,
 							badge: notificationBadgeUrl("clock"),
-							tag: `forcibly-unfollowed:${data.body.userId}`,
+							tag: `forcibly-unfollowed:${notificationBody.userId}`,
 							data,
 							actions: r4Actions(
 								t,
-								hasValidNotificationUser(data.body.user),
+								hasValidNotificationUser(notificationBody.user),
 							),
 							actionRule: "r4",
 						},
@@ -280,20 +283,20 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 				}
 
 				case "followRequestRejected": {
-					const name = safeUserName(data.body.user);
+					const name = safeUserName(notificationBody.user);
 					return composeWithDisplayText(
 						data,
 						t("_notification.youWereFollowRequestRejected"),
 						t,
 						{
 							body: name || undefined,
-							icon: data.body.user?.avatarUrl,
+							icon: notificationBody.user?.avatarUrl,
 							badge: notificationBadgeUrl("clock"),
-							tag: `follow-request-rejected:${data.body.userId}`,
+							tag: `follow-request-rejected:${notificationBody.userId}`,
 							data,
 							actions: r4Actions(
 								t,
-								hasValidNotificationUser(data.body.user),
+								hasValidNotificationUser(notificationBody.user),
 							),
 							actionRule: "r4",
 						},
@@ -301,20 +304,20 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 				}
 
 				case "wasBlocked": {
-					const name = safeUserName(data.body.user);
+					const name = safeUserName(notificationBody.user);
 					return composeWithDisplayText(
 						data,
 						t("_notification.youWereBlocked"),
 						t,
 						{
 							body: name || undefined,
-							icon: data.body.user?.avatarUrl,
+							icon: notificationBody.user?.avatarUrl,
 							badge: notificationBadgeUrl("null"),
-							tag: `blocked:${data.body.userId}`,
+							tag: `blocked:${notificationBody.userId}`,
 							data,
 							actions: r4Actions(
 								t,
-								hasValidNotificationUser(data.body.user),
+								hasValidNotificationUser(notificationBody.user),
 							),
 							actionRule: "r4",
 						},
@@ -322,20 +325,20 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 				}
 
 				case "wasUnblocked": {
-					const name = safeUserName(data.body.user);
+					const name = safeUserName(notificationBody.user);
 					return composeWithDisplayText(
 						data,
 						t("_notification.youWereUnblocked"),
 						t,
 						{
 							body: name || undefined,
-							icon: data.body.user?.avatarUrl,
+							icon: notificationBody.user?.avatarUrl,
 							badge: notificationBadgeUrl("check"),
-							tag: `unblocked:${data.body.userId}`,
+							tag: `unblocked:${notificationBody.userId}`,
 							data,
 							actions: r4Actions(
 								t,
-								hasValidNotificationUser(data.body.user),
+								hasValidNotificationUser(notificationBody.user),
 							),
 							actionRule: "r4",
 						},
@@ -343,22 +346,22 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 				}
 
 				case "followedAccountWasDeleted": {
-					const name = safeUserName(data.body.user);
+					const name = safeUserName(notificationBody.user);
 					return composeWithDisplayText(
 						data,
 						t("_notification.followedAccountWasDeleted", {
-							name: name || data.body.type,
+							name: name || notificationBody.type,
 						}),
 						t,
 						{
 							body: name || undefined,
-							icon: data.body.user?.avatarUrl,
+							icon: notificationBody.user?.avatarUrl,
 							badge: notificationBadgeUrl("null"),
-							tag: `followed-deleted:${data.body.userId}`,
+							tag: `followed-deleted:${notificationBody.userId}`,
 							data,
 							actions: r4Actions(
 								t,
-								hasValidNotificationUser(data.body.user),
+								hasValidNotificationUser(notificationBody.user),
 							),
 							actionRule: "r4",
 						},
@@ -369,16 +372,16 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 					return composeWithDisplayText(
 						data,
 						t("_notification.youGotMention", {
-							name: getUserName(data.body.user),
+							name: getUserName(notificationBody.user),
 						}),
 						t,
 						{
-							body: data.body.note.text || "",
-							icon: data.body.user.avatarUrl,
+							body: notificationBody.note.text || "",
+							icon: notificationBody.user.avatarUrl,
 							badge: notificationBadgeUrl("at"),
-							image: getPushNotificationImage(data.body),
-							tag: data.body.note?.id
-								? `note:${data.body.note.id}`
+							image: getPushNotificationImage(notificationBody),
+							tag: notificationBody.note?.id
+								? `note:${notificationBody.note.id}`
 								: undefined,
 							requireInteraction: true,
 							data,
@@ -390,16 +393,16 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 					return composeWithDisplayText(
 						data,
 						t("_notification.youGotReply", {
-							name: getUserName(data.body.user),
+							name: getUserName(notificationBody.user),
 						}),
 						t,
 						{
-							body: data.body.note.text || "",
-							icon: data.body.user.avatarUrl,
+							body: notificationBody.note.text || "",
+							icon: notificationBody.user.avatarUrl,
 							badge: notificationBadgeUrl("reply"),
-							image: getPushNotificationImage(data.body),
-							tag: data.body.note?.id
-								? `note:${data.body.note.id}`
+							image: getPushNotificationImage(notificationBody),
+							tag: notificationBody.note?.id
+								? `note:${notificationBody.note.id}`
 								: undefined,
 							requireInteraction: true,
 							data,
@@ -408,23 +411,23 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 					);
 
 				case "unreadAntenna": {
-					const noteUserId = data.body.note?.userId;
-					const noteUser = data.body.note?.user;
+					const noteUserId = notificationBody.note?.userId;
+					const noteUser = notificationBody.note?.user;
 					const bodyText =
 						noteUserId != null &&
-						data.body.user?.id != null &&
-						data.body.user.id !== noteUserId &&
+						notificationBody.user?.id != null &&
+						notificationBody.user.id !== noteUserId &&
 						noteUser != null
-							? `RT ${getUserName(noteUser)} : ${data.body.note.text ?? ""}`
-							: data.body.note?.text ?? "";
+							? `RT ${getUserName(noteUser)} : ${notificationBody.note.text ?? ""}`
+							: notificationBody.note?.text ?? "";
 					const antennaName =
-						(data.body as { antenna?: { name?: string } }).antenna?.name ??
-						data.body.reaction ??
+						(notificationBody as { antenna?: { name?: string } }).antenna?.name ??
+						notificationBody.reaction ??
 						"";
 					const antennaTagKey =
-						(data.body as { antenna?: { id?: string } }).antenna?.id ??
-						data.body.reaction ??
-						data.body.id;
+						(notificationBody as { antenna?: { id?: string } }).antenna?.id ??
+						notificationBody.reaction ??
+						notificationBody.id;
 					return composeWithDisplayText(
 						data,
 						t("_notification.youUnreadAntenna", {
@@ -432,10 +435,10 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 						}),
 						t,
 						{
-							body: `${getUserName(data.body.user)} : ${bodyText}` || "",
-							icon: data.body.user?.avatarUrl,
+							body: `${getUserName(notificationBody.user)} : ${bodyText}` || "",
+							icon: notificationBody.user?.avatarUrl,
 							badge: notificationBadgeUrl("comments"),
-							image: getPushNotificationImage(data.body),
+							image: getPushNotificationImage(notificationBody),
 							tag: `antenna:${antennaTagKey}`,
 							data,
 						},
@@ -445,38 +448,38 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 					return composeWithDisplayText(
 						data,
 						t("_notification.youRenoted", {
-							name: getUserName(data.body.user),
+							name: getUserName(notificationBody.user),
 						}),
 						t,
 						{
-							body: data.body.note.text || "",
-							icon: data.body.user.avatarUrl,
+							body: notificationBody.note.text || "",
+							icon: notificationBody.user.avatarUrl,
 							badge: notificationBadgeUrl("retweet"),
-							image: getPushNotificationImage(data.body),
-							tag: data.body.note?.id
-								? `note:${data.body.note.id}`
+							image: getPushNotificationImage(notificationBody),
+							tag: notificationBody.note?.id
+								? `note:${notificationBody.note.id}`
 								: undefined,
 							data,
-							actions: hasValidNotificationUser(data.body.user)
+							actions: hasValidNotificationUser(notificationBody.user)
 								? r5Actions(t)
 								: [viewAction(t)],
-							actionRule: hasValidNotificationUser(data.body.user)
+							actionRule: hasValidNotificationUser(notificationBody.user)
 								? "r5"
 								: "r1",
 							clickMeta: buildClickMeta({
 								viewNoteId:
 									(
-										data.body as {
+										notificationBody as {
 											viewNoteId?: string;
 											renoteTargetNoteId?: string;
 										}
 									).viewNoteId ??
 									(
-										data.body as {
+										notificationBody as {
 											renoteTargetNoteId?: string;
 										}
 									).renoteTargetNoteId ??
-									data.body.note?.renoteId,
+									notificationBody.note?.renoteId,
 							}),
 						},
 					);
@@ -485,16 +488,16 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 					return composeWithDisplayText(
 						data,
 						t("_notification.youGotQuote", {
-							name: getUserName(data.body.user),
+							name: getUserName(notificationBody.user),
 						}),
 						t,
 						{
-							body: data.body.note.text || "",
-							icon: data.body.user.avatarUrl,
+							body: notificationBody.note.text || "",
+							icon: notificationBody.user.avatarUrl,
 							badge: notificationBadgeUrl("quote-right"),
-							image: getPushNotificationImage(data.body),
-							tag: data.body.note?.id
-								? `note:${data.body.note.id}`
+							image: getPushNotificationImage(notificationBody),
+							tag: notificationBody.note?.id
+								? `note:${notificationBody.note.id}`
 								: undefined,
 							data,
 							actions: [replyAction(t)],
@@ -502,7 +505,7 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 					);
 
 				case "reaction": {
-					const reactionBody = data.body as typeof data.body & {
+					const reactionBody = notificationBody as typeof notificationBody & {
 						defaultReaction?: string | null;
 						reactionIconUrl?: string | null;
 						reactionBadgeUrl?: string | null;
@@ -531,7 +534,7 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 					// アバターへフォールバックする。
 					const icon =
 						resolveReactionNotificationIcon(reactionBody) ??
-						data.body.user.avatarUrl;
+						notificationBody.user.avatarUrl;
 
 					const badge = isDefault
 						? notificationBadgeUrl(DEFAULT_REACTION_BADGE)
@@ -546,35 +549,35 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 
 					return composeWithDisplayText(
 						data,
-						`${displayReaction} ${getUserName(data.body.user)}`,
+						`${displayReaction} ${getUserName(notificationBody.user)}`,
 						t,
 						{
-							body: data.body.note.text || "",
+							body: notificationBody.note.text || "",
 							icon,
-							tag: `reaction:${data.body.note.id}`,
+							tag: `reaction:${notificationBody.note.id}`,
 							badge,
 							// NOTE: リアクション画像は icon で表示するため image は付けない
 							data,
-							actions: hasValidNotificationUser(data.body.user)
+							actions: hasValidNotificationUser(notificationBody.user)
 								? r5Actions(t)
 								: [viewAction(t)],
-							actionRule: hasValidNotificationUser(data.body.user)
+							actionRule: hasValidNotificationUser(notificationBody.user)
 								? "r5"
 								: "r1",
 							clickMeta: buildClickMeta({
 								viewNoteId:
-									(data.body as { viewNoteId?: string })
-										.viewNoteId ?? data.body.note?.id,
+									(notificationBody as { viewNoteId?: string })
+										.viewNoteId ?? notificationBody.note?.id,
 							}),
 						},
 					);
 				}
 
 				case "pollVote": {
-					const triggerId = data.body.user?.id;
+					const triggerId = notificationBody.user?.id;
 					const posterId =
-						data.body.note?.userId ??
-						(data.body.note as { user?: { id?: string } } | undefined)
+						notificationBody.note?.userId ??
+						(notificationBody.note as { user?: { id?: string } } | undefined)
 							?.user?.id;
 					const showProfileAction =
 						triggerId != null &&
@@ -583,15 +586,15 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 					return composeWithDisplayText(
 						data,
 						t("_notification.youGotPoll", {
-							name: getUserName(data.body.user),
+							name: getUserName(notificationBody.user),
 						}),
 						t,
 						{
-							body: data.body.note.text || "",
-							icon: data.body.user.avatarUrl,
+							body: notificationBody.note.text || "",
+							icon: notificationBody.user.avatarUrl,
 							badge: notificationBadgeUrl("poll-h"),
-							tag: data.body.note?.id
-								? `note:${data.body.note.id}`
+							tag: notificationBody.note?.id
+								? `note:${notificationBody.note.id}`
 								: undefined,
 							data,
 							actions: showProfileAction
@@ -607,24 +610,24 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 						t("_notification.pollEnded"),
 						t,
 						{
-							body: data.body.note.text || "",
+							body: notificationBody.note.text || "",
 							badge: notificationBadgeUrl("clipboard-check-solid"),
-							tag: `poll:${data.body.note.id}`,
+							tag: `poll:${notificationBody.note.id}`,
 							data,
 						},
 					);
 
 				case "receiveFollowRequest": {
-					const hasUser = hasValidNotificationUser(data.body.user);
+					const hasUser = hasValidNotificationUser(notificationBody.user);
 					return composeWithDisplayText(
 						data,
 						t("_notification.youReceivedFollowRequest"),
 						t,
 						{
-							body: getUserName(data.body.user),
-							icon: data.body.user.avatarUrl,
+							body: getUserName(notificationBody.user),
+							icon: notificationBody.user.avatarUrl,
 							badge: notificationBadgeUrl("clock"),
-							tag: `follow-request:${data.body.userId}`,
+							tag: `follow-request:${notificationBody.userId}`,
 							requireInteraction: true,
 							data,
 							actions: [
@@ -642,14 +645,14 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 						t("_notification.yourFollowRequestAccepted"),
 						t,
 						{
-							body: getUserName(data.body.user),
-							icon: data.body.user.avatarUrl,
+							body: getUserName(notificationBody.user),
+							icon: notificationBody.user.avatarUrl,
 							badge: notificationBadgeUrl("check"),
-							tag: `follow-accepted:${data.body.userId}`,
+							tag: `follow-accepted:${notificationBody.userId}`,
 							data,
 							actions: r4Actions(
 								t,
-								hasValidNotificationUser(data.body.user),
+								hasValidNotificationUser(notificationBody.user),
 							),
 							actionRule: "r4",
 						},
@@ -659,13 +662,13 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 					return composeWithDisplayText(
 						data,
 						t("_notification.youWereInvitedToGroup", {
-							userName: getUserName(data.body.user),
+							userName: getUserName(notificationBody.user),
 						}),
 						t,
 						{
-							body: data.body.invitation.group.name,
+							body: notificationBody.invitation.group.name,
 							badge: notificationBadgeUrl("id-card-alt"),
-							tag: `group-invite:${data.body.invitation.id}`,
+							tag: `group-invite:${notificationBody.invitation.id}`,
 							requireInteraction: true,
 							data,
 							actions: [
@@ -684,18 +687,19 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 
 				case "app": {
 					const isPushTest =
-						(data.body as { isPushTest?: boolean }).isPushTest === true;
-					let notificationBody: string | undefined =
-						data.body.header && data.body.body
-							? data.body.body
+						(notificationBody as { isPushTest?: boolean }).isPushTest === true;
+					// 通知本文。header があるときだけ body を本文として出す
+					let appBodyText: string | undefined =
+						notificationBody.header && notificationBody.body
+							? notificationBody.body
 							: undefined;
 					if (isPushTest) {
 						const swVersionLine = `SW: ${_VERSION_}`;
-						notificationBody = notificationBody
-							? `${notificationBody}\n${swVersionLine}`
+						appBodyText = appBodyText
+							? `${appBodyText}\n${swVersionLine}`
 							: swVersionLine;
 					}
-					const subIcon = (data.body as { subIcon?: string | null })
+					const subIcon = (notificationBody as { subIcon?: string | null })
 						.subIcon;
 					const badge =
 						typeof subIcon === "string" &&
@@ -704,11 +708,12 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 							: undefined;
 					return composeWithDisplayText(
 						data,
-						data.body.header || data.body.body,
+						notificationBody.header || notificationBody.body,
 						t,
 						{
-							body: notificationBody,
-							icon: data.body.icon,
+							body: appBodyText,
+							// icon は null で届くことがあるが、NotificationOptions は undefined しか受けない
+							icon: notificationBody.icon ?? undefined,
 							badge,
 							tag: isPushTest ? "push-test" : undefined,
 							data,
@@ -718,7 +723,7 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 
 				case "emojiRequest": {
 					// 絵文字申請。管理者宛ては申請者のアイコン、申請者宛ては申請した絵文字の画像を出す
-					const body = data.body as {
+					const body = notificationBody as {
 						header?: string | null;
 						body?: string | null;
 						icon?: string | null;
@@ -726,13 +731,9 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 						emojiRequest?: { kind: string; id: string } | null;
 					};
 					return composeWithDisplayText(
-						// 表示用の上書き文言（displayTitle など）を読むための型にそろえる
-						data as pushNotificationDataMap["notification"] & {
-							body: { displayTitle?: string | null; displayBody?: string | null };
-						},
+						data,
 						body.header || body.body || "",
-						// 翻訳関数の型も composeWithDisplayText の引数にそろえる（中身は同じ）
-						t as (key: string, ...args: unknown[]) => string,
+						t,
 						{
 							body: body.header ? (body.body ?? undefined) : undefined,
 							icon: body.user?.avatarUrl ?? body.icon ?? undefined,
@@ -747,30 +748,30 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 				case "badge":
 					return composeWithDisplayText(
 						data,
-						data.body.header || data.body.body,
+						notificationBody.header || notificationBody.body,
 						t,
 						{
-							body: data.body.body,
+							body: notificationBody.body,
 							badge: notificationBadgeUrl("star"),
-							tag: `badge:${data.body.id}`,
+							tag: `badge:${notificationBody.id}`,
 							data,
 						},
 					);
 
 				default: {
 					// 未対応種別・古い SW でも汎用通知を出す（compose 失敗を防ぐ）
-					const name = safeUserName(data.body.user);
+					const name = safeUserName(notificationBody.user);
 					const notifType =
-						typeof data.body.type === "string" ? data.body.type : "";
+						typeof notificationBody.type === "string" ? notificationBody.type : "";
 					return composeWithDisplayText(
 						data,
 						t("_notification.emptyPushNotificationMessage"),
 						t,
 						{
 							body: name || notifType || undefined,
-							icon: data.body.user?.avatarUrl,
-							tag: data.body.id
-								? `notification:${data.body.id}`
+							icon: notificationBody.user?.avatarUrl,
+							tag: notificationBody.id
+								? `notification:${notificationBody.id}`
 								: notifType
 									? `notification-type:${notifType}`
 									: undefined,
@@ -803,7 +804,8 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(
 			return composeWithDisplayText(
 				data,
 				t("_notification.youGotMessagingMessageFromGroup", {
-					name: data.body.group.name,
+					// groupId が null でなければ group は付くが、型上は省略可なので空文字へ寄せる
+					name: data.body.group?.name ?? "",
 				}),
 				t,
 				{

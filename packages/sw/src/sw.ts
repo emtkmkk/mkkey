@@ -23,7 +23,7 @@ import {
 import { FETCH_TIMEOUT_MS } from "@/const";
 import { swLang } from "@/scripts/lang";
 import { swNotificationRead } from "@/scripts/notification-read";
-import type { pushNotificationDataMap } from "@/types";
+import type { pushNotificationDataUnion } from "@/types";
 import * as swos from "@/scripts/operations";
 import {
 	resolveNotificationProfileAction,
@@ -251,8 +251,7 @@ self.addEventListener("fetch", (ev) => {
 self.addEventListener("push", (ev) => {
 	ev.waitUntil(
 		(async () => {
-			let data: pushNotificationDataMap[keyof pushNotificationDataMap] | null =
-				null;
+			let data: pushNotificationDataUnion | null = null;
 			try {
 				data = ev.data?.json() ?? null;
 			} catch (err) {
@@ -353,7 +352,9 @@ self.addEventListener("push", (ev) => {
 });
 
 self.addEventListener("pushsubscriptionchange", (ev) => {
-	ev.waitUntil(
+	// NOTE: lib.webworker では pushsubscriptionchange が素の Event 型なので、
+	// 実際の仕様どおり ExtendableEvent として扱う
+	(ev as ExtendableEvent).waitUntil(
 		(async () => {
 			if (_DEV_ || swDeveloperMode) {
 				console.info("[mkkey-push] pushsubscriptionchange");
@@ -383,9 +384,7 @@ self.addEventListener("pushsubscriptionchange", (ev) => {
 
 self.addEventListener(
 	"notificationclick",
-	<K extends keyof pushNotificationDataMap>(
-		ev: ServiceWorkerGlobalScopeEventMap["notificationclick"],
-	) => {
+	(ev: ServiceWorkerGlobalScopeEventMap["notificationclick"]) => {
 		ev.waitUntil(
 			(async () => {
 				if (_DEV_) {
@@ -393,7 +392,7 @@ self.addEventListener(
 				}
 
 				const { action, notification } = ev;
-				const data: pushNotificationDataMap[K] = notification.data;
+				const data: pushNotificationDataUnion = notification.data;
 				const { userId: id } = data;
 				let client: WindowClient | null = null;
 
@@ -465,10 +464,8 @@ self.addEventListener(
 
 self.addEventListener(
 	"notificationclose",
-	<K extends keyof pushNotificationDataMap>(
-		ev: ServiceWorkerGlobalScopeEventMap["notificationclose"],
-	) => {
-		const data: pushNotificationDataMap[K] = ev.notification.data;
+	(ev: ServiceWorkerGlobalScopeEventMap["notificationclose"]) => {
+		const data: pushNotificationDataUnion = ev.notification.data;
 
 		if (data.type === "notification") {
 			swNotificationRead.then((that) => that.read(data));

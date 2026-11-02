@@ -62,7 +62,8 @@ export async function resetAppBadgeReceivedCount(userId: string): Promise<void> 
 	await set(appBadgeReceivedCountKey(userId), 0);
 }
 
-type AppBadgeNavigator = Navigator & {
+// NOTE: Service Worker 内の navigator は WorkerNavigator（lib.webworker）
+type AppBadgeNavigator = WorkerNavigator & {
 	clearAppBadge?: () => Promise<void>;
 	setAppBadge?: (count: number) => Promise<void>;
 };

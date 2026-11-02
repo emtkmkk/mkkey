@@ -47,12 +47,6 @@ export function getEffectiveNotificationType(
 }
 
 /**
- * R5 の「表示」action で開く noteId を返す。
- *
- * @param body - 通知 body
- * @internal
- */
-/**
  * showNotification に渡す data にクリック用メタを付与する。
  *
  * @param data - 元の push データ
@@ -65,14 +59,14 @@ export function withNotificationClickMeta(
 	effectiveType: string,
 	meta?: { viewNoteId?: string },
 ): NotificationPushData {
-	return {
-		...data,
-		body: {
-			...data.body,
-			_clickEffectiveType: effectiveType,
-			...(meta?.viewNoteId != null ? { viewNoteId: meta.viewNoteId } : {}),
-		} as NotificationPushData["body"],
+	// メタ付きの body 型として組み立てる。元の body 型に余分なプロパティが乗った形なので、
+	// そのまま NotificationPushData の body として代入できる（キャスト不要）
+	const body: NotificationClickMetaBody = {
+		...data.body,
+		_clickEffectiveType: effectiveType,
+		...(meta?.viewNoteId != null ? { viewNoteId: meta.viewNoteId } : {}),
 	};
+	return { ...data, body };
 }
 
 export function resolveR5ViewNoteId(

@@ -38,7 +38,7 @@
                                 imageContain: !defaultStore.state.thumbnailCover,
                                 imageCover: defaultStore.state.thumbnailCover,
                         }"
-                        :href="image.url"
+                        :href="href"
                         :title="image.name"
                         :target="defaultStore.state.imageNewTab ? '_blank' : undefined"
                         @click="onAnchorClick"
@@ -70,6 +70,20 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * ノート添付の画像 1 枚。閲覧注意の隠し表示と、クリック時の拡大（または新しいタブで開く）を担う。
+ *
+ * @remarks
+ * - 一覧に出す画像（`src`）はサムネイル。`loadRawImages` か `raw` のときだけ本画像を使う。
+ * - リンク先（`href`）は本画像。`loadOriginalImages`（拡大時にオリジナル画質）が有効なら
+ *   `originalUrl` を使い、PhotoSwipe の拡大表示（{@link ../components/MkMediaList.vue}）と同じ画像が開くようにする。
+ *   以前は常に `url`（Web 公開用の縮小画像）だったため、設定を有効にしても新しいタブでは縮小画像が開いていた。
+ * - `imageNewTab` が無効なときはアンカーの既定動作を止め、親の PhotoSwipe に任せる。
+ *
+ * @public
+ */
 import { watch } from "vue";
 import type * as misskey from "calckey-js";
 import { getStaticImageUrl } from "@/scripts/get-static-image-url";
@@ -93,6 +107,21 @@ const url =
 		: defaultStore.state.disableShowingAnimatedImages
 		? getStaticImageUrl(props.image.thumbnailUrl)
 		: props.image.thumbnailUrl;
+
+/**
+ * クリック時に開く画像の URL
+ *
+ * @remarks
+ * `loadOriginalImages` が有効ならオリジナル画質（`originalUrl`）、無ければ本画像（`url`）。
+ * `originalUrl` はオリジナルと Web 公開用が同じファイルのとき `null` になるので、`url` に落とす。
+ *
+ * @internal
+ */
+const href = $computed(() =>
+	defaultStore.state.loadOriginalImages
+		? props.image.originalUrl || props.image.url
+		: props.image.url,
+);
 
 async function show() {
 	if (props.image.isSensitive && defaultStore.state.openPopupNsfwToCarrior && isMobileData()) {

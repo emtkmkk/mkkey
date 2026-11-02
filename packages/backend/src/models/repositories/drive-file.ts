@@ -63,7 +63,27 @@ export const DriveFileRepository = db.getRepository(DriveFile).extend({
 		return file.properties;
 	},
 
-	getPublicUrl(file: DriveFile, thumbnail = false, original = false): string | null {
+	/**
+	 * ファイルの公開 URL を返す
+	 *
+	 * @remarks
+	 * リモートファイルで外部メディアプロキシが設定されているときは、プロキシ経由の URL を組み立てる。
+	 * - `thumbnail` が `true`: 縮小した静止画（`static=1`）。GIF / APNG はアニメーションを保つため縮小指定なし。
+	 * - `thumbnail` が `"avatar"`: アニメーションを保ったまま縮小（`avatar=1`、320px）。
+	 *   ユーザーアイコン用。`static=1` だとアニメーション WebP / APNG のアイコンが止まってしまうため分けている。
+	 * - それ以外: 本画像（長辺 2048 に縮小されたもの）。
+	 *
+	 * @param file - 対象ファイル
+	 * @param thumbnail - サムネイル URL が欲しいか。`"avatar"` ならユーザーアイコン向け
+	 * @param original - オリジナル（Web 公開用でない方）が欲しいか。無ければ `null`
+	 * @returns 公開 URL。返せないときは `null`
+	 * @public
+	 */
+	getPublicUrl(
+		file: DriveFile,
+		thumbnail: boolean | "avatar" = false,
+		original = false,
+	): string | null {
 		// リモートかつメディアプロキシ
 		// 複数設定されているときは、ファイル ID で振り分けて同じファイルは同じプロキシへ送る
 		const mediaProxy = pickMediaProxy(file.id);
@@ -74,13 +94,15 @@ export const DriveFileRepository = db.getRepository(DriveFile).extend({
 			// 本画像（長辺 2048）がそのまま返っていた（本番の 2 プロキシで実測）。
 			// GIF / APNG は静止画化するとアニメーションが止まるので、ローカルの GIF
 			// （サムネイルを作らず本画像を使う）と揃えて縮小指定なしで返す。
+			// ユーザーアイコンは `avatar=1`。アニメーションを保ったまま 320px に縮小される。
 			const useStatic =
-				thumbnail && !ANIMATED_IMAGE_TYPES.includes(file.type);
+				thumbnail === true && !ANIMATED_IMAGE_TYPES.includes(file.type);
 			return appendQuery(
 				mediaProxy,
 				query({
 					url: file.uri,
 					static: useStatic ? "1" : undefined,
+					avatar: thumbnail === "avatar" ? "1" : undefined,
 				}),
 			);
 		}

@@ -816,13 +816,13 @@ FROM "user" u WHERE u."id" = $1`,
 	async getAvatarUrl(user: User): Promise<string> {
 		if (user.avatar) {
 			return (
-				DriveFiles.getPublicUrl(user.avatar, true) ||
+				DriveFiles.getPublicUrl(user.avatar, "avatar") ||
 				this.getIdenticonUrl(user.id)
 			);
 		} else if (user.avatarId) {
 			const avatar = await DriveFiles.findOneByOrFail({ id: user.avatarId });
 			return (
-				DriveFiles.getPublicUrl(avatar, true) || this.getIdenticonUrl(user.id)
+				DriveFiles.getPublicUrl(avatar, "avatar") || this.getIdenticonUrl(user.id)
 			);
 		} else {
 			return this.getIdenticonUrl(user.id);
@@ -832,7 +832,7 @@ FROM "user" u WHERE u."id" = $1`,
 	getAvatarUrlSync(user: User): string {
 		if (user.avatar) {
 			return (
-				DriveFiles.getPublicUrl(user.avatar, true) ||
+				DriveFiles.getPublicUrl(user.avatar, "avatar") ||
 				this.getIdenticonUrl(user.id)
 			);
 		} else {

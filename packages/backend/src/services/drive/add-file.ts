@@ -339,6 +339,12 @@ export async function generateAlts(
 			};
 		}
 
+		// 元画像をそのまま Web 公開用として使えるか
+		// NOTE: 一辺が 16383 px を超える画像は、画素数が少なくても Web 公開用を作る。
+		// 多くの端末（特にスマートフォン）の GPU は 16384 px を超えるテクスチャを扱えず、
+		// 元画像をそのまま見せると真っ白になることがあるため、縮小版を表示に使う。
+		// （16383 は WebP の最大辺長でもある。元画像は {@link misc/get-file-info} で
+		//   画像のまま受け入れており、ここで縮小版を保証する。）
 		satisfyWebpublic = !!(
 			type !== "image/svg+xml" &&
 			type !== "image/webp" &&
@@ -349,9 +355,9 @@ export async function generateAlts(
 				metadata.tifftagPhotoshop
 			) &&
 			metadata.width &&
-			metadata.width <= 524288 &&
+			metadata.width <= 16383 &&
 			metadata.height &&
-			metadata.height <= 524288 &&
+			metadata.height <= 16383 &&
 			metadata.width * metadata.height <= 2048 * 2048
 		);
 	} catch (err) {

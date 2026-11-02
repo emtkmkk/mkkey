@@ -118,10 +118,17 @@ export async function getFileInfo(
 			height = imageSize.height;
 			orientation = imageSize.orientation;
 
-			// 制限を超えている画像は octet-stream にする
+			// NOTE: 一辺が 16383 px を超える画像も画像として扱う。
+			// 以前はここで octet-stream に落としていたため、縦長のスクリーンショット
+			// （例: 880×17264 の PNG）が「画像でないファイル」として保存され、
+			// サムネイルも Web 公開用画像も作られず、投稿でも画像として表示されなかった。
+			// 16383 は WebP の最大辺長だが、サムネイル・Web 公開用は必ず 2048 px 以下に
+			// 縮小してから WebP にするので、元画像の大きさは問題にならない。
+			// 元画像をそのままブラウザに見せると端末によって描画できないことがあるため、
+			// その対策は Web 公開用画像を必ず作ることで行う
+			// （{@link services/drive/add-file#generateAlts} の `satisfyWebpublic`）。
 			if (imageSize.width > 16383 || imageSize.height > 16383) {
-				warnings.push("image dimensions exceeds limits");
-				type = TYPE_OCTET_STREAM;
+				warnings.push("image dimensions exceeds 16383px (kept as image)");
 			}
 		} else {
 			warnings.push(`unsupported unit type: ${imageSize.wUnits}`);

@@ -13,6 +13,23 @@ import { Users, DriveFolders } from "../index.js";
 import { deepClone } from "@/misc/clone.js";
 import { pickMediaProxy } from "@/misc/media-proxy.js";
 
+/**
+ * アニメーションを持ちうる画像の MIME タイプ
+ *
+ * @remarks
+ * 外部メディアプロキシのサムネイル（`static=1`）は静止画になるため、
+ * これらはサムネイルでも縮小指定を付けずに本画像を使う。
+ * アニメーション WebP / AVIF は静止画のものと MIME で区別できないので含めていない
+ * （サムネイルでは止まった絵になる）。
+ *
+ * @internal
+ */
+const ANIMATED_IMAGE_TYPES = [
+	"image/gif",
+	"image/apng",
+	"image/vnd.mozilla.apng",
+];
+
 type PackOptions = {
 	detail?: boolean;
 	self?: boolean;
@@ -51,11 +68,19 @@ export const DriveFileRepository = db.getRepository(DriveFile).extend({
 		// 複数設定されているときは、ファイル ID で振り分けて同じファイルは同じプロキシへ送る
 		const mediaProxy = pickMediaProxy(file.id);
 		if (file.uri != null && file.userHost != null && mediaProxy != null) {
+			// NOTE: サムネイルは `static=1` で頼む。Misskey 系メディアプロキシが解釈する
+			// 縮小指定はこれだけ（498×422 に収めた静止画）。以前は `thumbnail=1` を
+			// 付けていたが、プロキシ側はこれを知らず無視するため、サムネイルのつもりで
+			// 本画像（長辺 2048）がそのまま返っていた（本番の 2 プロキシで実測）。
+			// GIF / APNG は静止画化するとアニメーションが止まるので、ローカルの GIF
+			// （サムネイルを作らず本画像を使う）と揃えて縮小指定なしで返す。
+			const useStatic =
+				thumbnail && !ANIMATED_IMAGE_TYPES.includes(file.type);
 			return appendQuery(
 				mediaProxy,
 				query({
 					url: file.uri,
-					thumbnail: thumbnail ? "1" : undefined,
+					static: useStatic ? "1" : undefined,
 				}),
 			);
 		}

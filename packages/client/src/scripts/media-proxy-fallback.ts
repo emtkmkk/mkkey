@@ -40,8 +40,8 @@ const PROXY_ERROR_IMAGE_SIZE = 256;
  *
  * @remarks
  * - 外部プロキシの URL なら、残りのプロキシを設定順に並べ、最後にこのサーバの `/proxy` を足す。
- * - `thumbnail` や `static` などの指定は、外部プロキシにはそのまま引き継ぐ。
- *   このサーバの `/proxy` は `thumbnail` を扱えないので、`static` だけ引き継ぐ。
+ * - `static` などの指定は、外部プロキシにはそのまま引き継ぐ。
+ *   このサーバの `/proxy` には `static` だけ引き継ぐ（それ以外の指定は扱えない）。
  * - 外部プロキシの URL でないもの（このサーバの画像、すでに `/proxy` のものなど）は空配列を返す。
  *
  * @param src - 読み込みに失敗した画像の URL
@@ -49,10 +49,10 @@ const PROXY_ERROR_IMAGE_SIZE = 256;
  *
  * @example
  * ```ts
- * getMediaFallbackUrls("https://proxy-a.example?url=https%3A%2F%2Fr.example%2Fa.webp&thumbnail=1");
+ * getMediaFallbackUrls("https://proxy-a.example?url=https%3A%2F%2Fr.example%2Fa.webp&static=1");
  * // => [
- * //   "https://proxy-b.example?url=https%3A%2F%2Fr.example%2Fa.webp&thumbnail=1",
- * //   "https://このサーバ/proxy/image.webp?url=https%3A%2F%2Fr.example%2Fa.webp",
+ * //   "https://proxy-b.example?url=https%3A%2F%2Fr.example%2Fa.webp&static=1",
+ * //   "https://このサーバ/proxy/image.webp?url=https%3A%2F%2Fr.example%2Fa.webp&static=1",
  * // ]
  * ```
  * @internal

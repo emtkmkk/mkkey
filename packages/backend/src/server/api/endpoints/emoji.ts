@@ -117,8 +117,10 @@ async function fetchRemoteEmoji(name: string, host: string) {
 }
 
 export default define(meta, paramDef, async (ps, me) => {
-	const isLocalHost = ps.host == null || ps.host === "" || ps.host === ".";
-	const whereHost = isLocalHost ? IsNull() : toPuny(ps.host);
+	// ローカルを表す書き方（未指定 / 空文字 / "."）は null に寄せ、それ以外をリモートホストとして扱う
+	const remoteHost =
+		ps.host == null || ps.host === "" || ps.host === "." ? null : ps.host;
+	const whereHost = remoteHost == null ? IsNull() : toPuny(remoteHost);
 
 	let emoji = await Emojis.findOne({
 		where: {
@@ -128,8 +130,8 @@ export default define(meta, paramDef, async (ps, me) => {
 	});
 
 	// 未知リモート絵文字の照会は認証済みユーザー時のみ行う
-	if (!emoji && !isLocalHost && me) {
-		emoji = await fetchRemoteEmoji(ps.name, ps.host);
+	if (!emoji && remoteHost != null && me) {
+		emoji = await fetchRemoteEmoji(ps.name, remoteHost);
 	}
 
 	if (!emoji) {

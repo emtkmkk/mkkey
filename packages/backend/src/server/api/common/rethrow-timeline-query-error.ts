@@ -35,7 +35,8 @@ function serializeTimelineCaughtError(caught: unknown) {
 		const ownProperties = Object.fromEntries(
 			Object.getOwnPropertyNames(caught).map((key) => [
 				key,
-				(caught as Record<string, unknown>)[key],
+				// Error には添字シグネチャが無いため、添字アクセス用に交差型として扱う
+				(caught as Error & Record<string, unknown>)[key],
 			]),
 		);
 		return {

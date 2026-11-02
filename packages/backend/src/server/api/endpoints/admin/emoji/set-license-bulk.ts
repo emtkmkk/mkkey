@@ -73,7 +73,8 @@ export const paramDef = {
 		allowedUserIds: {
 			type: "array",
 			items: { type: "string", format: "misskey:id" },
-			nullable: true,
+			description:
+				"usageVisibility が user のとき使用を許可するユーザー ID。カラムが NOT NULL のため null は受け付けない（全解除は空配列）。",
 		},
 		motifUserId: { type: "string", format: "misskey:id", nullable: true },
 		motifUserMode: {

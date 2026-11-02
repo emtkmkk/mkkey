@@ -45,7 +45,8 @@ export const meta = {
 				},
 				imageUrl: {
 					type: "string",
-					optional: false,
+					// 未認証ユーザー向けの固定メッセージには含まれないため optional
+					optional: true,
 					nullable: true,
 				},
 				isRead: {

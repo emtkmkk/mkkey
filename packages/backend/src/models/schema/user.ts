@@ -130,8 +130,10 @@ export const packedUserLiteSchema = {
 			type: "string",
 			format: "url",
 			nullable: true,
-			optional: false,
-			description: "オンライン状態。",
+			// ノートに載るユーザーは閲覧者ごとの値を外した固定プロフィールをキャッシュしているため、
+			// 未ログイン閲覧時はこのキーが無い（repositories/note.ts の stripVolatileUserFields 参照）
+			optional: true,
+			description: "オンライン状態。未ログインで見たノートのユーザーには含まれない。",
 			enum: [
 				"unknown",
 				"online",
@@ -143,8 +145,224 @@ export const packedUserLiteSchema = {
 				"sleeping",
 				"deep-sleeping",
 				"super-sleeping",
+				"never-sleeping",
 			],
 		},
+		notesCount: {
+			type: "number",
+			nullable: false,
+			optional: true,
+			description: "投稿数。",
+		},
+		fixedName: {
+			type: "string",
+			nullable: true,
+			optional: true,
+			description: "ユーザーが固定した表示名。未設定は null。",
+		},
+		// 閲覧者が付けたメモ・独自の表示名。無いときはキー自体を省く
+		memo: {
+			type: "string",
+			nullable: false,
+			optional: true,
+			description: "閲覧者がこのユーザーに付けたメモ。無いときは省略。",
+		},
+		originalName: {
+			type: "string",
+			nullable: true,
+			optional: true,
+			description:
+				"閲覧者が独自の表示名を付けているとき、name に入る前の元の表示名。付けていないときは省略。",
+		},
+		patron: {
+			type: "boolean",
+			nullable: false,
+			optional: true,
+			description: "ドライブ容量が上乗せされている支援者か（ローカルユーザーのみ）。",
+		},
+		monthlySupporter: {
+			type: "boolean",
+			nullable: false,
+			optional: true,
+			description: "今月の支援者か（ローカルユーザーのみ）。",
+		},
+		badgeRoles: {
+			type: "array",
+			nullable: false,
+			optional: true,
+			description: "名前の横に出すバッジ（ローカルユーザーのみ）。",
+			items: {
+				type: "object",
+				nullable: false,
+				optional: false,
+				properties: {
+					name: {
+						type: "string",
+						nullable: false,
+						optional: false,
+					},
+					iconUrl: {
+						type: "string",
+						nullable: true,
+						optional: false,
+					},
+					displayOrder: {
+						type: "number",
+						nullable: false,
+						optional: false,
+					},
+				},
+			},
+		},
+		instance: {
+			type: "object",
+			nullable: false,
+			optional: true,
+			description: "リモートユーザーの所属サーバー情報。ローカルユーザーは省略。",
+			properties: {
+				name: {
+					type: "string",
+					nullable: true,
+					optional: false,
+				},
+				host: {
+					type: "string",
+					nullable: false,
+					optional: false,
+				},
+				softwareName: {
+					type: "string",
+					nullable: true,
+					optional: false,
+				},
+				softwareVersion: {
+					type: "string",
+					nullable: true,
+					optional: false,
+				},
+				iconUrl: {
+					type: "string",
+					nullable: true,
+					optional: false,
+				},
+				faviconUrl: {
+					type: "string",
+					nullable: true,
+					optional: false,
+				},
+				themeColor: {
+					type: "string",
+					nullable: true,
+					optional: false,
+				},
+				maxReactionsPerAccount: {
+					type: "number",
+					nullable: false,
+					optional: false,
+				},
+			},
+		},
+		//#region relations
+		// NOTE: 閲覧者との関係は detail の有無に関係なく（relation オプションがあれば）付くので、
+		// UserDetailedNotMeOnly ではなく UserLite 側に置く（repositories/user.ts の pack 参照）
+		isFollowing: {
+			type: "boolean",
+			nullable: false,
+			optional: true,
+		},
+		isFollowed: {
+			type: "boolean",
+			nullable: false,
+			optional: true,
+		},
+		hasPendingFollowRequestFromYou: {
+			type: "boolean",
+			nullable: false,
+			optional: true,
+		},
+		needsFollowReconfirm: {
+			type: "boolean",
+			nullable: false,
+			optional: true,
+		},
+		followReconfirmReason: {
+			type: "string",
+			nullable: true,
+			optional: true,
+			enum: ["followRequestRejected", "wasForciblyUnfollowed"],
+		},
+		hasPendingFollowRequestToYou: {
+			type: "boolean",
+			nullable: false,
+			optional: true,
+		},
+		isBlocking: {
+			type: "boolean",
+			nullable: false,
+			optional: true,
+		},
+		isBlocked: {
+			type: "boolean",
+			nullable: false,
+			optional: true,
+		},
+		isMuted: {
+			type: "boolean",
+			nullable: false,
+			optional: true,
+		},
+		isRenoteMuted: {
+			type: "boolean",
+			nullable: false,
+			optional: true,
+		},
+		isPushMuted: {
+			type: "boolean",
+			nullable: false,
+			optional: true,
+		},
+		isFollowBlocking: {
+			type: "boolean",
+			nullable: false,
+			optional: true,
+		},
+		muteTypes: {
+			type: "array",
+			nullable: false,
+			optional: true,
+			items: {
+				type: "string",
+				enum: [
+					"all",
+					"note",
+					"renote",
+					"notification",
+					"push",
+					"reaction",
+					"message",
+					"follow",
+				],
+			},
+		},
+		muteExpiresAt: {
+			type: "string",
+			format: "date-time",
+			nullable: true,
+			optional: true,
+		},
+		// 閲覧者を招待した人なら true。そうでなければキー自体を省く
+		isInviter: {
+			type: "boolean",
+			nullable: false,
+			optional: true,
+		},
+		// フォロー中のときだけ付く、フォローされた人向けのメッセージ
+		followedMessage: {
+			type: "string",
+			nullable: true,
+			optional: true,
+		},
+		//#endregion
 	},
 } as const;
 
@@ -373,93 +591,6 @@ export const packedUserDetailedNotMeOnlySchema = {
 			optional: false,
 			default: false,
 		},
-		//#region relations
-		isFollowing: {
-			type: "boolean",
-			nullable: false,
-			optional: true,
-		},
-		isFollowed: {
-			type: "boolean",
-			nullable: false,
-			optional: true,
-		},
-		hasPendingFollowRequestFromYou: {
-			type: "boolean",
-			nullable: false,
-			optional: true,
-		},
-		needsFollowReconfirm: {
-			type: "boolean",
-			nullable: false,
-			optional: true,
-		},
-		followReconfirmReason: {
-			type: "string",
-			nullable: true,
-			optional: true,
-			enum: ["followRequestRejected", "wasForciblyUnfollowed"],
-		},
-		hasPendingFollowRequestToYou: {
-			type: "boolean",
-			nullable: false,
-			optional: true,
-		},
-		isBlocking: {
-			type: "boolean",
-			nullable: false,
-			optional: true,
-		},
-		isBlocked: {
-			type: "boolean",
-			nullable: false,
-			optional: true,
-		},
-		isMuted: {
-			type: "boolean",
-			nullable: false,
-			optional: true,
-		},
-		isRenoteMuted: {
-			type: "boolean",
-			nullable: false,
-			optional: true,
-		},
-		isPushMuted: {
-			type: "boolean",
-			nullable: false,
-			optional: true,
-		},
-		isFollowBlocking: {
-			type: "boolean",
-			nullable: false,
-			optional: true,
-		},
-		muteTypes: {
-			type: "array",
-			nullable: false,
-			optional: true,
-			items: {
-				type: "string",
-				enum: [
-					"all",
-					"note",
-					"renote",
-					"notification",
-					"push",
-					"reaction",
-					"message",
-					"follow",
-				],
-			},
-		},
-		muteExpiresAt: {
-			type: "string",
-			format: "date-time",
-			nullable: true,
-			optional: true,
-		},
-		//#endregion
 	},
 } as const;
 

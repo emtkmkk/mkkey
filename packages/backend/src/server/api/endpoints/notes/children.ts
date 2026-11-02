@@ -24,7 +24,7 @@ export const meta = {
 			ref: "Note",
 		},
 	},
-};
+} as const;
 
 export const paramDef = {
 	type: "object",
@@ -50,6 +50,12 @@ export const paramDef = {
 			type: "string",
 			format: "misskey:id",
 			description: "この ID より古いものだけ取得する場合に指定。",
+		},
+		depth: {
+			type: "integer",
+			minimum: 1,
+			description:
+				"返信を何階層まで辿るか。省略時は DB 関数 note_replies の既定値に従う（既定値をここで補わないのは従来挙動を変えないため）。",
 		},
 	},
 	required: ["noteId"],

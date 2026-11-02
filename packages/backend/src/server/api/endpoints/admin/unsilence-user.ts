@@ -15,6 +15,11 @@ export const paramDef = {
 	type: "object",
 	properties: {
 		userId: { type: "string", format: "misskey:id" },
+		mini: {
+			type: "boolean",
+			description:
+				"true のとき通常のサイレンスではなく「ミニサイレンス」を解除する。クライアントの user-info 画面から送られる。",
+		},
 	},
 	required: ["userId"],
 } as const;

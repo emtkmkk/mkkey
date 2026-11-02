@@ -22,6 +22,7 @@ import { renderPerson, renderDeletedPerson } from "@/remote/activitypub/renderer
 import renderEmoji from "@/remote/activitypub/renderer/emoji.js";
 import renderDelete from "@/remote/activitypub/renderer/delete.js";
 import { inbox as processInbox } from "@/queue/index.js";
+import type { IActivity } from "@/remote/activitypub/type.js";
 import { isSelfHost, toPuny } from "@/misc/convert-host.js";
 import {
 	Notes,
@@ -159,7 +160,10 @@ async function inbox(ctx: Router.RouterContext) {
 		return;
 	}
 
-	await processInbox(ctx.request.body, signature, user);
+	// koa の型では body が unknown。ここまでで署名と digest の検証を通っているので
+	// 受信アクティビティとして扱う（中身の妥当性はキュー側の処理で検証する）
+	// inbox() は user を省略可能（undefined）で受け、内部でも null は undefined に揃えているため結果は同じ
+	await processInbox(ctx.request.body as IActivity, signature, user ?? undefined);
 
 	ctx.status = 202;
 }

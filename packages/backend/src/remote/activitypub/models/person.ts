@@ -803,8 +803,11 @@ export async function updateFeatured(userId: User["id"], resolver?: Resolver) {
 	const unresolvedItems = isCollection(collection)
 		? collection.items
 		: collection.orderedItems;
+	// NOTE: 冒頭で `resolver == null` の補完をしているので非 null だが、
+	// クロージャ内ではその絞り込みが効かないため const に取り直して使う
+	const featuredResolver = resolver;
 	const items = await Promise.all(
-		toArray(unresolvedItems).map((x) => resolver?.resolve(x)),
+		toArray(unresolvedItems).map((x) => featuredResolver.resolve(x)),
 	);
 
 	// Note を解決して登録

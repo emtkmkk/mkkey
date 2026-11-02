@@ -1,6 +1,7 @@
 import cluster from "node:cluster";
 import chalk from "chalk";
 import { default as convertColor } from "color-convert";
+import type { KEYWORD as ColorKeyword } from "color-convert/conversions";
 import { format as dateFormat } from "date-fns";
 import { envOption } from "../env.js";
 import config from "@/config/index.js";
@@ -8,6 +9,16 @@ import config from "@/config/index.js";
 import * as SyslogPro from "syslog-pro";
 import { json } from "stream/consumers";
 
+/**
+ * ログの出力元（ドメイン）
+ *
+ * @remarks
+ * `color` は CSS のカラーキーワード（"cyan" / "orange" など）で、`convertColor.keyword.rgb` に渡す。
+ * NOTE: 本来は color-convert の KEYWORD 型で受けたいが、依存先の color-name に型宣言が無く
+ * この環境では KEYWORD が `"default"` 1 つに潰れてしまうため、string で受けて呼び出し時に読み替える。
+ *
+ * @internal
+ */
 type Domain = {
 	name: string;
 	color?: string;
@@ -95,7 +106,8 @@ export default class Logger {
 			.concat(subDomains)
 			.map((d) =>
 				d.color
-					? chalk.rgb(...convertColor.keyword.rgb(d.color))(d.name)
+					? // NOTE: Domain 型の remarks 参照。KEYWORD 型が壊れているため string を読み替えて渡す
+						chalk.rgb(...convertColor.keyword.rgb(d.color as ColorKeyword))(d.name)
 					: chalk.white(d.name),
 			);
 		const m =

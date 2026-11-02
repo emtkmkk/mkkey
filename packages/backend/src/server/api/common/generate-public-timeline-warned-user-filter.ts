@@ -11,7 +11,7 @@
  * @internal
  */
 import { Brackets } from "typeorm";
-import type { SelectQueryBuilder } from "typeorm";
+import type { ObjectLiteral, SelectQueryBuilder } from "typeorm";
 import { UserProfiles } from "@/models/index.js";
 import type { User } from "@/models/entities/user.js";
 
@@ -23,7 +23,8 @@ import type { User } from "@/models/entities/user.js";
  * @param options.socialFollowingException - true のときフォロー済み投稿者は警告でも通す
  */
 export async function applyPublicTimelineWarnedUserFilter<
-	T extends Record<string, unknown>,
+	// NOTE: Note などのエンティティクラスは Record<string, unknown> を満たさないため、typeorm と同じ ObjectLiteral で受ける
+	T extends ObjectLiteral,
 >(
 	query: SelectQueryBuilder<T>,
 	me: { id: User["id"] } | null | undefined,

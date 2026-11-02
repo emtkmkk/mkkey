@@ -10,13 +10,8 @@ import { FollowRequests, Users } from "@/models/index.js";
 import { IdentifiableError } from "@/misc/identifiable-error.js";
 
 export default async function (
-	followee: {
-		id: User["id"];
-		host: User["host"];
-		uri: User["host"];
-		inbox: User["inbox"];
-		sharedInbox: User["sharedInbox"];
-	},
+	// NOTE: insertFollowingDoc が通知の notifier として pack に渡すため、User エンティティ全体を要求する
+	followee: User,
 	follower: CacheableUser,
 ) {
 	const request = await FollowRequests.findOneBy({

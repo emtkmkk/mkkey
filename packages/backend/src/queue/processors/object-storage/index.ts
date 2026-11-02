@@ -1,12 +1,9 @@
 import type Bull from "bull";
+import type { QueueProcessorWrapper } from "@/queue/adaptive-queue-throttle.js";
 import type { ObjectStorageJobData } from "@/queue/types.js";
 import deleteFile from "./delete-file.js";
 import cleanRemoteFiles from "./clean-remote-files.js";
 
-type QueueProcessorWrapper = <T>(
-	queueName: string,
-	processor: Bull.ProcessPromiseFunction<T>,
-) => Bull.ProcessPromiseFunction<T>;
 
 const jobs = {
 	deleteFile,

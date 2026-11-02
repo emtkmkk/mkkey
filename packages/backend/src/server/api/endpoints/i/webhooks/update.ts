@@ -88,5 +88,9 @@ export default define(meta, paramDef, async (ps, user) => {
 		userId: user.id,
 	});
 
-	publishInternalEvent("webhookUpdated", afterUpdateWebhook);
+	// 直前に update した行なので通常は必ず見つかる。見つからない（同時に削除された）場合は
+	// 購読側（webhook-cache）が body.active を読んで落ちるため、null は流さない。
+	if (afterUpdateWebhook != null) {
+		publishInternalEvent("webhookUpdated", afterUpdateWebhook);
+	}
 });

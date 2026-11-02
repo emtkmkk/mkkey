@@ -37,6 +37,20 @@ type AnyProcessor<T> =
 	| PromiseProcessor<T>
 	| ((job: Bull.Job<T>, done: Bull.DoneCallback) => void | Promise<void>);
 
+/**
+ * `adaptiveQueueWrap` と同じ形のラッパ関数の型。
+ *
+ * @remarks
+ * 各 `processors/x/index.ts` が `wrapProcessor` 引数の型として使う。
+ * ここで 1 か所に定義し、`adaptiveQueueWrap` の引数・戻り値とずれないようにする。
+ *
+ * @internal
+ */
+export type QueueProcessorWrapper = <T>(
+	queueName: string,
+	processor: AnyProcessor<T>,
+) => PromiseProcessor<T>;
+
 type QueueState = {
 	latencyEma: number;
 	errorEma: number;

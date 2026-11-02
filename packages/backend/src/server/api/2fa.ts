@@ -82,7 +82,8 @@ function verifyCertificateChain(certificates: string[]) {
 		// CA に対して検証
 		const Signature = new jsrsasign.KJUR.crypto.Signature({ alg: algorithm });
 		Signature.init(CACert);
-		Signature.updateHex(certStruct);
+		// 直前で readCertPEM した証明書の先頭 TLV なので null にはならない（上の certificate.hex! と同じ前提）
+		Signature.updateHex(certStruct!);
 		valid = valid && !!Signature.verify(signatureHex); // CA が証明書に署名していれば true
 	}
 

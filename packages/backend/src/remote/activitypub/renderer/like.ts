@@ -6,7 +6,22 @@ import { Emojis } from "@/models/index.js";
 import renderEmoji from "./emoji.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 
-export const renderLike = async (noteReaction: NoteReaction, note: Note) => {
+/**
+ * リアクションを Like アクティビティとして描く
+ *
+ * @remarks
+ * note からは `uri` しか読まないため、`{ uri: null }` のような最小オブジェクトも受け付ける
+ * （resolver が /likes/:id を解決するときに使う）。
+ *
+ * @param noteReaction - 描くリアクション
+ * @param note - 対象ノート（`uri` だけ参照する。null なら自サーバーのノート URL を使う）
+ * @returns Like オブジェクト
+ * @public
+ */
+export const renderLike = async (
+	noteReaction: NoteReaction,
+	note: Pick<Note, "uri">,
+) => {
 	const reaction = noteReaction.reaction;
 	const custom = reaction.match(/^:([\w+-]+)(?:@([\w.-]+))?:$/) || null;
 	const sendReaction = custom

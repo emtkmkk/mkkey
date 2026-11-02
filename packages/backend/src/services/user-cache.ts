@@ -75,8 +75,8 @@ async function cacheSetWithRedis<T>(
 	);
 }
 
-async function cacheDeleteWithRedis(
-	cache: Cache<unknown>,
+async function cacheDeleteWithRedis<T>(
+	cache: Cache<T>,
 	redisKeyPrefix: string,
 	key: string | null,
 ): Promise<void> {

@@ -100,7 +100,8 @@ export default define(meta, paramDef, async (ps, user) => {
 	// ブロックを削除する
 	await deleteBlocking(blocker, blockee);
 
-	return await Users.pack(blockee.id, blocker, {
+	// ブロック対象は自分以外なので、res スキーマ（UserDetailedNotMe）に合わせて型引数で明示する
+	return await Users.pack<false, true>(blockee.id, blocker, {
 		detail: true,
 	});
 });

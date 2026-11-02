@@ -429,7 +429,8 @@ export class User {
 		length: 10,
 		nullable: true
 	})
-	public inviteUserId: string;
+	// nullable 列なので、招待なしで登録したユーザーは null になる
+	public inviteUserId: string | null;
 
 	@Column('varchar', {
 		length: 128, nullable: true,

@@ -140,7 +140,8 @@ export async function importUserLists(
 			const key = userMapKey(row.username, row.host);
 			let target = userByKey.get(key);
 			if (target == null) {
-				target = await resolveUser(row.username, row.host ?? undefined);
+				// resolveUser はローカルを null で受け取る
+				target = await resolveUser(row.username, row.host);
 				if (target != null) {
 					userByKey.set(key, target);
 				}

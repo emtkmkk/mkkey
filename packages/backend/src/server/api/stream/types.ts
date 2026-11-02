@@ -4,6 +4,7 @@ import type { Channel } from "@/models/entities/channel.js";
 import type { User } from "@/models/entities/user.js";
 import type { UserProfile } from "@/models/entities/user-profile.js";
 import type { Note } from "@/models/entities/note.js";
+import type { Notification } from "@/models/entities/notification.js";
 import type { Antenna } from "@/models/entities/antenna.js";
 import type { DriveFile } from "@/models/entities/drive-file.js";
 import type { DriveFolder } from "@/models/entities/drive-folder.js";
@@ -36,9 +37,14 @@ export interface InternalStreamTypes {
 		id: User["id"];
 		isSuspended: User["isSuspended"];
 	};
+	/**
+	 * サイレンス状態の変化。通常サイレンスなら isSilenced、ミニサイレンスなら isMiniSilenced のどちらか一方だけが入る
+	 * （admin/silence-user, admin/unsilence-user が送る）。購読側は id だけを見てキャッシュを捨てる。
+	 */
 	userChangeSilencedState: {
 		id: User["id"];
-		isSilenced: User["isSilenced"];
+		isSilenced?: User["isSilenced"];
+		isMiniSilenced?: User["isMiniSilenced"];
 	};
 	userChangeModeratorState: {
 		id: User["id"];
@@ -79,6 +85,20 @@ export interface InternalStreamTypes {
 export interface BroadcastTypes {
 	emojiAdded: {
 		emoji: Packed<"Emoji">;
+	};
+	/**
+	 * 絵文字の更新。一括更新系は emojis だけ、単体更新系は後方互換のため emoji も併せて送る。
+	 */
+	emojiUpdated: {
+		emoji?: Packed<"Emoji">;
+		emojis: Packed<"Emoji">[];
+	};
+	/**
+	 * 絵文字の削除。payload の形は emojiUpdated と同じ。
+	 */
+	emojiDeleted: {
+		emoji?: Packed<"Emoji">;
+		emojis: Packed<"Emoji">[];
 	};
 }
 
@@ -127,6 +147,8 @@ export interface MainStreamTypes {
 		progress: number | null;
 	};
 	readAllNotifications: undefined;
+	/** 個別に既読になった通知の ID 一覧（common/read-notification が送る。クライアントは該当通知だけ既読表示にする） */
+	readNotifications: Notification["id"][];
 	unreadNotification: Packed<"Notification">;
 	unreadMention: Note["id"];
 	readAllUnreadMentions: undefined;

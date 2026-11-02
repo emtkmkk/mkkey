@@ -13,6 +13,7 @@
  */
 // import { IsNull } from 'typeorm';
 import { fetchMeta } from "@/misc/fetch-meta.js";
+import { UserProfiles } from "@/models/index.js";
 import { getSleepsUntilNextNewYearsDay } from "@/misc/motd-oshogatsu-sleeps.js";
 import define from "../define.js";
 
@@ -150,10 +151,16 @@ export default define(meta, paramDef, async (ps, user) => {
 	}
 
 	// お正月までの睡眠回数（季節の先行 return を通過した通常経路のみ。誕生日は単独 return を優先して付けない）
+	// NOTE: 誕生日は User ではなく UserProfile が持つ。以前は存在しない user.birthday を見ていたため
+	// 常に Invalid Date となり、誕生日メッセージは出ていなかった（型エラー修正に伴いプロフィールから取るようにした）。
+	const profile = user
+		? await UserProfiles.findOneBy({ userId: user.id })
+		: null;
+	const birthday = profile?.birthday;
 	const userBirthdayToday = !!(
-		user &&
-		new Date(user.birthday).getMonth() === now.getMonth() &&
-		new Date(user.birthday).getDate() === now.getDate()
+		birthday &&
+		new Date(birthday).getMonth() === now.getMonth() &&
+		new Date(birthday).getDate() === now.getDate()
 	);
 	if (!userBirthdayToday) {
 		const sleeps = getSleepsUntilNextNewYearsDay(now);

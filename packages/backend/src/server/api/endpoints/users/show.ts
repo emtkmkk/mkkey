@@ -15,6 +15,7 @@ import { In, IsNull } from "typeorm";
 import { resolveUser } from "@/remote/resolve-user.js";
 import { Users } from "@/models/index.js";
 import type { User } from "@/models/entities/user.js";
+import type { Packed } from "@/misc/schema.js";
 import { redisClient } from "@/db/redis.js";
 import define from "../../define.js";
 import { apiLogger } from "../../logger.js";
@@ -144,9 +145,8 @@ export default define(meta, paramDef, async (ps, me) => {
 		);
 		const cachedList = await redisClient.mget(...cacheKeys);
 		if (cachedList.every((c) => c != null)) {
-			return cachedList.map((c) =>
-				JSON.parse(c!) as Awaited<ReturnType<typeof Users.pack>>,
-			);
+			// キャッシュには detail: true で pack した結果（UserDetailed）を入れている
+			return cachedList.map((c) => JSON.parse(c!) as Packed<"UserDetailed">);
 		}
 		const packedList = await Users.packMany(_users, me, {
 			detail: true,
@@ -225,7 +225,8 @@ export default define(meta, paramDef, async (ps, me) => {
 	const cacheKey = Users.getUserShowDetailedCacheKey(user.id, me?.id ?? null);
 	const cached = await redisClient.get(cacheKey);
 	if (cached != null) {
-		return JSON.parse(cached) as Awaited<ReturnType<typeof Users.pack>>;
+		// キャッシュには detail: true で pack した結果（UserDetailed）を入れている
+		return JSON.parse(cached) as Packed<"UserDetailed">;
 	}
 	const packed = await Users.pack(user, me, {
 		detail: true,

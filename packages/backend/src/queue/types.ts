@@ -29,6 +29,8 @@ export type DeliverJobData = {
 export type InboxJobData = {
 	activity: IActivity;
 	signature: httpSignature.IParsedSignature;
+	/** 認証済みユーザーの inbox 経由で届いたとき、そのユーザー（queue/index.ts の inbox() 参照） */
+	user?: ThinUser;
 };
 
 export type DbJobData =

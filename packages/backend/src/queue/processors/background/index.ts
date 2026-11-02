@@ -9,6 +9,7 @@
  * @internal
  */
 import type Bull from "bull";
+import type { QueueProcessorWrapper } from "@/queue/adaptive-queue-throttle.js";
 import indexAllNotes from "./index-all-notes.js";
 import {
 	type AtprotoRecordJobData,
@@ -18,10 +19,6 @@ import {
 	processUnlikeJob,
 } from "@/remote/atproto/records.js";
 
-type QueueProcessorWrapper = <T>(
-	queueName: string,
-	processor: Bull.ProcessPromiseFunction<T>,
-) => Bull.ProcessPromiseFunction<T>;
 
 const jobs = {
 	indexAllNotes,

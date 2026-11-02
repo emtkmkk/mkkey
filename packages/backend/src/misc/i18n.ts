@@ -31,7 +31,13 @@ export class I18n<T extends Record<string, any>> {
 	 */
 	public t(key: string, args?: Record<string, any>): string {
 		try {
-			let str = key.split(".").reduce((o, i) => o[i], this.locale) as string;
+			// ドット区切りで locale を掘っていく。途中で無いキーに当たると例外になり、下の catch でキーをそのまま返す
+			let str = key
+				.split(".")
+				.reduce<unknown>(
+					(o, i) => (o as Record<string, unknown>)[i],
+					this.locale,
+				) as string;
 
 			if (args) {
 				for (const [k, v] of Object.entries(args)) {

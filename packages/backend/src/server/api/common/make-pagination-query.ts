@@ -1,7 +1,8 @@
 import { genId } from "@/misc/gen-id.js";
-import type { SelectQueryBuilder } from "typeorm";
+import type { ObjectLiteral, SelectQueryBuilder } from "typeorm";
 
-export function makePaginationQuery<T>(
+// SelectQueryBuilder の型引数は ObjectLiteral 制約が付いているので同じ制約を付ける
+export function makePaginationQuery<T extends ObjectLiteral>(
 	q: SelectQueryBuilder<T>,
 	sinceId?: string,
 	untilId?: string,

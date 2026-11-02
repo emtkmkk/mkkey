@@ -10,7 +10,7 @@
  * @see {@link define} エンドポイント登録
  * @internal
  */
-import type { User, UserDetailedNotMeOnly } from "@/models/entities/user.js";
+import type { User } from "@/models/entities/user.js";
 import { Users } from "@/models/index.js";
 import { resolveUser } from "@/remote/resolve-user.js";
 import acceptAllFollowRequests from "@/services/following/requests/accept-all.js";

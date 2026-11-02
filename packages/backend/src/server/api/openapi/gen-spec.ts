@@ -1784,11 +1784,13 @@ export function genOpenapiSpec() {
 				};
 			}
 			if (schema.required != null) {
-				schema.required.push("file");
+				// 仕様生成用に複製したスキーマへ追記する。エンドポイント定義側は readonly なので書き込み可能として扱う
+				(schema.required as string[]).push("file");
 			}
 		}
 
-		const security = [
+		// OpenAPI の security requirement（スキーム名 → スコープ配列）。認証任意なら空オブジェクトも入る
+		const security: Record<string, string[]>[] = [
 			{
 				ApiKeyAuth: [],
 			},
@@ -1912,7 +1914,8 @@ export function genOpenapiSpec() {
 			})(),
 		};
 
-		const path = {
+		// allowGet のエンドポイントだけ get も生やすので、省略可能として宣言する
+		const path: { post: typeof info; get?: typeof info } = {
 			post: info,
 		};
 		if (endpoint.meta.allowGet) {

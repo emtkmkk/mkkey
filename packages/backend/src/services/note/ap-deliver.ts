@@ -123,7 +123,9 @@ async function addNoteActivityDeliveryRecipes(dm: DeliverManager, note: Note) {
 		if (note.reply && note.reply.userId === note.userId && note.reply.replyId) {
 			if (
 				note.reply.replyUserId !== note.userId &&
-				note.reply.replyUserHost === null
+				note.reply.replyUserHost === null &&
+				// replyId がある以上 replyUserId も入っているはずだが、null を取得対象に混ぜない
+				note.reply.replyUserId != null
 			) {
 				userIdsToFetch.add(note.reply.replyUserId);
 			}
@@ -168,7 +170,11 @@ async function addNoteActivityDeliveryRecipes(dm: DeliverManager, note: Note) {
 				note.reply.replyUserHost === null
 			) {
 				noteApDeliverLogger.debug(`reReply deliver : ${note.reply.replyId}`);
-				const u = userMap.get(note.reply.replyUserId);
+				// replyUserId が null なら該当ユーザー無し（従来どおり何もしない）
+				const u =
+					note.reply.replyUserId != null
+						? userMap.get(note.reply.replyUserId)
+						: undefined;
 				if (u) dm.addFollowersRecipe(u as ILocalUser);
 			} else {
 				noteApDeliverLogger.debug(`reReply deliver : ${note.reply.replyId}`);

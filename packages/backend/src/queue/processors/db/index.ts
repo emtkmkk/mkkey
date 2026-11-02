@@ -1,4 +1,5 @@
 import type Bull from "bull";
+import type { QueueProcessorWrapper } from "@/queue/adaptive-queue-throttle.js";
 import type { DbJobData } from "@/queue/types.js";
 import { deleteDriveFiles } from "./delete-drive-files.js";
 import { exportCustomEmojis } from "./export-custom-emojis.js";
@@ -15,10 +16,6 @@ import { importPosts } from "./import-posts.js";
 import { importBlocking } from "./import-blocking.js";
 import { importCustomEmojis } from "./import-custom-emojis.js";
 
-type QueueProcessorWrapper = <T>(
-	queueName: string,
-	processor: Bull.ProcessPromiseFunction<T>,
-) => Bull.ProcessPromiseFunction<T>;
 
 const jobs = {
 	deleteDriveFiles,

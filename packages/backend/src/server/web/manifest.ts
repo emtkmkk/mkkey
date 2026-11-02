@@ -9,9 +9,16 @@
  * @see {@link web/index} Web サーバ
  * @internal
  */
+import { createRequire } from "node:module";
 import type Koa from "koa";
 import { fetchMeta } from "@/misc/fetch-meta.js";
-import manifest from "./manifest.json" assert { type: "json" };
+
+// JSON の import assertion は tsconfig の module 設定（es2020）では型チェックできないため、
+// createRequire で読み込む。swc は -D（copy-files）で manifest.json を built 側にも複製するので、
+// 実行時は従来と同じく隣の manifest.json が読まれる
+const require = createRequire(import.meta.url);
+/** manifest.json の内容。ハンドラ内で複製してから書き換える */
+const manifest: Record<string, unknown> = require("./manifest.json");
 
 export const manifestHandler = async (ctx: Koa.Context) => {
 	// TODO

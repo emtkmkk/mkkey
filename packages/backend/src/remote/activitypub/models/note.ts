@@ -49,7 +49,7 @@ import {
 	Users,
 } from "@/models/index.js";
 import type { IMentionedRemoteUsers, Note } from "@/models/entities/note.js";
-import type { IObject, IPost } from "../type.js";
+import type { IObject, IPost, ICollectionPage } from "../type.js";
 import {
 	getOneApId,
 	getApId,
@@ -80,6 +80,26 @@ import { fetchMeta } from "@/misc/fetch-meta.js";
 import { shouldSkipIngestForDormantFollowersOnly } from "../dormant-follower-check.js";
 
 const logger = apLogger;
+
+/**
+ * 相手サーバーの API から取得した絵文字情報
+ *
+ * @remarks
+ * - Misskey 系の `/api/emoji?name=` の応答、または Pleroma 系の pack 情報から組み立てた値を入れる。
+ * - 外部由来の JSON なので全項目を省略可能にし、ここで参照する項目だけを宣言する。
+ *   `category` / `license` は文字列以外が来ることもあるため、使う側で `typeof` を確認している。
+ *
+ * @internal
+ */
+type RemoteEmojiInfo = {
+	category?: unknown;
+	aliases?: string[];
+	license?: string;
+	isSensitive?: boolean;
+	localOnly?: boolean;
+	roleIdsThatCanBeUsedThisEmojiAsReaction?: string[];
+	roleIdsThatCanNotBeUsedThisEmojiAsReaction?: string[];
+};
 
 export function validateNote(object: any, uri: string) {
 	const expectHost = extractDbHost(uri);
@@ -275,11 +295,9 @@ export async function createNote(
 	)
 		? (
 			await Promise.all(
-				note.attachment.map(
-					(x) => limit(() => resolveImage(actor, x)) as Promise<DriveFile>,
-				),
+				note.attachment.map((x) => limit(() => resolveImage(actor, x))),
 			)
-		).filter((image) => image != null)
+		).filter((image): image is DriveFile => image != null)
 		: [];
 
 	// 返信
@@ -397,40 +415,36 @@ export async function createNote(
 		if (isCollectionOrOrderedCollection(collection)) {
 			collectionSubstance = referencesCollectionHasSubstance(collection);
 			// first ページ（items が空配列でも next 走査できるよう first オブジェクトで分岐）
-			const firstPage = (collection as Record<string, unknown>).first;
+			const firstPage = collection.first;
 			if (
 				typeof firstPage === "object" &&
 				firstPage != null &&
 				!Array.isArray(firstPage)
 			) {
-				const firstPageObj = firstPage as Record<string, unknown>;
+				// NOTE: 上で `resolver == null` の補完をしているので非 null だが、
+				// クロージャ内ではその絞り込みが効かないため const に取り直して使う
+				const referencesResolver = resolver;
 				let items = (
 					await Promise.allSettled(
-						toArray(
-							firstPageObj.items as string | string[] | undefined,
-						).map((x) => resolver?.resolve(x, true)),
+						toArray(firstPage.items).map((x) =>
+							referencesResolver.resolve(x, true),
+						),
 					)
 				).flatMap((result) =>
 					result.status === "fulfilled" ? [result.value] : [],
 				);
 				let next =
-					typeof firstPageObj.next === "string"
-						? firstPageObj.next
-						: undefined;
+					typeof firstPage.next === "string" ? firstPage.next : undefined;
 				while (next) {
-					const pageObj = (await resolver.resolve(next)) as Record<
-						string,
-						unknown
-					>;
-					const pageItems = toArray(
-						pageObj.items as string | string[] | undefined,
-					);
+					// 次ページは CollectionPage として読む（items / next を参照する）
+					const pageObj = (await resolver.resolve(next)) as ICollectionPage;
+					const pageItems = toArray(pageObj.items);
 					for (const item of pageItems) {
 						items = [
 							...items,
 							...(
 								await Promise.allSettled([
-									resolver?.resolve(item, true),
+									referencesResolver.resolve(item, true),
 								])
 							).flatMap((result) =>
 								result.status === "fulfilled" ? [result.value] : [],
@@ -705,9 +719,11 @@ export async function extractEmojis(
 			//含まれてない場合は
 			//1 : nameに@がある場合はその後ろの文字をhostとする
 			//2 : fedibirdやmarunaiさんの実装と同じ方法でhost判定を行う
-			let detectHost = undefined;
+			let detectHost: string | undefined = undefined;
 			try {
-				detectHost = tag.host || name.split("@")?.[1] || new URL(tag.id).host;
+				// tag.id が無い場合、new URL は例外になり catch で握る（従来どおり detectHost は未設定のまま）
+				detectHost =
+					tag.host || name.split("@")?.[1] || new URL(tag.id ?? "").host;
 			} catch (err) { }
 
 			//@以降はもう不要なので消す
@@ -715,7 +731,9 @@ export async function extractEmojis(
 
 			//3桁以下のホスト名は使用しない
 			const _host =
-				detectHost?.length >= 4 && host !== toPuny(detectHost)
+				detectHost != null &&
+				detectHost.length >= 4 &&
+				host !== toPuny(detectHost)
 					? toPuny(detectHost)
 					: host;
 
@@ -731,7 +749,11 @@ export async function extractEmojis(
 				name,
 			});
 
-			let emojiInfo: Record<string, unknown> = {};
+			/**
+			 * 相手サーバーの API（Misskey 系 /api/emoji、Pleroma 系 pack 情報）から取った絵文字情報。
+			 * 外部由来なので、ここで使う項目だけを省略可能で宣言する
+			 */
+			let emojiInfo: RemoteEmojiInfo = {};
 
 			let emojiInfoFlg = false;
 
@@ -750,7 +772,8 @@ export async function extractEmojis(
 				description: tag.description,
 				// Fedibird は実データで isBasedOn のキーを使うので、無いときの予備にする
 				isBasedOnUrl: tag.isBasedOnUrl ?? (fedibird.isBasedOn || undefined),
-				text: "",
+				// 後で emojiInfo.license（省略されることがある）を入れるため undefined も許す
+				text: "" as string | undefined,
 			};
 
 			//絵文字情報を取得できそうなら取得
@@ -776,7 +799,7 @@ export async function extractEmojis(
 								apiurl,
 								"application/json, */*",
 								5000,
-							)) as Record<string, unknown>;
+							)) as RemoteEmojiInfo;
 						} catch (e) {
 							logger.warn(`fetch emojiInfo err : ${e}`);
 						}
@@ -1110,7 +1133,10 @@ function notEmpty(partial: Partial<any>) {
 	return Object.keys(partial).length > 0;
 }
 
-export async function updateNote(value: string | IObject, resolver?: Resolver) {
+export async function updateNote(
+	value: string | IObject,
+	resolver?: Resolver,
+): Promise<void> {
 	const uri = typeof value === "string" ? value : value.id;
 	if (!uri) throw new Error("Missing note uri");
 
@@ -1131,7 +1157,9 @@ export async function updateNote(value: string | IObject, resolver?: Resolver) {
 	// 既に当サーバーに登録済みか
 	const note = await Notes.findOneBy({ uri });
 	if (note == null) {
-		return await createNote(post, resolver);
+		// 未登録なら新規作成して終わり（戻り値は呼び出し側で使っていない）
+		await createNote(post, resolver);
+		return;
 	}
 
 	// クライアントに更新・再取得が必要であることを通知するかどうか
@@ -1167,8 +1195,10 @@ export async function updateNote(value: string | IObject, resolver?: Resolver) {
 		await Promise.all(
 			fileList.map(
 				(x) =>
-					limit(async () => {
+					limit(async (): Promise<DriveFile | null> => {
 						const file = await resolveImage(actor, x);
+						// 取り込み対象外（Document 系でない等）の添付は createNote と同様に除外する
+						if (file == null) return null;
 						const update: Partial<DriveFile> = {};
 
 						const altText = truncate(x.name, DB_MAX_IMAGE_COMMENT_LENGTH);
@@ -1187,10 +1217,10 @@ export async function updateNote(value: string | IObject, resolver?: Resolver) {
 						}
 
 						return file;
-					}) as Promise<DriveFile>,
+					}),
 			),
 		)
-	).filter((file) => file != null);
+	).filter((file): file is DriveFile => file != null);
 	const fileIds = driveFiles.map((file) => file.id);
 	const fileTypes = driveFiles.map((file) => file.type);
 

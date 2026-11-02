@@ -107,7 +107,8 @@ export default async (
 			limitActor = getIpHash(ctx!.ip);
 		}
 
-		const limit = Object.assign({}, ep.meta.limit);
+		// スプレッドで複製すると readonly が外れ、key を補えるようになる（Object.assign({}, ...) と同じ結果）
+		const limit = { ...ep.meta.limit };
 
 		if (!limit.key) {
 			limit.key = ep.name;

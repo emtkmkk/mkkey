@@ -17,6 +17,7 @@ import { normalizeForSearch } from "@/misc/normalize-for-search.js";
 import type { User } from "@/models/entities/user.js";
 import type { StreamMessages } from "../types.js";
 import type { Packed } from "@/misc/schema.js";
+import type { Note } from "@/models/entities/note.js";
 
 export default class extends Channel {
 	public readonly chName = "channel";
@@ -29,7 +30,7 @@ export default class extends Channel {
 
 	constructor(id: string, connection: Channel["connection"]) {
 		super(id, connection);
-		this.onNote = this.withPackedNote(this.onNote.bind(this));
+		this.onNote = this.withPackedNote(this.onPackedNote.bind(this));
 		this.onEvent = this.onEvent.bind(this);
 		this.emitTypers = this.emitTypers.bind(this);
 	}
@@ -44,7 +45,16 @@ export default class extends Channel {
 		this.emitTypersIntervalId = setInterval(this.emitTypers, 5000);
 	}
 
-	private async onNote(note: Packed<"Note">) {
+	/**
+	 * notesStream の購読ハンドラ。
+	 *
+	 * @remarks
+	 * コンストラクタで `withPackedNote` により生成し、生の Note をパックしてから
+	 * {@link onPackedNote} に渡す。購読と解除の両方で同じ参照を使うためフィールドで保持する。
+	 */
+	private onNote: (note: Note) => Promise<void>;
+
+	private async onPackedNote(note: Packed<"Note">) {
 		if (note.visibility !== "public") return;
 		if (
 			note.channelId !== this.channelId &&

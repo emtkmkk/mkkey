@@ -21,7 +21,10 @@ export const InstanceRepository = db.getRepository(Instance).extend({
 				? instance.latestRequestSentAt.toISOString()
 				: null,
 			latestStatus: instance.latestStatus,
-			latestRequestReceivedAt: instance.latestRequestReceivedAt,
+			// JSON にすると Date も同じ ISO 文字列になるので、他の日時項目と揃えて明示的に変換する
+			latestRequestReceivedAt: instance.latestRequestReceivedAt
+				? instance.latestRequestReceivedAt.toISOString()
+				: null,
 			lastCommunicatedAt: instance.lastCommunicatedAt.toISOString(),
 			isNotResponding: instance.isNotResponding,
 			isSuspended: instance.isSuspended,

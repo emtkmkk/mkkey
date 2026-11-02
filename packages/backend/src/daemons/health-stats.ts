@@ -459,7 +459,14 @@ export default function (options: HealthStatsOptions): void {
 	};
 
 	const maybeCollectLongRunningQueries = async () => {
-		const rows = await db
+		// query() の戻り値は any なので、変数側に行の型を付ける（付けないと下の map の引数が暗黙の any になる）
+		const rows: {
+			pid: number;
+			durationMs: number | string;
+			state: string;
+			waitEventType: string | null;
+			query: string;
+		}[] = await db
 			.query(
 				`SELECT pid,
 						(EXTRACT(EPOCH FROM (clock_timestamp() - query_start)) * 1000)::double precision AS "durationMs",

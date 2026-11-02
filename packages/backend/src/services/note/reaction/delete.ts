@@ -25,7 +25,13 @@ import { isBlueskyUser } from "@/remote/atproto/display.js";
 import { onBlueskyUnreaction } from "@/remote/atproto/records.js";
 
 export default async (
-	user: { id: User["id"]; host: User["host"] },
+	// username / name はリアクションミュートの「ユーザー指定」判定で参照する
+	user: {
+		id: User["id"];
+		host: User["host"];
+		username: User["username"];
+		name: User["name"];
+	},
 	note: Note,
 	emoji?: any,
 ) => {

@@ -5,6 +5,34 @@ import { awaitAll } from "@/prelude/await-all.js";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
 
+/**
+ * リアクション 1 種類ぶんの集計行
+ *
+ * @remarks
+ * NB: count は SQL の COUNT(*) をそのまま返しているため、実際の JSON では文字列になることがある（pg の bigint 扱い）。
+ *
+ * @internal
+ */
+const reactionCountSchema = {
+	type: "object",
+	optional: false,
+	nullable: false,
+	properties: {
+		name: {
+			type: "string",
+			optional: false,
+			nullable: false,
+			description: "リアクション名（:name: 形式）。",
+		},
+		count: {
+			type: "integer",
+			optional: false,
+			nullable: false,
+			description: "件数。",
+		},
+	},
+} as const;
+
 export const meta = {
 	tags: ["users"],
 
@@ -21,112 +49,51 @@ export const meta = {
 		},
 	},
 
+	// NOTE: 実際の戻り値は「リアクション名と件数の配列」と「種類数」。以前は全項目が object と書かれていて実態と違っていた。
 	res: {
 		type: "object",
 		optional: false,
 		nullable: false,
 		properties: {
 			sentReactions: {
-				type: "object",
+				type: "array",
 				optional: false,
 				nullable: false,
-				properties: {
-					name: {
-						type: "string",
-						optional: false,
-						nullable: false,
-					},
-					count: {
-						type: "integer",
-						optional: false,
-						nullable: false,
-					},
-				},
+				description: "送ったリアクションの種類ごとの件数（件数の多い順）。",
+				items: reactionCountSchema,
 			},
 			sentReactionsCount: {
-				type: "object",
+				type: "integer",
 				optional: false,
 				nullable: false,
-				properties: {
-					name: {
-						type: "string",
-						optional: false,
-						nullable: false,
-					},
-					count: {
-						type: "integer",
-						optional: false,
-						nullable: false,
-					},
-				},
+				description: "送ったローカル絵文字リアクションの種類数。",
 			},
 			receivedReactions: {
-				type: "object",
+				type: "array",
 				optional: false,
 				nullable: false,
-				properties: {
-					name: {
-						type: "string",
-						optional: false,
-						nullable: false,
-					},
-					count: {
-						type: "integer",
-						optional: false,
-						nullable: false,
-					},
-				},
+				description: "受け取ったリアクションの種類ごとの件数（件数の多い順）。",
+				items: reactionCountSchema,
 			},
 			receivedReactionsCount: {
-				type: "object",
+				type: "integer",
 				optional: false,
 				nullable: false,
-				properties: {
-					name: {
-						type: "string",
-						optional: false,
-						nullable: false,
-					},
-					count: {
-						type: "integer",
-						optional: false,
-						nullable: false,
-					},
-				},
+				description: "受け取ったローカル絵文字リアクションの種類数。",
 			},
 			recentlySentReactions: {
-				type: "object",
+				type: "array",
 				optional: false,
 				nullable: false,
-				properties: {
-					name: {
-						type: "string",
-						optional: false,
-						nullable: false,
-					},
-					count: {
-						type: "integer",
-						optional: false,
-						nullable: false,
-					},
-				},
+				description: "直近 14 日に送ったリアクションの種類ごとの件数。",
+				items: reactionCountSchema,
 			},
 			recentlyReceivedReactions: {
-				type: "object",
+				type: "array",
 				optional: false,
 				nullable: false,
-				properties: {
-					name: {
-						type: "string",
-						optional: false,
-						nullable: false,
-					},
-					count: {
-						type: "integer",
-						optional: false,
-						nullable: false,
-					},
-				},
+				description: "直近 14 日に受け取ったリアクションの種類ごとの件数。",
+				items: reactionCountSchema,
 			},
 		},
 	},

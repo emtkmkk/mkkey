@@ -137,5 +137,13 @@ export const packedAntennaSchema = {
 			default: false,
 			description: "未読の投稿があるか。",
 		},
+		// 他実装との互換のために返しているが、停止機能は無いので常に true
+		isActive: {
+			type: "boolean",
+			optional: false,
+			nullable: false,
+			default: true,
+			description: "アンテナが有効か。停止機能が無いため常に true。",
+		},
 	},
 } as const;

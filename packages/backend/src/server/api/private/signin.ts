@@ -11,6 +11,7 @@ import {
 	PasskeyLoginChallenges,
 } from "@/models/index.js";
 import type { ILocalUser } from "@/models/entities/user.js";
+import type { Signin } from "@/models/entities/signin.js";
 import { genId } from "@/misc/gen-id.js";
 import {
 	comparePassword,
@@ -60,12 +61,15 @@ export default async (ctx: Koa.Context) => {
 		failure?: { id: string },
 	) {
 		if (userId) {
+			// TypeORM の insert 引数型は Record<string, any> 列に IncomingHttpHeaders を直接渡せないので、
+			// 列の型で一度受けてから渡す（値はそのまま）
+			const headers: Signin["headers"] = ctx.headers;
 			await Signins.insert({
 				id: genId(),
 				createdAt: new Date(),
 				userId,
 				ip: ctx.ip,
-				headers: ctx.headers,
+				headers,
 				success: false,
 			});
 		}

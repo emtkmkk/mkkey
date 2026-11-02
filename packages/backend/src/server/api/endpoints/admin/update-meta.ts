@@ -153,7 +153,8 @@ export const paramDef = {
 		openaiApiKey: { type: "string", nullable: true },
 		openaiModel: { type: "string", nullable: true },
 		openaiBaseUrl: { type: "string", nullable: true },
-		enablePerformanceIncidentCollection: { type: "boolean", nullable: true },
+		// カラムが NOT NULL のため null は受け付けない（以前は nullable だったが DB でエラーになっていた）
+		enablePerformanceIncidentCollection: { type: "boolean" },
 		enableTwitterIntegration: { type: "boolean" },
 		twitterConsumerKey: { type: "string", nullable: true },
 		twitterConsumerSecret: { type: "string", nullable: true },

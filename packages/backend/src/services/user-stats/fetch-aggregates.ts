@@ -103,7 +103,8 @@ export async function fetchUserStatsAggregates(
 	);
 
 	const countDeliver = async () => {
-		const inboxes = new Set<string>();
+		// NOTE: followerSharedInbox / followerInbox は nullable なため、従来どおり null も 1 要素として数える
+		const inboxes = new Set<string | null>();
 		const followers = await FollowingsRepo.createQueryBuilder("following")
 			.select("following.followerSharedInbox")
 			.addSelect("following.followerInbox")

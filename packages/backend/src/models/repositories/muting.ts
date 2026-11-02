@@ -19,7 +19,8 @@ export const MutingRepository = db.getRepository(Muting).extend({
 	async pack(
 		src: Muting["id"] | Muting,
 		me?: { id: User["id"] } | null | undefined,
-		options?: { muteePacked?: Packed<"User"> },
+		// packMany が detail: true で pack したものを渡すので、スキーマ（ref: UserDetailed）に合わせる
+		options?: { muteePacked?: Packed<"UserDetailed"> },
 	): Promise<Packed<"Muting">> {
 		const muting =
 			typeof src === "object" ? src : await this.findOneByOrFail({ id: src });

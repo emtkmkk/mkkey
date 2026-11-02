@@ -133,17 +133,8 @@ async function getLocalUserMaxReactionsPerAccount(userId: string): Promise<numbe
 }
 
 export default async (
-	user: {
-		id: User["id"];
-		host: User["host"];
-		username: User["username"];
-		name: User["name"];
-		avatarUrl: User["avatarUrl"];
-		isSilenced: User["isSilenced"];
-		isExplorable: User["isExplorable"];
-		isRemoteExplorable: User["isRemoteExplorable"];
-		isBot: User["isBot"];
-	},
+	// NOTE: 通知作成時に notifier としてそのまま pack に渡すため、User エンティティ全体を要求する
+	user: User,
 	note: Note,
 	reaction?: string,
 ) => {

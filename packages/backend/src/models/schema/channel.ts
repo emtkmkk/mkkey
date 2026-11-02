@@ -68,6 +68,44 @@ export const packedChannelSchema = {
 			nullable: false,
 			description: "フォロー中か。",
 		},
+		// isFollowing と同様、ログイン時のみ付く
+		isFavorited: {
+			type: "boolean",
+			optional: true,
+			nullable: false,
+			description: "お気に入り登録しているか。お気に入り機能が無いため常に false。",
+		},
+		hasUnreadNote: {
+			type: "boolean",
+			optional: true,
+			nullable: false,
+			description: "未読の投稿があるか。ログイン時のみ含まれる。",
+		},
+		// ピン留め機能は無いので常に空配列（他実装との互換のため返している）
+		pinnedNoteIds: {
+			type: "array",
+			optional: false,
+			nullable: false,
+			description: "ピン留め投稿の ID。ピン留め機能が無いため常に空。",
+			items: {
+				type: "string",
+				optional: false,
+				nullable: false,
+				format: "id",
+			},
+		},
+		pinnedNotes: {
+			type: "array",
+			optional: false,
+			nullable: false,
+			description: "ピン留め投稿。ピン留め機能が無いため常に空。",
+			items: {
+				type: "object",
+				optional: false,
+				nullable: false,
+				ref: "Note",
+			},
+		},
 		userId: {
 			type: "string",
 			nullable: true,

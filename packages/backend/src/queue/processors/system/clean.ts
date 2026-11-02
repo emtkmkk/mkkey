@@ -18,6 +18,7 @@ import { genId } from "@/misc/gen-id.js";
 import { Note } from "@/models/entities/note.js";
 import { db } from "@/db/postgre.js";
 import type { User } from "@/models/entities/user.js";
+import type { DriveFile } from "@/models/entities/drive-file.js";
 import { fetchProxyAccount } from "@/misc/fetch-proxy-account.js";
 import createFollowing from "@/services/following/create.js";
 import deleteFollowing from "@/services/following/delete.js";
@@ -123,7 +124,8 @@ export async function clean(
         let driveFileFailedCount = 0;
 
         while (true) {
-                const files = await DriveFiles.createQueryBuilder("file")
+                // driveFileCursor を where とこの結果の両方で使うので、型を明示して循環参照を避ける
+                const files: DriveFile[] = await DriveFiles.createQueryBuilder("file")
                         .where("file.createdAt < :threshold", { threshold: driveFileThreshold })
                         .andWhere("file.userHost IS NOT NULL")
                         .andWhere(

@@ -36,8 +36,10 @@ export const packedNotificationSchema = {
 			type: "string",
 			optional: false,
 			nullable: false,
-			description: "通知の種類。",
-			enum: [...notificationTypes],
+			description:
+				"通知の種類。DB 上の unreadAntenna は API では note として返す。",
+			// pack で unreadAntenna を note に置き換えているため、notificationTypes に無い note も含める
+			enum: [...notificationTypes, "note"],
 		},
 		user: {
 			type: "object",

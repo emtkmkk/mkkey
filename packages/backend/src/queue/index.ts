@@ -4,7 +4,7 @@ import { v4 as uuid } from "uuid";
 import config from "@/config/index.js";
 import type { DriveFile } from "@/models/entities/drive-file.js";
 import type { IActivity } from "@/remote/activitypub/type.js";
-import type { Webhook, webhookEventTypes } from "@/models/entities/webhook.js";
+import type { Webhook, webhookDeliverTypes } from "@/models/entities/webhook.js";
 import { envOption } from "../env.js";
 
 import processDeliver from "./processors/deliver.js";
@@ -557,7 +557,7 @@ export function createNoteApDeliverJob(data: NoteApDeliverJobData) {
 
 export function webhookDeliver(
 	webhook: Webhook,
-	type: typeof webhookEventTypes[number],
+	type: typeof webhookDeliverTypes[number],
 	content: unknown,
 ) {
 	const data = {

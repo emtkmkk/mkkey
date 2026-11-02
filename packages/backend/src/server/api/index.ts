@@ -99,8 +99,9 @@ mastoRouter.use(
 
 mastoFileRouter.post("/v1/media", upload.single("file"), async (ctx) => {
 	const BASE_URL = `${ctx.protocol}://${ctx.hostname}`;
-	const accessTokens =
-		ctx.request?.body?.i?.trim() || ctx.headers.authorization;
+	// body は unknown 型なので、トークン欄だけを読む形で扱う
+	const body = ctx.request.body as { i?: string } | undefined;
+	const accessTokens = body?.i?.trim() || ctx.headers.authorization;
 	const client = getClient(BASE_URL, accessTokens);
 	try {
 		let multipartData = await ctx.file;
@@ -119,8 +120,9 @@ mastoFileRouter.post("/v1/media", upload.single("file"), async (ctx) => {
 });
 mastoFileRouter.post("/v2/media", upload.single("file"), async (ctx) => {
 	const BASE_URL = `${ctx.protocol}://${ctx.hostname}`;
-	const accessTokens =
-		ctx.request?.body?.i?.trim() || ctx.headers.authorization;
+	// body は unknown 型なので、トークン欄だけを読む形で扱う
+	const body = ctx.request.body as { i?: string } | undefined;
+	const accessTokens = body?.i?.trim() || ctx.headers.authorization;
 	const client = getClient(BASE_URL, accessTokens);
 	try {
 		let multipartData = await ctx.file;
@@ -160,10 +162,16 @@ const uploadFile = (fileSizeLimit?: number) => {
 		},
 	}).any();
 
-	return async (ctx, next) => {
+	return async (ctx: Koa.Context, next: Koa.Next) => {
+		/**
+		 * 受信済みファイルの一覧を返す。
+		 * `.any()` で受けているので配列になる（fieldname 別のオブジェクト形式にはならない）ため、
+		 * 型定義上の合併型から配列側に絞って扱う。
+		 */
+		const receivedFiles = () => ctx.files as multer.File[] | undefined;
 		/** 認証・検証で API 本体まで到達しなかった場合も受信済み一時ファイルを残さない。 */
 		const cleanupReceivedFiles = () => {
-			for (const file of ctx.files ?? []) {
+			for (const file of receivedFiles() ?? []) {
 				if (file?.path) fs.unlink(file.path, () => {});
 			}
 		};
@@ -183,17 +191,20 @@ const uploadFile = (fileSizeLimit?: number) => {
 		}
 		try {
 			await new Promise((resolve, reject) => {
-				receiveFile(ctx, (err) => {
+				// @koa/multer は受信完了後に next() を引数なしで呼ぶ（エラー時は自身の Promise を reject する）。
+				// Koa.Next の型（引数なし・Promise を返す）に合わせ、err は省略可能にしておく
+				receiveFile(ctx, async (err?: unknown) => {
 					if (err) return reject(err);
 					resolve("");
 				});
 			});
 
-			if (ctx.files && ctx.files.length === 1) {
-				apiLogger.debug(`${ctx.files.length} Files Found.`);
-				ctx.file = ctx.files[0];
+			const files = receivedFiles();
+			if (files && files.length === 1) {
+				apiLogger.debug(`${files.length} Files Found.`);
+				ctx.file = files[0];
 			} else {
-				apiLogger.debug(`${ctx.files?.length ?? 0} Files Found.`);
+				apiLogger.debug(`${files?.length ?? 0} Files Found.`);
 			}
 
 			await next();

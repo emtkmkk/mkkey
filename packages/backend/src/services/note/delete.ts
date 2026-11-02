@@ -167,10 +167,12 @@ export default async function (
 				{
 					text: textCaption || null,
 					cw: null,
-					fileIds: {},
-					attachedFileTypes: {},
-					mentions: {},
-					mentionedRemoteUsers: [],
+					// NOTE: 配列カラムは空配列で空にする。以前は `{}` を渡していたが、pg ドライバはどちらも '{}' に
+					// 直列化するため SQL 上は同じ。mentionedRemoteUsers は JSON 文字列のカラムなので "[]" を入れる
+					fileIds: [],
+					attachedFileTypes: [],
+					mentions: [],
+					mentionedRemoteUsers: "[]",
 					emojis: [],
 					tags: [],
 					hasPoll: false,

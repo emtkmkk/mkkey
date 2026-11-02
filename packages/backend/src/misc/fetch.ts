@@ -136,7 +136,7 @@ export async function getResponse(args: {
 			method: args.method,
 			headers,
 			body: args.body,
-			timeout,
+			// NOTE: node-fetch v3 に timeout オプションは無く無視されるので渡さない。打ち切りは上の AbortController（timeout * 6）で行う
 			size: args.size || 10 * 1024 * 1024,
 			agent: getAgentByUrl,
 			signal: controller.signal,

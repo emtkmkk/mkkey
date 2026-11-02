@@ -15,6 +15,7 @@ import { fetchMeta } from "@/misc/fetch-meta.js";
 import { getWordHardMute } from "@/misc/check-word-mute.js";
 import { isUserRelated } from "@/misc/is-user-related.js";
 import type { Packed } from "@/misc/schema.js";
+import type { Note } from "@/models/entities/note.js";
 
 /**
  * 接続ユーザーが投票済みかを判定する。
@@ -27,7 +28,10 @@ import type { Packed } from "@/misc/schema.js";
  */
 function hasCurrentUserVoted(note: Packed<"Note">): boolean {
 	if (!note.poll?.choices?.length) return false;
-	return note.poll.choices.some((choice) => choice.isVoted === true);
+	// poll はスキーマ上 properties を持たず any になるので、参照する形だけ注釈する
+	return note.poll.choices.some(
+		(choice: { isVoted?: boolean }) => choice.isVoted === true,
+	);
 }
 
 export default class extends Channel {
@@ -37,7 +41,7 @@ export default class extends Channel {
 
 	constructor(id: string, connection: Channel["connection"]) {
 		super(id, connection);
-		this.onNote = this.withPackedNote(this.onNote.bind(this));
+		this.onNote = this.withPackedNote(this.onPackedNote.bind(this));
 	}
 
 	public async init(_params: unknown) {
@@ -51,7 +55,16 @@ export default class extends Channel {
 		this.subscriber.on("notesStream", this.onNote);
 	}
 
-	private async onNote(note: Packed<"Note">) {
+	/**
+	 * notesStream の購読ハンドラ。
+	 *
+	 * @remarks
+	 * コンストラクタで `withPackedNote` により生成し、生の Note をパックしてから
+	 * {@link onPackedNote} に渡す。購読と解除の両方で同じ参照を使うためフィールドで保持する。
+	 */
+	private onNote: (note: Note) => Promise<void>;
+
+	private async onPackedNote(note: Packed<"Note">) {
 		const meta = await fetchMeta();
 
 		let dynamicScore1 = 40; // フォロー済のユーザが出現するScore閾値

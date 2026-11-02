@@ -87,16 +87,17 @@ export const meta = {
 				type: "object",
 				optional: false,
 				nullable: false,
+				// 画像以外のファイルでは width / height を持たない（エンティティ側も optional）
 				properties: {
 					width: {
 						type: "number",
-						optional: false,
+						optional: true,
 						nullable: false,
 						example: 1280,
 					},
 					height: {
 						type: "number",
-						optional: false,
+						optional: true,
 						nullable: false,
 						example: 720,
 					},
@@ -132,20 +133,21 @@ export const meta = {
 				nullable: true,
 				format: "url",
 			},
+			// アクセスキーはリンクファイルなど保存していないものでは null になる（エンティティに合わせる）
 			accessKey: {
 				type: "string",
 				optional: false,
-				nullable: false,
+				nullable: true,
 			},
 			thumbnailAccessKey: {
 				type: "string",
 				optional: false,
-				nullable: false,
+				nullable: true,
 			},
 			webpublicAccessKey: {
 				type: "string",
 				optional: false,
-				nullable: false,
+				nullable: true,
 			},
 			uri: {
 				type: "string",
@@ -217,10 +219,14 @@ export default define(meta, paramDef, async (ps, me) => {
 		throw new ApiError(meta.errors.noSuchFile);
 	}
 
-	if (!me.isAdmin) {
-		file.requestIp = undefined;
-		file.requestHeaders = undefined;
-	}
+	// NOTE: エンティティ（Date 型の createdAt など）をそのまま返しているため、res スキーマの型に合わせて
+	// JSON 化後と同じ形（createdAt は ISO 文字列）に整える。出力は従来と同じ。
+	const { requestIp, requestHeaders, ...rest } = file;
+	const packed = {
+		...rest,
+		createdAt: file.createdAt.toISOString(),
+	};
 
-	return file;
+	// 管理者以外には要求元 IP とヘッダーを見せない（以前は undefined を代入して JSON から落としていた）
+	return me.isAdmin ? { ...packed, requestIp, requestHeaders } : packed;
 });

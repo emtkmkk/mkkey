@@ -1,5 +1,6 @@
 import type Koa from "koa";
 import { Users, UserPendings, UserProfiles } from "@/models/index.js";
+import type { ILocalUser } from "@/models/entities/user.js";
 import { signup } from "../common/signup.js";
 import signin from "../common/signin.js";
 
@@ -33,8 +34,10 @@ export default async (ctx: Koa.Context) => {
 			},
 		);
 
-		signin(ctx, account);
+		// signup はローカルユーザー（host: null）を作るので ILocalUser として扱う
+		signin(ctx, account as ILocalUser);
 	} catch (e) {
-		ctx.throw(400, e);
+		// catch の変数は unknown。ctx.throw には従来どおりそのまま渡す（Error 以外でも挙動は変えない）
+		ctx.throw(400, e as Error);
 	}
 };

@@ -22,8 +22,9 @@ type NoteLike = {
 	userId: Note["userId"];
 	text: Note["text"];
 	cw?: Note["cw"];
-	reply?: NoteLike;
-	renote?: NoteLike;
+	// Packed<"Note"> では reply / renote が null になるため null も受ける
+	reply?: NoteLike | null;
+	renote?: NoteLike | null;
 };
 
 type UserLike = {
@@ -31,7 +32,8 @@ type UserLike = {
 };
 
 function checkWordMute(
-	note: NoteLike,
+	// reply / renote が未設定のまま渡ってくるので、null / undefined も受け取る（先頭で弾く）
+	note: NoteLike | null | undefined,
 	mutedWords: Array<string | string[]> | null | undefined,
 ): boolean {
 	if (note == null) return false;
@@ -112,9 +114,11 @@ export async function getWordHardMute(
  * @internal
  */
 export function checkReactionMute(
-	reaction: string,
+	// 絵文字が解決できなかった場合は null が渡る（先頭の !reaction で false を返す）
+	reaction: string | null | undefined,
 	note: Note,
-	user: User,
+	// username / name / host しか参照しないため、最小限の形で受ける
+	user: { username: User["username"]; name: User["name"]; host: User["host"] },
 	mutedWords: Array<string | string[]> | null | undefined,
 ): boolean | { muted: boolean; reject?: boolean } {
 	if (!reaction) return false;

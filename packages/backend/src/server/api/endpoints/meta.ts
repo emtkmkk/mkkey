@@ -430,7 +430,7 @@ export const meta = {
 			},
 			defaultReaction: {
 				type: "string",
-				optional: "false",
+				optional: false,
 				nullable: false,
 				default: "⭐",
 			},

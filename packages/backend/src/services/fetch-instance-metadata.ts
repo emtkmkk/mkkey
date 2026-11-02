@@ -203,7 +203,34 @@ type NodeInfo = {
 		};
 		maxReactionsPerAccount?: any;
 		features?: Array<string>;
+		/** Misskey 系が nodeinfo に載せるテーマカラー（#rrggbb） */
+		themeColor?: string;
 	};
+};
+
+/**
+ * Mastodon 系の `/api/v1/instance` 応答のうち、ここで参照する項目
+ *
+ * @remarks
+ * 外部由来の JSON なので全項目を省略可能にしている。
+ * `configuration.emoji_reactions` / `reactions` / `fedibird_capabilities` は Fedibird 等の拡張。
+ *
+ * @internal
+ */
+type MastodonInstanceInfo = {
+	email?: string;
+	contact_account?: {
+		username?: string;
+	};
+	configuration?: {
+		emoji_reactions?: {
+			max_reactions_per_account?: number;
+		};
+		reactions?: {
+			max_reactions?: number;
+		};
+	};
+	fedibird_capabilities?: string[];
 };
 
 async function fetchNodeinfo(instance: Instance): Promise<NodeInfo> {
@@ -286,7 +313,7 @@ async function fetchManifest(
 
 async function fetchMastodonInfo(
 	instance: Instance,
-): Promise<Record<string, unknown> | null> {
+): Promise<MastodonInstanceInfo | null> {
 	const url = `https://${instance.host}`;
 
 	const mastodonInfoUrl = `${url}/api/v1/instance`;
@@ -295,7 +322,7 @@ async function fetchMastodonInfo(
 		mastodonInfoUrl,
 		"application/json, */*",
 		2000,
-	)) as Record<string, unknown>;
+	)) as MastodonInstanceInfo;
 
 	return mastodonInfo;
 }

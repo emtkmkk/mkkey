@@ -1652,7 +1652,7 @@ function isSteamUrl(url: string): string | null {
     }
     return null;
   } catch (error) {
-    logger.warn("Invalid URL:", error);
+    logger.warn("Invalid URL:", { error });
     return null;
   }
 }
@@ -1675,7 +1675,7 @@ function isSteamPackageUrl(url: string): string | null {
     }
     return null;
   } catch (error) {
-    logger.warn("Invalid URL:", error);
+    logger.warn("Invalid URL:", { error });
     return null;
   }
 }
@@ -1695,7 +1695,7 @@ function isSteamBundleUrl(url: string): string | null {
     }
     return null;
   } catch (error) {
-    logger.warn("Invalid URL:", error);
+    logger.warn("Invalid URL:", { error });
     return null;
   }
 }
@@ -1728,7 +1728,7 @@ function isAmazonProductUrl(url: string): { asin: string | null; hostname: strin
 
     return { asin: null, hostname };
   } catch (error) {
-    logger.warn("Invalid URL:", error);
+    logger.warn("Invalid URL:", { error });
     return null;
   }
 }
@@ -1738,7 +1738,7 @@ async function resolveAmazonShortUrl(originalUrl: string): Promise<string | null
   try {
     parsed = new URL(originalUrl);
   } catch (error) {
-    logger.warn("Invalid URL:", error);
+    logger.warn("Invalid URL:", { error });
     return null;
   }
 
@@ -1799,7 +1799,7 @@ async function resolveShortUrlIfNeeded(originalUrl: string): Promise<string | nu
   try {
     parsed = new URL(originalUrl);
   } catch (error) {
-    logger.warn("Invalid URL:", error);
+    logger.warn("Invalid URL:", { error });
     return null;
   }
 
@@ -1929,7 +1929,7 @@ function extractFinalUrl(originalUrl: string, response: FetchResponse): string |
   try {
     return new URL(location, originalUrl).href;
   } catch (error) {
-    logger.warn("Failed to parse redirect location:", error);
+    logger.warn("Failed to parse redirect location:", { error });
     return null;
   }
 }
@@ -2573,7 +2573,7 @@ function isVRCUrl(url: string): string | null {
     }
     return null;
   } catch (error) {
-    logger.warn("Invalid URL:", error);
+    logger.warn("Invalid URL:", { error });
     return null;
   }
 }

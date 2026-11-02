@@ -82,7 +82,12 @@ export async function checkFetch(req: IncomingMessage): Promise<number> {
 		const dbResolver = new DbResolver();
 
 		// HTTP-Signature keyIdを元にDBから取得
-		let authUser = await dbResolver.getAuthUserFromKeyId(signature.keyId);
+		// NOTE: keyId で見つかった場合は key が必ずあるが、後段の getAuthUserFromApId や
+		// refetchPublicKeyForApId は key が null になり得るため、型は null 込みで宣言する
+		let authUser: {
+			user: CacheableRemoteUser;
+			key: UserPublickey | null;
+		} | null = await dbResolver.getAuthUserFromKeyId(signature.keyId);
 
 		// keyIdでわからなければ、resolveしてみる
 		if (authUser == null) {
@@ -170,7 +175,11 @@ export async function getSignatureUser(req: IncomingMessage): Promise<{
 	const dbResolver = new DbResolver();
 
 	// Retrieve from DB by HTTP-Signature keyId
-	let authUser = await dbResolver.getAuthUserFromKeyId(signature.keyId);
+	// NOTE: 後段で key が null になり得る（AP ID からの解決・公開鍵の再取得）ため、型は null 込みで宣言する
+	let authUser: {
+		user: CacheableRemoteUser;
+		key: UserPublickey | null;
+	} | null = await dbResolver.getAuthUserFromKeyId(signature.keyId);
 
 	// Resolve if failed to retrieve by keyId
 	if (authUser == null) {

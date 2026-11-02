@@ -62,9 +62,13 @@ export default define(meta, paramDef, async (ps, user) => {
 		targetUserId: target.id,
 	});
 
-	const psmemo = { memo: ps.memo, customName: ps.customName };
+	// undefined: 変更なし / null: 削除 / 文字列: 設定
+	const psmemo: { memo?: string | null; customName?: string | null } = {
+		memo: ps.memo,
+		customName: ps.customName,
+	};
 
-	Object.keys(psmemo).forEach((key) => {
+	(Object.keys(psmemo) as (keyof typeof psmemo)[]).forEach((key) => {
 		if (psmemo[key] === undefined) {
 			// undefinedならプロパティを削除
 			delete psmemo[key];

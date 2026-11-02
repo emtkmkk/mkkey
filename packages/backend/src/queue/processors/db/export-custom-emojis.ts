@@ -81,7 +81,8 @@ export async function exportCustomEmojis(
 	});
 
 	for (const emoji of customEmojis) {
-		const ext = mime.extension(emoji.type);
+		// type が未設定の絵文字は拡張子なしで保存する
+		const ext = emoji.type != null ? mime.extension(emoji.type) : false;
 		const fileName = emoji.name + (ext ? `.${ext}` : "");
 		const emojiPath = `${path}/${fileName}`;
 		fs.writeFileSync(emojiPath, "", "binary");
@@ -93,7 +94,8 @@ export async function exportCustomEmojis(
 		} catch (e) {
 			// TODO: 何度か再試行
 			logger.error(e instanceof Error ? e : new Error(e as string));
-			job.log("error - " + e instanceof Error ? e : new Error(e as string));
+			// 以前は括弧が無く `("error - " + e) instanceof Error` と解釈されていたので、意図どおり文字列を組み立てる
+			job.log(`error - ${e instanceof Error ? e.message : String(e)}`);
 		}
 
 		if (!downloaded) {

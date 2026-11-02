@@ -22,7 +22,10 @@ export function extractMentions(
 ): mfm.MfmMention["props"][] {
 	// TODO: 重複を削除
 	const mentionNodes = mfm.extract(nodes, (node) => node.type === "mention");
-	const mentions = mentionNodes.map((x) => x.props);
+	// mfm.extract の戻り値は MfmNode[] のままなので、型を mention に絞ってから props を取り出す
+	const mentions = mentionNodes
+		.filter((x): x is mfm.MfmMention => x.type === "mention")
+		.map((x) => x.props);
 
 	return mentions;
 }

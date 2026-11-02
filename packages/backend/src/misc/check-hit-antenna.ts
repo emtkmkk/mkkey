@@ -90,9 +90,14 @@ export async function checkHitAntenna(
 		note.text,
 		// files は pack 済みノートにしか無い（DB のノートは fileIds のみ持つ）
 		...("files" in note ? note.files?.map((x) => x?.comment || "") ?? [] : []),
-		...(note.poll?.choices?.map(
-			(x) => (typeof x === "object" ? x?.text : x) || "",
-		) || []),
+		// poll も files と同じく pack 済みノートにしか無い（DB のノートは poll テーブルに分かれている）
+		...("poll" in note
+			? note.poll?.choices?.map(
+					// pack 済みの選択肢は { text, votes, isVoted }。文字列のまま来る古い形も受ける
+					(x: { text?: string } | string | null | undefined) =>
+						(typeof x === "object" ? x?.text : x) || "",
+			  ) ?? []
+			: []),
 	];
 
 	const text = textComponents.filter(Boolean).join(" ").trim();

@@ -96,16 +96,43 @@ export interface IActivity extends IObject {
 	};
 }
 
+/**
+ * CollectionPage / OrderedCollectionPage（コレクションの 1 ページ分）
+ *
+ * @remarks
+ * - `first` に埋め込まれるページや `next` で辿るページを読むための型。
+ * - 相手サーバーの実装差（`items` と `orderedItems` のどちらで返すか）を吸収するため、両方を省略可能にしている。
+ * - `next` / `prev` は URL 文字列のことが多いが、オブジェクトで埋め込まれる実装もあるため `IObject` も許す。
+ *
+ * @see {@link ICollection} / {@link IOrderedCollection}
+ * @internal
+ */
+export interface ICollectionPage extends IObject {
+	items?: ApObject;
+	orderedItems?: ApObject;
+	next?: string | IObject;
+	prev?: string | IObject;
+	partOf?: string | IObject;
+}
+
 export interface ICollection extends IObject {
 	type: "Collection";
 	totalItems: number;
 	items: ApObject;
+	/** 先頭ページ。URL または埋め込みページ */
+	first?: string | ICollectionPage;
+	/** 末尾ページ。URL または埋め込みページ */
+	last?: string | ICollectionPage;
 }
 
 export interface IOrderedCollection extends IObject {
 	type: "OrderedCollection";
 	totalItems: number;
 	orderedItems: ApObject;
+	/** 先頭ページ。URL または埋め込みページ */
+	first?: string | ICollectionPage;
+	/** 末尾ページ。URL または埋め込みページ */
+	last?: string | ICollectionPage;
 }
 
 export const validPost = [

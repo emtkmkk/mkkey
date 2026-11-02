@@ -117,9 +117,11 @@ export default async (
 	}
 
 	if (isNativeToken(token)) {
-		const user = await fetchAuthUserByTokenCache(token, async () => {
+		// let の型の絞り込み（string）はクロージャ内では失われるので、ここで const に取り直す
+		const nativeToken: string = token;
+		const user = await fetchAuthUserByTokenCache(nativeToken, async () => {
 			const authUser = await Users.findOne({
-				where: { token },
+				where: { token: nativeToken },
 				select: AUTH_USER_SELECT,
 			});
 			if (authUser == null) {

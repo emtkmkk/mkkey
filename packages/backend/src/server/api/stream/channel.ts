@@ -111,18 +111,37 @@ export default abstract class Channel {
 		return true;
 	}
 
+	/**
+	 * notesStream の生ノートを受け取り、パックしてから callback に渡すハンドラを作る。
+	 *
+	 * @remarks
+	 * - 各チャンネルは `this.onNote = this.withPackedNote(this.onPackedNote.bind(this))` のように、
+	 *   購読用ハンドラ（生 Note を受ける）とパック後の処理（Packed を受ける）を分けて使う。
+	 * - 戻り値の引数型は購読イベント `notesStream` の payload（{@link Note}）に合わせている。
+	 *   以前は `(Note) => void` と書かれており「Note という名前の any 引数」と解釈されていた。
+	 *
+	 * @param callback - パック済みノートを受け取る処理
+	 * @returns notesStream に登録できる購読ハンドラ
+	 * @internal
+	 */
 	protected withPackedNote(
 		callback: (note: Packed<"Note">) => void,
-	): (Note) => void {
+	): (note: Note) => Promise<void> {
 		return async (note: Note) => {
 			try {
 				// 以前 JSON.stringify されたため、オブジェクトだったフィールドは
 				// 文字列になっているので復元するかオブジェクトから除去する
 				note.createdAt = new Date(note.createdAt);
-				note.reply = undefined;
-				note.renote = undefined;
-				note.user = undefined;
-				note.channel = undefined;
+				// リレーション先は文字列化されていて使えないので取り除く。
+				// 従来どおり undefined を入れる（null にすると挙動が変わり得る）ため、
+				// 該当プロパティだけを省略可能として扱う型で参照する
+				const relations: Partial<
+					Pick<Note, "reply" | "renote" | "user" | "channel">
+				> = note;
+				relations.reply = undefined;
+				relations.renote = undefined;
+				relations.user = undefined;
+				relations.channel = undefined;
 
 				const packed = await Notes.pack(note, this.user, { detail: true });
 

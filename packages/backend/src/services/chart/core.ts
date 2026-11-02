@@ -77,6 +77,45 @@ type RawRecord<S extends Schema> = {
 } & TempColumnsForUnique<S> &
 	Columns<S>;
 
+/**
+ * RawRecord から数値カラム（`___` 付き）の値を読む
+ *
+ * @remarks
+ * RawRecord は交差型のため、スキーマがジェネリックのままでは `record[column]` を number に絞れない。
+ * Columns<S> は全カラムが number の写像型なので、`Record<string, number>` として読んで型を確定させる。
+ *
+ * @param record - 読み出す行
+ * @param column - 数値カラム名
+ * @returns カラムの値
+ * @internal
+ */
+function readColumn<S extends Schema>(
+	record: RawRecord<S>,
+	column: keyof Columns<S>,
+): number {
+	const columns: Record<string, number> = record;
+	return columns[column as string];
+}
+
+/**
+ * RawRecord からユニーク集計用の一時カラム（`unique_temp___` 付き、varchar[]）の値を読む
+ *
+ * @remarks
+ * {@link readColumn} と同じ理由で、`Record<string, string[]>` として読んで型を確定させる。
+ *
+ * @param record - 読み出す行
+ * @param column - 一時カラム名
+ * @returns カラムの値（文字列配列）
+ * @internal
+ */
+function readUniqueTempColumn<S extends Schema>(
+	record: RawRecord<S>,
+	column: keyof TempColumnsForUnique<S>,
+): string[] {
+	const columns: Record<string, string[]> = record;
+	return columns[column as string];
+}
+
 const camelToSnake = (str: string): string => {
 	return str.replace(/([A-Z])/g, (s) => `_${s.charAt(0).toLowerCase()}`);
 };
@@ -331,7 +370,7 @@ export default abstract class Chart<T extends Schema> {
 		) as (keyof Columns<T>)[]) {
 			kvs[
 				(k as string).substr(columnPrefix.length).split(columnDot).join(".")
-			] = x[k];
+			] = readColumn(x, k);
 		}
 		return kvs as KVs<T>;
 	}
@@ -571,7 +610,7 @@ export default abstract class Chart<T extends Schema> {
 			for (const [k, v] of Object.entries(finalDiffs)) {
 				if (typeof v === "number") {
 					const name = (columnPrefix +
-						k.replaceAll(".", columnDot)) as keyof Columns<T>;
+						k.replaceAll(".", columnDot)) as keyof Columns<T> & string;
 					if (v > 0) queryForHour[name] = () => `"${name}" + ${v}`;
 					if (v < 0) queryForHour[name] = () => `"${name}" - ${Math.abs(v)}`;
 					if (v > 0) queryForDay[name] = () => `"${name}" + ${v}`;
@@ -579,14 +618,14 @@ export default abstract class Chart<T extends Schema> {
 				} else if (Array.isArray(v) && v.length > 0) {
 					// ユニークインクリメント
 					const tempColumnName = (uniqueTempColumnPrefix +
-						k.replaceAll(".", columnDot)) as keyof TempColumnsForUnique<T>;
+						k.replaceAll(".", columnDot)) as keyof TempColumnsForUnique<T> & string;
 					// NOTE: item にはリモートのホスト名など外部由来の文字列が入るため、必ずエスケープする。
 					// 配列リテラル（'{...}'）は独自のエスケープ規則を持つので、ARRAY[...] で組み立てる
 					const itemsForHour = v
-						.filter((item) => !logHour[tempColumnName].includes(item))
+						.filter((item) => !readUniqueTempColumn(logHour, tempColumnName).includes(item))
 						.map((item) => sqlStringEscape(item));
 					const itemsForDay = v
-						.filter((item) => !logDay[tempColumnName].includes(item))
+						.filter((item) => !readUniqueTempColumn(logDay, tempColumnName).includes(item))
 						.map((item) => sqlStringEscape(item));
 					if (itemsForHour.length > 0)
 						queryForHour[tempColumnName] = () =>
@@ -609,16 +648,16 @@ export default abstract class Chart<T extends Schema> {
 					v.length > 0
 				) {
 					const name = (columnPrefix +
-						k.replaceAll(".", columnDot)) as keyof Columns<T>;
+						k.replaceAll(".", columnDot)) as keyof Columns<T> & string;
 					const tempColumnName = (uniqueTempColumnPrefix +
-						k.replaceAll(".", columnDot)) as keyof TempColumnsForUnique<T>;
+						k.replaceAll(".", columnDot)) as keyof TempColumnsForUnique<T> & string;
 					queryForHour[name] = new Set([
 						...(v as string[]),
-						...logHour[tempColumnName],
+						...readUniqueTempColumn(logHour, tempColumnName),
 					]).size;
 					queryForDay[name] = new Set([
 						...(v as string[]),
-						...logDay[tempColumnName],
+						...readUniqueTempColumn(logDay, tempColumnName),
 					]).size;
 				}
 			}
@@ -629,21 +668,21 @@ export default abstract class Chart<T extends Schema> {
 				const intersection = v.intersection;
 				if (intersection) {
 					const name = (columnPrefix +
-						k.replaceAll(".", columnDot)) as keyof Columns<T>;
+						k.replaceAll(".", columnDot)) as keyof Columns<T> & string;
 					const firstKey = intersection[0];
 					const firstTempColumnName = (uniqueTempColumnPrefix +
 						firstKey.replaceAll(
 							".",
 							columnDot,
-						)) as keyof TempColumnsForUnique<T>;
+						)) as keyof TempColumnsForUnique<T> & string;
 					const firstValues = finalDiffs[firstKey] as string[] | undefined;
 					const currentValuesForHour = new Set([
 						...(firstValues ?? []),
-						...logHour[firstTempColumnName],
+						...readUniqueTempColumn(logHour, firstTempColumnName),
 					]);
 					const currentValuesForDay = new Set([
 						...(firstValues ?? []),
-						...logDay[firstTempColumnName],
+						...readUniqueTempColumn(logDay, firstTempColumnName),
 					]);
 					for (let i = 1; i < intersection.length; i++) {
 						const targetKey = intersection[i];
@@ -651,15 +690,15 @@ export default abstract class Chart<T extends Schema> {
 							targetKey.replaceAll(
 								".",
 								columnDot,
-							)) as keyof TempColumnsForUnique<T>;
+							)) as keyof TempColumnsForUnique<T> & string;
 						const targetValues = finalDiffs[targetKey] as string[] | undefined;
 						const targetValuesForHour = new Set([
 							...(targetValues ?? []),
-							...logHour[targetTempColumnName],
+							...readUniqueTempColumn(logHour, targetTempColumnName),
 						]);
 						const targetValuesForDay = new Set([
 							...(targetValues ?? []),
-							...logDay[targetTempColumnName],
+							...readUniqueTempColumn(logDay, targetTempColumnName),
 						]);
 						currentValuesForHour.forEach((v) => {
 							if (!targetValuesForHour.has(v)) currentValuesForHour.delete(v);
@@ -755,7 +794,7 @@ export default abstract class Chart<T extends Schema> {
 			number,
 		][]) {
 			const name = (columnPrefix +
-				(k as string).replaceAll(".", columnDot)) as keyof Columns<T>;
+				(k as string).replaceAll(".", columnDot)) as keyof Columns<T> & string;
 			columns[name] = v;
 		}
 
@@ -804,7 +843,7 @@ export default abstract class Chart<T extends Schema> {
 		for (const [k, v] of Object.entries(this.schema)) {
 			if (v.uniqueIncrement) {
 				const name = (uniqueTempColumnPrefix +
-					k.replaceAll(".", columnDot)) as keyof TempColumnsForUnique<T>;
+					k.replaceAll(".", columnDot)) as keyof TempColumnsForUnique<T> & string;
 				columns[name] = [];
 			}
 		}

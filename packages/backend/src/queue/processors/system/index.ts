@@ -1,4 +1,5 @@
 import type Bull from "bull";
+import type { QueueProcessorWrapper } from "@/queue/adaptive-queue-throttle.js";
 import { tickCharts } from "./tick-charts.js";
 import { resyncCharts } from "./resync-charts.js";
 import { cleanCharts } from "./clean-charts.js";
@@ -16,10 +17,6 @@ import { warnInactiveDeletion } from "./warn-inactive-deletion.js";
 import { sendUnreadSummaryEmail } from "./unread-summary-email.js";
 import { broadcastPushNotice } from "./broadcast-push-notice.js";
 
-type QueueProcessorWrapper = <T>(
-	queueName: string,
-	processor: Bull.ProcessPromiseFunction<T>,
-) => Bull.ProcessPromiseFunction<T>;
 
 const jobs = {
 	tickCharts,

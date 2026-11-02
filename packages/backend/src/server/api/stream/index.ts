@@ -43,6 +43,7 @@ import channels from "./channels/index.js";
 import type Channel from "./channel.js";
 import type { StreamEventEmitter, StreamMessages } from "./types.js";
 import { Converter } from "@calckey/megalodon";
+import type { Entity, MegalodonInterface, Response } from "@calckey/megalodon";
 import { getClient } from "../mastodon/ApiMastodonCompatibleService.js";
 import { toTextWithReaction } from "../mastodon/endpoints/timeline.js";
 import { apiLogger } from "../logger.js";
@@ -272,7 +273,12 @@ export default class Connection {
 							},
 						},
 					];
-					const client = getClient(this.host, this.accessToken);
+					// FIXME: @calckey/megalodon 5.2.0 の MegalodonInterface には getSpotlightTimeline が無く、
+					// 実行時は「not a function」で失敗する（従来からの挙動）。megalodon 側に実装するか、
+					// この分岐を見直す必要がある。ここでは挙動を変えず、拡張メソッドを持つ型として扱うだけにする
+					const client = getClient(this.host, this.accessToken) as MegalodonInterface & {
+						getSpotlightTimeline(): Promise<Response<Entity.Status[]>>;
+					};
 					const tl = await client.getSpotlightTimeline();
 					for (const t of tl.data) forSubscribe.push(t.id);
 				} else if (simpleObj.stream === "list") {

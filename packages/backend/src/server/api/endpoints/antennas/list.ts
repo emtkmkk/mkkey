@@ -27,7 +27,13 @@ export const meta = {
 
 export const paramDef = {
 	type: "object",
-	properties: {},
+	properties: {
+		mkkey: {
+			type: "boolean",
+			description:
+				"true のとき mkkey 独自の src（home / all / users / users_blacklist 以外）をそのまま返す。省略時は互換性のため all に丸める。",
+		},
+	},
 	required: [],
 } as const;
 

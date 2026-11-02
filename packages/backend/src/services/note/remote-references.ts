@@ -18,12 +18,30 @@ import { apGet } from "@/remote/activitypub/request.js";
 import Resolver from "@/remote/activitypub/resolver.js";
 import { resolveNote } from "@/remote/activitypub/models/note.js";
 import { getApType, isCollectionOrOrderedCollection } from "@/remote/activitypub/type.js";
+import type {
+	ICollection,
+	ICollectionPage,
+	IObject,
+} from "@/remote/activitypub/type.js";
 import { toArray } from "@/prelude/array.js";
 import { IdentifiableError } from "@/misc/identifiable-error.js";
 import type { ILocalUser } from "@/models/entities/user.js";
 import promiseLimit from "promise-limit";
 
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+/**
+ * origin から返る references の 1 応答。
+ *
+ * @remarks
+ * Collection そのもの（`first` を持つ）が返る実装と、CollectionPage（`items` / `next` を持つ）が
+ * 直接返る実装の両方があるため、どちらとしても読めるように省略可能な項目の交差型にしている。
+ *
+ * @internal
+ */
+type ReferencesResponse = IObject &
+	Partial<Pick<ICollection, "first">> &
+	Partial<Pick<ICollectionPage, "items" | "next">>;
 
 /**
  * 親ノートの references Collection URL を組み立てる
@@ -63,9 +81,10 @@ async function fetchReferenceIdsFromOrigin(
 	viewer: ILocalUser,
 ): Promise<Note["id"][]> {
 	const referencesUrl = buildRemoteReferencesUrl(parentNote);
-	const resolver = new Resolver({
-		user: viewer,
-	});
+	// NOTE: Resolver のコンストラクタ引数は再帰上限（数値）。閲覧者で署名させるには setUser を使う。
+	// 以前は `new Resolver({ user })` と書かれており、user は設定されずインスタンスアクターで取得していた
+	const resolver = new Resolver();
+	resolver.setUser(viewer);
 
 	const referenceUris: string[] = [];
 	const visited = new Set<string>();
@@ -74,19 +93,21 @@ async function fetchReferenceIdsFromOrigin(
 		if (visited.has(pageUrl)) return;
 		visited.add(pageUrl);
 
-		const page = (await apGet(pageUrl, viewer)) as Record<string, unknown>;
+		const page = (await apGet(pageUrl, viewer)) as ReferencesResponse;
+		// NOTE: 型ガードを page に直接かけると ICollection に絞られて next が読めなくなるため、
+		// 判定だけ IObject として渡し page の型は保つ
 		const items = toArray(
-			(page.items as string | string[] | undefined) ??
-				(isCollectionOrOrderedCollection(page as never)
-					? (page as { first?: { items?: unknown } }).first?.items
+			page.items ??
+				(isCollectionOrOrderedCollection(page as IObject) &&
+				typeof page.first === "object"
+					? page.first.items
 					: undefined),
 		);
 		for (const item of items) {
 			if (typeof item === "string") {
 				referenceUris.push(item);
-			} else if (item && typeof item === "object" && "id" in item) {
-				const id = (item as { id?: string }).id;
-				if (typeof id === "string") referenceUris.push(id);
+			} else if (typeof item.id === "string") {
+				referenceUris.push(item.id);
 			}
 		}
 
@@ -96,24 +117,24 @@ async function fetchReferenceIdsFromOrigin(
 		}
 	}
 
-	const root = (await apGet(referencesUrl, viewer)) as Record<string, unknown>;
-	if (isCollectionOrOrderedCollection(root as never)) {
+	const root = (await apGet(referencesUrl, viewer)) as ReferencesResponse;
+	// NOTE: 上と同じ理由で、判定だけ IObject として渡す
+	if (isCollectionOrOrderedCollection(root as IObject)) {
 		const first = root.first;
 		if (typeof first === "string") {
 			await collectFromPage(first);
-		} else if (first && typeof first === "object") {
-			const firstObj = first as Record<string, unknown>;
-			const firstItems = toArray(firstObj.items as string | string[] | undefined);
+		} else if (first != null && typeof first === "object") {
+			const firstItems = toArray(first.items);
 			for (const item of firstItems) {
 				if (typeof item === "string") referenceUris.push(item);
 			}
-			const next = firstObj.next;
+			const next = first.next;
 			if (typeof next === "string") await collectFromPage(next);
 		}
 		const topNext = root.next;
 		if (typeof topNext === "string") await collectFromPage(topNext);
 	} else {
-		const items = toArray(root.items as string | string[] | undefined);
+		const items = toArray(root.items);
 		for (const item of items) {
 			if (typeof item === "string") referenceUris.push(item);
 		}

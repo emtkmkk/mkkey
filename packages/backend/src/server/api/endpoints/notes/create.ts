@@ -192,6 +192,26 @@ export const paramDef = {
 			description:
 				"公開範囲が specified のとき、見せるユーザー ID の配列。",
 		},
+		ccUserIds: {
+			type: "array",
+			uniqueItems: true,
+			items: {
+				type: "string",
+				format: "misskey:id",
+			},
+			description:
+				"公開範囲が specified のとき、CC として追加するローカルユーザー ID の配列。2 人以上指定できるのは招待権限を持つユーザーのみ。",
+		},
+		inheritCc: {
+			type: "boolean",
+			description:
+				"true のとき、返信先の CC ユーザー（と返信先の投稿者）を自分の CC に引き継ぐ。",
+		},
+		web: {
+			type: "boolean",
+			description:
+				"公式 Web クライアントからの投稿であることを示す。ミニサイレンス中のユーザーは、これが無い（外部アプリからの）public 投稿を拒否される。",
+		},
 		text: {
 			type: "string",
 			maxLength: MAX_NOTE_TEXT_LENGTH,
@@ -578,7 +598,8 @@ export default define(meta, paramDef, async (ps, user, _token, _file, _cleanup, 
 		throw new ApiError(meta.errors.noSuchReferenceTarget);
 	}
 
-	const choices = new Set()
+	// 選択肢は文字列のみ（重複は末尾にゼロ幅スペースを足して区別する）
+	const choices = new Set<string>()
 	if (ps.poll) {
 			if (ps.poll.choices?.length) {
 				for (const choice of ps.poll.choices) {
@@ -636,7 +657,8 @@ export default define(meta, paramDef, async (ps, user, _token, _file, _cleanup, 
 			: [];
 
 	const fileUrls = await Promise.all(fileUrlsPromises);
-	files.push(...(fileUrls.filter((x) => x != null)));
+	// 取り込みに失敗した URL は null で返るので除外する（型の絞り込みのため type guard にしている）
+	files.push(...fileUrls.filter((x): x is DriveFile => x != null));
 	const endpointPreprocessMs = Date.now() - endpointStartedAt;
 
 	// 投稿を作成する

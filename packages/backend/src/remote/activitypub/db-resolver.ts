@@ -200,7 +200,9 @@ export default class DbResolver {
 	public async refetchPublicKeyForApId(
 		user: CacheableRemoteUser,
 	): Promise<UserPublickey | null> {
-		await updatePerson(user.uri!, undefined, undefined, user);
+		// NOTE: updatePerson は (uri, resolver?, hint?) の 3 引数。以前は 4 つ目に user を渡していたが
+		// 受け側に該当パラメータが無く、実行時には無視されていたため取り除いた（挙動は変わらない）
+		await updatePerson(user.uri!);
 		const key = await UserPublickeys.findOneBy({ userId: user.id });
 		if (key != null) {
 			await publicKeyByUserIdCache.set(user.id, key);

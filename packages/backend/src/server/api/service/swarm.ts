@@ -33,16 +33,9 @@ function compareOrigin(ctx: Koa.BaseContext): boolean {
 }
 
 function getRedisValue(key: string): Promise<string | null> {
-	return new Promise((resolve, reject) => {
-		redisClient.get(key, (err, value) => {
-			if (err) {
-				reject(err);
-				return;
-			}
-
-			resolve(value);
-		});
-	});
+	// ioredis はコマンドを Promise でも返す。コールバック版は result が省略可能型になり
+	// null と区別できないため、同じコマンドを Promise 版で呼ぶ
+	return redisClient.get(key);
 }
 
 function setRedisValue(key: string, value: string, expiresInSeconds: number): Promise<void> {

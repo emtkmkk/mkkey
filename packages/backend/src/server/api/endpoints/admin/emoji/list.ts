@@ -29,29 +29,12 @@ export const meta = {
 				type: "array",
 				optional: false,
 				nullable: false,
+				// 実際には Emojis.packMany の結果をそのまま返しているので、Emoji スキーマを参照する
 				items: {
 					type: "object",
 					optional: false,
 					nullable: false,
-					properties: {
-						id: { type: "string", optional: false, nullable: false, format: "id" },
-						aliases: {
-							type: "array",
-							optional: false,
-							nullable: false,
-							items: { type: "string", optional: false, nullable: false },
-						},
-						name: { type: "string", optional: false, nullable: false },
-						category: { type: "string", optional: false, nullable: true },
-						host: {
-							type: "null",
-							optional: false,
-							description:
-								"The local host is represented with `null`. The field exists for compatibility with other API endpoints that return files.",
-						},
-						url: { type: "string", optional: false, nullable: false },
-						license: { type: "string", optional: false, nullable: true },
-					},
+					ref: "Emoji",
 				},
 			},
 			total: { type: "integer", optional: false, nullable: false },

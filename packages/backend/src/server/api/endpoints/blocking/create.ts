@@ -111,7 +111,8 @@ export default define(meta, paramDef, async (ps, user) => {
 		noteUserId: blockee.id,
 	});
 
-	return await Users.pack(blockee.id, blocker, {
+	// ブロック対象は自分以外なので、res スキーマ（UserDetailedNotMe）に合わせて型引数で明示する
+	return await Users.pack<false, true>(blockee.id, blocker, {
 		detail: true,
 	});
 });

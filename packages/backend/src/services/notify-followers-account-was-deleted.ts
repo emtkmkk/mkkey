@@ -14,6 +14,7 @@
  */
 
 import type { User } from "@/models/entities/user.js";
+import type { Following } from "@/models/entities/following.js";
 import { Followings, Users } from "@/models/index.js";
 import { createNotification } from "@/services/create-notification.js";
 import { MoreThan } from "typeorm";
@@ -32,7 +33,9 @@ export async function notifyFollowersAccountWasDeleted(
 	let cursor: User["id"] | null = null;
 
 	while (true) {
-		const relations = await Followings.find({
+		// NOTE: where 句が cursor を参照し、cursor はループ内で relation から更新されるため、
+		// 型注釈が無いと推論が循環する（TS7022）。明示的に Following[] と宣言する
+		const relations: Following[] = await Followings.find({
 			where: {
 				followeeId: user.id,
 				...(cursor ? { followerId: MoreThan(cursor) } : {}),

@@ -25,36 +25,54 @@ const logger = apLogger;
 
 /**
  * Image を作成する。
+ *
+ * @remarks
+ * - Document 系（Audio / Document / Image / Page / Video）でない、または http(s) の URL を持たない添付は
+ *   取り込まず `null` を返す。呼び出し側は `null` を除外する前提。
+ * - `url` がオブジェクト（Link など）で届いた場合は従来どおり例外にする（文字列以外の URL は扱えない）。
+ *
+ * @param actor - 添付の持ち主（リモートユーザー）
+ * @param value - Image オブジェクトまたはその URI
+ * @returns 取り込んだドライブファイル。取り込み対象外なら `null`
+ * @throws 作者が凍結されている、または `url` が文字列でない場合
+ * @internal
  */
 export async function createImage(
 	actor: CacheableRemoteUser,
-	value: any,
-): Promise<DriveFile> {
+	value: string | IObject,
+): Promise<DriveFile | null> {
 	// 作者が凍結されている場合はスキップ
 	if (actor.isSuspended) {
 		throw new Error("actor has been suspended");
 	}
 
-	const image = (await new Resolver().resolve(value)) as any;
-	
+	const image = await new Resolver().resolve(value);
+
 	if (!isDocument(image)) return null;
 
 	if (image.url == null) {
 		return null;
 	}
 
-	if (!image.url.startsWith("https://") && !image.url.startsWith("http://")) {
+	// url は ApObject（文字列 | オブジェクト | 配列）の型だが、ここでは文字列の URL だけを扱う。
+	// 文字列以外は従来も startsWith で TypeError になっていたため、明示的に例外にする（挙動は同じ）
+	const imageUrl = image.url;
+	if (typeof imageUrl !== "string") {
+		throw new Error("invalid image: unexpected type of url");
+	}
+
+	if (!imageUrl.startsWith("https://") && !imageUrl.startsWith("http://")) {
 		return null;
 	}
 
-	logger.info(`Creating the Image: ${image.url}`);
+	logger.info(`Creating the Image: ${imageUrl}`);
 
 	const instance = await fetchMeta();
 
 	let file = await uploadFromUrl({
-		url: image.url,
+		url: imageUrl,
 		user: actor,
-		uri: image.url,
+		uri: imageUrl,
 		sensitive: image.sensitive,
 		isLink: !instance.cacheRemoteFiles,
 		comment: truncate(image.name, DB_MAX_IMAGE_COMMENT_LENGTH),
@@ -62,12 +80,12 @@ export async function createImage(
 
 	if (file.isLink) {
 		// URL が異なる場合は、同一画像が別 URL で登録されていたため URL を更新する
-		if (file.url !== image.url) {
+		if (file.url !== imageUrl) {
 			await DriveFiles.update(
 				{ id: file.id },
 				{
-					url: image.url,
-					uri: image.url,
+					url: imageUrl,
+					uri: imageUrl,
 				},
 			);
 
@@ -86,8 +104,8 @@ export async function createImage(
  */
 export async function resolveImage(
 	actor: CacheableRemoteUser,
-	value: any,
-): Promise<DriveFile> {
+	value: string | IObject,
+): Promise<DriveFile | null> {
 	// TODO
 
 	// リモートから取得して登録

@@ -19,13 +19,8 @@ import { In } from "typeorm";
  * Approve all follow requests for the specified user
  * @param user User.
  */
-export default async function (user: {
-	id: User["id"];
-	host: User["host"];
-	uri: User["host"];
-	inbox: User["inbox"];
-	sharedInbox: User["sharedInbox"];
-}) {
+// NOTE: accept が通知の notifier として pack に渡すため、User エンティティ全体を要求する
+export default async function (user: User) {
 	const requests = await FollowRequests.findBy({
 		followeeId: user.id,
 	});

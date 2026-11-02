@@ -646,7 +646,9 @@ router.get("/notes/:note/references", async (ctx, next) => {
 				id: note.userId,
 			});
 
-			const _note: Note =
+			// 公開範囲外・ローカル限定はパックせず、テンプレートに必要な最小限の情報だけを渡す
+			// （パック済みノートとこの最小情報の合併型になる。Note エンティティではない）
+			const _note =
 				["public", "home"].includes(note.visibility) && !note.localOnly
 					? await Notes.pack(note)
 					: { id: note.id, user: user, fileIds: [], files: [], referenceIds: [] };
@@ -739,10 +741,12 @@ router.get("/notes/:note", async (ctx, next) => {
 				id: note.userId,
 			});
 
-			const _note =
+			// 公開範囲外・ローカル限定はパックせず（null）、テンプレートには最小限の情報だけを渡す
+			const packedNote =
 				["public", "home"].includes(note.visibility) && !note.localOnly
 					? await Notes.pack(note)
-					: { id: note.id, user: user, fileIds: [], files: [] };
+					: null;
+			const _note = packedNote ?? { id: note.id, user: user, fileIds: [], files: [] };
 
 			const profile = await UserProfiles.findOneByOrFail({
 				userId: note.userId,
@@ -750,13 +754,14 @@ router.get("/notes/:note", async (ctx, next) => {
 			const meta = await fetchMeta();
 			const userName = getUserNameForMeta(user);
 			let summary = "";
-			if (!["public", "home"].includes(note.visibility) || note.localOnly) {
+			// packedNote が null なのは「公開範囲外またはローカル限定」のときだけ（上の条件と同値）
+			if (packedNote == null) {
 				summary = `${note.visibility === "followers"
 					? `${userName}さんのフォロワー限定の投稿`
 					: "公開範囲が限定されている投稿"
 					}なのでプレビューを表示できません。\nリンクをクリックすると投稿ページへ移動します。`;
 			} else {
-				summary = getNoteSummary(_note);
+				summary = getNoteSummary(packedNote);
 			}
 			await ctx.render("note", {
 				note: _note,
@@ -790,10 +795,12 @@ router.get("/posts/:note", async (ctx, next) => {
 			id: note.userId,
 		});
 
-		const _note =
+		// 公開範囲外・ローカル限定はパックせず（null）、テンプレートには最小限の情報だけを渡す
+		const packedNote =
 			["public", "home"].includes(note.visibility) && !note.localOnly
 				? await Notes.pack(note)
-				: { id: note.id, user: user, fileIds: [], files: [] };
+				: null;
+		const _note = packedNote ?? { id: note.id, user: user, fileIds: [], files: [] };
 
 		const profile = await UserProfiles.findOneByOrFail({
 			userId: note.userId,
@@ -801,13 +808,14 @@ router.get("/posts/:note", async (ctx, next) => {
 		const meta = await fetchMeta();
 		const userName = getUserNameForMeta(user);
 		let summary = "";
-		if (!["public", "home"].includes(note.visibility) || note.localOnly) {
+		// packedNote が null なのは「公開範囲外またはローカル限定」のときだけ（上の条件と同値）
+		if (packedNote == null) {
 			summary = `${note.visibility === "followers"
 				? `${userName}さんのフォロワー限定の投稿`
 				: "公開範囲が限定されている投稿"
 				}なのでプレビューを表示できません。\nリンクをクリックすると投稿ページへ移動します。`;
 		} else {
-			summary = getNoteSummary(_note);
+			summary = getNoteSummary(packedNote);
 		}
 		await ctx.render("note", {
 			note: _note,
@@ -1196,9 +1204,9 @@ router.get("(.*)", async (ctx) => {
 		where: { host: Not(IsNull()) },
 		cache: 21600000,
 	}); //6h
-	let motd = [];
-	let motdd = []; //日付のmotd
-	let motdt = []; //統計のmotd
+	let motd: string[] = [];
+	let motdd: string[] = []; //日付のmotd
+	let motdt: string[] = []; //統計のmotd
 	if (meta.customMOTD.length > 0) {
 		motdt = meta.customMOTD;
 	}

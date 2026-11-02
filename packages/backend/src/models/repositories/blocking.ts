@@ -10,7 +10,8 @@ export const BlockingRepository = db.getRepository(Blocking).extend({
 	async pack(
 		src: Blocking["id"] | Blocking,
 		me?: { id: User["id"] } | null | undefined,
-		options?: { blockeePacked?: Packed<"User"> },
+		// packMany が detail: true で pack したものを渡すので、スキーマ（ref: UserDetailed）に合わせる
+		options?: { blockeePacked?: Packed<"UserDetailed"> },
 	): Promise<Packed<"Blocking">> {
 		const blocking =
 			typeof src === "object" ? src : await this.findOneByOrFail({ id: src });

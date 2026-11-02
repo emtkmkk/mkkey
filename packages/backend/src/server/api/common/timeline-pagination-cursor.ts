@@ -10,7 +10,7 @@
  * @internal
  */
 
-import type { SelectQueryBuilder } from "typeorm";
+import type { ObjectLiteral, SelectQueryBuilder } from "typeorm";
 
 /** {@link makePaginationQuery} と同型のページング引数 */
 export type TimelinePaginationParams = {
@@ -49,7 +49,7 @@ export function isPaginationQueryAsc(ps: TimelinePaginationParams): boolean {
  *
  * @internal
  */
-export function applyKeysetCursorToQuery<T>(
+export function applyKeysetCursorToQuery<T extends ObjectLiteral>(
 	qb: SelectQueryBuilder<T>,
 	alias: string,
 	cursor: string,

@@ -17,6 +17,7 @@ import { getWordHardMute } from "@/misc/check-word-mute.js";
 import { isUserRelated } from "@/misc/is-user-related.js";
 import { isRemoteRenoteTarget } from "../../common/is-remote-renote-target.js";
 import type { Packed } from "@/misc/schema.js";
+import type { Note } from "@/models/entities/note.js";
 
 const RECENT_RENOTE_TARGET_LIMIT = 128;
 
@@ -72,7 +73,7 @@ export default class extends Channel {
 
 	constructor(id: string, connection: Channel["connection"]) {
 		super(id, connection);
-		this.onNote = this.withPackedNote(this.onNote.bind(this));
+		this.onNote = this.withPackedNote(this.onPackedNote.bind(this));
 	}
 
 	public async init(params: any) {
@@ -90,7 +91,16 @@ export default class extends Channel {
 		this.subscriber.on("notesStream", this.onNote);
 	}
 
-	private async onNote(note: Packed<"Note">) {
+	/**
+	 * notesStream の購読ハンドラ。
+	 *
+	 * @remarks
+	 * コンストラクタで `withPackedNote` により生成し、生の Note をパックしてから
+	 * {@link onPackedNote} に渡す。購読と解除の両方で同じ参照を使うためフィールドで保持する。
+	 */
+	private onNote: (note: Note) => Promise<void>;
+
+	private async onPackedNote(note: Packed<"Note">) {
 		const meta = await fetchMeta();
 		if (
 			note.user.host !== null &&

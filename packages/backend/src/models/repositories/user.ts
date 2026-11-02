@@ -1067,7 +1067,17 @@ FROM "user" u WHERE u."id" = $1`,
 					// Bluesky のバッジはプロフィール画面だけに出す（ノートの名前の横には出さない）
 					opts.detail && isBlueskyUser(user) ? BLUESKY_BADGE : undefined,
 			  ].filter((x): x is NonNullable<typeof x> => x !== undefined);
-		let roles =
+		// Admin / Moderator のロールは iconUrl が null なので、推論に任せず型を明示する
+		let roles: {
+			id: string;
+			name: string;
+			description: string;
+			iconUrl: string | null;
+			isModerator: boolean;
+			isAdministrator: boolean;
+			color: string;
+			displayOrder: number;
+		}[] =
 			badges?.map((x, i) => ({
 				id: x.id,
 				name: x.name,

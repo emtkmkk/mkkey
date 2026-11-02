@@ -15,6 +15,13 @@ export const packedFederationInstanceSchema = {
 			nullable: false,
 			format: "date-time",
 		},
+		// Misskey 互換のための別名。値は caughtAt と同じ
+		firstRetrievedAt: {
+			type: "string",
+			optional: false,
+			nullable: false,
+			format: "date-time",
+		},
 		host: {
 			type: "string",
 			optional: false,
@@ -42,6 +49,18 @@ export const packedFederationInstanceSchema = {
 			nullable: false,
 		},
 		latestRequestSentAt: {
+			type: "string",
+			optional: false,
+			nullable: true,
+			format: "date-time",
+		},
+		latestStatus: {
+			type: "number",
+			optional: false,
+			nullable: true,
+			description: "最後に配送したときの HTTP ステータス。",
+		},
+		latestRequestReceivedAt: {
 			type: "string",
 			optional: false,
 			nullable: true,
@@ -127,6 +146,12 @@ export const packedFederationInstanceSchema = {
 			type: "string",
 			optional: false,
 			nullable: true,
+		},
+		maxReactionsPerAccount: {
+			type: "number",
+			optional: false,
+			nullable: false,
+			description: "1 アカウントが 1 投稿に付けられるリアクション数の上限。",
 		},
 		infoUpdatedAt: {
 			type: "string",

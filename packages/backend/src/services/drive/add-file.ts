@@ -567,6 +567,9 @@ async function expireOldFile(user: IRemoteUser, driveCapacity: number) {
 
 	for (const fileId of exceedFileIds) {
 		const file = await DriveFiles.findOneBy({ id: fileId });
+		// 直前のクエリで得た ID なので通常は見つかるが、並行削除で消えていた場合は飛ばす
+		// （以前は null のまま deleteFile に渡り、未処理の例外になっていた）
+		if (file == null) continue;
 		deleteFile(file, true);
 	}
 }

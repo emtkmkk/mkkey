@@ -5,7 +5,7 @@ export const meta = {
 	tags: ["charts", "hashtags"],
 	requireCredentialPrivateMode: true,
 
-	res: null,
+	// NOTE: ハッシュタグチャートは無効化しており常に null（HTTP 204）を返すため、res スキーマは持たない
 
 	allowGet: true,
 	cacheSec: 60 * 60,

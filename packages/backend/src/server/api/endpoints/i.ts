@@ -16,6 +16,7 @@ import { isModerationWarningAckPending } from "@/misc/moderation-warning-ack.js"
 import { ModerationWarningPopupAcks, Users } from "@/models/index.js";
 import type { ILocalUser } from "@/models/entities/user.js";
 import type { MeDetailedVolatile } from "@/models/repositories/user.js";
+import type { Packed } from "@/misc/schema.js";
 import define from "../define.js";
 
 const meDetailedVolatileKeys = [
@@ -110,7 +111,8 @@ export default define(meta, paramDef, async (ps, user, token) => {
 	if (mergedCache != null) {
 		const merged = JSON.parse(mergedCache) as Record<string, unknown>;
 		await attachModerationWarningPopup(merged, user);
-		return merged;
+		// NOTE: キャッシュは base/volatile を合成する都合で Record として扱っているが、中身は MeDetailed
+		return merged as Packed<"MeDetailed">;
 	}
 
 	const baseCacheKey = Users.getMeDetailedBaseCacheKey(userId, isSecure);
@@ -181,5 +183,6 @@ export default define(meta, paramDef, async (ps, user, token) => {
 
 	await attachModerationWarningPopup(merged, user);
 
-	return merged;
+	// NOTE: 上と同じく、合成結果は MeDetailed の形になっている
+	return merged as Packed<"MeDetailed">;
 });

@@ -23,10 +23,14 @@ import {
 } from "@/services/user-stats/index.js";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
+import type { SchemaType } from "@/misc/schema.js";
+
+/** この API の応答型（res スキーマから導出） */
+type UserStatsResponse = SchemaType<typeof meta.res>;
 
 /** 応答全体のキャッシュ（TTL 10 分）。キー: userId:simple */
 const STATS_RESPONSE_CACHE_TTL_MS = 600 * 1000;
-const statsResponseCache = new Cache<Record<string, unknown>>(
+const statsResponseCache = new Cache<UserStatsResponse>(
 	STATS_RESPONSE_CACHE_TTL_MS,
 	{ maxEntries: CACHE_MAX_USER },
 );
@@ -242,6 +246,8 @@ export default define(meta, paramDef, async (ps, me) => {
 		}
 	}
 
-	statsResponseCache.set(cacheKey, result);
-	return result;
+	// NOTE: 集計結果は services 側で Record として組み立てられるが、中身は res スキーマの形になっている
+	const response = result as UserStatsResponse;
+	statsResponseCache.set(cacheKey, response);
+	return response;
 });

@@ -174,7 +174,8 @@ export default async (ctx: Koa.Context) => {
 
 			ctx.body = res;
 		} catch (e) {
-			ctx.throw(400, e);
+			// catch の変数は unknown。ctx.throw には従来どおりそのまま渡す（Error 以外でも挙動は変えない）
+			ctx.throw(400, e as Error);
 		}
 		return;
 	}
@@ -244,7 +245,8 @@ export default async (ctx: Koa.Context) => {
 
 			ctx.body = res;
 		} catch (e) {
-			ctx.throw(400, e);
+			// catch の変数は unknown。ctx.throw には従来どおりそのまま渡す（Error 以外でも挙動は変えない）
+			ctx.throw(400, e as Error);
 		}
 	}
 };

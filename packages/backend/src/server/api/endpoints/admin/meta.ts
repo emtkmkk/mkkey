@@ -60,21 +60,22 @@ export const meta = {
 				optional: false,
 				nullable: true,
 			},
+			// 画像 URL 系は DB 上 null 可（エンティティに合わせる）
 			mascotImageUrl: {
 				type: "string",
 				optional: false,
-				nullable: false,
+				nullable: true,
 				default: "/assets/ai.png",
 			},
 			bannerUrl: {
 				type: "string",
 				optional: false,
-				nullable: false,
+				nullable: true,
 			},
 			errorImageUrl: {
 				type: "string",
 				optional: false,
-				nullable: false,
+				nullable: true,
 				default: "https://xn--931a.moe/aiart/yubitun.png",
 			},
 			iconUrl: {
@@ -92,79 +93,7 @@ export const meta = {
 				optional: false,
 				nullable: false,
 			},
-			emojis: {
-				type: "array",
-				optional: false,
-				nullable: false,
-				items: {
-					type: "object",
-					optional: false,
-					nullable: false,
-					properties: {
-						id: {
-							type: "string",
-							optional: false,
-							nullable: false,
-							format: "id",
-						},
-						aliases: {
-							type: "array",
-							optional: false,
-							nullable: false,
-							items: {
-								type: "string",
-								optional: false,
-								nullable: false,
-							},
-						},
-						category: {
-							type: "string",
-							optional: false,
-							nullable: true,
-						},
-						host: {
-							type: "string",
-							optional: false,
-							nullable: true,
-						},
-						url: {
-							type: "string",
-							optional: false,
-							nullable: false,
-							format: "url",
-						},
-					},
-				},
-			},
-			ads: {
-				type: "array",
-				optional: false,
-				nullable: false,
-				items: {
-					type: "object",
-					optional: false,
-					nullable: false,
-					properties: {
-						place: {
-							type: "string",
-							optional: false,
-							nullable: false,
-						},
-						url: {
-							type: "string",
-							optional: false,
-							nullable: false,
-							format: "url",
-						},
-						imageUrl: {
-							type: "string",
-							optional: false,
-							nullable: false,
-							format: "url",
-						},
-					},
-				},
-			},
+			// NOTE: emojis / ads / proxyAccountName は現在の実装では返していないため、スキーマからも外した
 			enableEmail: {
 				type: "boolean",
 				optional: false,
@@ -204,11 +133,6 @@ export const meta = {
 				type: "boolean",
 				optional: false,
 				nullable: false,
-			},
-			proxyAccountName: {
-				type: "string",
-				optional: false,
-				nullable: true,
 			},
 			recommendedInstances: {
 				type: "array",
@@ -406,8 +330,9 @@ export const meta = {
 				optional: true,
 				nullable: true,
 			},
+			// エンティティでは数値（smtpPort: number | null）
 			smtpPort: {
-				type: "string",
+				type: "number",
 				optional: true,
 				nullable: true,
 			},

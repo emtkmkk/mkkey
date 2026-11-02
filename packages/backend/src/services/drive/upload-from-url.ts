@@ -24,7 +24,13 @@ const logger = driveLogger.createSubLogger("downloader");
 
 type Args = {
 	url: string;
-	user: { id: User["id"]; host: User["host"] } | null;
+	/** アップロード先ユーザー。addFile が容量判定に username / driveCapacityOverrideMb も使うため同じ形を要求する */
+	user: {
+		id: User["id"];
+		username: User["username"];
+		host: User["host"];
+		driveCapacityOverrideMb: User["driveCapacityOverrideMb"];
+	} | null;
 	folderId?: DriveFolder["id"] | null;
 	uri?: string | null;
 	sensitive?: boolean;

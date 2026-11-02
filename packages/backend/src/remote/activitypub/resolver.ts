@@ -15,7 +15,12 @@ import { getInstanceActor } from "@/services/instance-actor.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import { extractDbHost, isSelfHost } from "@/misc/convert-host.js";
 import { apGet } from "./request.js";
-import type { IObject, ICollection, IOrderedCollection } from "./type.js";
+import type {
+	IObject,
+	IActivity,
+	ICollection,
+	IOrderedCollection,
+} from "./type.js";
 import { isCollectionOrOrderedCollection, getApId } from "./type.js";
 import {
 	FollowRequests,
@@ -36,6 +41,37 @@ import renderFollow from "@/remote/activitypub/renderer/follow.js";
 import { shouldBlockInstance } from "@/misc/should-block-instance.js";
 import { apLogger } from "./logger.js";
 
+/**
+ * 自サーバーのレンダラ出力を IObject として扱う
+ *
+ * @remarks
+ * レンダラ（renderNote / renderPerson / renderQuestion）は `Record<string, unknown>` や
+ * 緩い型で AP オブジェクトを組み立てて返すため、型上は {@link IObject} と重ならない。
+ * 中身は AP オブジェクトそのものなので、ここ 1 箇所でだけ IObject として読み替える。
+ *
+ * @param rendered - レンダラが返したオブジェクト
+ * @returns 同じオブジェクト（型だけ IObject）
+ * @internal
+ */
+function asLocalApObject(rendered: object): IObject {
+	return rendered as IObject;
+}
+
+/**
+ * 自サーバーのレンダラ出力を `@context` 付きアクティビティにする
+ *
+ * @remarks
+ * {@link renderActivity} は null を渡すと null を返すが、ここでは常に非 null のオブジェクトを渡すため
+ * 戻り値も非 null に確定させる（レンダラの戻りが any のためオーバーロードでは絞れない）。
+ *
+ * @param rendered - レンダラが返したオブジェクト
+ * @returns `@context` 付きのアクティビティ
+ * @internal
+ */
+function renderLocalActivity(rendered: object): IActivity {
+	return renderActivity(rendered);
+}
+
 export default class Resolver {
 	private history: Set<string>;
 	private user?: ILocalUser;
@@ -46,8 +82,18 @@ export default class Resolver {
 		this.recursionLimit = recursionLimit;
 	}
 
-	public setUser(user) {
-		this.user = user;
+	/**
+	 * リモート取得時の署名に使うローカルユーザーを設定する
+	 *
+	 * @remarks
+	 * 未設定（null / undefined を渡した場合も含む）ならインスタンスアクターで署名する。
+	 *
+	 * @param user - 署名に使うローカルユーザー。未ログイン時は null / undefined を渡してよい
+	 * @public
+	 */
+	public setUser(user: ILocalUser | null | undefined): void {
+		// null も「未設定」として扱う（取得時に !this.user で判定している）
+		this.user = user ?? undefined;
 	}
 
 	public reset(): Resolver {
@@ -159,29 +205,35 @@ export default class Resolver {
 
 		switch (parsed.type) {
 			case "notes":
-				return Notes.findOneByOrFail({ id: parsed.id }).then((note) => {
+				return Notes.findOneByOrFail({ id: parsed.id }).then(async (note) => {
+					const rendered = await renderNote(note);
 					if (parsed.rest === "activity") {
 						// this refers to the create activity and not the note itself
-						return renderActivity(renderCreate(renderNote(note)));
+						// NOTE: renderNote は Promise を返すので、await してから Create に包む。
+						// 以前は Promise をそのまま渡していたため object が空になっていた
+						return renderLocalActivity(renderCreate(rendered, note));
 					} else {
-						return renderNote(note);
+						return asLocalApObject(rendered);
 					}
 				});
 			case "users":
-				return Users.findOneByOrFail({ id: parsed.id }).then((user) =>
-					renderPerson(user as ILocalUser),
+				return Users.findOneByOrFail({ id: parsed.id }).then(async (user) =>
+					asLocalApObject(await renderPerson(user as ILocalUser)),
 				);
 			case "questions":
 				// Polls are indexed by the note they are attached to.
 				return Promise.all([
 					Notes.findOneByOrFail({ id: parsed.id }),
 					Polls.findOneByOrFail({ noteId: parsed.id }),
-				]).then(([note, poll]) =>
-					renderQuestion({ id: note.userId }, note, poll),
+				]).then(async ([note, poll]) =>
+					asLocalApObject(
+						await renderQuestion({ id: note.userId }, note, poll),
+					),
 				);
 			case "likes":
 				return NoteReactions.findOneByOrFail({ id: parsed.id }).then(
-					(reaction) => renderActivity(renderLike(reaction, { uri: null })),
+					async (reaction) =>
+						renderLocalActivity(await renderLike(reaction, { uri: null })),
 				);
 			case "follows":
 				return FollowRequests.findOneBy({ id: parsed.id }).then(
@@ -203,7 +255,7 @@ export default class Resolver {
 								"resolveLocal: follower or followee does not exist",
 							);
 						}
-						return renderActivity(renderFollow(follower, followee, url));
+						return renderLocalActivity(renderFollow(follower, followee, url));
 					},
 				);
 			/*

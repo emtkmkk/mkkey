@@ -43,10 +43,14 @@ export default define(meta, paramDef, async (ps, user) => {
 	});
 
 	return await Promise.all(
-		tokens.map((token) =>
-			Apps.pack(token.appId, user, {
-				detail: true,
-			}),
-		),
+		tokens
+			// NOTE: appId が null のトークン（MiAuth 等、アプリに紐づかないもの）は「認証済みアプリ」ではないので除く。
+			// 以前は null をそのまま Apps.pack に渡して例外になっていた。
+			.filter((token): token is typeof token & { appId: string } => token.appId != null)
+			.map((token) =>
+				Apps.pack(token.appId, user, {
+					detail: true,
+				}),
+			),
 	);
 });

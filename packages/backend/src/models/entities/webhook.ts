@@ -9,6 +9,16 @@ import {
 import { User } from "./user.js";
 import { id } from "../id.js";
 
+/**
+ * 利用者が購読を選べる Webhook のイベント種別（`Webhook.on` に入る値）。
+ *
+ * @remarks
+ * 実際に配信される `type` はこれより細かい（{@link webhookDeliverTypes}）。
+ * 例えば `unfollow` を購読すると、配信時は `unfollow` / `silentUnfollow` /
+ * `deletefollow` / `rejectRequest` のいずれかが届く。
+ *
+ * @public
+ */
 export const webhookEventTypes = [
 	"mention",
 	"unfollow",
@@ -19,6 +29,24 @@ export const webhookEventTypes = [
 	"renote",
 	"reaction",
 	"antenna",
+] as const;
+
+/**
+ * 配信時に `type` として送る種別。購読種別に加えて、より細かい種別を含む。
+ *
+ * @remarks
+ * - `silentUnfollow` / `deletefollow` / `rejectRequest`: `unfollow` 購読者向けの内訳
+ * - `userMessage` / `groupMessage`: チャットの受信（購読種別は `mention` などと独立に判定している）
+ *
+ * @public
+ */
+export const webhookDeliverTypes = [
+	...webhookEventTypes,
+	"silentUnfollow",
+	"deletefollow",
+	"rejectRequest",
+	"userMessage",
+	"groupMessage",
 ] as const;
 
 @Entity()

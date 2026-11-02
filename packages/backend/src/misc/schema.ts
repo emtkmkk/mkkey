@@ -203,6 +203,61 @@ type UnionSchemaType<
 > = X extends any ? SchemaType<X> : never;
 type ArrayUnion<T> = T extends any ? Array<T> : never;
 
+/**
+ * オブジェクトスキーマの anyOf / oneOf に並ぶ「分岐 1 つ」を型にする
+ *
+ * @remarks
+ * paramDef の分岐は `{ properties, required }` だけで `type` を省く書き方が多い
+ * （例: users/followers の「userId か username+host のどちらか」）。
+ * この形は {@link SchemaTypeDef} では `type` が無いため `any` に落ちてしまい、
+ * 分岐側のプロパティがパラメータ型から消えていた。
+ *
+ * - `properties` を持つ分岐: そのプロパティをオブジェクト型として展開する。
+ * - `required` だけの分岐（例: notes/create の `{ required: ["fileIds"] }`）:
+ *   親の `properties` から該当キーを必須にしたものとして扱う。
+ * - どちらも無い分岐: 通常の {@link SchemaType} に委ねる。
+ *
+ * @typeParam X - 分岐スキーマ
+ * @typeParam Parent - 親オブジェクトの `properties`（`required` だけの分岐を解決するために使う）
+ * @internal
+ */
+type ObjectBranchType<X extends Schema, Parent extends Obj> =
+	X["properties"] extends NonNullable<Obj>
+		? ObjType<X["properties"], NonNullable<X["required"]>[number]>
+		: X["required"] extends ReadonlyArray<keyof Parent>
+		? {
+				-readonly [R in X["required"][number]]-?: SchemaType<Parent[R]>;
+		  }
+		: SchemaType<X>;
+
+/**
+ * anyOf / oneOf の全分岐を合併型（union）にする
+ *
+ * @remarks
+ * `X extends any ? ... : never` の形で分配し、分岐ごとの型の合併を得る。
+ *
+ * @internal
+ */
+type UnionObjectBranchType<
+	a extends readonly any[],
+	Parent extends Obj,
+	X extends Schema = a[number],
+> = X extends any ? ObjectBranchType<X, Parent> : never;
+
+/**
+ * anyOf を持つオブジェクトのパラメータ型
+ *
+ * @remarks
+ * `分岐の合併型 & Partial<全分岐の交差型>` とすることで、
+ * どの分岐でも他の分岐のプロパティに `undefined` 込みでアクセスできるようにする
+ * （`if (ps.userId != null) ... else ps.username` のような書き方を許すため）。
+ *
+ * @internal
+ */
+type AnyOfObjectType<a extends readonly any[], Parent extends Obj> =
+	UnionObjectBranchType<a, Parent> &
+		Partial<UnionToIntersection<UnionObjectBranchType<a, Parent>>>;
+
 export type SchemaTypeDef<p extends Schema> = p["type"] extends "null"
 	? null
 	: p["type"] extends "integer"
@@ -222,10 +277,14 @@ export type SchemaTypeDef<p extends Schema> = p["type"] extends "null"
 	? p["ref"] extends keyof typeof refs
 		? Packed<p["ref"]>
 		: p["properties"] extends NonNullable<Obj>
-		? ObjType<p["properties"], NonNullable<p["required"]>[number]>
+		? p["anyOf"] extends ReadonlyArray<Schema>
+			? // properties と anyOf の併用: 共通部分 & 分岐部分（分岐のプロパティも見えるようにする）
+			  ObjType<p["properties"], NonNullable<p["required"]>[number]> &
+					AnyOfObjectType<p["anyOf"], p["properties"]>
+			: ObjType<p["properties"], NonNullable<p["required"]>[number]>
 		: p["anyOf"] extends ReadonlyArray<Schema>
-		? UnionSchemaType<p["anyOf"]> &
-				Partial<UnionToIntersection<UnionSchemaType<p["anyOf"]>>>
+		? // properties 無しで anyOf だけ: 分岐は type 省略の { properties, required } 形式が多い
+		  AnyOfObjectType<p["anyOf"], {}>
 		: p["allOf"] extends ReadonlyArray<Schema>
 		? UnionToIntersection<UnionSchemaType<p["allOf"]>>
 		: any

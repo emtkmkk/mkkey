@@ -15,6 +15,7 @@ import type {
 	ILocalUser,
 } from "@/models/entities/user.js";
 import { createNote, fetchNote } from "../../models/note.js";
+import { appendNoteVisibleUser } from "@/services/note/create.js";
 import type { IObject, ICreate } from "../../type.js";
 import { getApId } from "../../type.js";
 import { getApLock } from "@/misc/app-lock.js";
@@ -56,7 +57,9 @@ export default async function (
 			exist &&
 			!(await Notes.isVisibleForMe(exist, additionalTo))
 		) {
-			await Notes.appendNoteVisibleUser(actor, exist, additionalTo);
+			// NOTE: appendNoteVisibleUser は Notes リポジトリではなく services/note/create の関数。
+			// 以前は Notes.appendNoteVisibleUser と書かれており、実行時には存在しないメソッド呼び出しになっていた
+			await appendNoteVisibleUser(actor, exist, additionalTo);
 			return "ok: note visible user appended";
 		} else if (exist) {
 			return "skip: note exists";

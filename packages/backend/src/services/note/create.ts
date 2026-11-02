@@ -215,9 +215,25 @@ type Option = {
 	isFirstNote?: boolean | null;
 };
 
+/**
+ * 投稿者として渡すユーザー
+ *
+ * @remarks
+ * - 投稿後にアンテナ・通知の pack で投稿者をそのまま使うため、User エンティティ全体を要求する。
+ * - `onlineStatus` は User エンティティには無い（pack 時に lastActiveDate から計算される値）。
+ *   実行時は常に undefined で、最終アクティブ時刻の更新条件では isRemote / isBot だけが効く。
+ *   既存の条件式を型だけ通すため、省略可能として持たせている。
+ *
+ * @internal
+ */
+type NoteAuthor = User & {
+	onlineStatus?: Awaited<ReturnType<typeof Users.getOnlineStatus>>;
+};
+
 type LocalRuleUser = {
 	id: User["id"];
-	host: null;
+	// NOTE: ローカルユーザーのときだけ呼ばれるが、呼び出し側の分岐（isRemote）では型が絞れないため null 以外も許す
+	host: User["host"];
 	notesCount: User["notesCount"];
 	blockPostPublic: User["blockPostPublic"];
 	blockPostHome: User["blockPostHome"];
@@ -341,28 +357,7 @@ async function applyLocalNoteRules(user: LocalRuleUser, data: Option): Promise<v
 }
 
 export default async (
-	user: {
-		id: User["id"];
-		username: User["username"];
-		name: User["name"];
-		host: User["host"];
-		isSilenced: User["isSilenced"];
-		createdAt: User["createdAt"];
-		emojis: User["emojis"];
-		isAdmin: User["isAdmin"];
-		isModerator: User["isModerator"];
-		isBot: User["isBot"];
-		avatarId: User["avatarId"];
-		canInvite: User["canInvite"];
-		notesCount: User["notesCount"];
-		onlineStatus: User["onlineStatus"];
-		maxRankPoint: User["maxRankPoint"];
-		isPublicLikeList: User["isPublicLikeList"];
-		blockPostPublic: User["blockPostPublic"];
-		blockPostHome: User["blockPostHome"];
-		blockPostNotLocal: User["blockPostNotLocal"];
-		blockPostNotLocalPublic: User["blockPostNotLocalPublic"];
-	},
+	user: NoteAuthor,
 	data: Option,
 	silent = false,
 ) =>
@@ -1425,7 +1420,7 @@ export async function appendNoteVisibleUser(
 	publishNotesStream(noteObj);
 }
 
-function incRenoteCount(renote: Note, userHost?: string) {
+function incRenoteCount(renote: Note, userHost?: string | null) {
 	Notes.createQueryBuilder()
 		.update()
 		.set({
@@ -1853,7 +1848,7 @@ function firstNonWhitespaceNodeIsMention(nodes: mfm.MfmNode[]): boolean {
 function determineIsBotMentionAtHead(
 	cwTokens: mfm.MfmNode[],
 	tokens: mfm.MfmNode[],
-	mentionedUsers: User[],
+	mentionedUsers: MinimumUser[],
 ): boolean {
 	const headOk =
 		firstNonWhitespaceNodeIsMention(tokens) ||
@@ -1904,8 +1899,9 @@ export async function extractMentionedUsers(
 	return mentionedUsers;
 }
 
-function kana_to_hira(str) {
-	return str.replace(/[ァ-ン]/g, function (match) {
+/** 全角カタカナをひらがなに変換する（NG ワード判定の正規化用） */
+function kana_to_hira(str: string): string {
+	return str.replace(/[ァ-ン]/g, function (match: string) {
 		var chr = match.charCodeAt(0) - 0x60;
 		return String.fromCharCode(chr);
 	});

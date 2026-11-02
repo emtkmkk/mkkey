@@ -9,6 +9,7 @@ import config from "@/config/index.js";
 import { publishMainStream } from "@/services/stream.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import { Users, UserProfiles } from "@/models/index.js";
+import type { UserProfile } from "@/models/entities/user-profile.js";
 import type { ILocalUser } from "@/models/entities/user.js";
 import { redisClient } from "../../../db/redis.js";
 import signin from "../common/signin.js";
@@ -71,29 +72,14 @@ function compareOrigin(ctx: Koa.BaseContext): boolean {
 }
 
 function getRedisValue(key: string): Promise<string | null> {
-	return new Promise((resolve, reject) => {
-		redisClient.get(key, (err, value) => {
-			if (err) {
-				reject(err);
-				return;
-			}
-
-			resolve(value);
-		});
-	});
+	// ioredis はコマンドを Promise でも返す。コールバック版は result が省略可能型になり
+	// null と区別できないため、同じコマンドを Promise 版で呼ぶ
+	return redisClient.get(key);
 }
 
 function getRedisTtl(key: string): Promise<number> {
-	return new Promise((resolve, reject) => {
-		redisClient.ttl(key, (err, value) => {
-			if (err) {
-				reject(err);
-				return;
-			}
-
-			resolve(value);
-		});
-	});
+	// getRedisValue と同じ理由で Promise 版を使う
+	return redisClient.ttl(key);
 }
 
 function setRedisValue(key: string, value: string, expiresInSeconds: number): Promise<void> {
@@ -425,19 +411,19 @@ router.get("/dc/cb", async (ctx) => {
 				return;
 			}
 
-			await UserProfiles.update(profile.userId, {
-				integrations: {
-					...profile.integrations,
-					discord: {
-						id: id,
-						accessToken: accessToken,
-						refreshToken: refreshToken,
-						expiresDate: expiresDate,
-						username: username,
-						discriminator: discriminator,
-					},
+			// TypeORM の update 引数型は Record<string, any> 列の中身を正しく扱えないため、列の型で一度受けてから渡す
+			const integrations: UserProfile["integrations"] = {
+				...profile.integrations,
+				discord: {
+					id: id,
+					accessToken: accessToken,
+					refreshToken: refreshToken,
+					expiresDate: expiresDate,
+					username: username,
+					discriminator: discriminator,
 				},
-			});
+			};
+			await UserProfiles.update(profile.userId, { integrations });
 
 			signin(
 				ctx,
@@ -565,19 +551,19 @@ router.get("/dc/cb", async (ctx) => {
 
 			const profile = await UserProfiles.findOneByOrFail({ userId: user.id });
 
-			await UserProfiles.update(user.id, {
-				integrations: {
-					...profile.integrations,
-					discord: {
-						accessToken: accessToken,
-						refreshToken: refreshToken,
-						expiresDate: expiresDate,
-						id: id,
-						username: username,
-						discriminator: discriminator,
-					},
+			// TypeORM の update 引数型は Record<string, any> 列の中身を正しく扱えないため、列の型で一度受けてから渡す
+			const integrations: UserProfile["integrations"] = {
+				...profile.integrations,
+				discord: {
+					accessToken: accessToken,
+					refreshToken: refreshToken,
+					expiresDate: expiresDate,
+					id: id,
+					username: username,
+					discriminator: discriminator,
 				},
-			});
+			};
+			await UserProfiles.update(user.id, { integrations });
 
 			ctx.body = `Discord: @${username}#${discriminator} を、Misskey: @${user.username} に接続しました！`;
 

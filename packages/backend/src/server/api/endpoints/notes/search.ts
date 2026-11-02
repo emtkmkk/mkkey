@@ -141,7 +141,8 @@ export default define(meta, paramDef, async (ps, me) => {
 
         let userId = ps.userId ?? null;
         let channelId = ps.channelId ?? null;
-        let host = ps.host ?? undefined;
+        // undefined: 指定なし / null: ローカルのみ（host:. など） / 文字列: そのホストのみ
+        let host: string | null | undefined = ps.host ?? undefined;
         let visibility = ps.visibility ?? null;
         let localOnly = ps.local === true ? true : null;
         let minScore = ps.minScore ?? null;

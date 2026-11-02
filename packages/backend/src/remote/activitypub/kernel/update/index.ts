@@ -17,6 +17,7 @@ import type { IUpdate } from "../../type.js";
 import { getApId, getApType, isActor } from "../../type.js";
 import { apLogger } from "../../logger.js";
 import { fetchNote, updateNote } from "../../models/note.js";
+import { appendNoteVisibleUser } from "@/services/note/create.js";
 import Resolver from "../../resolver.js";
 import { updatePerson } from "../../models/person.js";
 import { getApLock } from "@/misc/app-lock.js";
@@ -84,7 +85,9 @@ export default async (
 		try {
 			const exist = await fetchNote(object);
 			if (exist && !(await Notes.isVisibleForMe(exist, additionalTo))) {
-				await Notes.appendNoteVisibleUser(actor, exist, additionalTo);
+				// NOTE: appendNoteVisibleUser は Notes リポジトリではなく services/note/create の関数。
+				// 以前は Notes.appendNoteVisibleUser と書かれており、実行時には存在しないメソッド呼び出しになっていた
+				await appendNoteVisibleUser(actor, exist, additionalTo);
 				return "ok: note visible user appended";
 			} else {
 				return "skip: nothing to do";

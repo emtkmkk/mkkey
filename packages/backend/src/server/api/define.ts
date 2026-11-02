@@ -19,7 +19,16 @@ import type { AccessToken } from "@/models/entities/access-token.js";
 import type { IEndpointMeta } from "./endpoints.js";
 import { ApiError } from "./error.js";
 
-export type Response = Record<string, any> | void;
+/**
+ * res スキーマを持たないエンドポイントの戻り値
+ *
+ * @remarks
+ * `null` と `undefined` はどちらも api-handler で HTTP 204 として扱われる（`x == null` 判定）ため、
+ * 「何も返さない」エンドポイントは `return null;` でも `return;` でもよい。
+ *
+ * @internal
+ */
+export type Response = Record<string, any> | void | null;
 
 // TODO: paramsの型をT['params']のスキーマ定義から推論する
 type executor<T extends IEndpointMeta, Ps extends Schema> = (

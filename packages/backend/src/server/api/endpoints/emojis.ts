@@ -19,6 +19,10 @@ import { Emoji } from "@/models/entities/emoji.js";
 import { Cache } from "@/misc/cache.js";
 import { CACHE_MAX_SMALL } from "@/misc/cache-limits.js";
 import define from "../define.js";
+import type { SchemaType } from "@/misc/schema.js";
+
+/** この API の応答型（res スキーマから導出） */
+type EmojisResponse = SchemaType<typeof meta.res>;
 
 /** 応答全体のキャッシュ（TTL 5 分）。キーは me・ps に依存。 */
 const EMOJI_RESPONSE_CACHE_TTL_MS = 5 * 60 * 1000;
@@ -179,7 +183,9 @@ export default define(meta, paramDef, async (ps, me) => {
 		? `emojis:all:${me!.id}`
 		: `emojis:${me?.id ?? "anon"}:${(ps as { createdAtDesc?: boolean })?.createdAtDesc ?? false}:${(ps as { remoteEmojis?: string })?.remoteEmojis ?? ""}:${(ps as { plusEmojis?: boolean })?.plusEmojis ?? false}:${(ps as { allEmojis?: boolean })?.allEmojis ?? false}`;
 
-	return emojiResponseCache.fetch(cacheKey, async () => {
+	// NOTE: 応答は分岐ごとに形が異なる（リモート絵文字の圧縮形式などを含む）ため、キャッシュは Record で持ち、
+	// 契約である res スキーマの型として返す
+	return (await emojiResponseCache.fetch(cacheKey, async () => {
 		const EmojiRepo = getStatsDataSource().getRepository(Emoji);
 		const emojiUpdatedAtPromise = getEmojiUpdatedAt(EmojiRepo);
 
@@ -418,5 +424,5 @@ export default define(meta, paramDef, async (ps, me) => {
 				  }
 				: {}),
 		};
-	});
+	})) as EmojisResponse;
 });

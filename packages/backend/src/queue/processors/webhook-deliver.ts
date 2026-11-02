@@ -49,7 +49,8 @@ interface DiscordEmbeds {
 	};
 	image?: any;
 	thumbnail?: {
-		url: string;
+		// Discord 側では省略可。サムネイルを決められなかったときは undefined のまま送る
+		url?: string;
 		proxy_url?: string;
 		height?: number;
 		width?: number;

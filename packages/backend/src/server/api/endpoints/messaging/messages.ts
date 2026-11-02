@@ -222,4 +222,7 @@ export default define(meta, paramDef, async (ps, user) => {
 			),
 		);
 	}
+
+	// paramDef の anyOf で userId か groupId のどちらかは必ず指定されるため、ここには到達しない
+	return [];
 });

@@ -8,7 +8,8 @@ export function getFullApAccount(username: string, host: string | null) {
 		: `${username}@${toPuny(config.host)}`;
 }
 
-export function isSelfHost(host: string) {
+export function isSelfHost(host: string | null | undefined) {
+	// ホスト未指定（ローカル）は自分自身とみなす
 	if (host == null) return true;
 	return toPuny(config.host) === toPuny(host);
 }

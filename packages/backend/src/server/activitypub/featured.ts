@@ -33,15 +33,18 @@ export default async (ctx: Router.RouterContext) => {
 		order: { id: "DESC" },
 	});
 
-	const pinnedNotes = await Promise.all(
-		pinings
-			.map((pining) => Notes.findOneByOrFail({ id: pining.noteId }))
-			.filter(
-				(note) =>
-					!note.localOnly &&
-					["public", "home"].includes(note.visibility) &&
-					!note.deletedAt,
-			),
+	// NOTE: 以前は findOneByOrFail の Promise 配列に対して filter を掛けていたため、
+	// Promise には visibility が無く、条件が常に偽になって全件が落ちていた（型エラーの原因でもある）。
+	// 取得後のノートに対して「ローカル限定・公開範囲外・削除済みは連合しない」条件を掛ける
+	const pinnedNotes = (
+		await Promise.all(
+			pinings.map((pining) => Notes.findOneByOrFail({ id: pining.noteId })),
+		)
+	).filter(
+		(note) =>
+			!note.localOnly &&
+			["public", "home"].includes(note.visibility) &&
+			!note.deletedAt,
 	);
 
 	const renderedNotes = await Promise.all(

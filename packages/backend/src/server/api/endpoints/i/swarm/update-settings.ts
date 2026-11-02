@@ -1,5 +1,6 @@
 import define from "../../../define.js";
 import { UserProfiles, Users } from "@/models/index.js";
+import type { UserProfile } from "@/models/entities/user-profile.js";
 import { publishMainStream } from "@/services/stream.js";
 
 export const meta = {
@@ -23,8 +24,14 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 export default define(meta, paramDef, async (ps, me) => {
 	const profile = await UserProfiles.findOneByOrFail({ userId: me.id });
-	const integrations = isRecord(profile.integrations) ? profile.integrations : {};
-	const swarm = isRecord(integrations.swarm) ? integrations.swarm : {};
+	// 型はエンティティの integrations に合わせる（update に渡すときに jsonb の部分更新型と噛み合わせるため）
+	const integrations: UserProfile["integrations"] = isRecord(profile.integrations)
+		? profile.integrations
+		: {};
+	// swarm 部分も jsonb の中身なので integrations と同じ型で扱う（update の部分更新型と噛み合わせるため）
+	const swarm: UserProfile["integrations"] = isRecord(integrations.swarm)
+		? integrations.swarm
+		: {};
 
 	if (!swarm.accessToken) {
 		return {
@@ -36,16 +43,17 @@ export default define(meta, paramDef, async (ps, me) => {
 	const showPostFormButton = ps.showPostFormButton ?? (swarm.showPostFormButton as boolean | undefined) ?? false;
 	const insertShareUrl = ps.insertShareUrl ?? (swarm.insertShareUrl as boolean | undefined) ?? true;
 
-	await UserProfiles.update(me.id, {
-		integrations: {
-			...integrations,
-			swarm: {
-				...swarm,
-				showPostFormButton,
-				insertShareUrl,
-			},
+	// NOTE: 先にエンティティの integrations 型として組み立ててから update に渡す。
+	// jsonb の中身を直接オブジェクトリテラルで渡すと typeorm の部分更新型（QueryDeepPartialEntity）と噛み合わないため。
+	const nextIntegrations: UserProfile["integrations"] = {
+		...integrations,
+		swarm: {
+			...swarm,
+			showPostFormButton,
+			insertShareUrl,
 		},
-	});
+	};
+	await UserProfiles.update(me.id, { integrations: nextIntegrations });
 
 	await Users.invalidateMeDetailedBaseCache(me.id);
 	await Users.invalidateUserShowDetailedCache(me.id);

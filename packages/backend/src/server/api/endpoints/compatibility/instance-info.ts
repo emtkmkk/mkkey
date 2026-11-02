@@ -175,6 +175,12 @@ type ContactType = {
 		value: string;
 		verified_at: string | null;
 	}[];
+	/** アバター画像 URL。ユーザーにアバターが無いときは付けない */
+	avatar?: string;
+	avatar_static?: string;
+	/** ヘッダー（バナー）画像 URL。ユーザーにバナーが無いときは付けない */
+	header?: string;
+	header_static?: string;
 	locked: boolean;
 	bot: boolean;
 	created_at: string;

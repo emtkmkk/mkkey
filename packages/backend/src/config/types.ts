@@ -92,6 +92,8 @@ export type Source = {
 
 	id: string;
 
+	/** 外向き HTTP 接続で使うローカル IP アドレス（複数 IP を持つサーバー用。misc/fetch.ts の localAddress） */
+	outgoingAddress?: string;
 	outgoingAddressFamily?: "ipv4" | "ipv6" | "dual";
 
 	deliverJobConcurrency?: number;

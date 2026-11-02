@@ -50,14 +50,14 @@ export class EmojiImportRequest {
 	@Column("text", { nullable: true })
 	public reason: string | null;
 
-	@Column(id(), { nullable: true })
+	@Column({ ...id(), nullable: true })
 	public processedById: User["id"] | null;
 
 	@ManyToOne(() => User, { onDelete: "SET NULL" })
 	@JoinColumn()
 	public processedBy: User | null;
 
-	@Column(id(), { nullable: true })
+	@Column({ ...id(), nullable: true })
 	public importedEmojiId: string | null;
 
 	@Column("timestamp with time zone", { nullable: true })

@@ -17,7 +17,8 @@ import { updatePerson } from "./models/person.js";
 export default async (
 	actor: CacheableRemoteUser,
 	activity: IObject,
-	userId: string,
+	// 認証ユーザーの inbox 経由でないときは無い（performActivity の additionalTo と同じ扱い）
+	userId?: string,
 ): Promise<void> => {
 	await performActivity(actor, activity, userId);
 

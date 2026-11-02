@@ -27,20 +27,10 @@ import config from "@/config/index.js";
 import { invalidateUserShowRelationCache } from "../../invalidate-user-show-relation-cache.js";
 
 export default async function (
-	follower: {
-		id: User["id"];
-		host: User["host"];
-		uri: User["host"];
-		inbox: User["inbox"];
-		sharedInbox: User["sharedInbox"];
-	},
-	followee: {
-		id: User["id"];
-		host: User["host"];
-		uri: User["host"];
-		inbox: User["inbox"];
-		sharedInbox: User["sharedInbox"];
-	},
+	// NOTE: 通知作成時に notifier としてそのまま pack に渡すため、User エンティティ全体を要求する
+	// （呼び出し元はいずれも DB から取得した User を渡している）
+	follower: User,
+	followee: User,
 	requestId?: string,
 ) {
 	if (follower.id === followee.id) return;

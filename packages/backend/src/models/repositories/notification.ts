@@ -82,14 +82,19 @@ export const NotificationRepository = db.getRepository(Notification).extend({
 		return await awaitAll({
 			id: notification.id,
 			createdAt: notification.createdAt.toISOString(),
-			type: notification.type === "unreadAntenna" ? "note" : notification.type,
+			// unreadAntenna はクライアント向けには note として返す（as const を付けないと string に広がる）
+			type:
+				notification.type === "unreadAntenna"
+					? ("note" as const)
+					: notification.type,
 			isRead: notification.isRead,
 			userId: notification.notifierId,
 			customBody: notification.customBody || undefined,
 			user: notification.notifierId
 				? (async () => {
 						const packed = await Users.pack(
-							options._notifierUserMap_?.get(notification.notifierId) ??
+							// NOTE: 外側の notifierId チェックは関数の中まで効かないので、ここでは非 null として扱う
+							options._notifierUserMap_?.get(notification.notifierId!) ??
 									notification.notifier ??
 									notification.notifierId!,
 							{ id: notification.notifieeId },
@@ -360,6 +365,7 @@ export const NotificationRepository = db.getRepository(Notification).extend({
 				}),
 			),
 		);
-		return results.filter((x) => x != null);
+		// 表示できない通知（削除済みノート等）は null にしているので除外する。型も絞り込む
+		return results.filter((x): x is NonNullable<typeof x> => x != null);
 	},
 });

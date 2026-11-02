@@ -14,6 +14,7 @@ import type Koa from "koa";
 
 import config from "@/config/index.js";
 import type { ILocalUser } from "@/models/entities/user.js";
+import type { Signin } from "@/models/entities/signin.js";
 import { Signins } from "@/models/index.js";
 import { genId } from "@/misc/gen-id.js";
 import { publishMainStream } from "@/services/stream.js";
@@ -42,13 +43,16 @@ export default function (ctx: Koa.Context, user: ILocalUser, redirect = false) {
 	}
 
 	(async () => {
+		// TypeORM の insert 引数型は Record<string, any> 列に IncomingHttpHeaders を直接渡せないので、
+		// 列の型で一度受けてから渡す（値はそのまま）
+		const headers: Signin["headers"] = ctx.headers;
 		// サインイン履歴を追加
 		const record = await Signins.insert({
 			id: genId(),
 			createdAt: new Date(),
 			userId: user.id,
 			ip: ctx.ip,
-			headers: ctx.headers,
+			headers,
 			success: true,
 		}).then((x) => Signins.findOneByOrFail(x.identifiers[0]));
 

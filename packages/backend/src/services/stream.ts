@@ -6,6 +6,7 @@ import type { UserGroup } from "@/models/entities/user-group.js";
 import config from "@/config/index.js";
 import type { Antenna } from "@/models/entities/antenna.js";
 import type { Channel } from "@/models/entities/channel.js";
+import type { Packed } from "@/misc/schema.js";
 import type {
 	StreamChannels,
 	AdminStreamTypes,
@@ -187,7 +188,8 @@ class Publisher {
 		);
 	};
 
-	public publishNotesStream = (note: Note): void => {
+	// NOTE: 新規作成時はエンティティ、閲覧者追加時は pack 済みノートが渡されるため両方を受ける
+	public publishNotesStream = (note: Note | Packed<"Note">): void => {
 		this.publish("notesStream", null, note);
 	};
 

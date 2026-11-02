@@ -223,11 +223,13 @@ export function truncateNotification(notification: Packed<"Notification">): any 
 		// reaction 用: SW ローカル解決の保険として name+url のみ残す
 		const reactionEmojis =
 			notification.type === "reaction" &&
+			// reactionEmojis はスキーマ外の付加情報なので、元の型に交差させて読む
 			Array.isArray(
-				(notification.note as { reactionEmojis?: unknown }).reactionEmojis,
+				(notification.note as typeof notification.note & { reactionEmojis?: unknown })
+					.reactionEmojis,
 			)
 				? (
-						(notification.note as { reactionEmojis: unknown[] })
+						(notification.note as typeof notification.note & { reactionEmojis: unknown[] })
 							.reactionEmojis as Array<{ name?: unknown; url?: unknown }>
 					)
 						.filter(
@@ -696,17 +698,22 @@ async function buildPayload<T extends keyof pushNotificationsTypes>(
 
 	// 4KB 制限: 段階的にペイロードを削減する
 	if (Buffer.byteLength(payload, "utf8") > MAX_PUSH_PAYLOAD_BYTES) {
-		if (
+		// NOTE: ジェネリックな body は typeof による絞り込みが効かないため、
+		// オブジェクトのときだけ Record として読み替えて note を取り出す
+		const bodyRecord: Record<string, unknown> | null =
 			type === "notification" &&
 			truncatedBody != null &&
-			typeof truncatedBody === "object" &&
-			"note" in truncatedBody &&
-			truncatedBody.note != null
-		) {
-			const note = truncatedBody.note as { text?: string };
+			typeof truncatedBody === "object"
+				? (truncatedBody as Record<string, unknown>)
+				: null;
+		if (bodyRecord != null && bodyRecord.note != null) {
+			const note = bodyRecord.note as { text?: string };
 			if (typeof note.text === "string" && note.text.length > 80) {
 				note.text = `${note.text.slice(0, 80)}…`;
-				truncatedBody = { ...truncatedBody, note: { ...note } };
+				truncatedBody = {
+					...bodyRecord,
+					note: { ...note },
+				} as pushNotificationsTypes[T];
 				payload = buildJson();
 			}
 		}

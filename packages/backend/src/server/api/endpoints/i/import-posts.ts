@@ -40,5 +40,6 @@ export default define(meta, paramDef, async (ps, user) => {
 
 	if (file == null) throw new ApiError(meta.errors.noSuchFile);
 	if (file.size === 0) throw new ApiError(meta.errors.emptyFile);
-	createImportPostsJob(user, file.id, ps.signatureCheck);
+	// 未指定は「署名チェックしない」扱い（ジョブ側は真偽値としてしか見ないので undefined と同じ）
+	createImportPostsJob(user, file.id, ps.signatureCheck ?? false);
 });

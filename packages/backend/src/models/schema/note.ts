@@ -29,6 +29,14 @@ export const packedNoteSchema = {
 			nullable: true,
 			description: "本文。",
 		},
+		// 自分の投稿で text がにゃー語に変換されたときだけ付く、変換前の本文（repositories/note.ts 参照）
+		originalText: {
+			type: "string",
+			optional: true,
+			nullable: true,
+			description:
+				"自分の投稿で本文がにゃー語に変換されたときのみ含まれる、変換前の本文。",
+		},
 		cw: {
 			type: "string",
 			optional: true,
@@ -226,6 +234,26 @@ export const packedNoteSchema = {
 			nullable: false,
 			description: "返信数。",
 		},
+		/** pack は常に `note.score` を入れる。スポットライト TL の閾値判定に使う */
+		score: {
+			type: "number",
+			optional: false,
+			nullable: false,
+			description: "スポットライト用のスコア。",
+		},
+		/** pack が `note.referenceIds` をそのまま入れる。参照ページ（/notes/:id/references）が読む */
+		referenceIds: {
+			type: "array",
+			optional: true,
+			nullable: false,
+			items: {
+				type: "string",
+				optional: false,
+				nullable: false,
+				format: "id",
+			},
+			description: "参照している投稿の ID の配列。",
+		},
 		uri: {
 			type: "string",
 			optional: true,
@@ -250,6 +278,14 @@ export const packedNoteSchema = {
 			nullable: true,
 			format: "date-time",
 			description: "削除日時。",
+		},
+		/** 閲覧者に見せられない投稿のとき pack が true を入れる。ストリーム側で配送をスキップする判定に使う */
+		invisible: {
+			type: "boolean",
+			optional: true,
+			nullable: false,
+			description:
+				"閲覧者に本文を見せられない投稿か。true のときのみキーが含まれる。",
 		},
 		/** true のときのみ API レスポンスに含まれる。文頭で Bot 1件のみメンションしている投稿かどうか。 */
 		isBotMention: {

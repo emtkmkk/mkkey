@@ -318,11 +318,68 @@ export type Notification = {
 			userId: User["id"];
 	  }
 	| {
+			/**
+			 * アンテナ新着。
+			 *
+			 * @remarks
+			 * backend の pack は `unreadAntenna` を `note` という種別名で返す
+			 * （repositories/notification.ts 参照）ため、API やストリーム上では
+			 * 下の `"note"` の形で届く。この形は SW が表示用に寄せ直したときなどに使う。
+			 */
 			type: "unreadAntenna";
-			antenna: Antenna;
+			antenna?: Antenna | null;
 			user: User;
 			userId: User["id"];
 			note: Note;
+			/** アンテナ名（backend では reaction 列に入れている） */
+			reaction?: string;
+	  }
+	| {
+			/** アンテナ新着が pack された実際の形。`reaction` にアンテナ名が入る */
+			type: "note";
+			user: User;
+			userId: User["id"];
+			note: Note;
+			reaction?: string;
+	  }
+	| {
+			/** 投票終了。通知者は居ないので user は付かない */
+			type: "pollEnded";
+			user?: User | null;
+			userId: User["id"] | null;
+			note: Note;
+	  }
+	| {
+			type: "userWasUnfollowed";
+			user: User;
+			userId: User["id"];
+	  }
+	| {
+			type: "wasForciblyUnfollowed";
+			user: User;
+			userId: User["id"];
+	  }
+	| {
+			type: "followRequestRejected";
+			user: User;
+			userId: User["id"];
+	  }
+	| {
+			type: "wasBlocked";
+			user: User;
+			userId: User["id"];
+	  }
+	| {
+			type: "wasUnblocked";
+			user: User;
+			userId: User["id"];
+	  }
+	| {
+			type: "followedAccountWasDeleted";
+			user: User;
+			userId: User["id"];
+			/** 削除時点の表示名スナップショット（pack 時に user.name へ上書きされる） */
+			customBody?: string | null;
 	  }
 	| {
 			type: "app";

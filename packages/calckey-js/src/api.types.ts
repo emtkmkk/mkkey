@@ -1015,7 +1015,10 @@ export type Endpoints = {
 	};
 	"notifications/mark-all-as-read": { req: NoParams; res: null };
 	"notifications/read": {
-		req: { notificationId: Notification["id"] };
+		// 1 件ずつ、または複数まとめての既読。backend の endpoints/notifications/read.ts と対応
+		req:
+			| { notificationId: Notification["id"] }
+			| { notificationIds: Notification["id"][] };
 		res: null;
 	};
 

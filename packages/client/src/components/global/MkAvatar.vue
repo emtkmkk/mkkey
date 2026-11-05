@@ -17,6 +17,7 @@
                         "
                         class="inner"
                         :src="hiddenIconUrl ?? displayUrl ?? undefined"
+                        @load="handleAvatarLoad"
                         @error="handleAvatarError"
                         decoding="async"
                 />
@@ -52,6 +53,7 @@
                         "
                         class="inner"
                         :src="hiddenIconUrl ?? displayUrl ?? undefined"
+                        @load="handleAvatarLoad"
                         @error="handleAvatarError"
                         decoding="async"
                 />
@@ -77,10 +79,29 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * ユーザーアイコンを表示するコンポーネント
+ *
+ * @remarks
+ * リモートユーザーのアイコンは外部メディアプロキシ経由で読み込む。
+ * 読み込みに失敗したり、エラー画像が返ってきたりしたときは、候補（{@link candidates}）を順に試す。
+ * すべて失敗したら代わりの画像を表示する。
+ *
+ * クリックで拡大するときは、いま表示できている URL を開く。
+ *
+ * @see {@link ../../scripts/media-proxy-fallback.ts}
+ * @public
+ */
 import { watch } from "vue";
 import * as misskey from "calckey-js";
 import { getStaticImageUrl } from "@/scripts/get-static-image-url";
 import { getProxiedImageUrl } from "@/scripts/media-proxy";
+import {
+	getMediaFallbackUrls,
+	isProxyErrorImage,
+} from "@/scripts/media-proxy-fallback";
 import { extractAvgColorFromBlurhash } from "@/scripts/extract-avg-color-from-blurhash";
 import { acct, userPage } from "@/filters/user";
 import MkUserOnlineIndicator from "@/components/MkUserOnlineIndicator.vue";
@@ -126,8 +147,37 @@ const hiddenIconUrl = $computed(() =>
                 : null,
 );
 
-let displayUrl = $ref<string | null>(null);
-let triedProxy = $ref(false);
+/**
+ * 試す URL の一覧（先頭が元の URL、以降は失敗時の代わり）
+ *
+ * @remarks
+ * 外部プロキシの URL なら、別のプロキシ → このサーバの `/proxy` の順に試す。
+ * それ以外のリモート画像は、このサーバの `/proxy` を通して読み直す。
+ *
+ * NB: 外部プロキシの URL を {@link getProxiedImageUrl} に渡してはいけない。
+ * サーバが失敗したプロキシをもう一度呼ぶだけになり、元の画像へたどり着けない。
+ *
+ * @internal
+ */
+const candidates = $computed(() => {
+	const fallbacks = getMediaFallbackUrls(url);
+	if (fallbacks.length > 0) return [url, ...fallbacks];
+	return proxiedUrl != null && proxiedUrl !== url ? [url, proxiedUrl] : [url];
+});
+
+/**
+ * いま表示している URL が {@link candidates} の何番目か
+ *
+ * @internal
+ */
+let attempt = $ref(0);
+
+/**
+ * いま表示している URL
+ *
+ * @internal
+ */
+const displayUrl = $computed(() => candidates[attempt] ?? url);
 
 async function openAvatarImage() {
 	const targetUrl = displayUrl ?? url;
@@ -156,29 +206,46 @@ let errorAltIcon = $ref(false);
 
 watch(
         () => url,
-        (newUrl) => {
-                displayUrl = newUrl;
-                triedProxy = false;
+        () => {
+                attempt = 0;
                 errorIcon = false;
                 errorAltIcon = false;
         },
-        { immediate: true },
 );
 
+/**
+ * アイコンの読み込みに失敗したとき、次の候補へ進める
+ *
+ * @remarks
+ * 候補が尽きたとき、または隠しているアイコン（`hiddenIconUrl`）の失敗なら、代わりの画像にする。
+ *
+ * @internal
+ */
 function handleAvatarError() {
-        if (
-                !triedProxy &&
-                props.user.host != null &&
-                hiddenIconUrl == null &&
-                proxiedUrl != null &&
-                displayUrl !== proxiedUrl
-        ) {
-                triedProxy = true;
-                displayUrl = proxiedUrl;
+        if (hiddenIconUrl == null && attempt < candidates.length - 1) {
+                attempt++;
                 return;
         }
 
         errorIcon = true;
+}
+
+/**
+ * アイコンが読み込めたとき
+ *
+ * @remarks
+ * 外部プロキシはエラー時にもエラー画像を「成功」として返すことがある。
+ * その場合は読み込み失敗と同じ扱いにする。
+ *
+ * @param ev - load イベント
+ * @internal
+ */
+async function handleAvatarLoad(ev: Event) {
+        const src = displayUrl;
+        if (!(await isProxyErrorImage(ev.target as HTMLImageElement))) return;
+        // 判定の間に別の URL へ変わっていたら何もしない
+        if (src !== displayUrl) return;
+        handleAvatarError();
 }
 
 watch(

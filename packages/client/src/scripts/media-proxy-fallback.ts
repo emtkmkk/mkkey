@@ -15,8 +15,9 @@
  *
  * NB: エラー画像の判定は、Misskey 系メディアプロキシの次の挙動に頼っている。
  * - エラー画像は 256×256
- * - エラー時は `cache-control: no-store`、成功時は `max-age=31536000, immutable`
- * プロキシ側の仕様が変わると判定できなくなる（その場合は切り替えないだけで、表示は今までどおり）。
+ * - 成功時は `cache-control: max-age=31536000, immutable`
+ * - エラー時は `immutable` が付かない（プロキシにより `no-store`、`max-age=300`、`max-age=14400` など）
+ * プロキシ側の仕様が変わると判定できなくなる（本物の 256×256 画像を別の URL で読み直すことはあるが、表示は壊れない）。
  *
  * @see {@link ../../../backend/src/misc/media-proxy.ts}
  * @internal
@@ -34,6 +35,31 @@ import { instance } from "@/instance";
  * @internal
  */
 const PROXY_ERROR_IMAGE_SIZE = 256;
+
+/**
+ * エラー画像ではないと確認できた URL
+ *
+ * @remarks
+ * 256×256 のアイコンは多く、同じ画面に何度も出るため、確認の取り直しを 1 回で済ませる。
+ * 成功の応答は `immutable` なので、ページを開いている間に結果が変わることは考えなくてよい。
+ * ページを閉じるまで増える一方だが、1 件は URL 1 本なので問題にならない。
+ *
+ * @internal
+ */
+const verifiedImageUrls = new Set<string>();
+
+/**
+ * 外部メディアプロキシの URL かどうか
+ *
+ * @param src - 調べる URL
+ * @returns 設定されている外部プロキシのどれかを指していれば `true`
+ * @internal
+ */
+export function isMediaProxyUrl(src: string): boolean {
+	return (instance.mediaProxies ?? []).some(
+		(proxy) => src.startsWith(`${proxy}?`) || src.startsWith(`${proxy}/`),
+	);
+}
 
 /**
  * 画像 URL が失敗したときに、次に試す URL の一覧を返す
@@ -59,6 +85,7 @@ const PROXY_ERROR_IMAGE_SIZE = 256;
  */
 export function getMediaFallbackUrls(src: string): string[] {
 	const proxies = instance.mediaProxies ?? [];
+	// 今のプロキシが設定の何番目か（次のプロキシから順に試すため）
 	const index = proxies.findIndex(
 		(proxy) => src.startsWith(`${proxy}?`) || src.startsWith(`${proxy}/`),
 	);
@@ -149,9 +176,12 @@ function isEmojiRouteUrl(src: string): boolean {
  * @remarks
  * 次の 2 段階で判定する。
  * 1. 画像が 256×256 でなければ、エラー画像ではない（通信しない）。
- * 2. 256×256 なら同じ URL を `fetch()` で取り直し、`cache-control` に `no-store` があればエラー画像とみなす。
+ * 2. 256×256 なら同じ URL を `fetch()` で取り直し、`cache-control` に `immutable` がなければエラー画像とみなす。
  *
  * 本物の 256×256 画像は `immutable` 付きで返るので、エラー扱いにならない。
+ * NB: `no-store` の有無では判定できない。media-proxy.misskey.blue のエラー画像は `max-age=300`
+ * （絵文字は `max-age=14400`）で返るため。
+ * `cache-control` が読めないときは、判定材料がないのでエラー画像とみなさない。
  * `x-proxy-error` ヘッダーの方が確実だが、CORS で公開されておらずブラウザから読めないため使っていない。
  * `cache-control` は CORS でも常に読めるヘッダー。
  *
@@ -174,13 +204,18 @@ export async function isProxyErrorImage(img: HTMLImageElement): Promise<boolean>
 	if (getMediaFallbackUrls(src).length === 0 && getEmojiFallbackUrls(src).length === 0) {
 		return false;
 	}
+	if (verifiedImageUrls.has(src)) return false;
 
 	try {
 		// 絵文字はこのサーバから外部プロキシへ転送されるが、fetch は転送先の応答ヘッダーを返す
 		const res = await fetch(src, { mode: "cors" });
 		// 本文は使わないので読み捨てる
 		void res.body?.cancel();
-		return /no-store/i.test(res.headers.get("cache-control") ?? "");
+		const cacheControl = res.headers.get("cache-control");
+		if (cacheControl == null) return false;
+		const isError = !/immutable/i.test(cacheControl);
+		if (!isError) verifiedImageUrls.add(src);
+		return isError;
 	} catch {
 		return false;
 	}
@@ -195,20 +230,20 @@ export async function isProxyErrorImage(img: HTMLImageElement): Promise<boolean>
  *
  * @param img - 読み込ませる画像要素
  * @param urls - 試す URL の一覧（先頭から順に試す）
- * @returns どれかが成功したら `true`
+ * @returns 読み込めた URL。すべて失敗したら `null`
  * @internal
  */
 export async function loadImageWithFallback(
 	img: HTMLImageElement,
 	urls: string[],
-): Promise<boolean> {
+): Promise<string | null> {
 	for (const url of urls) {
 		const loaded = await new Promise<boolean>((resolve) => {
 			img.onload = () => resolve(true);
 			img.onerror = () => resolve(false);
 			img.src = url;
 		});
-		if (loaded && !(await isProxyErrorImage(img))) return true;
+		if (loaded && !(await isProxyErrorImage(img))) return url;
 	}
-	return false;
+	return null;
 }

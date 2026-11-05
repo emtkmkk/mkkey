@@ -277,8 +277,8 @@ function initLightbox(): void {
 			ev.preventDefault();
 			img.alt = content.data.alt || "";
 			content.state = "loading";
-			void loadImageWithFallback(img, [src, ...fallbacks]).then((ok) => {
-				if (ok) content.onLoaded();
+			void loadImageWithFallback(img, [src, ...fallbacks]).then((loadedUrl) => {
+				if (loadedUrl) content.onLoaded();
 				else content.onError();
 			});
 		});

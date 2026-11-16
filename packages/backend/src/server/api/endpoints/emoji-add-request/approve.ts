@@ -9,7 +9,10 @@
  * - 画像を差し替えるとき（審査画面での余白カットなど）は、管理者のドライブのファイル ID を受け取り、サーバー側へ複製して使う。
  * - 登録する絵文字の値は {@link buildEmojiRowFromRequest} で組み立てる（公開範囲は public 固定など）。
  * - 同じ名前のローカル絵文字があれば承認できない（名前を直してもらう）。
- * - 審査待ちのほか、修正のお願い中の申請も承認できる（管理者が考え直した場合）。
+ * - 審査待ちのほか、修正のお願い中の申請も承認できる（管理者が考え直した場合）。遷移表は `@/misc/emoji-request-state.js`。
+ * - 状態の書き換えと絵文字の登録は 1 つのトランザクションで行い、状態を先に書き換える。
+ *   ほかの管理者の承認や申請者の取り下げと同時に走っても、先に状態を書き換えた方だけが通る
+ *   （負けた方は invalidStatus。絵文字は登録されない）。
  *
  * @public
  */
@@ -40,6 +43,9 @@ import {
 	emojiAddRequestErrors,
 	throwIfEmojiAddRequestProblem,
 } from "../../common/emoji-add-request-errors.js";
+import { db } from "@/db/postgre.js";
+import { Emoji } from "@/models/entities/emoji.js";
+import { canEmojiAddRequest, transitionEmojiAddRequest } from "@/misc/emoji-request-state.js";
 
 export const meta = {
 	tags: ["emoji-add-request", "admin"],
@@ -84,9 +90,8 @@ export const paramDef = {
 export default define(meta, paramDef, async (ps, me) => {
 	const request = await EmojiAddRequests.findOneBy({ id: ps.requestId });
 	if (request == null) throw new ApiError(meta.errors.noSuchRequest);
-	if (request.status !== "pending" && request.status !== "changesRequested") {
-		throw new ApiError(meta.errors.invalidStatus);
-	}
+	// 画像の複製など重い処理の前に、早めに断る（最終判定はトランザクション内の書き換え）
+	if (!canEmojiAddRequest("approve", request.status)) throw new ApiError(meta.errors.invalidStatus);
 
 	// #region 直した内容を当てる
 	const before = pickEditableFields(request);
@@ -116,37 +121,48 @@ export default define(meta, paramDef, async (ps, me) => {
 	// #endregion
 
 	const merged = { ...request, ...after };
-	const emoji = await Emojis.insert({
-		id: genId(),
-		createdAt: new Date(),
-		updatedAt: new Date(),
-		...buildEmojiRowFromRequest(merged, file),
-	} as Parameters<typeof Emojis.insert>[0]).then((x) => Emojis.findOneByOrFail(x.identifiers[0]));
+	// 申請に approvedEmojiId を先に書くため、ID はここで決めておく（外部キーは無い）
+	const emojiId = genId();
+	const now = new Date();
+	const comment = ps.comment?.trim() || null;
 
+	// #region 状態の書き換えと絵文字の登録（まとめて成功するか、まとめて取り消す）
+	await db.transaction(async (manager) => {
+		const done = await transitionEmojiAddRequest("approve", request.id, {
+			...after,
+			approvedEmojiId: emojiId,
+			reviewerId: me.id,
+			reviewComment: comment,
+			proposal: null,
+			processedAt: now,
+			updatedAt: now,
+			history: appendHistory(request.history, {
+				by: me.id,
+				action: changed ? "approvedWithChanges" : "approved",
+				comment,
+				...(changed ? { changes } : {}),
+				// 直して承認で画像を変えたときだけ、何をしたか（余白カット・縮小・差し替え）を残す
+				...(changes.fileId && normalizeImageEdit(ps.imageEdit) ? { imageEdit: normalizeImageEdit(ps.imageEdit)! } : {}),
+			}),
+		}, manager);
+		// ほかの管理者が先に処理したか、申請者が取り下げた。何も登録せずに終える
+		if (!done) throw new ApiError(meta.errors.invalidStatus);
+
+		// 同名が同時に登録されていたら、ここで一意制約に当たり、上の書き換えごと取り消される
+		await manager.getRepository(Emoji).insert({
+			id: emojiId,
+			createdAt: now,
+			updatedAt: now,
+			...buildEmojiRowFromRequest(merged, file),
+		} as Parameters<typeof Emojis.insert>[0]);
+	});
+	// #endregion
+
+	// 確定したあとで、キャッシュを捨てて全体に知らせる（取り消しになった登録を知らせないため）
+	const emoji = await Emojis.findOneByOrFail({ id: emojiId });
 	await clearEmojiQueryCache();
 	await bumpReactionNormalizeCacheVersion();
 	publishBroadcastStream("emojiAdded", { emoji: await Emojis.pack(emoji.id) });
-
-	const now = new Date();
-	const comment = ps.comment?.trim() || null;
-	await EmojiAddRequests.update(request.id, {
-		...after,
-		status: "approved",
-		approvedEmojiId: emoji.id,
-		reviewerId: me.id,
-		reviewComment: comment,
-		proposal: null,
-		processedAt: now,
-		updatedAt: now,
-		history: appendHistory(request.history, {
-			by: me.id,
-			action: changed ? "approvedWithChanges" : "approved",
-			comment,
-			...(changed ? { changes } : {}),
-			// 直して承認で画像を変えたときだけ、何をしたか（余白カット・縮小・差し替え）を残す
-			...(changes.fileId && normalizeImageEdit(ps.imageEdit) ? { imageEdit: normalizeImageEdit(ps.imageEdit)! } : {}),
-		}),
-	});
 
 	insertModerationLog(me, "emojiAddRequestApprove", {
 		requestId: request.id,

@@ -33,6 +33,7 @@ import {
 	emojiAddRequestErrors,
 	throwIfEmojiAddRequestProblem,
 } from "../../common/emoji-add-request-errors.js";
+import { canEmojiAddRequest, transitionEmojiAddRequest } from "@/misc/emoji-request-state.js";
 
 export const meta = {
 	tags: ["emoji-add-request"],
@@ -69,7 +70,7 @@ export const paramDef = {
 export default define(meta, paramDef, async (ps, me) => {
 	const request = await EmojiAddRequests.findOneBy({ id: ps.requestId, requesterId: me.id });
 	if (request == null) throw new ApiError(meta.errors.noSuchRequest);
-	if (request.status !== "changesRequested") throw new ApiError(meta.errors.invalidStatus);
+	if (!canEmojiAddRequest("resubmit", request.status)) throw new ApiError(meta.errors.invalidStatus);
 
 	const current = pickEditableFields(request);
 	let next = { ...current };
@@ -106,11 +107,10 @@ export default define(meta, paramDef, async (ps, me) => {
 	next = applyAskContactRule(next);
 	throwIfEmojiAddRequestProblem(findEmojiAddRequestProblem(next));
 
-	await EmojiAddRequests.update(request.id, {
+	const done = await transitionEmojiAddRequest("resubmit", request.id, {
 		...next,
 		...imagePatch,
 		...(ps.message !== undefined ? { message: ps.message?.trim() || null } : {}),
-		status: "pending",
 		proposal: null,
 		reviewComment: null,
 		updatedAt: new Date(),
@@ -123,6 +123,8 @@ export default define(meta, paramDef, async (ps, me) => {
 				: {}),
 		}),
 	});
+	// 確かめてから書くまでの間に、取り下げたか、管理者が承認・却下していた（二重送信もここで止まる）
+	if (!done) throw new ApiError(meta.errors.invalidStatus);
 
 	notifyAddRequestReviewers(
 		{ id: request.id, fileId: next.fileId, requesterId: request.requesterId },

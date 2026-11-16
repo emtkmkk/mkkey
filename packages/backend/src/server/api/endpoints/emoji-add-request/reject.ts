@@ -15,6 +15,7 @@ import { EmojiAddRequests } from "@/models/index.js";
 import { insertModerationLog } from "@/services/insert-moderation-log.js";
 import { appendHistory, notifyAddRequestRequester } from "@/services/emoji-add-request.js";
 import { emojiAddRequestErrors } from "../../common/emoji-add-request-errors.js";
+import { canEmojiAddRequest, transitionEmojiAddRequest } from "@/misc/emoji-request-state.js";
 
 export const meta = {
 	tags: ["emoji-add-request", "admin"],
@@ -39,20 +40,19 @@ export const paramDef = {
 export default define(meta, paramDef, async (ps, me) => {
 	const request = await EmojiAddRequests.findOneBy({ id: ps.requestId });
 	if (request == null) throw new ApiError(meta.errors.noSuchRequest);
-	if (request.status !== "pending" && request.status !== "changesRequested") {
-		throw new ApiError(meta.errors.invalidStatus);
-	}
+	if (!canEmojiAddRequest("reject", request.status)) throw new ApiError(meta.errors.invalidStatus);
 
 	const reason = ps.reason?.trim() || null;
 	const now = new Date();
-	await EmojiAddRequests.update(request.id, {
-		status: "rejected",
+	const done = await transitionEmojiAddRequest("reject", request.id, {
 		reviewerId: me.id,
 		reviewComment: reason,
 		processedAt: now,
 		updatedAt: now,
 		history: appendHistory(request.history, { by: me.id, action: "rejected", comment: reason }),
 	});
+	// 確かめてから書くまでの間に、ほかの管理者が処理したか、申請者が取り下げた
+	if (!done) throw new ApiError(meta.errors.invalidStatus);
 
 	insertModerationLog(me, "emojiAddRequestReject", { requestId: request.id, reason });
 

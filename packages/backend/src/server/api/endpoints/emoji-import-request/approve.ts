@@ -1,8 +1,13 @@
 /**
+ * @packageDocumentation
+ *
  * 絵文字インポート申請を承認する。内部で admin/emoji/copy 相当の処理を行い、同名がローカルに既にある場合は newEmojiName で登録する。
  *
  * @remarks
- * Fedibird 互換項目とコピー元のカテゴリ（orgCategory）も admin/emoji/copy と同じく引き継ぐ。
+ * - Fedibird 互換項目とコピー元のカテゴリ（orgCategory）も admin/emoji/copy と同じく引き継ぐ。
+ * - 審査待ちのほか、却下済みの申請も承認できる（判断の取り消し）。遷移表は `@/misc/emoji-request-state.js`。
+ * - 状態の書き換えと絵文字の登録は 1 つのトランザクションで行い、状態を先に書き換える。
+ *   二重に承認ボタンが押されても、絵文字は 1 つしか登録されない（負けた方は alreadyProcessed）。
  *
  * @public
  */
@@ -23,6 +28,9 @@ import { clearEmojiQueryCache } from "@/misc/emoji-query-cache.js";
 import { bumpReactionNormalizeCacheVersion } from "@/misc/reaction-normalize-cache.js";
 import { insertModerationLog } from "@/services/insert-moderation-log.js";
 import { publishBroadcastStream } from "@/services/stream.js";
+import { db } from "@/db/postgre.js";
+import { Emoji } from "@/models/entities/emoji.js";
+import { canEmojiImportRequest, transitionEmojiImportRequest } from "@/misc/emoji-request-state.js";
 
 export const meta = {
 	tags: ["emoji-import-request", "admin"],
@@ -80,7 +88,8 @@ export default define(meta, paramDef, async (ps, me) => {
 	if (!request) {
 		throw new ApiError(meta.errors.noSuchRequest);
 	}
-	if (request.status === "approved") {
+	// 画像の複製など重い処理の前に、早めに断る（最終判定はトランザクション内の書き換え）
+	if (!canEmojiImportRequest("approve", request.status)) {
 		throw new ApiError(meta.errors.alreadyProcessed);
 	}
 
@@ -166,10 +175,13 @@ export default define(meta, paramDef, async (ps, me) => {
 			? `, ${emoji.license.replace(/コピー元 : ([^,]+)(,|$)/, "")}`
 			: "");
 
-	const copied = await Emojis.insert({
-		id: genId(),
-		createdAt: new Date(),
-		updatedAt: new Date(),
+	// 申請に importedEmojiId を先に書くため、ID はここで決めておく
+	const copiedId = genId();
+	const now = new Date();
+	const row: Partial<Emoji> = {
+		id: copiedId,
+		createdAt: now,
+		updatedAt: now,
 		name: finalName,
 		host: null,
 		aliases: emoji.aliases ?? [],
@@ -191,19 +203,28 @@ export default define(meta, paramDef, async (ps, me) => {
 		allowedUserIds: [],
 		motifUserId: null,
 		motifUserMode: "any",
-	}).then((x) => Emojis.findOneByOrFail(x.identifiers[0]));
+	};
 
+	// #region 状態の書き換えと絵文字の登録（まとめて成功するか、まとめて取り消す）
+	await db.transaction(async (manager) => {
+		const done = await transitionEmojiImportRequest("approve", request.id, {
+			processedById: me.id,
+			importedEmojiId: copiedId,
+			processedAt: now,
+		}, manager);
+		// ほかの管理者が先に承認していた。何も登録せずに終える
+		if (!done) throw new ApiError(meta.errors.alreadyProcessed);
+
+		await manager.getRepository(Emoji).insert(row);
+	});
+	// #endregion
+
+	// 確定したあとで、キャッシュを捨てて全体に知らせる（取り消しになった登録を知らせないため）
+	const copied = await Emojis.findOneByOrFail({ id: copiedId });
 	await clearEmojiQueryCache();
 	await bumpReactionNormalizeCacheVersion();
 	publishBroadcastStream("emojiAdded", {
 		emoji: await Emojis.pack(copied.id),
-	});
-
-	await EmojiImportRequests.update(request.id, {
-		status: "approved",
-		processedById: me.id,
-		importedEmojiId: copied.id,
-		processedAt: new Date(),
 	});
 
 	await EmojiImportDenieds.delete({ name: request.emojiName }).catch(() => {});

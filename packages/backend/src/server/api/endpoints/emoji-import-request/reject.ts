@@ -1,8 +1,12 @@
 /**
+ * @packageDocumentation
+ *
  * 絵文字インポート申請を否認する。否認リストに登録し、申請者に通知する。
  *
  * @remarks
- * 通知の種類は emojiRequest（押すと自分の申請の詳細が開く）。理由は通知の本文には入れず、詳細で見せる。
+ * - 通知の種類は emojiRequest（押すと自分の申請の詳細が開く）。理由は通知の本文には入れず、詳細で見せる。
+ * - 審査待ちの申請だけ否認できる。遷移表は `@/misc/emoji-request-state.js`。
+ *   承認と同時に押されたときは、先に状態を書き換えた方だけが通る（負けた方は alreadyProcessed）。
  *
  * @public
  */
@@ -11,6 +15,7 @@ import { EmojiImportRequests, EmojiImportDenieds, Emojis } from "@/models/index.
 import { notifyEmojiRequestRequester } from "@/services/emoji-request-notification.js";
 import { ApiError } from "../../error.js";
 import { insertModerationLog } from "@/services/insert-moderation-log.js";
+import { canEmojiImportRequest, transitionEmojiImportRequest } from "@/misc/emoji-request-state.js";
 
 export const meta = {
 	tags: ["emoji-import-request", "admin"],
@@ -51,18 +56,19 @@ export default define(meta, paramDef, async (ps, me) => {
 	if (!request) {
 		throw new ApiError(meta.errors.noSuchRequest);
 	}
-	if (request.status !== "pending") {
+	if (!canEmojiImportRequest("reject", request.status)) {
 		throw new ApiError(meta.errors.alreadyProcessed);
 	}
 
 	const reason = ps.reason?.trim() ?? null;
 
-	await EmojiImportRequests.update(request.id, {
-		status: "rejected",
+	const done = await transitionEmojiImportRequest("reject", request.id, {
 		reason,
 		processedById: me.id,
 		processedAt: new Date(),
 	});
+	// 確かめてから書くまでの間に、ほかの管理者が処理していた
+	if (!done) throw new ApiError(meta.errors.alreadyProcessed);
 
 	const exists = await EmojiImportDenieds.findOneBy({ name: request.emojiName });
 	if (!exists) {

@@ -33,6 +33,7 @@ import {
 	emojiAddRequestErrors,
 	throwIfEmojiAddRequestProblem,
 } from "../../common/emoji-add-request-errors.js";
+import { canEmojiAddRequest, transitionEmojiAddRequest } from "@/misc/emoji-request-state.js";
 
 export const meta = {
 	tags: ["emoji-add-request", "admin"],
@@ -69,7 +70,7 @@ export const paramDef = {
 export default define(meta, paramDef, async (ps, me) => {
 	const request = await EmojiAddRequests.findOneBy({ id: ps.requestId });
 	if (request == null) throw new ApiError(meta.errors.noSuchRequest);
-	if (request.status !== "pending") throw new ApiError(meta.errors.invalidStatus);
+	if (!canEmojiAddRequest("requestChanges", request.status)) throw new ApiError(meta.errors.invalidStatus);
 
 	const before = pickEditableFields(request);
 	const input = normalizeEmojiAddRequestFields(ps);
@@ -91,8 +92,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		throw new ApiError(meta.errors.noChanges);
 	}
 
-	await EmojiAddRequests.update(request.id, {
-		status: "changesRequested",
+	const done = await transitionEmojiAddRequest("requestChanges", request.id, {
 		proposal: Object.keys(proposal).length > 0 ? proposal : null,
 		reviewComment: comment,
 		reviewerId: me.id,
@@ -106,6 +106,8 @@ export default define(meta, paramDef, async (ps, me) => {
 			...(proposal.fileId && normalizeImageEdit(ps.imageEdit) ? { imageEdit: normalizeImageEdit(ps.imageEdit)! } : {}),
 		}),
 	});
+	// 確かめてから書くまでの間に、ほかの管理者が処理したか、申請者が取り下げた
+	if (!done) throw new ApiError(meta.errors.invalidStatus);
 
 	insertModerationLog(me, "emojiAddRequestChangesRequested", {
 		requestId: request.id,

@@ -169,7 +169,7 @@
 							<i class="ph-check ph-bold"></i> {{ changedCount > 0 ? `直して承認（${changedCount} 項目）` : "承認" }}
 						</MkButton>
 						<MkButton
-							v-if="request.status === 'pending'"
+							v-if="canRequestChanges"
 							:disabled="working || (changedCount === 0 && !comment.trim())"
 							@click="requestChanges()"
 						>
@@ -259,6 +259,7 @@ import {
 	type EmojiImageEditOp,
 	type EmojiImageSize,
 	type PackedEmojiAddRequest,
+	canEmojiAddRequest,
 } from "@/scripts/emoji-request";
 
 const props = defineProps<{
@@ -302,7 +303,10 @@ const editedFile = ref<Misskey.entities.DriveFile | null>(null);
 /** インポート申請の部品を作り直して読み直させるための番号 */
 const importReloadKey = ref(0);
 
-const editable = computed(() => request.value?.status === "pending" || request.value?.status === "changesRequested");
+/** 承認・却下ができる状態か（できる状態の一覧は scripts/emoji-request の emojiAddRequestActions） */
+const editable = computed(() => canEmojiAddRequest("approve", request.value?.status));
+/** 修正のお願いができる状態か（審査待ちのときだけ） */
+const canRequestChanges = computed(() => canEmojiAddRequest("requestChanges", request.value?.status));
 
 /** 申請の画像を、画像の確認部品に渡せる形にしたもの */
 const requestFile = computed<Misskey.entities.DriveFile | null>(() => {

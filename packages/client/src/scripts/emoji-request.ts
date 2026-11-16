@@ -111,6 +111,55 @@ export type PackedEmojiImportRequest = {
 
 // #endregion
 
+// #region 状態と操作
+
+/**
+ * 追加申請に対する操作と、その操作ができる状態の表。
+ *
+ * @remarks
+ * サーバー側の遷移表 `emojiAddRequestTransitions`（`packages/backend/src/misc/emoji-request-state.ts`）の写し。
+ * ボタンを出すか・選べるかの判定に使う。最終的な判定はサーバーがするので、ずれても壊れはしないが、
+ * 「押せるのに invalidStatus で断られる」画面になる。遷移を変えたら両方を直す。
+ *
+ * @internal
+ */
+export const emojiAddRequestActions = {
+	/** 管理者の「修正のお願い」 */
+	requestChanges: ["pending"],
+	/** 申請者の出し直し */
+	resubmit: ["changesRequested"],
+	/** 管理者の承認（直して承認を含む） */
+	approve: ["pending", "changesRequested"],
+	/** 管理者の却下 */
+	reject: ["pending", "changesRequested"],
+	/** 申請者の取り下げ */
+	withdraw: ["pending", "changesRequested"],
+} as const satisfies Record<string, readonly EmojiAddRequestStatus[]>;
+
+/** 追加申請に対する操作の名前 */
+export type EmojiAddRequestAction = keyof typeof emojiAddRequestActions;
+
+/**
+ * 追加申請が、今の状態でその操作をできるかを返す。
+ *
+ * @remarks
+ * 一覧の絞り込み（`"pending"` などの文字列）や、読み込み前（undefined）もそのまま渡せるよう、文字列で受ける。
+ *
+ * @param action - 操作の名前
+ * @param status - 申請の今の状態。読み込み前なら undefined / null
+ * @returns できるなら true
+ * @example
+ * ```ts
+ * const editable = computed(() => canEmojiAddRequest("approve", request.value?.status));
+ * ```
+ * @internal
+ */
+export function canEmojiAddRequest(action: EmojiAddRequestAction, status: string | null | undefined): boolean {
+	return status != null && (emojiAddRequestActions[action] as readonly string[]).includes(status);
+}
+
+// #endregion
+
 // #region 表示名
 
 /** 状態の札の色（一覧・詳細のスタイルで使う） */

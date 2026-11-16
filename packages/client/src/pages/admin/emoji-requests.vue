@@ -91,7 +91,7 @@ import { emojiMap } from "@/instance";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { analyzeEmojiImage, fetchImageBlob } from "@/scripts/emoji-image-tools";
 import { isOverRecommendedPixels } from "@/scripts/emoji-image-analysis";
-import { formatRequestDate, type PackedEmojiAddRequest } from "@/scripts/emoji-request";
+import { canEmojiAddRequest, formatRequestDate, type PackedEmojiAddRequest } from "@/scripts/emoji-request";
 
 const props = defineProps<{
 	/** 最初に開く種類（"add" / "import"） */
@@ -158,7 +158,7 @@ const headerTabs = computed(() => [
 ]);
 
 /** 選んで承認できる状態か（修正のお願い中も、管理者の判断で承認できる） */
-const selectable = computed(() => statusFilter.value === "pending" || statusFilter.value === "changesRequested");
+const selectable = computed(() => canEmojiAddRequest("approve", statusFilter.value));
 const allSelected = computed(() => items.value.length > 0 && items.value.every((r) => selected.value.has(r.id)));
 
 // #endregion

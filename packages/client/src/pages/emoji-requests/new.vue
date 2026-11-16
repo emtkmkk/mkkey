@@ -474,6 +474,7 @@ import {
 	type EmojiImageEditOp,
 	type EmojiAddRequestFields,
 	type PackedEmojiAddRequest,
+	canEmojiAddRequest,
 } from "@/scripts/emoji-request";
 
 const props = defineProps<{
@@ -1187,7 +1188,7 @@ function stepHasSuggestion(s: Step): boolean {
 async function loadResubmit(id: string): Promise<void> {
 	try {
 		const r = (await os.api("emoji-add-request/show", { requestId: id })) as PackedEmojiAddRequest;
-		if (r.status !== "changesRequested") {
+		if (!canEmojiAddRequest("resubmit", r.status)) {
 			await os.alert({ type: "info", text: "この申請は、今は修正のお願い中ではありません。" });
 			router.replace(`/emoji-requests/add/${id}`);
 			return;

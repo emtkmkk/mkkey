@@ -101,6 +101,17 @@
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
+			<FormSwitch data-setting-key="airReplyLongPressReply"
+				v-model="airReplyLongPressReply"
+				class="_formBlock"
+				>{{ i18n.ts.airReplyLongPressReply
+				}}<span v-if="showMkkeySettingTips" class="_beta">{{
+					i18n.ts.mkkey
+				}}</span
+				><template #caption>{{
+					i18n.ts.airReplyLongPressReplyDescription
+				}}</template></FormSwitch
+			>
 			<FormSwitch data-setting-key="strangerReplyMisclickGuard"
 				v-model="strangerReplyMisclickGuard"
 				class="_formBlock"
@@ -432,6 +443,9 @@ const autoSwitchDataSaver = $computed(
 );
 const enabledAirReply = computed(
 	defaultStore.makeGetterSetter("enabledAirReply")
+);
+const airReplyLongPressReply = computed(
+	defaultStore.makeGetterSetter("airReplyLongPressReply")
 );
 const toolbarAirReply = computed(
 	defaultStore.makeGetterSetter("toolbarAirReply")

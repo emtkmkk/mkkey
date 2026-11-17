@@ -1510,6 +1510,16 @@ export const defaultStore = markRaw(
 			createdAt: "2024/2/13",
 			page: "behavior",
 		},
+		/**
+		 * ツールバーの空リプボタンを長押しすると返信する。
+		 * オンのとき、空リプボタンを出しているノートではツールバーの返信ボタンを隠す（長押しで代わりになるため）。
+		 */
+		airReplyLongPressReply: {
+			where: "account",
+			default: false,
+			createdAt: "2026/11/17",
+			page: "behavior",
+		},
 		strangerReplyMisclickGuard: {
 			where: "account",
 			default: false,

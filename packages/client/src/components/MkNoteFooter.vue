@@ -19,14 +19,24 @@
 		</button>
 		<button
 			v-if="showToolbarAirReplyForNote(appearNote)"
-			v-tooltip.bottom="i18n.ts.airReply"
+			v-tooltip.bottom="
+				airReplyLongPressRepliesForNote(appearNote)
+					? i18n.ts.airReplyLongPressReplyTooltip
+					: i18n.ts.airReply
+			"
 			class="button _button"
-			@click="airReply()"
+			@click="onAirReplyClick()"
+			@pointerdown="airReplyLongPress.onPointerDown"
+			@pointermove="airReplyLongPress.onPointerMove"
+			@pointerup="airReplyLongPress.onPointerEnd"
+			@pointerleave="airReplyLongPress.onPointerEnd"
+			@pointercancel="airReplyLongPress.onPointerEnd"
+			@contextmenu="onAirReplyContextMenu"
 		>
 			<i class="ph-paper-plane-tilt ph-bold ph-lg"></i>
 			<template
 				v-if="
-					hideToolbarNormalReply(appearNote) &&
+					hideToolbarReplyButton(appearNote) &&
 					appearNote.repliesCount > 0
 				"
 			>
@@ -34,7 +44,7 @@
 			</template>
 		</button>
 		<button
-			v-if="!hideToolbarNormalReply(appearNote)"
+			v-if="!hideToolbarReplyButton(appearNote)"
 			v-tooltip.noDelay.bottom="i18n.ts.reply"
 			class="button _button"
 			@click="reply(false, $event)"
@@ -141,7 +151,8 @@
  *   本コンポーネントへ統合することで、footer に関する挙動を単一の実装に保つ。
  * - ★ボタン、リアクション追加ボタン、取り消しボタンの表示条件をここで統合する。
  * - multi / 非 multi の違いにより、同じ isMaxReacted でも UI の意味が変わるため条件を分けて扱う。
- * - `hideToolbarNormalReply` で返信を隠す（誤爆防止対象、または常にメニュー返信）。空リプをツールバーに出しているときは返信数を空リプボタン直後へ出し、返信ボタン非表示でも件数が見えるようにする。
+ * - `hideToolbarReplyButton` で返信を隠す（誤爆防止対象、常にメニュー返信、または空リプ長押しで返信する設定）。空リプをツールバーに出しているときは返信数を空リプボタン直後へ出し、返信ボタン非表示でも件数が見えるようにする。
+ * - `airReplyLongPressReply` がオンなら、空リプボタンの長押しで返信する（長押し直後のクリックでは空リプを開かない）。
  * - `noteMenuRefs` は親がスクリプト側で組み立てた Ref バッグ。テンプレート経由だと
  *   Vue がアンラップし `getNoteMenu` の `.value` 代入が壊れるため、必ずオブジェクトで受け取る。
  *
@@ -168,9 +179,11 @@ import { useReactionCountViewModel } from "@/scripts/use-reaction-count-view-mod
 import * as sound from "@/scripts/sound.js";
 import { normalizeReactionName } from "@/scripts/reaction-utils";
 import {
-	hideToolbarNormalReply,
+	airReplyLongPressRepliesForNote,
+	hideToolbarReplyButton,
 	showToolbarAirReplyForNote,
 } from "@/scripts/stranger-air-reply-toolbar";
+import { useLongPress } from "@/scripts/use-long-press";
 import { openReplyWithChoice } from "@/scripts/reply-note";
 import { getAirReplyInitialVisibility } from "@/scripts/semi-public";
 
@@ -443,14 +456,49 @@ useTooltip(
 	500
 );
 
-function reply(viaKeyboard = false, ev?: MouseEvent): void {
+/**
+ * 返信する
+ *
+ * @param viaKeyboard - キーボードから開いたか
+ * @param ev - クリックイベント（押したボタンの位置に返信の選択肢を出す）
+ * @param srcEl - 押したボタン（長押しなど、イベントが手元に無いとき用）
+ */
+function reply(viaKeyboard = false, ev?: MouseEvent, srcEl?: HTMLElement | null): void {
 	pleaseLogin();
 	openReplyWithChoice(appearNote, {
 		viaKeyboard,
 		animation: !viaKeyboard,
-		src: ev?.currentTarget ?? (viaKeyboard ? footerRootEl.value : undefined),
+		src:
+			ev?.currentTarget ??
+			srcEl ??
+			(viaKeyboard ? footerRootEl.value : undefined),
 		onOpened: props.focusNote,
 	});
+}
+
+/**
+ * 空リプボタンの長押しで返信する（`airReplyLongPressReply` がオンのときだけ）
+ */
+const airReplyLongPress = useLongPress(
+	(target) => reply(false, undefined, target),
+	() => airReplyLongPressRepliesForNote(appearNote)
+);
+
+/**
+ * 空リプボタンのクリック。直前に長押しで返信したときは空リプを開かない
+ */
+function onAirReplyClick(): void {
+	if (airReplyLongPress.consumeClick()) return;
+	airReply();
+}
+
+/**
+ * 長押しで返信できるときは、タッチの長押しで出るブラウザのメニューを抑える
+ *
+ * @param ev - contextmenu
+ */
+function onAirReplyContextMenu(ev: MouseEvent): void {
+	if (airReplyLongPressRepliesForNote(appearNote)) ev.preventDefault();
 }
 
 function airReply(viaKeyboard = false): void {

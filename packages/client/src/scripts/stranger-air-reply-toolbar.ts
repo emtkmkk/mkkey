@@ -12,6 +12,7 @@
  * - 公開範囲が `specified`（UI 上のダイレクト）のノートは誤爆防止の対象外とする。
  * - `user.isFollowed === false` の解釈は返信側も同じ。`null` / `undefined` は厳密等価で誤爆対象にしない。
  * - `alwaysReplyInNoteMenu` がオンのときは、ログイン中すべてのノートでツールバー返信を隠す（メニューから返信）。
+ * - `airReplyLongPressReply` がオンのときは、空リプボタンの長押しで返信し、ツールバーの返信ボタンを隠す。
  *
  * @public
  */
@@ -148,4 +149,42 @@ export function showToolbarAirReplyForNote(note: misskey.entities.Note): boolean
 	if (!toolbarAirReplyAppliesToNote(note)) return false;
 	if (defaultStore.state.toolbarAirReply) return true;
 	return strangerMisclickGuardActiveForNote(note);
+}
+
+/**
+ * ツールバーの空リプボタンの長押しで返信するか。
+ *
+ * @param note - 対象ノート
+ * @returns 長押しで返信するなら true
+ *
+ * @remarks
+ * - `airReplyLongPressReply` がオンで、ツールバーに空リプボタンを出しているノートだけ。
+ * - 返信をツールバーから隠している（誤爆防止の対象・常にメニューから返信）ノートでは長押しでも返信しない。
+ *   誤爆防止を長押しですり抜けないようにするため。
+ *
+ * @public
+ */
+export function airReplyLongPressRepliesForNote(
+	note: misskey.entities.Note,
+): boolean {
+	if (!defaultStore.state.airReplyLongPressReply) return false;
+	if (!showToolbarAirReplyForNote(note)) return false;
+	return !hideToolbarNormalReply(note);
+}
+
+/**
+ * ツールバーの返信ボタンを表示しないか（ツールバーの見た目だけの判定）。
+ *
+ * @param note - 対象ノート
+ * @returns 返信ボタンを出さないなら true
+ *
+ * @remarks
+ * {@link hideToolbarNormalReply} に加えて、空リプボタンの長押しで返信できるとき（{@link airReplyLongPressRepliesForNote}）も隠す。
+ * NOTE: メニューへの返信の追加やキーボードの返信ショートカットは {@link hideToolbarNormalReply} のまま。
+ * 長押しのときは返信ボタンが無いだけで、メニューやショートカットからは今までどおり返信できる。
+ *
+ * @public
+ */
+export function hideToolbarReplyButton(note: misskey.entities.Note): boolean {
+	return hideToolbarNormalReply(note) || airReplyLongPressRepliesForNote(note);
 }

@@ -1180,6 +1180,53 @@ function parseVisibilitySetting(value: string): ParsedVisibilitySetting {
 }
 
 /**
+ * 空リプで、公開ボタンをセミパブリックに置き換えるか
+ *
+ * @remarks
+ * リモートの公開投稿への空リプは、ローカルの公開TLに流さないため公開では投稿できない（`canPublic` が false）。
+ * セミパブリックを使えるユーザーなら、その代わりに公開ボタンをセミパブリックとして使えるようにする。
+ * ホームなど、ほかの公開範囲のボタンはそのまま（押せばセミパブリックではなくその公開範囲になる）。
+ */
+const replacePublicWithSemiPublic =
+	props.airReply != null &&
+	props.airReply.user.host != null &&
+	props.airReply.visibility === "public" &&
+	canUseSemiPublic();
+
+/**
+ * 投稿ボタンの設定に、空リプでのセミパブリックへの置き換え（{@link replacePublicWithSemiPublic}）を当てる。
+ *
+ * @param parsed - 分解済みの設定
+ * @returns 置き換え後の設定（対象外ならそのまま）
+ */
+function applySemiPublicReplacement(
+	parsed: ParsedVisibilitySetting
+): ParsedVisibilitySetting {
+	if (
+		replacePublicWithSemiPublic &&
+		parsed.visibility === "public" &&
+		!parsed.localOnly
+	) {
+		return { visibility: "home", localOnly: false, semiPublic: true };
+	}
+	return parsed;
+}
+
+/**
+ * 1 番目の投稿ボタン（既定の公開範囲を強制する設定のとき）の公開範囲。
+ *
+ * @returns 既定の公開範囲（空リプでは公開がセミパブリックに置き換わる）
+ */
+function getFirstButtonSetting(): ParsedVisibilitySetting {
+	return applySemiPublicReplacement({
+		visibility: defaultStore.state
+			.defaultNoteVisibility as (typeof misskey.noteVisibilities)[number],
+		localOnly: defaultStore.state.defaultNoteLocalAndFollower === true,
+		semiPublic: false,
+	});
+}
+
+/**
  * 投稿ボタンに出す公開範囲のアイコンを決める。
  *
  * @param targetVisibility - 公開範囲
@@ -1339,7 +1386,9 @@ const quickVisibilityPresets = $computed<QuickVisibilityPreset[]>(() => {
                 quickType: slot.quickType,
                 order: slot.order,
                 isEnabled: slot.isEnabled,
-                parsed: parseVisibilitySetting(slot.visibilityValue),
+                parsed: applySemiPublicReplacement(
+                        parseVisibilitySetting(slot.visibilityValue)
+                ),
                 isWide: slot.isWide,
         }));
 });
@@ -1362,10 +1411,7 @@ const submitButtonConfigs = $computed<QuickPostButtonConfig[]>(() => {
 		? "ph-quotes ph-bold ph-lg"
 		: "ph-paper-plane-tilt ph-bold ph-lg";
 
-	const firstSetting = {
-		visibility: storeState.defaultNoteVisibility as (typeof misskey.noteVisibilities)[number],
-		localOnly: storeState.defaultNoteLocalAndFollower === true,
-	};
+	const firstSetting = getFirstButtonSetting();
 
 	const replyOrRenoteIcon = reply
 		? "ph-arrow-u-up-left ph-bold ph-lg"
@@ -1411,7 +1457,11 @@ const submitButtonConfigs = $computed<QuickPostButtonConfig[]>(() => {
 			buttonClass: "submit _buttonGradate",
 			classObject: createShortcutClasses(1),
 			disabled: !canPost,
-			iconClass: getVisibilityIconClass(firstSetting.visibility, firstSetting.localOnly),
+			iconClass: getVisibilityIconClass(
+				firstSetting.visibility,
+				firstSetting.localOnly,
+				firstSetting.semiPublic
+			),
 			extraIconClass: replyOrRenoteIcon,
 			behavior: { type: "quick", quickType: "first" },
 		}
@@ -1488,7 +1538,11 @@ const submitButtonConfigs = $computed<QuickPostButtonConfig[]>(() => {
 			classObject: createShortcutClasses(1),
 			disabled: !canPost && storeState.defaultNoteVisibility !== "specified",
 			iconClass: joinClasses(
-				getVisibilityIconClass(firstSetting.visibility, firstSetting.localOnly),
+				getVisibilityIconClass(
+					firstSetting.visibility,
+					firstSetting.localOnly,
+					firstSetting.semiPublic
+				),
 				storeState.firstPostWideButton
 					? replyOrRenoteIcon
 						? "widePostButton_left"
@@ -2453,10 +2507,11 @@ function performQuickPost(kind: QuickVisibilityType): void {
         if (postLocked) return;
         if (kind === "first") {
                 if (defaultStore.state.firstPostButtonVisibilityForce) {
-                        visibility = defaultStore.state.defaultNoteVisibility as (typeof misskey.noteVisibilities)[number];
-                        localOnly = defaultStore.state.defaultNoteLocalAndFollower === true;
-                        // 既定の公開範囲にはセミパブリックが無いので OFF にする
-                        semiPublic = false;
+                        const first = getFirstButtonSetting();
+                        visibility = first.visibility;
+                        localOnly = first.localOnly;
+                        // 既定の公開範囲にはセミパブリックが無い（空リプの公開ボタンの置き換えだけ ON になる）
+                        semiPublic = first.semiPublic;
                 }
         } else {
                 const target = quickVisibilitySettingMap[kind];

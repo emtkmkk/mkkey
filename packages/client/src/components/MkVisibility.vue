@@ -2,7 +2,7 @@
 	<span v-if="note.visibility !== 'public'" :class="$style.visibility">
 		<i
 			v-if="note.visibility === 'home' && note.semiPublic && !note.localOnly"
-			:class="SEMI_PUBLIC_ICON"
+			class="ph-house ph-bold ph-lg"
 			v-tooltip="i18n.ts._visibility.semiPublicTooltip"
 		></i>
 		<i
@@ -52,7 +52,8 @@
  *
  * @remarks
  * 公開（public）のときは何も出さない。
- * セミパブリック（ローカルではホーム、リモートには公開）は、ホームの代わりに専用のアイコンを出す。
+ * セミパブリック（ローカルではホーム、リモートには公開）は、ローカルから見ればホームなので同じ家のアイコンを出し、
+ * ツールチップ（長押し・ホバー）でだけセミパブリックであることを説明する。
  *
  * @internal
  */
@@ -61,7 +62,6 @@ import XDetails from "@/components/MkUsersTooltip.vue";
 import * as os from "@/os";
 import { useTooltip } from "@/scripts/use-tooltip";
 import { i18n } from "@/i18n";
-import { SEMI_PUBLIC_ICON } from "@/scripts/semi-public";
 
 const props = defineProps<{
 	note: {

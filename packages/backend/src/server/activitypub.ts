@@ -32,6 +32,7 @@ import {
 	FollowRequests,
 } from "@/models/index.js";
 import type { ILocalUser, User } from "@/models/entities/user.js";
+import type { Note } from "@/models/entities/note.js";
 import { renderLike } from "@/remote/activitypub/renderer/like.js";
 import { getUserKeypair } from "@/misc/keypair-store.js";
 import {
@@ -122,6 +123,107 @@ async function resendDeleteAccount(ctx: Router.RouterContext, userId: string) {
 
         await deliverToUser(deleted as ILocalUser, activity, remote);
 }
+
+//#region ノート取得の可否判定
+
+/**
+ * ローカルノートを ActivityPub で外部へ返すときの公開の度合い
+ *
+ * @remarks
+ * - `anyone`: 誰に返してもよい（リモートへ public / home として配送しているもの）
+ * - `followers`: 署名を検証し、投稿者のフォロワーにだけ返す
+ * - `none`: リモートへは一切出さない（404 扱い）
+ *
+ * @internal
+ */
+type RemoteFetchAccess = "anyone" | "followers" | "none";
+
+/**
+ * ローカルノートをリモートからの取得に対してどこまで見せるかを決める
+ *
+ * @remarks
+ * 配送時の宛先（`renderNote` の to / cc）と同じ範囲になるようにしている。
+ * 取得経路の判定が配送より広いと、配送していない相手にも ID さえ分かれば中身が読めてしまう。
+ *
+ * - チャンネルの `localOnly` 投稿は配送自体をしないので `none`
+ * - `localOnly` の public / home は、リモートへはフォロワー限定で配送しているので `followers`
+ * - `followers` は `localOnly` に関係なく `followers`
+ *
+ * NB: 2024-07 の変更で、フォロワー確認が「followers かつ localOnly」のときだけになっていた。
+ * そのため通常のフォロワー限定ノートなどが署名なしでも取得できていた。
+ *
+ * @param note - 判定するローカルノート（public / home / followers のいずれか）
+ * @returns 取得を許す範囲
+ * @internal
+ */
+function getRemoteFetchAccess(
+	note: Pick<Note, "visibility" | "localOnly" | "channelId">,
+): RemoteFetchAccess {
+	// チャンネルのローカル限定投稿は連合しない
+	if (note.localOnly && note.channelId) return "none";
+	// フォロワー限定、またはリモートにはフォロワー限定で配送しているもの
+	if (note.visibility === "followers" || note.localOnly) return "followers";
+	return "anyone";
+}
+
+/**
+ * ローカルノートの ActivityPub 取得を許すかを判定し、拒否する場合は応答ステータスを設定する
+ *
+ * @remarks
+ * 判定の基準は {@link getRemoteFetchAccess}。フォロワー確認が必要なときだけ署名を検証する。
+ * 署名ユーザーを後で使う呼び出し元（references）は、取得済みの値を `signatureUser` に渡して二重検証を避ける。
+ *
+ * @param ctx - Koa のコンテキスト。拒否時に `status` を設定する
+ * @param note - 取得対象のローカルノート（`user` リレーション付きだと関係取得が速い）
+ * @param signatureUser - 取得済みの署名ユーザー。省略時は必要になったときだけ検証する
+ * @returns 取得を許すなら `true`。`false` のときは `ctx.status` 設定済み
+ * @internal
+ */
+async function authorizeNoteFetch(
+	ctx: Router.RouterContext,
+	note: Note,
+	signatureUser?: Awaited<ReturnType<typeof getSignatureUser>>,
+): Promise<boolean> {
+	const access = getRemoteFetchAccess(note);
+
+	if (access === "anyone") return true;
+
+	if (access === "none") {
+		ctx.status = 404;
+		return false;
+	}
+
+	serverLogger.debug(
+		"Responding to request for follower-only note, validating access...",
+	);
+	const remoteUser =
+		signatureUser !== undefined ? signatureUser : await getSignatureUser(ctx.req);
+
+	if (remoteUser == null) {
+		serverLogger.debug("Rejecting: no user");
+		ctx.status = 401;
+		return false;
+	}
+
+	const relation = await Users.getRelation(
+		remoteUser.user.id,
+		note.userId,
+		note.user ?? undefined,
+	);
+
+	if (!relation.isFollowing || relation.isBlocked) {
+		serverLogger.debug(
+			"Rejecting: authenticated user is not following us or was blocked by us",
+		);
+		ctx.status = 403;
+		return false;
+	}
+
+	serverLogger.debug("Accepting: access criteria met");
+	return true;
+}
+
+//#endregion
 
 //#region ルーティング
 
@@ -245,40 +347,8 @@ router.get("/notes/:note", async (ctx, next) => {
 		return;
 	}
 
-	if (note.visibility === "followers" && (!note.channelId && note.localOnly)) {
-		serverLogger.debug(
-			"Responding to request for follower-only note, validating access...",
-		);
-		const remoteUser = await getSignatureUser(ctx.req);
-		serverLogger.debug("Local note author user:");
-		serverLogger.debug(JSON.stringify(note, null, 2));
-		serverLogger.debug("Authenticated remote user:");
-		serverLogger.debug(JSON.stringify(remoteUser, null, 2));
-
-		if (remoteUser == null) {
-			serverLogger.debug("Rejecting: no user");
-			ctx.status = 401;
-			return;
-		}
-
-                const relation = await Users.getRelation(
-                        remoteUser.user.id,
-                        note.userId,
-                        note.user ?? undefined,
-                );
-		serverLogger.debug("Relation:");
-		serverLogger.debug(JSON.stringify(relation, null, 2));
-
-		if (!relation.isFollowing || relation.isBlocked) {
-			serverLogger.debug(
-				"Rejecting: authenticated user is not following us or was blocked by us",
-			);
-			ctx.status = 403;
-			return;
-		}
-
-		serverLogger.debug("Accepting: access criteria met");
-	}
+	// 配送範囲より広く返さないよう、取得の可否を判定する
+	if (!(await authorizeNoteFetch(ctx, note))) return;
 
 	ctx.body = renderActivity(await renderNote(note, false));
 
@@ -361,41 +431,11 @@ router.get("/notes/:note/references", async (ctx, next) => {
                 return;
         }
 
+	// 署名ユーザーは参照一覧の絞り込みにも使うので先に取得し、判定に渡す
 	const signatureUser = await getSignatureUser(ctx.req);
 
-	if (note.visibility === "followers" && (!note.channelId && note.localOnly)) {
-		serverLogger.debug(
-			"Responding to request for follower-only note, validating access...",
-		);
-		serverLogger.debug("Local note author user:");
-		serverLogger.debug(JSON.stringify(note, null, 2));
-		serverLogger.debug("Authenticated remote user:");
-		serverLogger.debug(JSON.stringify(signatureUser, null, 2));
-
-		if (signatureUser == null) {
-			serverLogger.debug("Rejecting: no user");
-			ctx.status = 401;
-			return;
-		}
-
-            const relation = await Users.getRelation(
-                    signatureUser.user.id,
-                    note.userId,
-                    note.user ?? undefined,
-            );
-		serverLogger.debug("Relation:");
-		serverLogger.debug(JSON.stringify(relation, null, 2));
-
-		if (!relation.isFollowing || relation.isBlocked) {
-			serverLogger.debug(
-				"Rejecting: authenticated user is not following us or was blocked by us",
-			);
-			ctx.status = 403;
-			return;
-		}
-
-		serverLogger.debug("Accepting: access criteria met");
-	}
+	// 配送範囲より広く返さないよう、取得の可否を判定する
+	if (!(await authorizeNoteFetch(ctx, note, signatureUser))) return;
 
 	if ((ctx.request.query.cursor || ctx.request.query.min_id) && typeof (ctx.request.query.cursor || ctx.request.query.min_id) !== "string") {
 		ctx.status = 400;

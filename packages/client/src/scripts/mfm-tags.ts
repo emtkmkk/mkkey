@@ -1,3 +1,16 @@
+/**
+ * @packageDocumentation
+ *
+ * 投稿フォームで `$` を入力したときに出す MFM の一覧（補完候補）。
+ *
+ * @remarks
+ * `MFM_TAGS_JP` の各項目は、`name ja` の形で一覧に表示し、選ぶと `exportLeft`（`defaultOption` があればそちら）と
+ * `exportRight` で囲む。`mc`（マクドナルドの短縮名）の `ja` は、見ている人の今の設定の短縮名にする。
+ *
+ * @internal
+ */
+import { getMyMcShortName } from "@/scripts/mc-short-name";
+
 export const MFM_TAGS = [
 	"tada",
 	"jelly",
@@ -19,6 +32,7 @@ export const MFM_TAGS = [
 	"rainbow",
 	"sparkle",
 	"rotate",
+	"mc",
 	"saize",
 ];
 export const MFM_TAGS_JP = [
@@ -184,6 +198,16 @@ export const MFM_TAGS_JP = [
 		exportLeft: "$[bounce ",
 		exportRight: "]",
 		defaultOption: "$[bounce.speed=0.75s ",
+	},
+	{
+		name: "mc",
+		// 説明には、今の設定の短縮名を出す（設定を変えるとすぐ反映されるよう、読むたびに求める）
+		get ja() {
+			return getMyMcShortName();
+		},
+		exportLeft: "$[mc ",
+		exportRight: "]",
+		defaultOption: "$[mc ",
 	},
 	{
 		name: "saize",

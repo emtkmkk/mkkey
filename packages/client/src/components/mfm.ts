@@ -6,6 +6,7 @@
  * @remarks
  * もこきー独自の表示用変換（ねこ語化、マック／マクド変換など）もここで本文に当てる。
  * マック／マクド変換の英字は、大文字小文字と全角半角の状態を引き継ぐ（`scripts/makudo-case.ts`）。
+ * `$[mc]` / `$[mc aaa]` は、見ている人の設定のマクドナルドの短縮名にする（`scripts/mc-short-name.ts`）。
  *
  * @internal
  */
@@ -36,6 +37,7 @@ import {
 	toMakku,
 	toMakudo,
 } from "@/scripts/makudo-case";
+import { getMyMcShortName, replaceMcTokens } from "@/scripts/mc-short-name";
 
 export default defineComponent({
 	emits: ["clickEv"],
@@ -159,7 +161,13 @@ export default defineComponent({
 				ast.map((token, index): VNode[] => {
 					switch (token.type) {
 						case "text": {
-							let text = token.props.text.replace(/(\r\n|\n|\r)/g, "\n");
+							/**
+							 * 文字にモールス解読・マックマクド変換などの表示用の変換を当てる
+							 *
+							 * @param text - 変換する文字
+							 * @returns 変換後の文字
+							 */
+							const decorate = (text: string): string => {
 
 							/*if (isNote && !noteHost && this.author && this.author.isCat && this.author.speakAsCat) {
 								text = nyaize(text);
@@ -225,6 +233,15 @@ export default defineComponent({
 								text = text.replace(MAKKU_PATTERN, toMakudo);
 								}
 							}
+								return text;
+							};
+
+							// $[mc] / $[mc ] はマクドナルドの短縮名にする。
+							// 短縮名は本人が選んだものなので、その前後の文字だけを変換し、短縮名自体は変換しない
+							const text = replaceMcTokens(
+								token.props.text.replace(/(\r\n|\n|\r)/g, "\n"),
+								decorate
+							);
                                                         if (!this.nowrap && (!isPlain || isNote)) {
                                                         		const lines = text.split("\n");
                                                                 const res = [];
@@ -331,6 +348,10 @@ export default defineComponent({
 										return genEl(token.children);
 									}
 									return h(MkSparkle, {}, genEl(token.children));
+								}
+								case "mc": {
+									// $[mc aaa] … マクドナルドの短縮名のすぐ後ろに中身を続ける
+									return [getMyMcShortName(), ...genEl(token.children)];
 								}
 								case "saize": {
 									if (

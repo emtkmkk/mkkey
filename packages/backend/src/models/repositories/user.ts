@@ -1424,6 +1424,8 @@ FROM "user" u WHERE u."id" = $1`,
 						canInvite: user.canInvite || falsy,
 						isPublicLikeList: user.isPublicLikeList ?? truthy,
 						disableNyaise: user.disableNyaise || falsy,
+						// 本人にだけ返す（$[mc] の表示に使う）
+						mcShortName: user.mcShortName ?? null,
 				  }
 				: {}),
 

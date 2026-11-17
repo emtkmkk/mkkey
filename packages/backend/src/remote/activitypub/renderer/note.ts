@@ -9,6 +9,9 @@
  * 宛先（to / cc）は `visibility` ではなく、リモートから見た公開範囲（`misc/semi-public.ts` の `getRemoteVisibility`）で決める。
  * `localOnly` の public / home はフォロワー限定、セミパブリックは公開として出る。
  *
+ * 本文・CW の `$[mc]`（マクドナルドの短縮名）は、投稿者の設定で置き換えてから出す（`misc/mc-short-name.ts`）。
+ *
+ *
  * @internal
  */
 import { In, IsNull } from "typeorm";
@@ -31,6 +34,7 @@ import {
 	type ReferenceExposureContext,
 } from "@/services/note/reference-visibility.js";
 import { getRemoteVisibility } from "@/misc/semi-public.js";
+import { applyMcShortName, resolveMcShortName } from "@/misc/mc-short-name.js";
 
 export default async function renderNote(
 	note: Note,
@@ -150,7 +154,9 @@ export default async function renderNote(
 		}
 	}
 
-	let text = note.text ?? "";
+	// $[mc]（マクドナルドの短縮名）は、リモートへは投稿者の設定で置き換えてから出す
+	const mcShortName = await getAuthorMcShortName(note);
+	let text = applyMcShortName(note.text ?? "", mcShortName);
 	let poll: Poll | null = null;
 
 	if (note.hasPoll) {
@@ -171,7 +177,10 @@ export default async function renderNote(
 		apText += `\n\nRE: ${quote}`;
 	}
 
-	const summary = note.cw === "" ? String.fromCharCode(0x200b) : note.cw;
+	const summary =
+		note.cw === ""
+			? String.fromCharCode(0x200b)
+			: applyMcShortName(note.cw, mcShortName);
 
 	const content = toHtml(
 		Object.assign({}, note, {
@@ -240,6 +249,25 @@ export default async function renderNote(
 		...asTalk,
 		_mk_localVisibility: remoteFollowerOnly ? note.visibility : undefined,
 	};
+}
+
+/**
+ * 投稿者のマクドナルドの短縮名（`$[mc]` の置き換え先）を求める
+ *
+ * @remarks
+ * 本文・CW に `$[mc` が無ければ DB を引かずに既定値を返す（ほとんどの投稿はここで終わる）。
+ *
+ * @param note - ローカルノート
+ * @returns 短縮名
+ * @internal
+ */
+async function getAuthorMcShortName(note: Note): Promise<string> {
+	if (!note.text?.includes("$[mc") && !note.cw?.includes("$[mc")) {
+		return resolveMcShortName(null);
+	}
+	const author =
+		note.user ?? (await Users.findOne({ where: { id: note.userId }, select: ["id", "mcShortName"] }));
+	return resolveMcShortName(author?.mcShortName);
 }
 
 export async function getEmojis(names: string[]): Promise<Emoji[]> {

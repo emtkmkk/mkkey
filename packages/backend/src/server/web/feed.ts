@@ -3,8 +3,20 @@ import { In, IsNull } from "typeorm";
 import config from "@/config/index.js";
 import type { User } from "@/models/entities/user.js";
 import { Notes, DriveFiles, UserProfiles, Users } from "@/models/index.js";
+import { applyMcShortName, resolveMcShortName } from "@/misc/mc-short-name.js";
 
+/**
+ * ユーザーの公開投稿の RSS / Atom / JSON フィードを作る
+ *
+ * @remarks
+ * 本文・CW の `$[mc]`（マクドナルドの短縮名）は、投稿者の設定で置き換えてから出す。
+ *
+ * @param user - フィードを作るユーザー
+ * @returns フィード
+ * @internal
+ */
 export default async function (user: User) {
+	const mcShortName = resolveMcShortName(user.mcShortName);
 	// 表示名が未設定のユーザーもいるため、無い場合はユーザー名を使う
 	const username = user.name?.replace(/ ?:.*?:/, "") || user.username;
 
@@ -57,8 +69,9 @@ export default async function (user: User) {
 			title: `新着投稿 : ${author.name}`,
 			link: `${config.url}/notes/${note.id}`,
 			date: note.createdAt,
-			description: note.cw || undefined,
-			content: note.text || undefined,
+			// $[mc]（マクドナルドの短縮名）は投稿者の設定で置き換える
+			description: applyMcShortName(note.cw, mcShortName) || undefined,
+			content: applyMcShortName(note.text, mcShortName) || undefined,
 			image: file ? DriveFiles.getPublicUrl(file) || undefined : undefined,
 		});
 	}

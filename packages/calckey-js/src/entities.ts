@@ -141,6 +141,8 @@ export type UserList = {
 };
 
 export type MeDetailed = UserDetailed & {
+	/** マクドナルドの短縮名の設定（`makku` / `makudo` / `free:xxxxxx`、null は未設定） */
+	mcShortName?: string | null;
 	avatarId: DriveFile["id"];
 	bannerId: DriveFile["id"];
 	autoAcceptFollowed: boolean;

@@ -48,6 +48,7 @@ import {
 	stripEmojiShortcodes,
 } from "@/misc/user-name.js";
 import { getNoteSummary } from "@/misc/get-note-summary.js";
+import { applyMcShortName, resolveMcShortName } from "@/misc/mc-short-name.js";
 import { getSleepsUntilNextNewYearsDay } from "@/misc/motd-oshogatsu-sleeps.js";
 import { queues } from "@/queue/queues.js";
 import { genOpenapiSpec } from "../api/openapi/gen-spec.js";
@@ -761,7 +762,11 @@ router.get("/notes/:note", async (ctx, next) => {
 					: "公開範囲が限定されている投稿"
 					}なのでプレビューを表示できません。\nリンクをクリックすると投稿ページへ移動します。`;
 			} else {
-				summary = getNoteSummary(packedNote);
+				// $[mc]（マクドナルドの短縮名）は投稿者の設定で置き換える
+				summary = applyMcShortName(
+					getNoteSummary(packedNote),
+					resolveMcShortName(user.mcShortName),
+				);
 			}
 			await ctx.render("note", {
 				note: _note,

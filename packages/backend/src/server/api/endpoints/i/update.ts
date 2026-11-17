@@ -178,6 +178,12 @@ export const paramDef = {
 		isRemoteLocked: { type: "boolean" },
 		isPublicLikeList: { type: "boolean" },
 		disableNyaise: { type: "boolean" },
+		/** マクドナルドの短縮名（`misc/mc-short-name.ts`）。null で未設定（マック）。free で 0 文字は不可 */
+		mcShortName: {
+			type: "string",
+			nullable: true,
+			pattern: "^(makku|makudo|free:(?!000000)[01]{6})$",
+		},
 		pinnedPageId: { type: "string", format: "misskey:id", nullable: true },
 		mutedWords: { type: "array" },
 		reactionMutedWords: { type: "array" },
@@ -387,6 +393,10 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 	}
 	if (typeof ps.disableNyaise === "boolean") {
 		updates.disableNyaise = ps.disableNyaise;
+	}
+	// 形は paramDef の pattern で確認済み（0 文字の指定もそこで弾く）
+	if (ps.mcShortName !== undefined) {
+		updates.mcShortName = ps.mcShortName;
 	}
 	if (typeof ps.showDonateBadges === "boolean")
 		profileUpdates.showDonateBadges = ps.showDonateBadges;

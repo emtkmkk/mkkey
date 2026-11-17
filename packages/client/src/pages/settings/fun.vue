@@ -222,6 +222,32 @@
 					i18n.ts.mkkey
 				}}</span></FormSwitch
 			>
+			<FormSelect data-setting-key="mcShortName" v-model="mcShortNameMode" class="_formBlock">
+				<template #label
+					>{{ i18n.ts.mcShortName
+					}}<span v-if="showMkkeySettingTips" class="_beta">{{
+						i18n.ts.mkkey
+					}}</span></template
+				>
+				<option value="makku">マック</option>
+				<option value="makudo">マクド</option>
+				<option value="free">{{ i18n.ts.mcShortNameFree }}</option>
+				<template #caption>{{ i18n.ts.mcShortNameDescription }}</template>
+			</FormSelect>
+			<div v-if="mcShortNameMode === 'free'" class="_formBlock mcLetters">
+				<button
+					v-for="(ch, i) in MC_FULL_NAME"
+					:key="i"
+					class="_button letter"
+					:class="{ on: mcLetterBits[i] }"
+					:disabled="mcLetterBits[i] && mcLetterCount === 1"
+					:aria-pressed="mcLetterBits[i]"
+					@click="toggleMcLetter(i)"
+				>
+					{{ ch }}
+				</button>
+				<span class="preview">→ {{ mcShortNamePreview }}</span>
+			</div>
 			<FormSelect data-setting-key="replaceMakudo" v-model="replaceMakudo" class="_formBlock">
 				<template #label>{{ i18n.ts.replaceMakudo }}</template>
 				<option value="">{{ i18n.ts.replaceMakudo0 }}</option>
@@ -302,6 +328,7 @@
  *
  * @remarks
  * 設定検索は各操作部品の `data-setting-key` を使って、該当項目へ移動し強調する。
+ * マクドナルドの短縮名（`$[mc]`）は、リモートへ送るときにも使うのでサーバー（`i/update`）に保存する。
  *
  * @see {@link defaultStore}
  * @internal
@@ -323,6 +350,7 @@ import { unisonReload } from "@/scripts/unison-reload";
 import { useIsMobile } from "@/scripts/use-is-mobile";
 import { deepClone } from "@/scripts/clone";
 import FormFolder from "@/components/form/folder.vue";
+import { MC_FULL_NAME, resolveMcShortName } from "@/scripts/mc-short-name";
 
 const DESKTOP_THRESHOLD = 1100;
 
@@ -377,6 +405,61 @@ const enableEmojiReplace = computed(
 	defaultStore.makeGetterSetter("enableEmojiReplace")
 );
 let disableNyaise = $ref($i.disableNyaise);
+
+// #region マクドナルドの短縮名
+/**
+ * マクドナルドの短縮名の選び方（マック / マクド / 自由に指定）
+ *
+ * @remarks
+ * 保存する値は `makku` / `makudo` / `free:xxxxxx`（{@link saveMcShortName}）。
+ * 自由に指定では、マクドナルドの 6 文字それぞれを使うか（{@link mcLetterBits}）を選ぶ。
+ */
+const initialMcSetting = $i.mcShortName ?? "makku";
+const mcShortNameMode = ref<"makku" | "makudo" | "free">(
+	initialMcSetting.startsWith("free:")
+		? "free"
+		: initialMcSetting === "makudo"
+		? "makudo"
+		: "makku"
+);
+/** 自由に指定のときの、6 文字それぞれを使うか。未設定ならマクド（先頭 3 文字）から始める */
+const mcLetterBits = ref<boolean[]>(
+	initialMcSetting.startsWith("free:")
+		? Array.from(initialMcSetting.slice(5)).map((b) => b === "1")
+		: [true, true, true, false, false, false]
+);
+/** 選ばれている文字の数。0 文字にはできないので、最後の 1 文字はオフにできない */
+const mcLetterCount = computed(() => mcLetterBits.value.filter(Boolean).length);
+
+/** 今の選び方を保存する値にする */
+function getMcSettingValue(): string {
+	if (mcShortNameMode.value !== "free") return mcShortNameMode.value;
+	return `free:${mcLetterBits.value.map((b) => (b ? "1" : "0")).join("")}`;
+}
+
+const mcShortNamePreview = computed(() => resolveMcShortName(getMcSettingValue()));
+
+/**
+ * 自由に指定の 1 文字をオンオフする
+ *
+ * @param index - 文字の位置（0〜5）
+ */
+function toggleMcLetter(index: number): void {
+	// 最後の 1 文字はオフにしない（0 文字の短縮名は作れない）
+	if (mcLetterBits.value[index] && mcLetterCount.value === 1) return;
+	mcLetterBits.value[index] = !mcLetterBits.value[index];
+	saveMcShortName();
+}
+
+/** 短縮名の設定をサーバーに保存する（リモートへ送るときにも投稿者の設定として使うため） */
+function saveMcShortName(): void {
+	const value = getMcSettingValue();
+	$i.mcShortName = value;
+	os.api("i/update", { mcShortName: value });
+}
+
+watch(mcShortNameMode, saveMcShortName);
+// #endregion
 
 function chooseEmoji(ev: MouseEvent) {
 	os.pickEmoji(ev.currentTarget ?? ev.target, {
@@ -472,6 +555,37 @@ definePageMetadata({
 </script>
 
 <style lang="scss" scoped>
+.mcLetters {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5rem;
+
+	> .letter {
+		min-width: 2.5rem;
+		padding: 0.5rem;
+		border-radius: 0.5rem;
+		border: solid 1px var(--divider);
+		color: var(--fgTransparentWeak);
+		font-size: 1.1em;
+
+		&.on {
+			background: var(--accent);
+			border-color: var(--accent);
+			color: var(--fgOnAccent);
+		}
+
+		&:disabled {
+			cursor: not-allowed;
+		}
+	}
+
+	> .preview {
+		margin-left: 0.5rem;
+		font-weight: bold;
+	}
+}
+
 .zoaiodol {
 	padding: 0.75rem;
 	font-size: 1.1em;

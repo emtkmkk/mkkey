@@ -384,6 +384,20 @@ export class User {
 	})
 	public disableNyaise: boolean;
 
+	/**
+	 * お遊び機能「マクドナルドの短縮名」の設定（本文の `$[mc]` を何に置き換えるか）
+	 *
+	 * @remarks
+	 * `null`（未設定・マック）/ `makku` / `makudo` / `free:xxxxxx`（マクドナルドの 6 文字それぞれを使うか）。
+	 * 見るとき（もこきーの画面）は見ている人の設定、外へ出すとき（リモート配送など）は投稿者の設定で置き換える。
+	 * 規則は `misc/mc-short-name.ts`。
+	 */
+	@Column('varchar', {
+		length: 16,
+		nullable: true,
+	})
+	public mcShortName: string | null;
+
 	@Index({ unique: true })
 	@Column('char', {
 		length: 16, nullable: true, unique: true,

@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ *
+ * MFM（投稿本文の記法）を解析し、Vue の要素に変換して描画するコンポーネント。
+ *
+ * @remarks
+ * もこきー独自の表示用変換（ねこ語化、マック／マクド変換など）もここで本文に当てる。
+ * マック／マクド変換の英字は、大文字小文字と全角半角の状態を引き継ぐ（`scripts/makudo-case.ts`）。
+ *
+ * @internal
+ */
 import { defineComponent, h } from "vue";
 import * as mfm from "mfm-js";
 import type { VNode } from "vue";
@@ -19,6 +30,12 @@ import { defaultStore } from "@/store";
 import { mr_to_str } from "@/scripts/convert-mr";
 import { nyaize } from "@/scripts/nyaize.js";
 import { isIgnoredMention } from "@/scripts/is-ignored-mention";
+import {
+	MAKKU_PATTERN,
+	MAKUDO_PATTERN,
+	toMakku,
+	toMakudo,
+} from "@/scripts/makudo-case";
 
 export default defineComponent({
 	emits: ["clickEv"],
@@ -198,12 +215,14 @@ export default defineComponent({
 								if (defaultStore.state.replaceMakudo === "makku") {
 									text = text.replace(/マクド(?![ァ-ヶ])/g, 'マック');
 									text = text.replace(/まくど(?![ぁ-ん])/g, 'まっく');
-									text = text.replace(/makudo(?![a-zA-Z])/gi, 'makku');
+									// 英字は大文字小文字・全角半角の状態を引き継ぐ（Makudo → Makku）
+								text = text.replace(MAKUDO_PATTERN, toMakku);
 								}
 								if (defaultStore.state.replaceMakudo === "makudo") {
 									text = text.replace(/マック(?![ァ-ヶ])/g, 'マクド');
 									text = text.replace(/まっく(?![ぁ-ん])/g, 'まくど');
-									text = text.replace(/makku(?![a-zA-Z])/gi, 'makudo');
+									// 英字は大文字小文字・全角半角の状態を引き継ぐ（Makku → Makudo）
+								text = text.replace(MAKKU_PATTERN, toMakudo);
 								}
 							}
                                                         if (!this.nowrap && (!isPlain || isNote)) {

@@ -90,11 +90,17 @@
  *   fallback に使う必要がある。
  * - `isActive` は表示状態と同期する。未定義のままだと active が常に default true になり、
  *   非表示時にも trap が残ってエラーになりうる。
+ * - 表示中は、ブラウザやスマホの「戻る」で閉じられる（`scripts/close-on-back.ts`）。
+ *   戻ると背景クリックと同じ `click` を出す。強制確認ダイアログは閉じず、`closeOnBack: false` の部品は対象外。
  *
  * @internal
  */
-import { nextTick, onMounted, watch, provide } from "vue";
+import { nextTick, onBeforeUnmount, onMounted, watch, provide } from "vue";
 import * as os from "@/os";
+import {
+	registerCloseOnBack,
+	type CloseOnBackHandle,
+} from "@/scripts/close-on-back";
 import { isTouchUsing } from "@/scripts/touch";
 import { defaultStore } from "@/store";
 import { deviceKind } from "@/scripts/device-kind";
@@ -125,6 +131,10 @@ const props = withDefaults(
 		 * true のとき背景クリック・Esc で `click` を出さない（強制確認ダイアログ用）。
 		 */
 		suppressOverlayClose?: boolean;
+		/**
+		 * false のとき「戻る」操作で閉じる仕組みに登録しない（処理中の待機表示など、すぐ消えるもの用）。
+		 */
+		closeOnBack?: boolean;
 	}>(),
 	{
 		manualShowing: null,
@@ -135,6 +145,7 @@ const props = withDefaults(
 		noOverlap: true,
 		transparentBg: false,
 		suppressOverlayClose: false,
+		closeOnBack: true,
 	}
 );
 
@@ -192,6 +203,53 @@ watch(
 	},
 	{ immediate: true }
 );
+
+// #region 戻る操作で閉じる
+/** 「戻る」で閉じる仕組みへの登録。表示中だけ持つ */
+let closeOnBackHandle: CloseOnBackHandle | null = null;
+
+/**
+ * 「戻る」が来たときの処理。背景クリック・Esc と同じく `click` を出して、親に閉じてもらう
+ *
+ * @remarks
+ * - 強制確認ダイアログ（`suppressOverlayClose`）は閉じない（false を返して登録し直してもらう）。
+ * - 親が `click` で閉じない部品もあるので、少し後でまだ表示中なら登録し直す。
+ *   登録し直さないと、次の「戻る」で裏のページが動いてしまう。
+ *
+ * @returns 閉じられないなら false
+ */
+function onBack(): boolean {
+	if (props.suppressOverlayClose) return false;
+	closeOnBackHandle = null;
+	emit("click");
+	nextTick(() => {
+		if (isShown && closeOnBackHandle == null) {
+			closeOnBackHandle = registerCloseOnBack(onBack);
+		}
+	});
+	return true;
+}
+
+// 表示中だけ登録する（manualShowing で隠して使い回す部品があるため、表示状態に合わせる）
+watch(
+	$$(isShown),
+	(shown) => {
+		if (!props.closeOnBack) return;
+		if (shown && closeOnBackHandle == null) {
+			closeOnBackHandle = registerCloseOnBack(onBack);
+		} else if (!shown && closeOnBackHandle != null) {
+			closeOnBackHandle.release();
+			closeOnBackHandle = null;
+		}
+	},
+	{ immediate: true }
+);
+
+onBeforeUnmount(() => {
+	closeOnBackHandle?.release();
+	closeOnBackHandle = null;
+});
+// #endregion
 
 /**
  * tabbable が無いときにフォーカスを逃す要素を返す。

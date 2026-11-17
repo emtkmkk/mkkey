@@ -1,6 +1,26 @@
+/**
+ * @packageDocumentation
+ *
+ * 画面のルート定義と、メインルーター（`mainRouter`）とブラウザ履歴のつなぎ込み。
+ *
+ * @remarks
+ * - ルーターの push / replace を `history.pushState` / `replaceState` に反映し、`popstate` でページを戻す。
+ * - スクロール位置を履歴の key ごとに保存・復元する。
+ * - ポップアップを「戻る」で閉じる仕組み（`scripts/close-on-back.ts`）と履歴を共有している。
+ *   `popstate` は先にそちらへ渡し、ポップアップを閉じただけならページを動かさない。
+ *   push / replace も、ポップアップ用の履歴を戻している最中は待たせる。
+ *
+ * @internal
+ */
 import { AsyncComponentLoader, defineAsyncComponent, inject } from "vue";
 import { throttle } from "throttle-debounce";
 import { Router } from "@/nirax";
+import {
+	handlePopState,
+	keepMarker,
+	runAfterPendingBack,
+	takeOverForNavigation,
+} from "@/scripts/close-on-back";
 import { getScrollContainerApi, onScrollActivity } from "@/scripts/scroll-container";
 import { $i, iAmModerator } from "@/account";
 import MkLoading from "@/pages/_loading_.vue";
@@ -987,7 +1007,15 @@ function restoreScrollPosition(key: string): void {
 mainRouter.addListener("push", (ctx) => {
 	try {
 		saveScrollPosition();
-		window.history.pushState({ key: ctx.key }, "", ctx.path);
+		// ポップアップを閉じるために履歴を戻している最中なら、戻り終わってから積む（移動が取り消されないように）
+		runAfterPendingBack(() => {
+			// ポップアップの目印の上からの移動なら、目印を新しいページで置き換える（同じページの履歴を残さない）
+			if (takeOverForNavigation()) {
+				window.history.replaceState({ key: ctx.key }, "", ctx.path);
+			} else {
+				window.history.pushState({ key: ctx.key }, "", ctx.path);
+			}
+		});
 		scrollToTop();
 	} catch (error) {
 		console.error("Error in push listener:", error);
@@ -997,7 +1025,10 @@ mainRouter.addListener("push", (ctx) => {
 mainRouter.addListener("replace", (ctx) => {
 	try {
 		saveScrollPosition();
-		window.history.replaceState({ key: ctx.key }, "", ctx.path);
+		runAfterPendingBack(() => {
+			// ポップアップの目印の上での置き換えなら、目印を消さずに残す
+			window.history.replaceState(keepMarker({ key: ctx.key }), "", ctx.path);
+		});
 		scrollToTop();
 	} catch (error) {
 		console.error("Error in replace listener:", error);
@@ -1014,6 +1045,8 @@ mainRouter.addListener("same", () => {
 
 window.addEventListener("popstate", (event) => {
 	try {
+		// 「戻る」でポップアップを閉じただけ（同じページのまま）なら、ページは動かさない
+		if (handlePopState(event, mainRouter.getCurrentKey())) return;
 		saveScrollPosition();
 		const key = event.state?.key;
 		if (key) {

@@ -3,6 +3,7 @@
 		ref="modal"
 		:prefer-type="'dialog'"
 		:z-priority="'high'"
+		:close-on-back="false"
 		@click="success ? done() : () => {}"
 		@closed="emit('closed')"
 	>

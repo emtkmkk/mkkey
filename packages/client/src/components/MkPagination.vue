@@ -14,9 +14,9 @@
 		"
 		mode="out-in"
 	>
-		<MkLoading v-if="fetching" />
+		<MkLoading v-if="phase === 'loading'" />
 
-		<MkError v-else-if="error" @retry="init()" />
+		<MkError v-else-if="phase === 'error'" @retry="init()" />
 
 		<div v-else-if="empty" key="_empty_" class="empty">
 			<slot name="empty">
@@ -87,10 +87,8 @@
 					v-appear="
 						$store.state.enableInfiniteScroll &&
 						!disableAutoLoad &&
-						!moreFetchError
-							? !moreFetchError && !error && !moreFetching
-								? fetchMore
-								: null
+						phase === 'ready'
+							? fetchMore
 							: null
 					"
 					class="button"
@@ -135,6 +133,21 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * API の結果をページ送りしながら一覧表示する部品。タイムライン・通知・各種一覧の土台。
+ *
+ * @remarks
+ * - 読み込みの状態は {@link LoadPhase} の 1 つだけで持つ（以前は fetching / error / moreFetching / moreFetchError の 4 つ）。
+ *   テンプレートの表示条件と、各読み込み関数の「始めてよいか」の判定は、この 1 つを見る。
+ * - 応答が届いたとき、その間に {@link init} がやり直されていたら（{@link loadGeneration} が変わっていたら）結果を捨てる。
+ *   絞り込みを素早く切り替えたときに、古い条件の結果で上書き・追記しないため。
+ * - スクロール位置の状態（backed / isBackTop / isPausingUpdate）は読み込みとは独立しているので別に持つ。
+ * - TODO: ctAutoReload は書き込むだけで、どこからも読まれていない。使い道が無ければ消す。
+ *
+ * @internal
+ */
 import {
 	computed,
 	ComputedRef,
@@ -227,15 +240,52 @@ function hasRecent(id: Item["id"]): boolean {
        return false;
 }
 const offset = ref(0);
-const fetching = ref(true);
-const moreFetching = ref(false);
+
+// #region 読み込みの状態
+
+/**
+ * 読み込みの状態。
+ *
+ * @remarks
+ * ```text
+ *  init() ─▶ loading ──成功──▶ ready ──fetchMore──▶ loadingMore ──成功──▶ ready
+ *               │                ▲                       │
+ *               └──失敗──▶ error  └────再試行──── moreError ◀──失敗──┘
+ * ```
+ * - どの状態からでも init()（再読み込み・絞り込みの変更・エラー画面の再試行）で loading に戻る。
+ * - refresh() が失敗したときも、以前と同じく error（一覧ごとエラー表示）にする。
+ * - 「まだ続きがあるか」は状態とは別の {@link more} で持つ（ready でも moreError でもありうるため）。
+ *
+ * @internal
+ */
+type LoadPhase = "loading" | "error" | "ready" | "loadingMore" | "moreError";
+
+const phase = ref<LoadPhase>("loading");
+/**
+ * 何回目の init() かを表す番号。init() のたびに増やす。
+ *
+ * @remarks
+ * 読み込みを始めたときの番号を覚えておき、応答が届いた時点で変わっていたら、その応答は古いので捨てる。
+ */
+let loadGeneration = 0;
+
+/** 続きの読み込みを始めてよい状態か（失敗した後の再試行も含む） */
+const canLoadMore = (): boolean =>
+	(phase.value === "ready" || phase.value === "moreError") &&
+	items.value.length > 0;
+
+/** テンプレートで使う、続きを読み込み中か */
+const moreFetching = computed(() => phase.value === "loadingMore");
+/** テンプレートで使う、続きの読み込みに失敗したか */
+const moreFetchError = computed(() => phase.value === "moreError");
+
+// #endregion
+
 const more = ref(false);
 let backed = $ref(false); // 遡り中か否か
 let scrollRemove = $ref<(() => void) | null>(null);
 const isBackTop = ref(false);
 const empty = computed(() => items.value.length === 0);
-const error = ref(false);
-const moreFetchError = ref(false);
 const lastFetchDate = ref(0);
 const errorMsg = ref("");
 const ctAutoReload = ref(false);
@@ -325,9 +375,19 @@ watch(
 	{ deep: true }
 );
 
+/**
+ * 一覧を最初から読み込み直す。
+ *
+ * @remarks
+ * どの状態からでも呼べる。呼ぶと {@link loadGeneration} が変わるので、
+ * 途中だったほかの読み込み（前の init・fetchMore・fetchMoreAhead）の応答は捨てられる。
+ *
+ * @returns 読み込みが終わったら（成功・失敗・古くなって捨てた、のどれでも）解決する
+ */
 async function init(): Promise<void> {
+	const generation = ++loadGeneration;
 	queue.value = [];
-	fetching.value = true;
+	phase.value = "loading";
 	const endpoint = props.pagination.endpoint
 		? isRef(props.pagination.endpoint)
 			? props.pagination.endpoint.value
@@ -347,6 +407,8 @@ async function init(): Promise<void> {
 		})
 		.then(
 			(res) => {
+				// 待っている間に init がやり直された。新しい方の結果を待つ
+				if (generation !== loadGeneration) return;
 				for (let i = 0; i < res.length; i++) {
 					const item = res[i];
 					if (props.pagination.reversed) {
@@ -375,13 +437,13 @@ async function init(): Promise<void> {
 					more.value = false;
 				}
 				offset.value = res.length;
-				error.value = false;
-				fetching.value = false;
+				// 前の条件での「続きの読み込み失敗」もここで消える
+				phase.value = "ready";
 			},
 			(err) => {
-				error.value = true;
+				if (generation !== loadGeneration) return;
+				phase.value = "error";
 				errorMsg.value = err?.message ?? String(err);
-				fetching.value = false;
 			}
 		);
 }
@@ -428,9 +490,9 @@ const refresh = async (): void => {
 				}
 			},
 			(err) => {
-				error.value = true;
+				// 以前と同じく、一覧ごとエラー表示にする（再試行で init から読み直す）
+				phase.value = "error";
 				errorMsg.value = err?.message ?? String(err);
-				fetching.value = false;
 			}
 		);
 };
@@ -439,15 +501,17 @@ const refresh = async (): void => {
  * 末尾方向の追加取得。
  *
  * @remarks
- * - 成功ハンドラ内で例外が出ても `moreFetching` が残らないよう `finally` で解除する。
- * - 失敗時は `moreFetchError` を立て、ボタン再表示で再試行可能にする。
+ * - ready か moreError（再試行）のときだけ始める。始めると loadingMore になる。
+ * - 成功ハンドラ内で例外が出ても loadingMore が残らないよう `finally` で状態を戻す。
+ * - 失敗時は moreError にし、ボタン再表示で再試行可能にする。
+ * - 待っている間に init がやり直されたら、結果を捨てて状態にも触らない。
  */
 const fetchMore = async (): Promise<void> => {
-	if (fetching.value || moreFetching.value || items.value.length === 0)
-		return;
+	if (!canLoadMore()) return;
+	const generation = loadGeneration;
+	let outcome: LoadPhase = "moreError";
 	lastFetchDate.value = Date.now();
-	moreFetchError.value = false;
-	moreFetching.value = true;
+	phase.value = "loadingMore";
 	backed = true;
 	const endpoint = props.pagination.endpoint
 		? isRef(props.pagination.endpoint)
@@ -475,6 +539,8 @@ const fetchMore = async (): Promise<void> => {
 						untilId: items.value[items.value.length - 1].id,
 				  }),
 		});
+		// 待っている間に init がやり直された。古い条件の結果なので足さない
+		if (generation !== loadGeneration) return;
 		for (let i = 0; i < res.length; i++) {
 			const item = res[i];
 			if (props.pagination.reversed) {
@@ -525,32 +591,42 @@ const fetchMore = async (): Promise<void> => {
 		timerId = setTimeout(() => {
 			ctAutoReload.value = false;
 		}, 1500);
+		outcome = "ready";
 	} catch (err: any) {
-		moreFetchError.value = true;
 		errorMsg.value = err?.message ?? String(err);
 	} finally {
 		// 成功ハンドラ内例外・API 失敗いずれでもスピナー解除を保証する
-		moreFetching.value = false;
+		finishLoadingMore(generation, outcome);
 	}
 };
+
+/**
+ * 続きの読み込みを終え、状態を ready か moreError に戻す。
+ *
+ * @remarks
+ * 待っている間に init がやり直されたとき、または refresh の失敗で error になったときは、
+ * そちらの状態を優先して何もしない。
+ *
+ * @param generation - 読み込みを始めたときの {@link loadGeneration}
+ * @param outcome - 成功なら ready、失敗なら moreError
+ */
+function finishLoadingMore(generation: number, outcome: LoadPhase): void {
+	if (generation !== loadGeneration || phase.value !== "loadingMore") return;
+	phase.value = outcome;
+}
 
 /**
  * 先頭方向（reversed）の追加取得。
  *
  * @remarks
- * `fetchMore` と同様、`finally` で `moreFetching` を必ず解除する。
+ * 状態の扱いは `fetchMore` と同じ。`finally` で loadingMore を必ず戻す。
  */
 const fetchMoreAhead = async (): Promise<void> => {
-	if (
-		!more.value ||
-		fetching.value ||
-		moreFetching.value ||
-		items.value.length === 0
-	)
-		return;
+	if (!more.value || !canLoadMore()) return;
+	const generation = loadGeneration;
+	let outcome: LoadPhase = "moreError";
 	lastFetchDate.value = Date.now();
-	moreFetchError.value = false;
-	moreFetching.value = true;
+	phase.value = "loadingMore";
 	const endpoint = props.pagination.endpoint
 		? isRef(props.pagination.endpoint)
 			? props.pagination.endpoint.value
@@ -581,6 +657,8 @@ const fetchMoreAhead = async (): Promise<void> => {
 						sinceId: items.value[items.value.length - 1].id,
 				  }),
 		});
+		// 待っている間に init がやり直された。古い条件の結果なので足さない
+		if (generation !== loadGeneration) return;
 		if (
 			res.length >
 			(props.pagination.offsetMode || props.pagination.reversed
@@ -604,11 +682,11 @@ const fetchMoreAhead = async (): Promise<void> => {
 		timerId = setTimeout(() => {
 			ctAutoReload.value = false;
 		}, 1500);
+		outcome = "ready";
 	} catch (err: any) {
-		moreFetchError.value = true;
 		errorMsg.value = err?.message ?? String(err);
 	} finally {
-		moreFetching.value = false;
+		finishLoadingMore(generation, outcome);
 	}
 };
 
@@ -755,14 +833,10 @@ function startReversedBottomTracking(): void {
 onMounted(() => {
 	inited.then(() => {
 		if (props.pagination.reversed) {
+			// NOTE: 以前はここで 2 秒後に moreFetching を false にしていた。初回表示の時点では常に false なので何も起きず、
+			// ちょうど続きの読み込み中だと二重読み込みを許してしまうだけだったため外した。
 			nextTick(() => {
 				startReversedBottomTracking();
-
-				// scrollToBottomでmoreFetchingボタンが画面外まで出るまで
-				// more = trueを遅らせる
-				setTimeout(() => {
-					moreFetching.value = false;
-				}, 2000);
 			});
 		}
 	});

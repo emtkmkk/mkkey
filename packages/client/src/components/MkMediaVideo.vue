@@ -53,6 +53,7 @@
 			}"
 		>
 			<video
+				ref="videoEl"
 				:poster="video.thumbnailUrl"
 				:title="video.comment"
 				:aria-label="video.comment"
@@ -68,7 +69,19 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from "vue";
+/**
+ * @packageDocumentation
+ *
+ * 投稿に添付された動画を表示するコンポーネント（Plyr のプレーヤー）。
+ *
+ * @remarks
+ * - センシティブ・データセーバー時は、押すまで動画を隠す。
+ * - 全画面にしたとき、動画の縦横に合わせて画面の向きを固定する（`scripts/video-fullscreen-orientation.ts`）。
+ *   横長の動画なら、端末の自動回転がオフでも横向きで見られる（Android の Chrome など、対応ブラウザのみ）。
+ *
+ * @internal
+ */
+import { ref, computed, onBeforeUnmount } from "vue";
 import VuePlyr from "vue-plyr";
 import type * as misskey from "calckey-js";
 import * as os from "@/os";
@@ -78,10 +91,21 @@ import "vue-plyr/dist/vue-plyr.css";
 import { i18n } from "@/i18n";
 import bytes from "@/filters/bytes";
 import { isMobileData } from "@/scripts/datasaver";
+import { watchVideoFullscreenOrientation } from "@/scripts/video-fullscreen-orientation";
 
 const props = defineProps<{
 	video: misskey.entities.DriveFile;
 }>();
+
+/** 動画要素（隠している間は null） */
+const videoEl = ref<HTMLVideoElement | null>(null);
+
+// 全画面にしたら動画の縦横に合わせて向きを固定する。動画の情報が未読込ならドライブの縦横を使う
+const stopOrientationWatch = watchVideoFullscreenOrientation(
+	() => videoEl.value,
+	props.video.properties
+);
+onBeforeUnmount(stopOrientationWatch);
 
 const videoType = computed(() => {
 	return props.video.type === "video/quicktime"

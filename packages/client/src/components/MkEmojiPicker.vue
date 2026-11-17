@@ -1596,7 +1596,7 @@ function emojiSearch(nQ, oQ) {
 		emojis: UnicodeEmojiDef[],
 		keyword: string,
 	) => {
-		return emojis.find((emoji) => emoji.char === keyword);
+		return findUnicodeEmojiByChar(emojis, keyword);
 	};
 
 	const nameSearch = (
@@ -1795,7 +1795,9 @@ function emojiSearch(nQ, oQ) {
 		}>();
 
 		if (isAllSearch) return matches;
-		const exactMatch = charSearch(emojis, roomajiQ);
+		// 絵文字そのものの入力は、ローマ字変換を通さない元の入力で探す（変換で文字が変わらないように）
+		const exactMatch =
+			charSearch(emojis, q.value.trim()) ?? charSearch(emojis, roomajiQ);
 		if (exactMatch)
 			beforeSort.add({
 				emoji: exactMatch,
@@ -1920,6 +1922,37 @@ function paste(event: ClipboardEvent) {
 	}
 }
 
+/**
+ * 絵文字の文字そのもの（❓ など）から Unicode 絵文字を探す
+ *
+ * @remarks
+ * 絵文字には、絵文字として表示させるための見えない文字（異体字セレクタ U+FE0F）が付いていることがある。
+ * 入力（例: キーボードから入れた ❓️ は U+2753 U+FE0F）と一覧（❓ は U+2753 のみ）で付き方が違うと
+ * 完全一致しないため、両方から取り除いて比べる。一覧側にだけ付いている絵文字（☺️ など）も同じ理由で比べられる。
+ *
+ * @param emojis - 探す一覧
+ * @param keyword - 入力された文字
+ * @returns 見つかった絵文字。無ければ undefined
+ */
+function findUnicodeEmojiByChar(
+	emojis: UnicodeEmojiDef[],
+	keyword: string
+): UnicodeEmojiDef | undefined {
+	const key = stripVariationSelector(keyword);
+	if (key === "") return undefined;
+	return emojis.find((emoji) => stripVariationSelector(emoji.char) === key);
+}
+
+/**
+ * 異体字セレクタ（U+FE0F）を取り除く
+ *
+ * @param s - 対象の文字列
+ * @returns 取り除いた文字列
+ */
+function stripVariationSelector(s: string): string {
+	return s.replace(/️/g, "");
+}
+
 function done(query?: any): boolean | void {
 	if (query == null) query = q.value;
 	if (query == null || typeof query !== "string") return;
@@ -1939,7 +1972,7 @@ function done(query?: any): boolean | void {
 			return true;
 		}
 	}
-	const exactMatchUnicode = emojilist.find((emoji) => emoji.char === q2);
+	const exactMatchUnicode = findUnicodeEmojiByChar(emojilist, q2.trim());
 	if (exactMatchUnicode) {
 		chosen(exactMatchUnicode);
 		return true;
@@ -1953,9 +1986,9 @@ function done(query?: any): boolean | void {
 			chosen(exactMatchCustom);
 			return true;
 		}
-		const exactMatchUnicode = emojilist.find(
-			(emoji) => emoji.char === q3 || emoji.name === q3
-		);
+		const exactMatchUnicode =
+			findUnicodeEmojiByChar(emojilist, q3) ??
+			emojilist.find((emoji) => emoji.name === q3);
 		if (exactMatchUnicode) {
 			chosen(exactMatchUnicode);
 			return true;

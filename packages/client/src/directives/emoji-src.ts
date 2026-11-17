@@ -8,6 +8,11 @@
  * 復帰後の処理集中を起こすため使用しない。待機列は load / error イベントだけで進め、
  * DOM から外れた画像は確実に待機列および実行中一覧から除外する。
  *
+ * 読み込む順番は「画面に見えている画像を、上（文書の先）から」を優先する（{@link takeNext}）。
+ * 見えている画像が無ければ、待機列に入った順に読む。
+ * 以前は待機列に入った順だけだったため、外部プロキシで失敗して別の URL で読み直す絵文字
+ * （リモート絵文字に多い）が列の最後に回り、絵文字ピッカーで下の絵文字から先に表示されることがあった。
+ *
  * @internal
  */
 
@@ -29,6 +34,8 @@ interface EmojiLoadState {
 	activeUrl: string | null;
 	queued: boolean;
 	disposed: boolean;
+	/** 画面に（少し手前も含めて）見えているか。{@link visibilityObserver} が更新する */
+	visible: boolean;
 	timeoutId: ReturnType<typeof setTimeout> | null;
 	onLoad: () => void;
 	onError: () => void;
@@ -42,6 +49,68 @@ const activeLoads = new Set<EmojiLoadState>();
 
 /** 要素ごとの読み込み状態。 */
 const states = new WeakMap<HTMLImageElement, EmojiLoadState>();
+
+/**
+ * 画像が画面に見えているかを調べる監視。
+ *
+ * @remarks
+ * スクロールしてすぐ見える範囲も先に読めるよう、上下に少し広めに取る。
+ * IntersectionObserver が無い環境では作らず、待機列に入った順に読む。
+ *
+ * @internal
+ */
+const visibilityObserver =
+	typeof IntersectionObserver === "undefined"
+		? null
+		: new IntersectionObserver(
+				(entries) => {
+					for (const entry of entries) {
+						const state = states.get(entry.target as HTMLImageElement);
+						if (state) state.visible = entry.isIntersecting;
+					}
+				},
+				{ rootMargin: "200px 0px" },
+		  );
+
+/**
+ * 待機列から次に読み込む画像を取り出す。
+ *
+ * @remarks
+ * - 画面に見えている画像があれば、その中で文書の先（上）にあるものを選ぶ。
+ * - 無ければ、待機列に入った順（先頭）を選ぶ。
+ * - 破棄済み・待機解除済みの項目は、ここで列から取り除く。
+ *
+ * OPTIMIZE: 毎回待機列を全部見るので、待機が数千件あると取り出しのたびに一周する。
+ * 絵文字ピッカーで全カテゴリを開いた程度の件数なら問題ない。
+ *
+ * @returns 次に読み込む画像。無ければ undefined
+ * @internal
+ */
+function takeNext(): EmojiLoadState | undefined {
+	let bestIndex = -1;
+	let firstIndex = -1;
+	for (let i = 0; i < loadQueue.length; i++) {
+		const state = loadQueue[i];
+		if (state.disposed || !state.queued) {
+			loadQueue.splice(i, 1);
+			i--;
+			continue;
+		}
+		if (firstIndex === -1) firstIndex = i;
+		if (!state.visible) continue;
+		if (
+			bestIndex === -1 ||
+			// state が今の候補より文書の先にあるなら入れ替える
+			loadQueue[bestIndex].el.compareDocumentPosition(state.el) &
+				Node.DOCUMENT_POSITION_PRECEDING
+		) {
+			bestIndex = i;
+		}
+	}
+	const index = bestIndex !== -1 ? bestIndex : firstIndex;
+	if (index === -1) return undefined;
+	return loadQueue.splice(index, 1)[0];
+}
 
 /**
  * 同時読み込み制御が必要な URL か判定する。
@@ -89,8 +158,9 @@ function drainQueue(): void {
 		activeLoads.size < MAX_CONCURRENT_EMOJI_LOADS &&
 		loadQueue.length > 0
 	) {
-		const state = loadQueue.shift();
-		if (!state || state.disposed || !state.queued) continue;
+		// 見えている画像を上から優先して取り出す
+		const state = takeNext();
+		if (!state) break;
 
 		state.queued = false;
 		const requestedUrl = state.desiredUrl;
@@ -212,6 +282,7 @@ function mountEmojiSource(el: HTMLImageElement, value: unknown): void {
 		activeUrl: null,
 		queued: false,
 		disposed: false,
+		visible: false,
 		timeoutId: null,
 		onLoad: () => undefined,
 		onError: () => undefined,
@@ -223,6 +294,7 @@ function mountEmojiSource(el: HTMLImageElement, value: unknown): void {
 	el.addEventListener("load", state.onLoad, true);
 	el.addEventListener("error", state.onError, true);
 	states.set(el, state);
+	visibilityObserver?.observe(el);
 	scheduleLoad(state, value);
 }
 
@@ -239,6 +311,7 @@ function unmountEmojiSource(el: HTMLImageElement): void {
 
 	state.disposed = true;
 	state.queued = false;
+	visibilityObserver?.unobserve(el);
 	releaseActiveLoad(state);
 	el.removeEventListener("load", state.onLoad, true);
 	el.removeEventListener("error", state.onError, true);

@@ -6,10 +6,12 @@
  * @remarks
  * アバターや壁紙プレビューなど、{@link MkMediaList} 外の画像向け。
  * 読込・初期化失敗は {@link appendErrorLog} に残す。
+ * 開いている間はブラウザやスマホの「戻る」で画像だけを閉じる（{@link bindLightboxCloseOnBack}）。
  *
  * @public
  */
 import { appendErrorLog } from "@/os";
+import { bindLightboxCloseOnBack } from "@/scripts/close-on-back";
 
 /**
  * 指定 URL の画像を PhotoSwipe で開く。
@@ -46,6 +48,8 @@ export async function openImageViewer(targetUrl: string): Promise<void> {
 								? { top: 32, bottom: 32, left: 32, right: 32 }
 								: { top: 0, bottom: 0, left: 0, right: 0 },
 					});
+					// 「戻る」で画像だけ閉じる。destroy より先に登録し、close で履歴を取り除けるようにする
+					bindLightboxCloseOnBack(lightbox);
 					lightbox.on("close", () => lightbox.destroy());
 					lightbox.init();
 					lightbox.loadAndOpen(0);

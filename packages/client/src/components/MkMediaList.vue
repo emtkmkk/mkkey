@@ -56,6 +56,7 @@
  * {@link appendErrorLog} に残す（Vue errorHandler 外のため）。
  * 拡大画像が外部メディアプロキシ経由で失敗したときは、別の URL で読み直す
  * （{@link getMediaFallbackUrls}）。
+ * 拡大中はブラウザやスマホの「戻る」で画像だけを閉じる（{@link bindLightboxCloseOnBack}）。
  *
  * @public
  */
@@ -74,6 +75,7 @@ import {
 	getMediaFallbackUrls,
 	loadImageWithFallback,
 } from "@/scripts/media-proxy-fallback";
+import { bindLightboxCloseOnBack } from "@/scripts/close-on-back";
 import { i18n } from "@/i18n";
 import {
 	buildNoteMediaSlots,
@@ -322,6 +324,9 @@ function initLightbox(): void {
 				);
 			}
 		});
+
+		// 画像を開いている間は、ブラウザやスマホの「戻る」でページを移らずに画像だけ閉じる
+		bindLightboxCloseOnBack(lightbox);
 
 		lightbox.on("uiRegister", () => {
 			lightbox!.pswp.ui.registerElement({

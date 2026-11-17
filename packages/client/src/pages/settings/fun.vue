@@ -240,14 +240,23 @@
 					:key="i"
 					class="_button letter"
 					:class="{ on: mcLetterBits[i] }"
-					:disabled="mcLetterBits[i] && mcLetterCount === 1"
+					:disabled="!canToggleMcLetter(i)"
 					:aria-pressed="mcLetterBits[i]"
 					@click="toggleMcLetter(i)"
 				>
 					{{ ch }}
 				</button>
-				<span class="preview">→ {{ mcShortNamePreview }}</span>
 			</div>
+			<FormButton
+				v-if="mcShortNameMode === 'free' && mcShortNameChanged"
+				class="_formBlock"
+				primary
+				inline
+				:disabled="mcShortNameSaving"
+				@click="saveMcShortName"
+				><i class="ph-floppy-disk ph-bold ph-lg"></i>
+				{{ i18n.ts.save }}</FormButton
+			>
 			<FormSelect data-setting-key="replaceMakudo" v-model="replaceMakudo" class="_formBlock">
 				<template #label>{{ i18n.ts.replaceMakudo }}</template>
 				<option value="">{{ i18n.ts.replaceMakudo0 }}</option>
@@ -334,6 +343,7 @@
  * @internal
  */
 import { ref, computed, watch } from "vue";
+import { debounce } from "throttle-debounce";
 import XDraggable from "vuedraggable";
 import FormButton from "@/components/MkButton.vue";
 import FormLink from "@/components/form/link.vue";
@@ -350,7 +360,13 @@ import { unisonReload } from "@/scripts/unison-reload";
 import { useIsMobile } from "@/scripts/use-is-mobile";
 import { deepClone } from "@/scripts/clone";
 import FormFolder from "@/components/form/folder.vue";
-import { MC_FULL_NAME, resolveMcShortName } from "@/scripts/mc-short-name";
+import {
+	DEFAULT_MC_LETTER_BITS,
+	MC_FULL_NAME,
+	MC_INDEX_MA,
+	MC_INDEX_SMALL_TSU,
+	parseMcLetterBits,
+} from "@/scripts/mc-short-name";
 
 const DESKTOP_THRESHOLD = 1100;
 
@@ -411,25 +427,20 @@ let disableNyaise = $ref($i.disableNyaise);
  * マクドナルドの短縮名の選び方（マック / マクド / 自由に指定）
  *
  * @remarks
- * 保存する値は `makku` / `makudo` / `free:xxxxxx`（{@link saveMcShortName}）。
- * 自由に指定では、マクドナルドの 6 文字それぞれを使うか（{@link mcLetterBits}）を選ぶ。
+ * 保存する値は `makku` / `makudo` / `free:xxxxxxx`（{@link saveMcShortName}）。
+ * 自由に指定では、マ・ッ・ク・ド・ナ・ル・ドの 7 文字それぞれを使うか（{@link mcLetterBits}）を選ぶ。
+ * 自由に指定のときは、どんな名前になるかは出さない（投稿で見てのお楽しみ）。
+ *
+ * 保存はプロフィール更新（`i/update`）で、回数制限があるので送る回数を抑える。
+ * - マック / マクド … 選んでから少し待って（{@link MC_SAVE_DEBOUNCE_MS}）自動で保存する。続けて切り替えても最後の 1 回だけ送る。
+ * - 自由に指定 … 文字を選び終えてから保存ボタンで送る。送信中はボタンを押せない。
  */
-const initialMcSetting = $i.mcShortName ?? "makku";
+const initialMcBits = parseMcLetterBits($i.mcShortName);
 const mcShortNameMode = ref<"makku" | "makudo" | "free">(
-	initialMcSetting.startsWith("free:")
-		? "free"
-		: initialMcSetting === "makudo"
-		? "makudo"
-		: "makku"
+	initialMcBits ? "free" : $i.mcShortName === "makudo" ? "makudo" : "makku"
 );
-/** 自由に指定のときの、6 文字それぞれを使うか。未設定ならマクド（先頭 3 文字）から始める */
-const mcLetterBits = ref<boolean[]>(
-	initialMcSetting.startsWith("free:")
-		? Array.from(initialMcSetting.slice(5)).map((b) => b === "1")
-		: [true, true, true, false, false, false]
-);
-/** 選ばれている文字の数。0 文字にはできないので、最後の 1 文字はオフにできない */
-const mcLetterCount = computed(() => mcLetterBits.value.filter(Boolean).length);
+/** 自由に指定のときの、7 文字それぞれを使うか。初めて切り替えたときはマック（マ・ッ・ク）から始める */
+const mcLetterBits = ref<boolean[]>(initialMcBits ?? [...DEFAULT_MC_LETTER_BITS]);
 
 /** 今の選び方を保存する値にする */
 function getMcSettingValue(): string {
@@ -437,28 +448,83 @@ function getMcSettingValue(): string {
 	return `free:${mcLetterBits.value.map((b) => (b ? "1" : "0")).join("")}`;
 }
 
-const mcShortNamePreview = computed(() => resolveMcShortName(getMcSettingValue()));
+/** 最後に保存した値（未設定はマックと同じ） */
+const savedMcSetting = ref<string>($i.mcShortName ?? "makku");
+
+/** 保存していない変更があるか（あるときだけ保存ボタンを出す） */
+const mcShortNameChanged = computed(
+	() => getMcSettingValue() !== savedMcSetting.value
+);
+
+/**
+ * 1 文字をオンオフしたときの並びを求める
+ *
+ * @remarks
+ * 「ッ」は「マ」と一緒にしか使えないので、ッ をオンにしたら マ もオンにし、マ をオフにしたら ッ もオフにする。
+ *
+ * @param index - 文字の位置（0〜6）
+ * @returns オンオフした後の並び
+ */
+function toggledMcBits(index: number): boolean[] {
+	const bits = [...mcLetterBits.value];
+	bits[index] = !bits[index];
+	if (index === MC_INDEX_SMALL_TSU && bits[index]) bits[MC_INDEX_MA] = true;
+	if (index === MC_INDEX_MA && !bits[index]) bits[MC_INDEX_SMALL_TSU] = false;
+	return bits;
+}
+
+/**
+ * その文字をオンオフできるか
+ *
+ * @remarks
+ * オンオフした結果が 0 文字になるなら押せない（最後の 1 文字や、マ と ッ だけのときの マ）。
+ *
+ * @param index - 文字の位置（0〜6）
+ * @returns オンオフできるなら true
+ */
+function canToggleMcLetter(index: number): boolean {
+	return toggledMcBits(index).some(Boolean);
+}
 
 /**
  * 自由に指定の 1 文字をオンオフする
  *
- * @param index - 文字の位置（0〜5）
+ * @param index - 文字の位置（0〜6）
  */
 function toggleMcLetter(index: number): void {
-	// 最後の 1 文字はオフにしない（0 文字の短縮名は作れない）
-	if (mcLetterBits.value[index] && mcLetterCount.value === 1) return;
-	mcLetterBits.value[index] = !mcLetterBits.value[index];
-	saveMcShortName();
+	if (!canToggleMcLetter(index)) return;
+	mcLetterBits.value = toggledMcBits(index);
 }
+
+/** 保存の送信中か（保存ボタンの連打を防ぐ） */
+const mcShortNameSaving = ref(false);
+
+/** マック / マクドを選んでから自動で保存するまでの待ち時間（ミリ秒） */
+const MC_SAVE_DEBOUNCE_MS = 1000;
 
 /** 短縮名の設定をサーバーに保存する（リモートへ送るときにも投稿者の設定として使うため） */
-function saveMcShortName(): void {
+async function saveMcShortName(): Promise<void> {
+	if (mcShortNameSaving.value || !mcShortNameChanged.value) return;
 	const value = getMcSettingValue();
-	$i.mcShortName = value;
-	os.api("i/update", { mcShortName: value });
+	mcShortNameSaving.value = true;
+	try {
+		await os.apiWithDialog("i/update", { mcShortName: value });
+		$i.mcShortName = value;
+		savedMcSetting.value = value;
+	} finally {
+		mcShortNameSaving.value = false;
+	}
 }
 
-watch(mcShortNameMode, saveMcShortName);
+/** マック / マクドを選んだときの自動保存（続けて切り替えたら最後の 1 回だけ送る） */
+const saveMcShortNameDebounced = debounce(MC_SAVE_DEBOUNCE_MS, () => {
+	// 待っている間に自由に指定へ切り替えたら、保存ボタンに任せる
+	if (mcShortNameMode.value !== "free") saveMcShortName();
+});
+
+watch(mcShortNameMode, (mode) => {
+	if (mode !== "free") saveMcShortNameDebounced();
+});
 // #endregion
 
 function chooseEmoji(ev: MouseEvent) {
@@ -578,11 +644,6 @@ definePageMetadata({
 		&:disabled {
 			cursor: not-allowed;
 		}
-	}
-
-	> .preview {
-		margin-left: 0.5rem;
-		font-weight: bold;
 	}
 }
 

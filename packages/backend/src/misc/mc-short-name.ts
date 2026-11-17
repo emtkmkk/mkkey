@@ -21,7 +21,9 @@
  * - `null` … 未設定（{@link DEFAULT_MC_SHORT_NAME}）
  * - `makku` … マック
  * - `makudo` … マクド
- * - `free:xxxxxx` … マ・ク・ド・ナ・ル・ドの 6 文字それぞれを使うか（1 / 0）。全部 0 は不可。
+ * - `free:xxxxxxx` … マ・ッ・ク・ド・ナ・ル・ドの 7 文字それぞれを使うか（1 / 0）。
+ *   全部 0 は不可。「ッ」は「マ」と一緒にしか使えない（ッ だけ・ッで始まる短縮名は作れない）。
+ * - `free:xxxxxx`（6 桁）… 以前の形（マ・ク・ド・ナ・ル・ド）。読むときは「ッ」なしの 7 桁として扱う。
  *
  * NOTE: クライアントの `packages/client/src/scripts/mc-short-name.ts` と同じ規則にしておくこと。
  *
@@ -29,31 +31,35 @@
  */
 import * as mfm from "mfm-js";
 
-/** マクドナルドの 6 文字（自由に指定のときに 1 文字ずつ選ぶ） */
-export const MC_FULL_NAME = ["マ", "ク", "ド", "ナ", "ル", "ド"] as const;
+/** マックドナルドの 7 文字（自由に指定のときに 1 文字ずつ選ぶ） */
+export const MC_FULL_NAME = ["マ", "ッ", "ク", "ド", "ナ", "ル", "ド"] as const;
 
 /** 未設定のときの短縮名 */
 export const DEFAULT_MC_SHORT_NAME = "マック";
 
 /**
- * 設定値として受け付ける形
+ * 保存できる設定値の形（`i/update` の入力の確認に使う）
  *
  * @remarks
- * `free:` は 6 桁の 0 / 1。全部 0（0 文字）は {@link isValidMcShortNameSetting} で弾く。
+ * `free:` は 7 桁の 0 / 1。全部 0 と、「ッ」だけオンで「マ」がオフ（先頭 2 桁が `01`）は不可。
  *
  * @public
  */
-export const MC_SHORT_NAME_SETTING_PATTERN = /^(makku|makudo|free:[01]{6})$/;
+export const MC_SHORT_NAME_SETTING_PATTERN =
+	"^(makku|makudo|free:(?!0000000)(?:1[01]|00)[01]{5})$";
 
 /**
- * 設定値が正しい形か
+ * 設定値を、7 桁の `free:` か `makku` / `makudo` にそろえる
  *
- * @param value - 設定値
- * @returns 正しければ true
- * @public
+ * @param setting - 設定値
+ * @returns そろえた値。不正な値なら null
  */
-export function isValidMcShortNameSetting(value: string): boolean {
-	return MC_SHORT_NAME_SETTING_PATTERN.test(value) && value !== "free:000000";
+function normalizeSetting(setting: string | null | undefined): string | null {
+	if (setting == null) return null;
+	// 以前の 6 桁（ッ なし）は、2 文字目に「ッ = 0」を足して 7 桁にする
+	const legacy = /^free:([01])([01]{5})$/.exec(setting);
+	const value = legacy ? `free:${legacy[1]}0${legacy[2]}` : setting;
+	return new RegExp(MC_SHORT_NAME_SETTING_PATTERN).test(value) ? value : null;
 }
 
 /**
@@ -64,12 +70,11 @@ export function isValidMcShortNameSetting(value: string): boolean {
  * @public
  */
 export function resolveMcShortName(setting: string | null | undefined): string {
-	if (setting == null || !isValidMcShortNameSetting(setting)) {
-		return DEFAULT_MC_SHORT_NAME;
-	}
-	if (setting === "makku") return "マック";
-	if (setting === "makudo") return "マクド";
-	const bits = setting.slice("free:".length);
+	const value = normalizeSetting(setting);
+	if (value == null) return DEFAULT_MC_SHORT_NAME;
+	if (value === "makku") return "マック";
+	if (value === "makudo") return "マクド";
+	const bits = value.slice("free:".length);
 	return MC_FULL_NAME.filter((_, i) => bits[i] === "1").join("");
 }
 

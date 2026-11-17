@@ -10,6 +10,9 @@
  * - ログインしていない・未設定なら「マック」。
  * - 表示した短縮名は、マックマクド変換（`replaceMakudo`）の対象にしない。
  *
+ * 設定値は `makku` / `makudo` / `free:xxxxxxx`（マ・ッ・ク・ド・ナ・ル・ドの 7 文字それぞれを使うか）。
+ * 「ッ」は「マ」と一緒にしか使えない。以前の 6 桁の `free:`（ッ なし）も読める。
+ *
  * NOTE: サーバー側の `packages/backend/src/misc/mc-short-name.ts` と同じ規則にしておくこと
  * （リモートへ送るときはサーバーが投稿者の設定で置き換える）。
  *
@@ -17,25 +20,50 @@
  */
 import { $i } from "@/account";
 
-/** マクドナルドの 6 文字（自由に指定のときに 1 文字ずつ選ぶ） */
-export const MC_FULL_NAME = ["マ", "ク", "ド", "ナ", "ル", "ド"] as const;
+/** マックドナルドの 7 文字（自由に指定のときに 1 文字ずつ選ぶ） */
+export const MC_FULL_NAME = ["マ", "ッ", "ク", "ド", "ナ", "ル", "ド"] as const;
+
+/** 「マ」と「ッ」の位置（ッ は マ と一緒にしか使えない） */
+export const MC_INDEX_MA = 0;
+export const MC_INDEX_SMALL_TSU = 1;
 
 /** 未設定のときの短縮名 */
 export const DEFAULT_MC_SHORT_NAME = "マック";
 
+/** 自由に指定に初めて切り替えたときの選択（マック） */
+export const DEFAULT_MC_LETTER_BITS = [true, true, true, false, false, false, false];
+
+/**
+ * `free:` の設定値を 7 文字分のオンオフにする
+ *
+ * @param setting - 設定値
+ * @returns オンオフの並び。`free:` でない・不正なら null
+ * @public
+ */
+export function parseMcLetterBits(setting: string | null | undefined): boolean[] | null {
+	const m7 = /^free:([01]{7})$/.exec(setting ?? "");
+	// 以前の 6 桁（ッ なし）は、2 文字目に「ッ = オフ」を足す
+	const m6 = /^free:([01])([01]{5})$/.exec(setting ?? "");
+	const bits = m7 ? m7[1] : m6 ? `${m6[1]}0${m6[2]}` : null;
+	if (bits == null) return null;
+	const result = Array.from(bits).map((b) => b === "1");
+	// 0 文字や「ッ」だけの不正な値は使わない
+	if (!result.some(Boolean)) return null;
+	if (result[MC_INDEX_SMALL_TSU] && !result[MC_INDEX_MA]) return null;
+	return result;
+}
+
 /**
  * 設定値から短縮名の文字列を求める
  *
- * @param setting - 設定値（`makku` / `makudo` / `free:xxxxxx`。未設定・不正なら「マック」）
+ * @param setting - 設定値（未設定・不正なら「マック」）
  * @returns 短縮名
  * @public
  */
 export function resolveMcShortName(setting: string | null | undefined): string {
 	if (setting === "makudo") return "マクド";
-	const free = /^free:([01]{6})$/.exec(setting ?? "");
-	if (free && free[1] !== "000000") {
-		return MC_FULL_NAME.filter((_, i) => free[1][i] === "1").join("");
-	}
+	const bits = parseMcLetterBits(setting);
+	if (bits) return MC_FULL_NAME.filter((_, i) => bits[i]).join("");
 	return DEFAULT_MC_SHORT_NAME;
 }
 

@@ -28,6 +28,7 @@ import type { User, ILocalUser } from "@/models/entities/user.js";
 import type { UserProfile } from "@/models/entities/user-profile.js";
 import { notificationTypes } from "@/types.js";
 import { normalizeForSearch } from "@/misc/normalize-for-search.js";
+import { MC_SHORT_NAME_SETTING_PATTERN } from "@/misc/mc-short-name.js";
 import { langmap } from "@/misc/langmap.js";
 import { getHtml } from "@/misc/fetch.js";
 import { safeForSql } from "@/misc/safe-for-sql.js";
@@ -178,11 +179,11 @@ export const paramDef = {
 		isRemoteLocked: { type: "boolean" },
 		isPublicLikeList: { type: "boolean" },
 		disableNyaise: { type: "boolean" },
-		/** マクドナルドの短縮名（`misc/mc-short-name.ts`）。null で未設定（マック）。free で 0 文字は不可 */
+		/** マクドナルドの短縮名（`misc/mc-short-name.ts`）。null で未設定（マック）。free で 0 文字・「ッ」だけは不可 */
 		mcShortName: {
 			type: "string",
 			nullable: true,
-			pattern: "^(makku|makudo|free:(?!000000)[01]{6})$",
+			pattern: MC_SHORT_NAME_SETTING_PATTERN,
 		},
 		pinnedPageId: { type: "string", format: "misskey:id", nullable: true },
 		mutedWords: { type: "array" },
@@ -394,7 +395,7 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 	if (typeof ps.disableNyaise === "boolean") {
 		updates.disableNyaise = ps.disableNyaise;
 	}
-	// 形は paramDef の pattern で確認済み（0 文字の指定もそこで弾く）
+	// 形は paramDef の pattern で確認済み（0 文字・「ッ」だけの指定もそこで弾く）
 	if (ps.mcShortName !== undefined) {
 		updates.mcShortName = ps.mcShortName;
 	}

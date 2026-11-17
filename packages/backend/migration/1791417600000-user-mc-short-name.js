@@ -16,7 +16,7 @@ export class UserMcShortName1791417600000 {
 			`ALTER TABLE "user" ADD COLUMN IF NOT EXISTS "mcShortName" character varying(16)`,
 		);
 		await queryRunner.query(
-			`COMMENT ON COLUMN "user"."mcShortName" IS 'Short name of McDonald''s used for $[mc] in notes: makku / makudo / free:xxxxxx (null = makku).'`,
+			`COMMENT ON COLUMN "user"."mcShortName" IS 'Short name of McDonald''s used for $[mc] in notes: makku / makudo / free:xxxxxxx (null = makku).'`,
 		);
 	}
 

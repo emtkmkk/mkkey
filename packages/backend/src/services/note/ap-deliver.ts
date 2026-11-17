@@ -80,6 +80,8 @@ export async function processNoteApDeliverJob(data: NoteApDeliverJobData) {
 		}
 	}
 
+	// NOTE: リレーには本当の公開投稿だけを流す。セミパブリック（visibility は home）は
+	// フォロワーのサーバーには公開として届くが、リレー経由で知らないサーバーへまで広げはしない
 	if (["public"].includes(note.visibility)) {
 		deliverToRelays(note.user, noteActivity);
 	}

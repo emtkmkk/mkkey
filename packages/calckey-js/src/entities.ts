@@ -218,6 +218,8 @@ export type Note = {
 	visibleUserIds?: User["id"][];
 	ccUserIdsCount?: number;
 	localOnly?: boolean;
+	/** セミパブリック（ローカルではホーム、リモートには公開）のときだけ true。それ以外は省略される */
+	semiPublic?: boolean;
 	myReaction?: string;
 	reactions: Record<string, number>;
 	renoteCount: number;

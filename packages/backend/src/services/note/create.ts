@@ -6,6 +6,7 @@
  * @remarks
  * - **役割**: API や AP の Create(Note) から呼ばれ、ノートを DB に保存し配信・ストリーム・検索に反映する。
  * - **投票**: 選択肢は {@link DB_MAX_POLL_CHOICE_LENGTH} を超えないことを検証する（REST 以外の経路で DB 制約エラーを防ぐ）。
+ * - **セミパブリック**: 公開範囲の自動調整がすべて終わった後で、条件を満たすときだけ `semiPublic` を残す（{@link resolveSemiPublic}）。
  *
  * @see {@link server/api/endpoints/notes/create} ノート作成 API
  * @internal
@@ -98,6 +99,7 @@ import renderTombstone from "@/remote/activitypub/renderer/tombstone.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import { StatusError } from "@/misc/fetch.js";
 import { DB_MAX_POLL_CHOICE_LENGTH } from "@/misc/hard-limits.js";
+import { canUseSemiPublic } from "@/misc/semi-public.js";
 import { noteApDeliverLogger, noteLogger } from "./logger.js";
 
 const mutedWordsCache = new Cache<
@@ -199,6 +201,8 @@ type Option = {
 	files?: DriveFile[] | null;
 	poll?: IPoll | null;
 	localOnly?: boolean | null;
+	/** セミパブリック（ローカルではホーム、リモートには公開）にするか。条件を満たさなければ作成時に false へ落とす */
+	semiPublic?: boolean | null;
 	cw?: string | null;
 	visibility?: string;
 	visibilityForce?: boolean | null;
@@ -354,6 +358,41 @@ async function applyLocalNoteRules(user: LocalRuleUser, data: Option): Promise<v
 			data.text = `${data.text} [❌ +${data.createdAt?.getSeconds().toString()}s]`;
 		}
 	}
+}
+
+/**
+ * 投稿をセミパブリック（ローカルではホーム、リモートには公開）にしてよいかを決める
+ *
+ * @remarks
+ * 公開範囲の自動調整（ユーザー設定・サイレンス・返信やリノート先への合わせ・NG ワード）が終わった後に呼ぶ。
+ * 次のどれかに当てはまれば false にする（迷ったら広く出さない側に倒す）。
+ *
+ * - リモートユーザーの投稿、または権限が無いユーザー（API でも弾いているが、他の経路からの呼び出しに備える）
+ * - 最初に指定された公開範囲が home でない（public が NG ワード等で home に下げられた投稿を、リモートで公開に戻さないため）
+ * - 調整後の公開範囲が home でない、`localOnly`、チャンネル投稿
+ * - 返信先・リノート先が public でない（public でない投稿の話題を、リモートで公開に広げないため。
+ *   ローカルの「返信先が公開でなければホームに合わせる」と同じ考え方）
+ *
+ * @param user - 投稿者
+ * @param data - 調整後の投稿内容
+ * @param firstVisibility - 最初に指定された公開範囲
+ * @param isRemote - リモートユーザーの投稿か
+ * @returns セミパブリックにするなら true
+ * @internal
+ */
+function resolveSemiPublic(
+	user: Pick<User, "isAdmin" | "isModerator">,
+	data: Option,
+	firstVisibility: string,
+	isRemote: boolean,
+): boolean {
+	if (data.semiPublic !== true) return false;
+	if (isRemote || !canUseSemiPublic(user)) return false;
+	if (firstVisibility !== "home" || data.visibility !== "home") return false;
+	if (data.localOnly || data.channel != null) return false;
+	if (data.reply && data.reply.visibility !== "public") return false;
+	if (data.renote && data.renote.visibility !== "public") return false;
+	return true;
 }
 
 export default async (
@@ -724,6 +763,9 @@ export default async (
 				}
 			}
 		}
+
+		// セミパブリックの最終判定。公開範囲の自動調整がすべて終わった後で行う
+		data.semiPublic = resolveSemiPublic(user, data, firstVisibility, isRemote);
 
 		let tags = data.apHashtags;
 		let emojis = data.apEmojis;
@@ -1467,6 +1509,7 @@ async function insertNote(
 		emojis,
 		userId: user.id,
 		localOnly: data.localOnly!,
+		semiPublic: data.semiPublic === true,
 		visibility: data.visibility as any,
 		visibleUserIds:
 			data.visibility === "specified"

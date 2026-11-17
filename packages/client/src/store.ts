@@ -451,6 +451,8 @@ export const defaultStore = markRaw(
 				| "l-public"
 				| "home"
 				| "l-home"
+				// セミパブリック（ローカルではホーム、リモートには公開）。使える権限が無いときはホーム扱い
+				| "s-home"
 				| "followers"
 				| "specified",
 			createdAt: "2023/5/2",
@@ -475,6 +477,8 @@ export const defaultStore = markRaw(
 				| "l-public"
 				| "home"
 				| "l-home"
+				// セミパブリック（ローカルではホーム、リモートには公開）。使える権限が無いときはホーム扱い
+				| "s-home"
 				| "followers"
 				| "specified",
 			createdAt: "2023/5/3",
@@ -499,6 +503,8 @@ export const defaultStore = markRaw(
 				| "l-public"
 				| "home"
 				| "l-home"
+				// セミパブリック（ローカルではホーム、リモートには公開）。使える権限が無いときはホーム扱い
+				| "s-home"
 				| "followers"
 				| "specified",
 			createdAt: "2023/5/26",
@@ -523,6 +529,8 @@ export const defaultStore = markRaw(
 				| "l-public"
 				| "home"
 				| "l-home"
+				// セミパブリック（ローカルではホーム、リモートには公開）。使える権限が無いときはホーム扱い
+				| "s-home"
 				| "followers"
 				| "specified",
 			createdAt: "2023/5/26",

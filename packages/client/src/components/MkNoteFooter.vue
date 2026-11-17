@@ -172,6 +172,7 @@ import {
 	showToolbarAirReplyForNote,
 } from "@/scripts/stranger-air-reply-toolbar";
 import { openReplyWithChoice } from "@/scripts/reply-note";
+import { getAirReplyInitialVisibility } from "@/scripts/semi-public";
 
 /**
  * getNoteMenu が直接更新する親ノート側の Ref 群。
@@ -453,15 +454,10 @@ function reply(viaKeyboard = false, ev?: MouseEvent): void {
 }
 
 function airReply(viaKeyboard = false): void {
-	const v =
-		appearNote.user.host != null && appearNote.visibility === "public"
-			? "home"
-			: appearNote.visibility;
 	os.post({
 		airReply: appearNote,
-		initialVisibility: v,
-		// 空リプのローカル限定は、元ノートがローカル限定のときだけ ON（ローカル相手の公開ノートでは既定に合わせる）
-		initialLocalOnly: appearNote.localOnly === true,
+		// リモートの公開投稿にはホーム（使えるならセミパブリック）。詳しくは getAirReplyInitialVisibility
+		...getAirReplyInitialVisibility(appearNote),
 		key: appearNote.id,
 		animation: !viaKeyboard,
 	}).then(() => {

@@ -22,6 +22,7 @@ import { shareAvailable } from "@/scripts/share-available";
 import { defaultStore } from "@/store";
 import { hideToolbarNormalReply } from "@/scripts/stranger-air-reply-toolbar";
 import { getNoteMenuReplyItem } from "@/scripts/reply-note";
+import { getAirReplyInitialVisibility } from "@/scripts/semi-public";
 
 export function getNoteMenu(props: {
 	note: misskey.entities.Note;
@@ -87,15 +88,10 @@ export function getNoteMenu(props: {
 	}
 
 	function airReply(): void {
-		const v =
-			appearNote.user.host != null && appearNote.visibility === "public"
-				? "home"
-				: appearNote.visibility;
 		os.post({
 			airReply: appearNote,
-			initialVisibility: v,
-			// 空リプのローカル限定は、元ノートがローカル限定のときだけ ON（ローカル相手の公開ノートでは既定に合わせる）
-			initialLocalOnly: appearNote.localOnly === true,
+			// リモートの公開投稿にはホーム（使えるならセミパブリック）。詳しくは getAirReplyInitialVisibility
+			...getAirReplyInitialVisibility(appearNote),
 			key: appearNote.id,
 		});
 	}

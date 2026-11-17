@@ -2276,6 +2276,8 @@ _visibility:
   localAndFollower: "ローカル＆フォロワー"
   localAndFollowerDescription: "リモートではフォロワーのみ"
   localAndFollowerTooltip: "リモートにはフォロワー限定で表示されています"
+  semiPublic: "セミパブリック"
+  semiPublicTooltip: "ローカルの公開TLには表示されていませんが、リモートには公開で届いています"
   exitDirectMode: "ダイレクトモード解除"
   exitDirectModeDescription: "公開範囲強制状態に戻ります"
 _postForm:

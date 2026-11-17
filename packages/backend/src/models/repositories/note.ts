@@ -849,6 +849,8 @@ export const NoteRepository = db.getRepository(Note).extend({
 			cw: isVisible ? note.cw : undefined,
 			visibility: note.visibility,
 			localOnly: !!note.localOnly ?? undefined,
+			// セミパブリックのときだけ載せる（通常の投稿では項目ごと省き、応答を増やさない）
+			semiPublic: note.semiPublic ? true : undefined,
 			visibleUserIds:
 				note.visibility === "specified" && isVisible
 					? note.visibleUserIds

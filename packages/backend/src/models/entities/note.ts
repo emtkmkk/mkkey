@@ -105,6 +105,21 @@ export class Note {
 	})
 	public localOnly: boolean;
 
+	/**
+	 * セミパブリック（ローカルではホーム、リモートには公開として配送する）か
+	 *
+	 * @remarks
+	 * - `visibility` は `home` のまま保存する。ローカルのタイムライン・閲覧判定はホームとして扱われ、
+	 *   連合に出すときだけ公開（to: Public）になる（`misc/semi-public.ts` の `getRemoteVisibility`）。
+	 * - true になり得るのは、ローカルユーザーの `home` かつ `localOnly = false` かつチャンネル外の投稿だけ。
+	 *   それ以外の組み合わせは投稿作成時に false へ落とす（`services/note/create.ts`）。
+	 * - 現在は管理人・モデレーターのみ指定できる（`misc/semi-public.ts` の `canUseSemiPublic`）。
+	 */
+	@Column('boolean', {
+		default: false,
+	})
+	public semiPublic: boolean;
+
 	@Column('smallint', {
 		default: 0,
 	})

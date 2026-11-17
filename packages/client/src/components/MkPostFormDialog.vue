@@ -34,6 +34,8 @@ const props = defineProps<{
 	initialVisibility?: typeof misskey.noteVisibilities;
 	initialFiles?: misskey.entities.DriveFile[];
 	initialLocalOnly?: boolean;
+	/** セミパブリックで始めるか（空リプ用。使えないユーザーでは投稿フォーム側で無視する） */
+	initialSemiPublic?: boolean;
 	initialVisibleUsers?: misskey.entities.User[];
 	initialNote?: misskey.entities.Note;
 	initialHashTags?: string;

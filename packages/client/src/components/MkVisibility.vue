@@ -1,7 +1,12 @@
 <template>
 	<span v-if="note.visibility !== 'public'" :class="$style.visibility">
 		<i
-			v-if="note.visibility === 'home'"
+			v-if="note.visibility === 'home' && note.semiPublic && !note.localOnly"
+			:class="SEMI_PUBLIC_ICON"
+			v-tooltip="i18n.ts._visibility.semiPublicTooltip"
+		></i>
+		<i
+			v-else-if="note.visibility === 'home'"
 			class="ph-house ph-bold ph-lg"
 			v-tooltip="i18n.ts._visibility.homeTooltip"
 		></i>
@@ -40,16 +45,29 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * ノートの公開範囲（ホーム・フォロワー・ダイレクト・ローカル限定など）をアイコンで表示する。
+ *
+ * @remarks
+ * 公開（public）のときは何も出さない。
+ * セミパブリック（ローカルではホーム、リモートには公開）は、ホームの代わりに専用のアイコンを出す。
+ *
+ * @internal
+ */
 import { ref } from "vue";
 import XDetails from "@/components/MkUsersTooltip.vue";
 import * as os from "@/os";
 import { useTooltip } from "@/scripts/use-tooltip";
 import { i18n } from "@/i18n";
+import { SEMI_PUBLIC_ICON } from "@/scripts/semi-public";
 
 const props = defineProps<{
 	note: {
 		visibility: string;
 		localOnly?: boolean;
+		semiPublic?: boolean;
 		visibleUserIds?: string[];
 		ccUserIdsCount?: number;
 		channelId?: string;

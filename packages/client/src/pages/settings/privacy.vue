@@ -272,6 +272,14 @@
 				<template
 					v-else-if="
 						secondPostButton == true &&
+						secondPostVisibility === 's-home'
+					"
+					#suffix
+					>{{ i18n.ts._visibility.semiPublic }}</template
+				>
+				<template
+					v-else-if="
+						secondPostButton == true &&
 						secondPostVisibility === 'followers'
 					"
 					#suffix
@@ -326,6 +334,12 @@
 							`${i18n.ts._visibility.localAndFollower} (${i18n.ts._visibility.home})`
 						}}
 					</option>
+					<option
+						v-if="canUseSemiPublic() || secondPostVisibility === 's-home'"
+						value="s-home"
+					>
+						{{ i18n.ts._visibility.semiPublic }}
+					</option>
 					<option value="followers">
 						{{ i18n.ts._visibility.followers }}
 					</option>
@@ -376,6 +390,14 @@
 				<template
 					v-else-if="
 						thirdPostButton == true &&
+						thirdPostVisibility === 's-home'
+					"
+					#suffix
+					>{{ i18n.ts._visibility.semiPublic }}</template
+				>
+				<template
+					v-else-if="
+						thirdPostButton == true &&
 						thirdPostVisibility === 'followers'
 					"
 					#suffix
@@ -420,6 +442,12 @@
 						{{
 							`${i18n.ts._visibility.localAndFollower} (${i18n.ts._visibility.home})`
 						}}
+					</option>
+					<option
+						v-if="canUseSemiPublic() || thirdPostVisibility === 's-home'"
+						value="s-home"
+					>
+						{{ i18n.ts._visibility.semiPublic }}
 					</option>
 					<option value="followers">
 						{{ i18n.ts._visibility.followers }}
@@ -474,6 +502,14 @@
 				<template
 					v-else-if="
 						fourthPostButton == true &&
+						fourthPostVisibility === 's-home'
+					"
+					#suffix
+					>{{ i18n.ts._visibility.semiPublic }}</template
+				>
+				<template
+					v-else-if="
+						fourthPostButton == true &&
 						fourthPostVisibility === 'followers'
 					"
 					#suffix
@@ -518,6 +554,12 @@
 						{{
 							`${i18n.ts._visibility.localAndFollower} (${i18n.ts._visibility.home})`
 						}}
+					</option>
+					<option
+						v-if="canUseSemiPublic() || fourthPostVisibility === 's-home'"
+						value="s-home"
+					>
+						{{ i18n.ts._visibility.semiPublic }}
 					</option>
 					<option value="followers">
 						{{ i18n.ts._visibility.followers }}
@@ -572,6 +614,14 @@
 				<template
 					v-else-if="
 						fifthPostButton == true &&
+						fifthPostVisibility === 's-home'
+					"
+					#suffix
+					>{{ i18n.ts._visibility.semiPublic }}</template
+				>
+				<template
+					v-else-if="
+						fifthPostButton == true &&
 						fifthPostVisibility === 'followers'
 					"
 					#suffix
@@ -617,6 +667,12 @@
 							`${i18n.ts._visibility.localAndFollower} (${i18n.ts._visibility.home})`
 						}}
 					</option>
+					<option
+						v-if="canUseSemiPublic() || fifthPostVisibility === 's-home'"
+						value="s-home"
+					>
+						{{ i18n.ts._visibility.semiPublic }}
+					</option>
 					<option value="followers">
 						{{ i18n.ts._visibility.followers }}
 					</option>
@@ -647,6 +703,8 @@
  *
  * @remarks
  * 設定検索は各操作部品の `data-setting-key` を使って、該当項目へ移動し強調する。
+ * 投稿ボタン（2〜5 番目）の種別のセミパブリック（`s-home`）は、使える権限があるときだけ選択肢に出す。
+ * 権限を外された後も選択済みの値が表示できるよう、選ばれているときは出したままにする（投稿時はホーム扱い）。
  *
  * @see {@link defaultStore}
  * @internal
@@ -662,6 +720,7 @@ import { i18n } from "@/i18n";
 import { $i } from "@/account";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { instance } from "@/instance";
+import { canUseSemiPublic } from "@/scripts/semi-public";
 
 let isLocked = $ref($i.isLocked);
 let isSilentLocked = $ref($i.isSilentLocked);

@@ -6,6 +6,9 @@
  * @remarks
  * 投票付きノートは `Question` 相当の形で `oneOf` / `anyOf` に各選択肢全文を載せる。選択肢が長いとペイロードが肥大し、他実装が拒否する可能性がある（API 側の短い上限とは別問題）。
  *
+ * 宛先（to / cc）は `visibility` ではなく、リモートから見た公開範囲（`misc/semi-public.ts` の `getRemoteVisibility`）で決める。
+ * `localOnly` の public / home はフォロワー限定、セミパブリックは公開として出る。
+ *
  * @internal
  */
 import { In, IsNull } from "typeorm";
@@ -27,6 +30,7 @@ import {
 	getReferenceUri,
 	type ReferenceExposureContext,
 } from "@/services/note/reference-visibility.js";
+import { getRemoteVisibility } from "@/misc/semi-public.js";
 
 export default async function renderNote(
 	note: Note,
@@ -92,17 +96,16 @@ export default async function renderNote(
 	let cc: string[] = [];
 
 	const remoteFollowerOnly = note.localOnly && ["public", "home"].includes(note.visibility);
+	// 宛先はリモートから見た公開範囲で決める（localOnly はフォロワー限定、セミパブリックは公開になる）
+	const remoteVisibility = getRemoteVisibility(note);
 
-	if (remoteFollowerOnly) {
-		to = [`${attributedTo}/followers`];
-		cc = mentions;
-	} else if (note.visibility === "public") {
+	if (remoteVisibility === "public") {
 		to = ["https://www.w3.org/ns/activitystreams#Public"];
 		cc = [`${attributedTo}/followers`].concat(mentions);
-	} else if (note.visibility === "home") {
+	} else if (remoteVisibility === "home") {
 		to = [`${attributedTo}/followers`];
 		cc = ["https://www.w3.org/ns/activitystreams#Public"].concat(mentions);
-	} else if (note.visibility === "followers") {
+	} else if (remoteVisibility === "followers") {
 		to = [`${attributedTo}/followers`];
 		cc = mentions;
 	} else {

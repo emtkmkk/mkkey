@@ -210,6 +210,13 @@ export const packedNoteSchema = {
 			nullable: false,
 			description: "ローカルのみ表示か。",
 		},
+		semiPublic: {
+			type: "boolean",
+			optional: true,
+			nullable: false,
+			description:
+				"セミパブリック（ローカルではホーム、リモートには公開）か。セミパブリックのときだけ true が入り、それ以外は省略される。",
+		},
 		emojis: {
 			type: "object",
 			optional: true,

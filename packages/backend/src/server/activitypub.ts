@@ -33,6 +33,7 @@ import {
 } from "@/models/index.js";
 import type { ILocalUser, User } from "@/models/entities/user.js";
 import type { Note } from "@/models/entities/note.js";
+import { getRemoteVisibility } from "@/misc/semi-public.js";
 import { renderLike } from "@/remote/activitypub/renderer/like.js";
 import { getUserKeypair } from "@/misc/keypair-store.js";
 import {
@@ -142,12 +143,13 @@ type RemoteFetchAccess = "anyone" | "followers" | "none";
  * ローカルノートをリモートからの取得に対してどこまで見せるかを決める
  *
  * @remarks
- * 配送時の宛先（`renderNote` の to / cc）と同じ範囲になるようにしている。
+ * 配送時の宛先（`renderNote` の to / cc）と同じ基準（`misc/semi-public.ts` の `getRemoteVisibility`）で決める。
  * 取得経路の判定が配送より広いと、配送していない相手にも ID さえ分かれば中身が読めてしまう。
  *
- * - チャンネルの `localOnly` 投稿は配送自体をしないので `none`
+ * - チャンネルの `localOnly` 投稿・hidden は配送自体をしないので `none`
  * - `localOnly` の public / home は、リモートへはフォロワー限定で配送しているので `followers`
  * - `followers` は `localOnly` に関係なく `followers`
+ * - public / home / セミパブリックは `anyone`
  *
  * NB: 2024-07 の変更で、フォロワー確認が「followers かつ localOnly」のときだけになっていた。
  * そのため通常のフォロワー限定ノートなどが署名なしでも取得できていた。
@@ -157,13 +159,18 @@ type RemoteFetchAccess = "anyone" | "followers" | "none";
  * @internal
  */
 function getRemoteFetchAccess(
-	note: Pick<Note, "visibility" | "localOnly" | "channelId">,
+	note: Pick<Note, "visibility" | "localOnly" | "channelId" | "semiPublic">,
 ): RemoteFetchAccess {
-	// チャンネルのローカル限定投稿は連合しない
-	if (note.localOnly && note.channelId) return "none";
-	// フォロワー限定、またはリモートにはフォロワー限定で配送しているもの
-	if (note.visibility === "followers" || note.localOnly) return "followers";
-	return "anyone";
+	switch (getRemoteVisibility(note)) {
+		case "public":
+		case "home":
+			return "anyone";
+		case "followers":
+			return "followers";
+		// ダイレクトはこの経路では返さない（検索条件で除外済み。万一来ても出さない）
+		default:
+			return "none";
+	}
 }
 
 /**

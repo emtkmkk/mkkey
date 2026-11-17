@@ -76,7 +76,10 @@
 					<span v-if="visibility === 'public'"
 						><i class="ph-planet ph-bold ph-lg"></i
 					></span>
-					<span v-if="visibility === 'home'"
+					<span v-if="visibility === 'home' && semiPublic && !localOnly"
+						><i :class="SEMI_PUBLIC_ICON"></i
+					></span>
+					<span v-else-if="visibility === 'home'"
 						><i class="ph-house ph-bold ph-lg"></i
 					></span>
 					<span v-if="visibility === 'followers'"
@@ -467,6 +470,8 @@
  *       ロック ON の下書きは時間経過によるアーカイブ (`note:xxx` 化) の対象外となる。
  *       ただし `defaultStore.state.hiddenPostLockButton === true`（ボタン非表示設定）の場合は、
  *       復元時に強制的に OFF として扱う（ロック解除手段がなくなることを防ぐため）。
+ * NOTE: セミパブリック（ローカルではホーム、リモートには公開）は `semiPublic` で持つ。
+ *       公開範囲ピッカーでは選べず、空リプの初期値（`initialSemiPublic`）と投稿ボタンの種別 `s-home` からだけ ON になる。
  *
  * @internal
  */
@@ -494,6 +499,11 @@ import XPostFormAttaches from "@/components/MkPostFormAttaches.vue";
 import XPollEditor from "@/components/MkPollEditor.vue";
 import { host, url } from "@/config";
 import { erase, unique } from "@/scripts/array";
+import {
+	canUseSemiPublic,
+	SEMI_PUBLIC_ICON,
+	SEMI_PUBLIC_SETTING_VALUE,
+} from "@/scripts/semi-public";
 import { extractMentions } from "@/scripts/extract-mentions";
 import { isIgnoredMention } from "@/scripts/is-ignored-mention";
 import { formatTimeString } from "@/scripts/format-time-string";
@@ -545,6 +555,8 @@ const props = withDefaults(
 		/** マウント時にアップロードキューへ載せる未アップロードのファイル（共有ターゲット経由など） */
 		initialRawFiles?: File[];
 		initialLocalOnly?: boolean;
+		/** セミパブリックで始めるか（空リプ用。使えないユーザーでは無視する） */
+		initialSemiPublic?: boolean;
 		initialVisibleUsers?: misskey.entities.User[];
 		initialNote?: misskey.entities.Note;
 		initialHashTags?: string;
@@ -666,6 +678,17 @@ let visibility = $ref(
 					.defaultNoteVisibility) as (typeof misskey.noteVisibilities)[number])
 );
 if (visibility === "specified") localOnly = false;
+/**
+ * セミパブリック（ローカルではホーム、リモートには公開）で投稿するか
+ *
+ * @remarks
+ * 公開範囲ピッカーには出さず、空リプの初期値と投稿ボタンの種別（`s-home`）からだけ ON になる。
+ * ピッカーで公開範囲やローカル限定を変えたら OFF に戻す。
+ * 投稿時は、ホーム・ローカル限定でない・使える権限がある、のすべてを満たすときだけ送る（{@link post}）。
+ */
+let semiPublic = $ref<boolean>(
+	props.initialSemiPublic === true && canUseSemiPublic()
+);
 let visibleUsers = $ref([]);
 let visibleUsersCc = $ref(
 	!props.airReply?.user.host &&
@@ -962,6 +985,16 @@ const homeIcon = $computed((): String => {
 	}
 });
 
+/**
+ * セミパブリックの投稿ボタンのアイコン。ホームで投稿できない状況ではホームと同じく下の範囲のアイコンにする
+ */
+const semiPublicIcon = $computed((): String => {
+	if (canHome && canNotLocal) {
+		return SEMI_PUBLIC_ICON;
+	}
+	return homeIcon;
+});
+
 const followerIcon = $computed((): String => {
 	if (canFollower) {
 		return "ph-lock-simple ph-bold ph-lg";
@@ -1102,37 +1135,68 @@ interface QuickVisibilityPreset {
         quickType: QuickVisibilityType;
         order: number | null;
         isEnabled: boolean;
-        parsed: { visibility: (typeof misskey.noteVisibilities)[number]; localOnly: boolean };
+        parsed: ParsedVisibilitySetting;
         isWide: boolean;
+}
+
+/** 投稿ボタンの種別設定（`public` / `l-home` / `s-home` など）を分解したもの */
+interface ParsedVisibilitySetting {
+	visibility: (typeof misskey.noteVisibilities)[number];
+	localOnly: boolean;
+	/** セミパブリック（`s-home`）か。使える権限が無いときは false（ただのホーム）になる */
+	semiPublic: boolean;
 }
 
 function joinClasses(...classes: (string | false | null | undefined)[]): string {
         return classes.filter(Boolean).join(" ");
 }
 
-function parseVisibilitySetting(
-	value: string
-): { visibility: (typeof misskey.noteVisibilities)[number]; localOnly: boolean } {
+/**
+ * 投稿ボタンの種別設定の値を、公開範囲・ローカル限定・セミパブリックに分解する。
+ *
+ * @remarks
+ * - `l-` で始まる値はローカル＆フォロワー（`localOnly`）。
+ * - `s-home` はセミパブリック。使える権限が無いユーザー（権限を外された場合など）ではただのホームとして扱う。
+ *
+ * @param value - 設定値
+ * @returns 分解した結果
+ */
+function parseVisibilitySetting(value: string): ParsedVisibilitySetting {
+	if (value === SEMI_PUBLIC_SETTING_VALUE) {
+		return { visibility: "home", localOnly: false, semiPublic: canUseSemiPublic() };
+	}
 	if (value.startsWith("l-")) {
 		return {
 			visibility: value.slice(2) as (typeof misskey.noteVisibilities)[number],
 			localOnly: true,
+			semiPublic: false,
 		};
 	}
 	return {
 		visibility: value as (typeof misskey.noteVisibilities)[number],
 		localOnly: false,
+		semiPublic: false,
 	};
 }
 
+/**
+ * 投稿ボタンに出す公開範囲のアイコンを決める。
+ *
+ * @param targetVisibility - 公開範囲
+ * @param isLocal - ローカル＆フォロワーか
+ * @param isSemiPublic - セミパブリックか
+ * @returns アイコンのクラス
+ */
 function getVisibilityIconClass(
 	targetVisibility: (typeof misskey.noteVisibilities)[number],
-	isLocal: boolean
+	isLocal: boolean,
+	isSemiPublic = false
 ): string {
 	if (targetVisibility === "public") {
 		return isLocal ? localIcon : publicIcon;
 	}
 	if (targetVisibility === "home") {
+		if (isSemiPublic && !isLocal) return semiPublicIcon;
 		return isLocal ? localHomeIcon : homeIcon;
 	}
 	if (targetVisibility === "followers") {
@@ -1376,7 +1440,8 @@ const submitButtonConfigs = $computed<QuickPostButtonConfig[]>(() => {
                                 iconClass: joinClasses(
                                         getVisibilityIconClass(
                                                 preset.parsed.visibility,
-                                                preset.parsed.localOnly
+                                                preset.parsed.localOnly,
+                                                preset.parsed.semiPublic
                                         ),
                                         preset.isWide ? "widePostButton" : undefined
                                 ),
@@ -1933,6 +1998,8 @@ function setVisibility() {
 		{
 			changeVisibility: (v) => {
 				visibility = v;
+				// ピッカーにはセミパブリックが無いので、選び直したら通常の公開範囲に戻す
+				semiPublic = false;
 				specifiedCheck();
 				if (defaultStore.state.rememberNoteVisibility) {
 					defaultStore.set("visibility", visibility);
@@ -1940,6 +2007,7 @@ function setVisibility() {
 			},
 			changeLocalOnly: (v) => {
 				localOnly = v;
+				semiPublic = false;
 				if (defaultStore.state.rememberNoteVisibility) {
 					if (props.channel) {
 						defaultStore.set("localOnly", localOnly);
@@ -2298,6 +2366,7 @@ function saveDraft(key?, name?) {
 				cw: cw,
 				visibility: visibility,
 				localOnly: localOnly,
+				semiPublic: semiPublic,
 				files: files,
 				poll: poll,
 				visibleUserIds:
@@ -2386,12 +2455,15 @@ function performQuickPost(kind: QuickVisibilityType): void {
                 if (defaultStore.state.firstPostButtonVisibilityForce) {
                         visibility = defaultStore.state.defaultNoteVisibility as (typeof misskey.noteVisibilities)[number];
                         localOnly = defaultStore.state.defaultNoteLocalAndFollower === true;
+                        // 既定の公開範囲にはセミパブリックが無いので OFF にする
+                        semiPublic = false;
                 }
         } else {
                 const target = quickVisibilitySettingMap[kind];
                 if (target) {
                         localOnly = target.localOnly;
                         visibility = target.visibility;
+                        semiPublic = target.semiPublic;
                 }
         }
         specifiedCheck();
@@ -2456,6 +2528,9 @@ async function post() {
 		canNotLocal,
 		blockPostNotLocalPublic: $i.blockPostNotLocalPublic,
 	}));
+	// 公開範囲の補正でホームでなくなった・ローカル限定になった場合は、セミパブリックとしては送らない
+	const effectiveSemiPublic =
+		semiPublic && visibility === "home" && !localOnly && canUseSemiPublic();
 
 	if (!props.renote && !quoteId && referencesFlg && referenceIds?.length === 1) {
 		try {
@@ -2486,6 +2561,7 @@ async function post() {
 		channel: props.channel,
 		poll,
 		localOnly,
+		semiPublic: effectiveSemiPublic,
 		visibility,
 		visibleUsers,
 		visibleUsersCc,
@@ -2581,6 +2657,8 @@ interface BuildPostPayloadOptions {
         channel?: { id: string } | null;
         poll: PollValue;
         localOnly: boolean;
+        /** セミパブリックで送るか（呼び出し側で条件を確認済みの値を渡す） */
+        semiPublic: boolean;
         visibility: NoteVisibility;
         visibleUsers: Array<{ id: string }>;
         visibleUsersCc: Array<{ id: string }>;
@@ -2600,6 +2678,8 @@ interface PostPayload {
         poll?: PollValue;
         cw?: string;
         localOnly: boolean;
+        /** セミパブリックのときだけ true を入れる（通常の投稿では送らない） */
+        semiPublic?: boolean;
         visibility: NoteVisibility;
         visibleUserIds?: string[];
         ccUserIds?: string[];
@@ -2622,6 +2702,7 @@ function buildPostPayload(options: BuildPostPayloadOptions): PostPayload {
   poll: options.poll,
   cw: options.useCw ? options.processedCw || "" : undefined,
   localOnly: options.localOnly,
+  semiPublic: options.semiPublic ? true : undefined,
   visibility: options.visibility,
   visibleUserIds:
    options.visibility === "specified"
@@ -3130,6 +3211,8 @@ function loadDraft(key?) {
 			if (useCw) cw = draft.data.cw;
 			visibility = draft.data.visibility;
 			localOnly = draft.data.localOnly;
+			// 古い下書きには項目が無い。権限を外された後の下書きでも ON にしない
+			semiPublic = draft.data.semiPublic === true && canUseSemiPublic();
 			files = (draft.data.files || []).filter((draftFile) => draftFile);
 			draft.data.visibleUserIds?.forEach((x) =>
 				os.api("users/show", { userId: x }).then((user) => {
@@ -3275,6 +3358,7 @@ onMounted(() => {
 				})
 			);
 			localOnly = init.localOnly;
+			semiPublic = init.semiPublic === true && canUseSemiPublic();
 			quoteId = init.renote ? init.renote.id : null;
 			saveDraft();
 		}

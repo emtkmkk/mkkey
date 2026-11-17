@@ -8,6 +8,7 @@
  * - 認証必須。テキスト・投票・ファイル添付・リノート・返信・チャンネル投稿に対応。
  * - **投票**: 各選択肢は `APP_MAX_POLL_CHOICE_LENGTH`（200）文字まで（`paramDef` の `maxLength`）。DB 物理上限は `misc/hard-limits` の `DB_MAX_POLL_CHOICE_LENGTH`。
  * - 公開範囲（visibility）、CW、ローカルのみ、Idempotency キーなどオプションあり。
+ * - `semiPublic`（ローカルではホーム、リモートには公開）は管理人・モデレーターのみ。権限が無いと 403。
  * - レート制限: 1 時間あたり 300 回（meta.limit）。
  *
  * @see {@link define} エンドポイント登録
@@ -43,6 +44,7 @@ import {
 	validateReferenceIds,
 } from "@/services/note/reference-visibility.js";
 import { apiLogger } from "../../logger.js";
+import { canUseSemiPublic } from "@/misc/semi-public.js";
 
 const NOTES_CREATE_IDEMPOTENCY_TTL_SEC = 60 * 60;
 const NOTES_CREATE_IDEMPOTENCY_PENDING = "__pending__";
@@ -164,6 +166,13 @@ export const meta = {
 			code: "NO_SUCH_REFERENCE_TARGET",
 			id: "a3f8c2e1-9b4d-4a7f-8e6c-1d5b0a9f3e72",
 		},
+
+		semiPublicNotAllowed: {
+			message: "セミパブリックで投稿する権限がありません。",
+			code: "SEMI_PUBLIC_NOT_ALLOWED",
+			id: "5d0f6a52-3c8e-4f0b-9a1e-7b2c4d6e8f10",
+			httpStatusCode: 403,
+		},
 	},
 } as const;
 
@@ -228,6 +237,12 @@ export const paramDef = {
 			type: "boolean",
 			default: false,
 			description: "true にすると連合に送信せず、ローカルのみに表示する。",
+		},
+		semiPublic: {
+			type: "boolean",
+			default: false,
+			description:
+				"true にするとセミパブリック（ローカルではホーム、リモートには公開）で投稿する。visibility が home で localOnly が false のときだけ有効で、それ以外の組み合わせでは無視される（返信・リノート先が公開でない場合も無視）。管理人・モデレーターのみ指定できる。",
 		},
 		noExtractMentions: {
 			type: "boolean",
@@ -461,6 +476,10 @@ export default define(meta, paramDef, async (ps, user, _token, _file, _cleanup, 
 	}
 
 	if (user.movedToUri != null) throw new ApiError(meta.errors.accountLocked);
+	// セミパブリックは権限のあるユーザーだけ。黙って落とすと意図しない範囲で投稿されるので、エラーで知らせる
+	if (ps.semiPublic && !canUseSemiPublic(user)) {
+		throw new ApiError(meta.errors.semiPublicNotAllowed);
+	}
 	if (!ps.web && user.isMiniSilenced && ps.visibility === "public") {
 			throw new ApiError(meta.errors.appBlockPublic);
 	}
@@ -682,6 +701,7 @@ export default define(meta, paramDef, async (ps, user, _token, _file, _cleanup, 
 						: undefined,
 					cw: ps.cw,
 					localOnly: ps.localOnly,
+					semiPublic: ps.semiPublic,
 					visibility: ps.visibility,
 			  	visibilityForce: ps.visibilityForce,
 					visibleUsers,

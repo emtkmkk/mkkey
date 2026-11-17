@@ -621,15 +621,20 @@ definePageMetadata({
 </script>
 
 <style lang="scss" scoped>
+// マ・ッ・ク・ド・ナ・ル・ドの 7 つのボタンを、なるべく 1 行に収める。
+// 幅が足りないときはボタンを縮めて合わせ、それでも収まらない極端に狭い画面でだけ折り返す。
 .mcLetters {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
-	gap: 0.5rem;
+	gap: 0.25rem;
 
 	> .letter {
-		min-width: 2.5rem;
-		padding: 0.5rem;
+		flex: 1 1 0;
+		min-width: 1.75em;
+		max-width: 3rem;
+		padding: 0.5rem 0;
+		text-align: center;
 		border-radius: 0.5rem;
 		border: solid 1px var(--divider);
 		color: var(--fgTransparentWeak);

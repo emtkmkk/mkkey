@@ -11,7 +11,9 @@
  * - 表示した短縮名は、マックマクド変換（`replaceMakudo`）の対象にしない。
  *
  * 設定値は `makku` / `makudo` / `free:xxxxxxx`（マ・ッ・ク・ド・ナ・ル・ドの 7 文字それぞれを使うか）。
- * 「ッ」は「マ」と一緒にしか使えない。以前の 6 桁の `free:`（ッ なし）も読める。
+ * 「ッ」は「マ」と一緒にしか使えない。6 文字以上は短縮できていないので不可（保存済みならマック扱い）。
+ * 文字数は「マッ」を 1 文字として数える。
+ * 以前の 6 桁の `free:`（ッ なし）も読める。
  *
  * NOTE: サーバー側の `packages/backend/src/misc/mc-short-name.ts` と同じ規則にしておくこと
  * （リモートへ送るときはサーバーが投稿者の設定で置き換える）。
@@ -50,7 +52,27 @@ export function parseMcLetterBits(setting: string | null | undefined): boolean[]
 	// 0 文字や「ッ」だけの不正な値は使わない
 	if (!result.some(Boolean)) return null;
 	if (result[MC_INDEX_SMALL_TSU] && !result[MC_INDEX_MA]) return null;
+	// 長すぎる（短縮できていない）値は使わない（マック扱い）
+	if (countMcLetters(result) > MC_SHORT_NAME_MAX_LENGTH) return null;
 	return result;
+}
+
+/** 短縮名の最大文字数（これより長いのは短縮できていないとみなす） */
+export const MC_SHORT_NAME_MAX_LENGTH = 5;
+
+/**
+ * 短縮名の文字数（文字数の上限を確かめるときの数え方）
+ *
+ * @remarks
+ * 「マッ」は 1 文字として数える（「ッ」は必ず「マ」と一緒なので、「ッ」を数に入れない）。
+ * サーバーの `isMcShortNameTooLong` と同じ数え方。
+ *
+ * @param bits - 7 文字分のオンオフ
+ * @returns 文字数
+ * @public
+ */
+export function countMcLetters(bits: boolean[]): number {
+	return bits.filter((on, i) => on && i !== MC_INDEX_SMALL_TSU).length;
 }
 
 /**

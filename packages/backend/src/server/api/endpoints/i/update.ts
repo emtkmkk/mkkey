@@ -28,7 +28,10 @@ import type { User, ILocalUser } from "@/models/entities/user.js";
 import type { UserProfile } from "@/models/entities/user-profile.js";
 import { notificationTypes } from "@/types.js";
 import { normalizeForSearch } from "@/misc/normalize-for-search.js";
-import { MC_SHORT_NAME_SETTING_PATTERN } from "@/misc/mc-short-name.js";
+import {
+	isMcShortNameTooLong,
+	MC_SHORT_NAME_SETTING_PATTERN,
+} from "@/misc/mc-short-name.js";
 import { langmap } from "@/misc/langmap.js";
 import { getHtml } from "@/misc/fetch.js";
 import { safeForSql } from "@/misc/safe-for-sql.js";
@@ -91,6 +94,12 @@ export const meta = {
 			message: "正規表現が正しくありません。",
 			code: "INVALID_REGEXP",
 			id: "0d786918-10df-41cd-8f33-8dec7d9a89a5",
+		},
+
+		mcShortNameTooLong: {
+			message: "短縮名なのに短縮できていません。",
+			code: "MC_SHORT_NAME_TOO_LONG",
+			id: "3f6a2c1e-8b7d-4e59-a0c4-9d2e1f7b6a83",
 		},
 
 		detectBannedWords: {
@@ -397,6 +406,10 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 	}
 	// 形は paramDef の pattern で確認済み（0 文字・「ッ」だけの指定もそこで弾く）
 	if (ps.mcShortName !== undefined) {
+		// 6 文字以上は短縮名になっていないので受け付けない
+		if (ps.mcShortName != null && isMcShortNameTooLong(ps.mcShortName)) {
+			throw new ApiError(meta.errors.mcShortNameTooLong);
+		}
 		updates.mcShortName = ps.mcShortName;
 	}
 	if (typeof ps.showDonateBadges === "boolean")

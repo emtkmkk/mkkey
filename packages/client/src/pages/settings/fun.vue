@@ -247,12 +247,15 @@
 					{{ ch }}
 				</button>
 			</div>
+			<MkInfo v-if="mcShortNameMode === 'free' && mcShortNameTooLong" warn class="_formBlock">
+				{{ i18n.ts.mcShortNameTooLong }}
+			</MkInfo>
 			<FormButton
 				v-if="mcShortNameMode === 'free' && mcShortNameChanged"
 				class="_formBlock"
 				primary
 				inline
-				:disabled="mcShortNameSaving"
+				:disabled="mcShortNameSaving || mcShortNameTooLong"
 				@click="saveMcShortName"
 				><i class="ph-floppy-disk ph-bold ph-lg"></i>
 				{{ i18n.ts.save }}</FormButton
@@ -360,9 +363,12 @@ import { unisonReload } from "@/scripts/unison-reload";
 import { useIsMobile } from "@/scripts/use-is-mobile";
 import { deepClone } from "@/scripts/clone";
 import FormFolder from "@/components/form/folder.vue";
+import MkInfo from "@/components/MkInfo.vue";
 import {
+	countMcLetters,
 	DEFAULT_MC_LETTER_BITS,
 	MC_FULL_NAME,
+	MC_SHORT_NAME_MAX_LENGTH,
 	MC_INDEX_MA,
 	MC_INDEX_SMALL_TSU,
 	parseMcLetterBits,
@@ -448,8 +454,17 @@ function getMcSettingValue(): string {
 	return `free:${mcLetterBits.value.map((b) => (b ? "1" : "0")).join("")}`;
 }
 
-/** 最後に保存した値（未設定はマックと同じ） */
-const savedMcSetting = ref<string>($i.mcShortName ?? "makku");
+/**
+ * 最後に保存した値（未設定はマックと同じ）
+ *
+ * @remarks
+ * NOTE: 以前に保存された 6 文字以上の設定は、サーバーでもマック扱いになる（`misc/mc-short-name.ts`）。
+ * そのため画面でもマックが選ばれている状態として扱い、保存し直さなくてよいようにしている。
+ */
+// 未設定と、使えない値（6 文字以上など。表示ではマック扱い）は、マックとして扱う
+const savedMcSetting = ref<string>(
+	initialMcBits || $i.mcShortName === "makudo" ? $i.mcShortName! : "makku"
+);
 
 /** 保存していない変更があるか（あるときだけ保存ボタンを出す） */
 const mcShortNameChanged = computed(
@@ -496,6 +511,15 @@ function toggleMcLetter(index: number): void {
 	mcLetterBits.value = toggledMcBits(index);
 }
 
+/**
+ * 自由に指定で選んだ文字が多すぎるか（6 文字以上は短縮名になっていないので保存できない）
+ */
+const mcShortNameTooLong = computed(
+	() =>
+		mcShortNameMode.value === "free" &&
+		countMcLetters(mcLetterBits.value) > MC_SHORT_NAME_MAX_LENGTH
+);
+
 /** 保存の送信中か（保存ボタンの連打を防ぐ） */
 const mcShortNameSaving = ref(false);
 
@@ -504,7 +528,12 @@ const MC_SAVE_DEBOUNCE_MS = 1000;
 
 /** 短縮名の設定をサーバーに保存する（リモートへ送るときにも投稿者の設定として使うため） */
 async function saveMcShortName(): Promise<void> {
-	if (mcShortNameSaving.value || !mcShortNameChanged.value) return;
+	if (
+		mcShortNameSaving.value ||
+		!mcShortNameChanged.value ||
+		mcShortNameTooLong.value
+	)
+		return;
 	const value = getMcSettingValue();
 	mcShortNameSaving.value = true;
 	try {

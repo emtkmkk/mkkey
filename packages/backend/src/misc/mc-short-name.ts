@@ -23,6 +23,8 @@
  * - `makudo` … マクド
  * - `free:xxxxxxx` … マ・ッ・ク・ド・ナ・ル・ドの 7 文字それぞれを使うか（1 / 0）。
  *   全部 0 は不可。「ッ」は「マ」と一緒にしか使えない（ッ だけ・ッで始まる短縮名は作れない）。
+ *   6 文字以上は短縮できていないので不可（保存できない。すでに保存されていればマック扱い）。
+ *   文字数は「マッ」を 1 文字として数える。
  * - `free:xxxxxx`（6 桁）… 以前の形（マ・ク・ド・ナ・ル・ド）。読むときは「ッ」なしの 7 桁として扱う。
  *
  * NOTE: クライアントの `packages/client/src/scripts/mc-short-name.ts` と同じ規則にしておくこと。
@@ -59,7 +61,33 @@ function normalizeSetting(setting: string | null | undefined): string | null {
 	// 以前の 6 桁（ッ なし）は、2 文字目に「ッ = 0」を足して 7 桁にする
 	const legacy = /^free:([01])([01]{5})$/.exec(setting);
 	const value = legacy ? `free:${legacy[1]}0${legacy[2]}` : setting;
-	return new RegExp(MC_SHORT_NAME_SETTING_PATTERN).test(value) ? value : null;
+	if (!new RegExp(MC_SHORT_NAME_SETTING_PATTERN).test(value)) return null;
+	// 長すぎる（短縮できていない）設定は、未設定（マック）として扱う
+	if (isMcShortNameTooLong(value)) return null;
+	return value;
+}
+
+/** 短縮名の最大文字数（これより長いのは短縮できていないとみなす） */
+export const MC_SHORT_NAME_MAX_LENGTH = 5;
+
+/**
+ * 自由に指定の短縮名が長すぎるか（{@link MC_SHORT_NAME_MAX_LENGTH} 文字を超えるか）
+ *
+ * @remarks
+ * 「マッ」は 1 文字として数える（「ッ」は必ず「マ」と一緒なので、「ッ」を数に入れない）。
+ * 7 桁の形の 2 文字目が「ッ」。以前の 6 桁の形には「ッ」が無いので全部数える。
+ *
+ * @param setting - 設定値（`free:` 以外は常に false）
+ * @returns 長すぎるなら true
+ * @public
+ */
+export function isMcShortNameTooLong(setting: string): boolean {
+	const bits = /^free:([01]+)$/.exec(setting)?.[1];
+	if (bits == null) return false;
+	const count = Array.from(bits).filter(
+		(b, i) => b === "1" && !(bits.length === 7 && i === 1),
+	).length;
+	return count > MC_SHORT_NAME_MAX_LENGTH;
 }
 
 /**

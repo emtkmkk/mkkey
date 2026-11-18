@@ -20,7 +20,14 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch, computed } from "vue";
+/**
+ * @packageDocumentation
+ * カテゴリのフォロー切り替えと、画面幅に応じたラベル表示を担当する。
+ * @remarks リサイズ監視は破棄時に解除し、ページ移動後のボタンを保持しない。
+ * @see {@link updateFull}
+ * @internal
+ */
+import { ref, watch, computed, onUnmounted } from "vue";
 import { i18n } from "@/i18n";
 import { defaultStore } from "@/store";
 import { fetchCustomCategory } from "@/instance";
@@ -58,8 +65,20 @@ function toggle() {
 	emit("update:active", isActive);
 }
 
-const full = $computed(() => props.full || window.innerWidth < 800);
-window.addEventListener('resize', () => full = props.full || window.innerWidth < 800);
+/** 幅をリアクティブに保持し、読み取り専用computed自体へ代入しない。 @internal */
+const windowWidth = ref(window.innerWidth);
+const full = $computed(() => props.full || windowWidth.value < 800);
+/**
+ * 現在の幅からラベル表示を更新する。
+ * @remarks 同じ関数を解除にも使い、window側にコンポーネントを残さない。
+ * @returns なし
+ * @internal
+ */
+function updateFull(): void {
+	windowWidth.value = window.innerWidth;
+}
+window.addEventListener("resize", updateFull);
+onUnmounted(() => window.removeEventListener("resize", updateFull));
 </script>
 
 <style lang="scss" scoped>

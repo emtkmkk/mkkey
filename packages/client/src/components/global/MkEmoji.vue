@@ -9,7 +9,7 @@
 			custom: !bigCustom,
 			['mfm-x' + (size || 2)]: mfmx,
 		}"
-		v-emoji-src="url"
+		v-emoji-src:custom="url"
 		:title="title"
 		:alt="alt"
 		decoding="async"
@@ -61,7 +61,7 @@
 			custom: !bigCustom,
 			['mfm-x' + (size || 2)]: mfmx,
 		}"
-		v-emoji-src="altimgUrl"
+		v-emoji-src:custom="altimgUrl"
 		:title="title + ' [localOnly]'"
 		:alt="alt"
 		v-tooltip="emojiHost + ' localOnly'"
@@ -102,11 +102,13 @@
  * カスタム絵文字表示コンポーネント。isMuted 時は画像にせず :name: のまま表示。
  *
  * @remarks
+ * 直接のリモート画像URLも `v-emoji-src:custom` の同時読み込み制限に含める。
  * note の emojis / reactionEmojis に hiddenForViewer が true のときは画像にせず :name: のまま表示（isMuted と同様）。
  *
  * カスタム絵文字は候補 URL（{@link urlRaw}）を先頭から順に試す。
  * `/emoji/` 経由の外部プロキシが失敗したとき（HTTP エラー、またはエラー画像）は、
  * 別のプロキシ → このサーバの `/proxy` の候補へ進む（{@link getEmojiFallbackUrls}）。
+ * @internal
  */
 import { computed, ref, watch } from "vue";
 import { CustomEmoji } from "calckey-js/built/entities";

@@ -578,6 +578,13 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ * ユーザープロフィールとバナーの追従表示を担当する。
+ * @remarks 描画予約は初回分も保持し、破棄後のコールバックがループを再開しないようにする。
+ * @see {@link parallaxLoop}
+ * @internal
+ */
 import { defineAsyncComponent, onMounted, onUnmounted, ref } from "vue";
 import calcAge from "s-age";
 import cityTimezones from "city-timezones";
@@ -622,6 +629,8 @@ const isShortPin = $computed(() => shortPinUsers?.[props.user.id] ?? ($i != null
 const shortPinUsers = $computed(defaultStore.makeGetterSetter("shortPinUsers"));
 
 let parallaxAnimationId = $ref<null | number>(null);
+/** 既に配送待ちの描画コールバックも、破棄後は再予約させない。 @internal */
+let parallaxDisposed = false;
 let narrow = $ref<null | boolean>(null);
 let rootEl = $ref<null | HTMLElement>(null);
 let bannerEl = $ref<null | HTMLElement>(null);
@@ -854,7 +863,14 @@ function showBadges() {
 	os.popup(MkBadgesDialog, { badges }, {}, "closed");
 }
 
+/**
+ * バナーを追従させ、次の描画を予約する。
+ * @remarks 予約済みIDの解除と破棄フラグを併用し、初回描画前の離脱でも停止する。
+ * @returns なし
+ * @internal
+ */
 function parallaxLoop() {
+	if (parallaxDisposed) return;
 	parallaxAnimationId = window.requestAnimationFrame(parallaxLoop);
 	parallax();
 }
@@ -888,14 +904,16 @@ onMounted(() => {
 	narrow = rootEl!.clientWidth < 1000;
 	// バナーを表示している場合のみパララックス用の requestAnimationFrame ループを開始する
 	if (Object.keys(style).length > 0) {
-		window.requestAnimationFrame(parallaxLoop);
+		parallaxAnimationId = window.requestAnimationFrame(parallaxLoop);
 	}
 	window.addEventListener("resize", onResize);
 });
 
 onUnmounted(() => {
-	if (parallaxAnimationId) {
+	parallaxDisposed = true;
+	if (parallaxAnimationId !== null) {
 		window.cancelAnimationFrame(parallaxAnimationId);
+		parallaxAnimationId = null;
 	}
 	window.removeEventListener("resize", onResize);
 });

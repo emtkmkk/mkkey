@@ -7,6 +7,13 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ * ユーザー一覧のアバターとオンライン状態を定期取得する。
+ * @remarks 一覧の差し替えでは取得だけを行い、定期タイマーは一つだけ保持する。
+ * @see {@link fetchData}
+ * @internal
+ */
 import { onUnmounted, ref, watch } from "vue";
 import * as os from "@/os";
 
@@ -19,9 +26,18 @@ const props = defineProps<{
 
 const users = ref([]);
 const isFetching = ref(false);
+/** 破棄後に遅れて返った取得結果を反映しないための状態。 @internal */
+let disposed = false;
+onUnmounted(() => { disposed = true; });
 
+/**
+ * 現在の一覧を取得する。
+ * @remarks 重複取得と、破棄後の結果反映を防止する。
+ * @returns 取得完了
+ * @internal
+ */
 const fetchData = async () => {
-	if (isFetching.value) {
+	if (disposed || isFetching.value) {
 		// 処理中は何もしない
 		return;
 	}
@@ -56,6 +72,7 @@ const fetchData = async () => {
 			"unknown",
 		];
 
+		if (disposed) return;
 		users.value = props.sortStatus
 			? _users.sort((a, b) =>
 					onlineStatus.indexOf(a.onlineStatus) <
@@ -72,20 +89,16 @@ const fetchData = async () => {
 	}
 };
 
+// watchの再実行中にライフサイクルフックを登録すると、古いタイマーを解除できない。
+// 間隔が変わった場合も、watchのクリーンアップで以前のタイマーを解除する。
+watch(() => props.userIds, () => { void fetchData(); }, { immediate: true });
 watch(
-	() => props.userIds,
-	(newUserIds, oldUserIds) => {
-		fetchData();
-
-		const intervalId = setInterval(fetchData, props.interval || 300 * 1000);
-
-		onUnmounted(() => {
-			clearInterval(intervalId);
-		});
+	() => props.interval || 300 * 1000,
+	(interval, _previous, onCleanup) => {
+		const intervalId = window.setInterval(() => { void fetchData(); }, interval);
+		onCleanup(() => window.clearInterval(intervalId));
 	},
-	{
-		immediate: true,
-	}
+	{ immediate: true },
 );
 </script>
 

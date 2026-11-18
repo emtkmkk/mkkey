@@ -3,15 +3,24 @@
  *
  * 表示中ノートをストリーム更新へ追従させ、リアクション件数を安全に更新する。
  *
+ * @remarks
+ * 絵文字情報は通信ごとに別オブジェクトになるため、参照ではなく名前で照合する。
+ * @see {@link useNoteCapture}
  * @internal
  */
 import { onUnmounted, Ref } from "vue";
 import * as misskey from "calckey-js";
 import { stream } from "@/stream";
 import { $i } from "@/account";
-import { defaultStore } from "@/store";
 import * as os from "@/os";
 
+/**
+ * ノートの購読を開始し、コンポーネント破棄時に解除する。
+ * @remarks 非表示中も件数を追従させるが、同じ絵文字情報を蓄積しない。
+ * @param props - 更新対象のノートと表示・削除状態
+ * @returns なし
+ * @internal
+ */
 export function useNoteCapture(props: {
 	rootEl: Ref<HTMLElement>;
 	note: Ref<misskey.entities.Note>;
@@ -32,8 +41,16 @@ export function useNoteCapture(props: {
 
 				if (body.emoji) {
 					const emojis = note.value.emojis || [];
-					if (!emojis.includes(body.emoji)) {
+					const index = emojis.findIndex((emoji) => emoji.name === body.emoji.name);
+					if (index === -1) {
 						note.value.emojis = [...emojis, body.emoji];
+					} else if (Object.keys(body.emoji).some(
+						(key) => (emojis[index] as Record<string, unknown>)[key] !== body.emoji[key],
+					)) {
+						// URL等が変わった場合だけ更新し、通知に無い閲覧制限フラグ等は保持する。
+						const updated = [...emojis];
+						updated[index] = { ...emojis[index], ...body.emoji };
+						note.value.emojis = updated;
 					}
 				}
 

@@ -296,14 +296,28 @@ export function getPluginLangVersion(plugin: Plugin): string | null {
 
 //#region ログ・ハンドラ管理
 
+/** 最近のログを残しつつ、長時間動くプラグインの無制限保持を防ぐ上限。 @internal */
+const MAX_PLUGIN_LOG_ENTRIES = 200;
+
+/**
+ * プラグインの最新ログを上限付きで保持する。
+ * @remarks 過去の全ログをコピーし続けず、直近200件を管理画面へ公開する。
+ * @param pluginId - 対象プラグイン
+ * @param message - 出力内容
+ * @param opts - システム出力・エラー表示の指定
+ * @returns なし
+ * @internal
+ */
 function appendLog(
 	pluginId: string,
 	message: string,
 	opts?: { isSystem?: boolean; isError?: boolean },
 ): void {
 	const logs = pluginLogs.value.get(pluginId) ?? [];
-	logs.push({ at: Date.now(), message, ...opts });
-	pluginLogs.value.set(pluginId, [...logs]);
+	pluginLogs.value.set(pluginId, [
+		...logs.slice(-(MAX_PLUGIN_LOG_ENTRIES - 1)),
+		{ at: Date.now(), message, ...opts },
+	]);
 }
 
 function systemLog(pluginId: string, message: string, isError = false): void {

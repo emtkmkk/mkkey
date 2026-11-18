@@ -32,6 +32,10 @@ interface EmojiLoadState {
 	el: HTMLImageElement;
 	desiredUrl: string;
 	activeUrl: string | null;
+	/** 完了後も保持し、同じURLのVue更新による画像の再設定を防ぐ。 */
+	assignedUrl: string | null;
+	/** custom引数がある画像は、/files/などの直接URLも制限対象にする。 */
+	custom: boolean;
 	queued: boolean;
 	disposed: boolean;
 	/** 画面に（少し手前も含めて）見えているか。{@link visibilityObserver} が更新する */
@@ -41,7 +45,7 @@ interface EmojiLoadState {
 	onError: () => void;
 }
 
-/** 待機中の画像。破棄済みの項目は取り出す際に読み飛ばす。 */
+/** 待機中の画像。破棄された要素は即時に除外する。 */
 const loadQueue: EmojiLoadState[] = [];
 
 /** 現在ネットワーク読み込み中の画像。 */
@@ -116,13 +120,16 @@ function takeNext(): EmojiLoadState | undefined {
  * 同時読み込み制御が必要な URL か判定する。
  *
  * @param value - img 要素へ設定する値
+ * @param custom - 直接URLもカスタム絵文字として制限するか
+ * @defaultValue customはfalse
  * @returns 絵文字またはプロキシ画像なら true
  * @internal
  */
-function isManagedEmojiUrl(value: unknown): value is string {
+function isManagedEmojiUrl(value: unknown, custom = false): value is string {
 	return (
 		typeof value === "string" &&
-		(value.includes("/emoji/") || value.includes("/proxy/"))
+		value.length > 0 &&
+		(custom || value.includes("/emoji/") || value.includes("/proxy/"))
 	);
 }
 
@@ -164,8 +171,9 @@ function drainQueue(): void {
 
 		state.queued = false;
 		const requestedUrl = state.desiredUrl;
-		if (!isManagedEmojiUrl(requestedUrl)) {
+		if (!isManagedEmojiUrl(requestedUrl, state.custom)) {
 			state.el.src = requestedUrl;
+			state.assignedUrl = requestedUrl;
 			continue;
 		}
 
@@ -180,6 +188,7 @@ function drainQueue(): void {
 			state.el.dispatchEvent(new Event("error"));
 			drainQueue();
 		}, EMOJI_LOAD_TIMEOUT_MS);
+		state.assignedUrl = requestedUrl;
 		state.el.src = requestedUrl;
 	}
 }
@@ -201,7 +210,7 @@ function settleLoad(state: EmojiLoadState): void {
 	if (
 		!state.disposed &&
 		state.desiredUrl !== completedUrl &&
-		isManagedEmojiUrl(state.desiredUrl)
+		isManagedEmojiUrl(state.desiredUrl, state.custom)
 	) {
 		state.queued = true;
 		loadQueue.push(state);
@@ -239,16 +248,17 @@ function scheduleLoad(state: EmojiLoadState, value: unknown): void {
 	const nextUrl = typeof value === "string" ? value : "";
 	if (
 		state.desiredUrl === nextUrl &&
-		(state.queued || state.activeUrl === nextUrl)
+		(state.queued || state.assignedUrl === nextUrl)
 	) {
 		return;
 	}
 
 	state.desiredUrl = nextUrl;
 
-	if (!isManagedEmojiUrl(nextUrl)) {
-		state.queued = false;
+	if (!isManagedEmojiUrl(nextUrl, state.custom)) {
+		removeQueuedLoad(state);
 		releaseActiveLoad(state);
+		state.assignedUrl = nextUrl;
 		if (nextUrl) {
 			state.el.src = nextUrl;
 		} else {
@@ -272,14 +282,17 @@ function scheduleLoad(state: EmojiLoadState, value: unknown): void {
  *
  * @param el - 管理対象の img 要素
  * @param value - 最初に読み込む URL
+ * @param custom - 直接URLも制限するか
  * @returns なし
  * @internal
  */
-function mountEmojiSource(el: HTMLImageElement, value: unknown): void {
+function mountEmojiSource(el: HTMLImageElement, value: unknown, custom: boolean): void {
 	const state: EmojiLoadState = {
 		el,
 		desiredUrl: "",
 		activeUrl: null,
+		assignedUrl: null,
+		custom,
 		queued: false,
 		disposed: false,
 		visible: false,
@@ -299,6 +312,19 @@ function mountEmojiSource(el: HTMLImageElement, value: unknown): void {
 }
 
 /**
+ * 待機中の要素への参照を即座に取り除く。
+ * @remarks 実行中の通信が止まっていても、破棄済みDOMを待機列に保持しない。
+ * @param state - 待機を解除する画像
+ * @returns なし
+ * @internal
+ */
+function removeQueuedLoad(state: EmojiLoadState): void {
+	state.queued = false;
+	const index = loadQueue.indexOf(state);
+	if (index !== -1) loadQueue.splice(index, 1);
+}
+
+/**
  * 画像要素を待機列と実行中一覧から取り除く。
  *
  * @param el - 破棄される img 要素
@@ -310,7 +336,7 @@ function unmountEmojiSource(el: HTMLImageElement): void {
 	if (!state) return;
 
 	state.disposed = true;
-	state.queued = false;
+	removeQueuedLoad(state);
 	visibilityObserver?.unobserve(el);
 	releaseActiveLoad(state);
 	el.removeEventListener("load", state.onLoad, true);
@@ -324,7 +350,7 @@ function unmountEmojiSource(el: HTMLImageElement): void {
 /** カスタム絵文字画像を上限付きキューで読み込むディレクティブ。 */
 const emojiSrc: Directive<HTMLImageElement, string> = {
 	mounted(el, binding) {
-		mountEmojiSource(el, binding.value);
+		mountEmojiSource(el, binding.value, binding.arg === "custom");
 	},
 	updated(el, binding) {
 		const state = states.get(el);

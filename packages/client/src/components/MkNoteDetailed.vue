@@ -59,10 +59,17 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ * 投稿の詳細と会話・返信を表示し、ストリーム更新を反映する。
+ * @remarks wheel監視と購読は破棄前に解除し、破棄後に返った返信取得結果は反映しない。
+ * @see {@link onNoteUpdated}
+ * @internal
+ */
 import {
 	inject,
 	onMounted,
-	onUnmounted,
+	onBeforeUnmount,
 	onUpdated,
 	ref,
 } from "vue";
@@ -132,6 +139,8 @@ const conversation = ref<misskey.entities.Note[]>([]);
 const replies = ref<misskey.entities.Note[]>([]);
 const directReplies = ref<misskey.entities.Note[]>([]);
 let isScrolling;
+/** 返信取得待ちの間に破棄された場合、表示用配列へ追加しない。 @internal */
+let disposed = false;
 
 // NOTE: 返信・リアクション・RT・メニューは内側の MkNote（detailedView）にそのまま実装があるため、
 // ここでは委譲するだけにする（重複実装のドリフト・未接続refによるクラッシュを避ける）
@@ -186,6 +195,7 @@ if (appearNote.replyId) {
 }
 
 async function onNoteUpdated(noteData: NoteUpdatedEvent): Promise<void> {
+	if (disposed) return;
 	const { type, id, body } = noteData;
 
 	let found = -1;
@@ -211,6 +221,7 @@ async function onNoteUpdated(noteData: NoteUpdatedEvent): Promise<void> {
 			const replyNote = await os.api("notes/show", {
 				noteId: createdId,
 			});
+			if (disposed) return;
 
 			replies.value.splice(found, 0, replyNote);
 			if (found === 0) {
@@ -228,11 +239,18 @@ async function onNoteUpdated(noteData: NoteUpdatedEvent): Promise<void> {
 	}
 }
 
-document.addEventListener("wheel", () => {
+/**
+ * スクロール操作後の自動追従を止める。
+ * @remarks 同じ関数で登録・解除し、documentが破棄済み画面を保持しないようにする。
+ * @returns なし
+ * @internal
+ */
+function onWheel(): void {
 	isScrolling = true;
-});
+}
 
 onMounted(async () => {
+	document.addEventListener("wheel", onWheel, { passive: true });
 	stream.on("noteUpdated", onNoteUpdated);
 	isScrolling = false;
 	noteEl?.scrollIntoView();
@@ -253,7 +271,9 @@ onUpdated(() => {
 	}
 });
 
-onUnmounted(() => {
+onBeforeUnmount(() => {
+	disposed = true;
+	document.removeEventListener("wheel", onWheel);
 	stream.off("noteUpdated", onNoteUpdated);
 });
 </script>

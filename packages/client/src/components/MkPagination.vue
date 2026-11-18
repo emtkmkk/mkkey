@@ -349,16 +349,19 @@ watch($$(rootEl), () => {
 	});
 });
 
-watch([$$(backed), $$(contentEl)], () => {
-	if (!backed) {
-		if (!unref(contentEl)) return;
-
-		scrollRemove = (
+// コンテナーの差し替え時は、前の監視をwatchのクリーンアップで先に解除する。
+watch([$$(backed), $$(contentEl)], (_current, _previous, onCleanup) => {
+	if (!backed && unref(contentEl)) {
+		const remove = (
 			props.pagination.reversed ? onScrollBottom : onScrollTop
 		)(unref(contentEl), executeQueue, TOLERANCE);
-	} else {
-		if (scrollRemove) scrollRemove();
-		scrollRemove = null;
+		scrollRemove = remove;
+		onCleanup(() => {
+			// onBeforeUnmountで既に解除した場合は二重に呼ばない。
+			if (scrollRemove !== remove) return;
+			remove();
+			scrollRemove = null;
+		});
 	}
 });
 
@@ -367,12 +370,11 @@ if (props.pagination.params && isRef(props.pagination.params)) {
 }
 
 watch(
-	queue,
-	(a, b) => {
-		if (a.length === 0 && b.length === 0) return;
-		emit("queue", queue.value.length, isTop() && !isPausingUpdate);
+	() => queue.value.length,
+	(count) => {
+		// 通知するのは件数と追従状態だけ。投稿内部の画像・絵文字まで追跡しない。
+		emit("queue", count, isTop() && !isPausingUpdate);
 	},
-	{ deep: true }
 );
 
 /**

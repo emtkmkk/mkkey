@@ -34,6 +34,7 @@ import {
 import type { ILocalUser, User } from "@/models/entities/user.js";
 import type { Note } from "@/models/entities/note.js";
 import { getRemoteVisibility } from "@/misc/semi-public.js";
+import { isLocalRelayReader } from "@/services/local-relay.js";
 import { renderLike } from "@/remote/activitypub/renderer/like.js";
 import { getUserKeypair } from "@/misc/keypair-store.js";
 import {
@@ -218,7 +219,7 @@ async function authorizeNoteFetch(
 		note.user ?? undefined,
 	);
 
-	if (!relation.isFollowing || relation.isBlocked) {
+	if (relation.isBlocked || (!relation.isFollowing && !(await isLocalRelayReader(note, remoteUser.user)))) {
 		serverLogger.debug(
 			"Rejecting: authenticated user is not following us or was blocked by us",
 		);
@@ -360,7 +361,7 @@ router.get("/notes/:note", async (ctx, next) => {
 	ctx.body = renderActivity(await renderNote(note, false));
 
 	const meta = await fetchMeta();
-	if (meta.secureMode || meta.privateMode) {
+	if (getRemoteFetchAccess(note) !== "anyone" || meta.secureMode || meta.privateMode) {
 		ctx.set("Cache-Control", "private, max-age=0, must-revalidate");
 	} else {
 		ctx.set("Cache-Control", "public, max-age=180");
@@ -381,7 +382,6 @@ router.get("/notes/:note/activity", async (ctx) => {
                         id: ctx.params.note,
                         userHost: IsNull(),
                         visibility: In(["public" as const, "home" as const]),
-                        localOnly: false,
                 },
                 relations: { user: true },
         });
@@ -398,9 +398,14 @@ router.get("/notes/:note/activity", async (ctx) => {
                 return;
         }
 
+	if (note.deletedAt) {
+		ctx.status = 404;
+		return;
+	}
+	if (!(await authorizeNoteFetch(ctx, note))) return;
 	ctx.body = renderActivity(await packActivity(note));
 	const meta = await fetchMeta();
-	if (meta.secureMode || meta.privateMode) {
+	if (getRemoteFetchAccess(note) !== "anyone" || meta.secureMode || meta.privateMode) {
 		ctx.set("Cache-Control", "private, max-age=0, must-revalidate");
 	} else {
 		ctx.set("Cache-Control", "public, max-age=180");
@@ -461,7 +466,7 @@ router.get("/notes/:note/references", async (ctx, next) => {
 		),
 	);
 	const meta = await fetchMeta();
-	if (meta.secureMode || meta.privateMode) {
+	if (getRemoteFetchAccess(note) !== "anyone" || meta.secureMode || meta.privateMode) {
 		ctx.set("Cache-Control", "private, max-age=0, must-revalidate");
 	} else {
 		ctx.set("Cache-Control", "public, max-age=180");

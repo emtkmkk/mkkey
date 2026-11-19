@@ -13,7 +13,7 @@
 import config from "@/config/index.js";
 import type { Note, IMentionedRemoteUsers } from "@/models/entities/note.js";
 import { apLogger } from "../logger.js";
-import { getRemoteVisibility } from "@/misc/semi-public.js";
+import { getRemoteVisibility, getLocalVisibilityHint } from "@/misc/semi-public.js";
 
 /**
  * リノートの Announce アクティビティを作る
@@ -63,5 +63,7 @@ export default (object: any, note: Note) => {
 		to,
 		cc,
 		object,
+		// ノートと同じ既存拡張を使い、純粋なリノートにもローカル範囲を引き継ぐ。
+		_mk_localVisibility: getLocalVisibilityHint(note),
 	};
 };

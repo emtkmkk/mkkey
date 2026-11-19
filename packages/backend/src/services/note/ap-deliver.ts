@@ -31,6 +31,7 @@ import type { NoteReaction } from "@/models/entities/note-reaction.js";
 import type { Note } from "@/models/entities/note.js";
 import type { NoteApDeliverJobData } from "@/queue/types.js";
 import { noteApDeliverLogger } from "@/services/note/logger.js";
+import { getLocalRelayInboxes, getLocalRelayReferenceInboxes } from "@/services/local-relay.js";
 
 export async function processNoteApDeliverJob(data: NoteApDeliverJobData) {
 	const startedAt = Date.now();
@@ -46,6 +47,15 @@ export async function processNoteApDeliverJob(data: NoteApDeliverJobData) {
 
 	const noteActivity = await renderNoteOrRenoteActivityFromNote(note);
 	if (!noteActivity) {
+		// リモート再配信禁止のローカル投稿を参照していても、同じローカル範囲の相手には届ける。
+		const reference = note.renote;
+		if (reference) {
+			const localInboxes = await getLocalRelayReferenceInboxes(note, reference);
+			if (localInboxes.size > 0) {
+				const localActivity = await renderNoteOrRenoteActivityFromNote(note, true);
+				if (localActivity) await deliverToInboxes(note.user, localActivity, localInboxes);
+			}
+		}
 		noteApDeliverLogger.debug(`[reaction-resend] skip: noteActivity is null (note=${note.id})`);
 		return;
 	}
@@ -54,6 +64,8 @@ export async function processNoteApDeliverJob(data: NoteApDeliverJobData) {
 	await addNoteActivityDeliveryRecipes(dm, note);
 
 	const noteInboxes = await dm.collectInboxes();
+	// ローカル範囲を共有する購読者を追加し、通常フォロワーとの二重配送を避ける。
+	for (const [inbox, shared] of await getLocalRelayInboxes(note)) noteInboxes.set(inbox, shared);
 	noteApDeliverLogger.debug(
 		`[reaction-resend] noteInboxes collected: ${noteInboxes.size} (note=${note.id})`,
 	);
@@ -82,8 +94,8 @@ export async function processNoteApDeliverJob(data: NoteApDeliverJobData) {
 
 	// NOTE: リレーには本当の公開投稿だけを流す。セミパブリック（visibility は home）は
 	// フォロワーのサーバーには公開として届くが、リレー経由で知らないサーバーへまで広げはしない
-	if (["public"].includes(note.visibility)) {
-		deliverToRelays(note.user, noteActivity);
+	if (note.visibility === "public" && !note.localOnly) {
+		await deliverToRelays(note.user, noteActivity, new Set(noteInboxes.keys()));
 	}
 
 	noteApDeliverLogger.debug(
@@ -91,9 +103,9 @@ export async function processNoteApDeliverJob(data: NoteApDeliverJobData) {
 	);
 }
 
-async function renderNoteOrRenoteActivityFromNote(note: Note) {
+async function renderNoteOrRenoteActivityFromNote(note: Note, localPeer = false) {
 	if (note.localOnly && note.channelId) return null;
-	if (note.renote?.userId !== note.userId && note.renote?.localOnly) return null;
+	if (!localPeer && note.renote?.userId !== note.userId && note.renote?.localOnly) return null;
 
 	const content =
 		note.renote &&

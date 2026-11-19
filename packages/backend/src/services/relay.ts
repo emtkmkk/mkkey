@@ -95,9 +95,19 @@ export async function relayRejected(id: string) {
 	return JSON.stringify(result);
 }
 
+/**
+ * 通常リレーへ署名済み Activity を配送する。
+ * @remarks NOTE: 直接配送・通常フォロワーと同じ inbox は除外して二重配送を避ける。
+ * @param user - 投稿元のローカルユーザー
+ * @param activity - 配送する Activity
+ * @param excludedInboxes - 別の配送経路で既に予約した inbox
+ * @returns キュー投入完了
+ * @internal
+ */
 export async function deliverToRelays(
 	user: { id: User["id"]; host: null },
 	activity: any,
+	excludedInboxes: ReadonlySet<string> = new Set(),
 ) {
 	if (activity == null) return;
 
@@ -106,7 +116,8 @@ export async function deliverToRelays(
 			status: "accepted",
 		}),
 	);
-	if (relays.length === 0) return;
+	const targets = relays.filter((relay) => !excludedInboxes.has(relay.inbox));
+	if (targets.length === 0) return;
 
 	// TODO
 	//const copy = structuredClone(activity);
@@ -115,7 +126,7 @@ export async function deliverToRelays(
 
 	const signed = await attachLdSignature(copy, user);
 
-	for (const relay of relays) {
+	for (const relay of targets) {
 		deliver(user, signed, relay.inbox);
 	}
 }

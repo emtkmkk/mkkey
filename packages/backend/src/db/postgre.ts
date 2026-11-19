@@ -77,6 +77,7 @@ import { AntennaNote } from "@/models/entities/antenna-note.js";
 import { PromoNote } from "@/models/entities/promo-note.js";
 import { PromoRead } from "@/models/entities/promo-read.js";
 import { Relay } from "@/models/entities/relay.js";
+import { LocalRelaySubscriber } from "@/models/entities/local-relay-subscriber.js";
 import { MutedNote } from "@/models/entities/muted-note.js";
 import { Channel } from "@/models/entities/channel.js";
 import { ChannelFollowing } from "@/models/entities/channel-following.js";
@@ -215,6 +216,7 @@ export const entities = [
 	PromoNote,
 	PromoRead,
 	Relay,
+	LocalRelaySubscriber,
 	MutedNote,
 	Channel,
 	ChannelFollowing,

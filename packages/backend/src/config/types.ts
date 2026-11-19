@@ -2,6 +2,13 @@
  * ユーザーが設定する必要のある情報
  */
 export type Source = {
+	/**
+	 * ローカル投稿リレーを購読できる相手ホスト。
+	 * @remarks NOTE: public/home の「リモートフォロワーのみ」投稿も、この相手へはローカル範囲として送る。
+	 * チャンネル限定・followers・specified・hidden は追加配送しない。既定は無効。
+	 * @internal
+	 */
+	localRelayHosts?: string[];
 	repository_url?: string;
 	feedback_url?: string;
 	url: string;

@@ -33,6 +33,19 @@ export type RemoteVisibility =
 	| "none";
 
 /**
+ * バブル相手へ引き継ぐ、元のローカル公開範囲を返す。
+ * @remarks NOTE: 通常リモート向けの宛先は変更せず、既存の _mk_localVisibility で違いだけを伝える。
+ * @param note - 配送するローカルノート
+ * @returns 元の public/home。読み替えが不要なら undefined
+ * @internal
+ */
+export function getLocalVisibilityHint(note: Pick<Note, "visibility" | "localOnly" | "semiPublic">): "public" | "home" | undefined {
+	if (note.localOnly && (note.visibility === "public" || note.visibility === "home")) return note.visibility;
+	if (note.semiPublic && note.visibility === "home") return "home";
+	return undefined;
+}
+
+/**
  * ユーザーがセミパブリックで投稿できるか
  *
  * @remarks

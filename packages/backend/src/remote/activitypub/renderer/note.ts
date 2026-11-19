@@ -33,7 +33,7 @@ import {
 	getReferenceUri,
 	type ReferenceExposureContext,
 } from "@/services/note/reference-visibility.js";
-import { getRemoteVisibility } from "@/misc/semi-public.js";
+import { getRemoteVisibility, getLocalVisibilityHint } from "@/misc/semi-public.js";
 import { applyMcShortName, resolveMcShortName } from "@/misc/mc-short-name.js";
 
 export default async function renderNote(
@@ -247,7 +247,8 @@ export default async function renderNote(
 		references: await getReferences(note),
 		...asPoll,
 		...asTalk,
-		_mk_localVisibility: remoteFollowerOnly ? note.visibility : undefined,
+		// バブル相手には元のローカル範囲を伝える。一般のリモートは既存の to/cc を使う。
+		_mk_localVisibility: getLocalVisibilityHint(note),
 	};
 }
 

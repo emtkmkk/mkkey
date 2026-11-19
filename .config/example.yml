@@ -8,6 +8,12 @@
 # Final accessible URL seen by a user.
 url: https://example.tld/
 
+# ローカル範囲を共有する相手への直接リレー（既定は無効）。
+# 双方に導入後、cp のリレー設定へ https://mkkey.net/inbox を登録すると購読を受け付ける。
+# public/home は「リモートフォロワーのみ」がオンでも、この相手には配送する。
+# followers・specified・hidden・ローカル限定チャンネルは追加配送しない。
+#localRelayHosts: ['cp.mkkey.net']
+
 # ONCE YOU HAVE STARTED THE INSTANCE, DO NOT CHANGE THE
 # URL SETTINGS AFTER THAT!
 

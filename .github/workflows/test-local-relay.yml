@@ -1,0 +1,31 @@
+name: Local relay regression tests
+
+on:
+  pull_request:
+    paths:
+      - packages/backend/**
+      - scripts/tests/local-relay.test.cjs
+      - .github/workflows/test-local-relay.yml
+  push:
+    branches: [develop]
+    paths:
+      - packages/backend/**
+      - scripts/tests/local-relay.test.cjs
+      - .github/workflows/test-local-relay.yml
+
+permissions:
+  contents: read
+
+jobs:
+  local-relay:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      # Tests execute the real source with DB/network replaced, and need only the existing compiler.
+      - run: npm install --prefix "$RUNNER_TEMP/local-relay-deps" --no-audit --no-fund --ignore-scripts typescript@4.9.4
+      - run: node --test scripts/tests/local-relay.test.cjs
+        env:
+          NODE_PATH: ${{ runner.temp }}/local-relay-deps/node_modules

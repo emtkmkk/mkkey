@@ -57,6 +57,7 @@ import { PromoRead } from "./entities/promo-read.js";
 import { EmojiRepository } from "./repositories/emoji.js";
 import { EmojiCustomCategoryRepository } from "./repositories/emoji-custom-category.js";
 import { RelayRepository } from "./repositories/relay.js";
+import { LocalRelaySubscriber } from "./entities/local-relay-subscriber.js";
 import { ChannelRepository } from "./repositories/channel.js";
 import { MutedNote } from "./entities/muted-note.js";
 import { ChannelFollowing } from "./entities/channel-following.js";
@@ -150,6 +151,8 @@ export const AntennaNotes = db.getRepository(AntennaNote);
 export const PromoNotes = db.getRepository(PromoNote);
 export const PromoReads = db.getRepository(PromoRead);
 export const Relays = RelayRepository;
+/** @internal 署名検証済みのローカルリレー購読。 */
+export const LocalRelaySubscribers = db.getRepository(LocalRelaySubscriber);
 export const MutedNotes = db.getRepository(MutedNote);
 export const Channels = ChannelRepository;
 export const ChannelFollowings = db.getRepository(ChannelFollowing);

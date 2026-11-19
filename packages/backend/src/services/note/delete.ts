@@ -26,14 +26,12 @@ import {
 	perUserNotesChart,
 	instanceChart,
 } from "@/services/chart/index.js";
-import {
-	deliverToFollowers,
-	deliverToUser,
-} from "@/remote/activitypub/deliver-manager.js";
 import { countSameRenotes } from "@/misc/count-same-renotes.js";
 import { registerOrFetchInstanceDoc } from "../register-or-fetch-instance-doc.js";
 import { deliverToRelays } from "../relay.js";
 import { noteLogger } from "./logger.js";
+import { getLocalRelayInboxes } from "@/services/local-relay.js";
+import DeliverManager, { deliverToInboxes } from "@/remote/activitypub/deliver-manager.js";
 
 /**
  * 投稿を削除します。
@@ -114,8 +112,8 @@ export default async function (
 		if (isPhysical) {
 			// カスケードされたノートにも delete アクティビティを配信
 			const cascadingNotes = (await findCascadingNotes(note)).filter(
-				(note) => !note.localOnly,
-			); // filter out local-only notes
+				(note) => !(note.localOnly && note.channelId),
+			); // リモートフォロワー／ローカルリレーへ送った投稿も削除する。
 			for (const cascadingNote of cascadingNotes) {
 				noteLogger.debug(
 					`cascadeDeleteNote(${cascadingNotes.length}) : ${cascadingNote.id}`,
@@ -128,7 +126,7 @@ export default async function (
 						cascadingNote.user,
 					),
 				);
-				deliverToConcerned(cascadingNote.user, cascadingNote, content);
+				await deliverToConcerned(cascadingNote.user, cascadingNote, content);
 				// カスケード対象ノートの投稿者本人のノート数を減算する
 				if (cascadingNote.visibility !== "specified") {
 					decNotesCountOfUser(cascadingNote.user);
@@ -233,7 +231,7 @@ async function deleteActivity(
 				: renderDelete(renderTombstone(`${config.url}/notes/${note.id}`), user),
 		);
 
-		deliverToConcerned(user, note, content);
+		await deliverToConcerned(user, note, content);
 	}
 }
 
@@ -296,12 +294,16 @@ async function deliverToConcerned(
 	note: Note,
 	content: any,
 ) {
-	deliverToFollowers(user, content);
-	deliverToRelays(user, content);
+	const dm = new DeliverManager(user, content);
+	dm.addFollowersRecipe();
 	const remoteUsers = await getMentionedRemoteUsers(note);
 	for (const remoteUser of remoteUsers) {
-		deliverToUser(user, content, remoteUser);
+		dm.addDirectRecipe(remoteUser);
 	}
+	const inboxes = await dm.collectInboxes();
+	for (const [inbox, shared] of await getLocalRelayInboxes(note)) inboxes.set(inbox, shared);
+	await deliverToInboxes(user, content, inboxes);
+	await deliverToRelays(user, content, new Set(inboxes.keys()));
 }
 
 function decNotesCountOfUser(user: { id: User["id"]; host: User["host"] }) {

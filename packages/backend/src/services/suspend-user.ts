@@ -18,6 +18,7 @@ import { Users, Followings } from "@/models/index.js";
 import { Not, IsNull } from "typeorm";
 import { publishInternalEvent } from "@/services/stream.js";
 import { apLogger } from "@/remote/activitypub/logger.js";
+import { getLocalRelayInboxes } from "./local-relay.js";
 
 export async function doPostSuspend(user: {
 	id: User["id"];
@@ -56,6 +57,10 @@ export async function doPostSuspend(user: {
 
 		for (const inbox of queue) {
 			deliver(user, content, inbox, true);
+		}
+		// 通常フォローのないリレー相手にも、削除・凍結を確実に知らせる。
+		for (const [inbox, shared] of await getLocalRelayInboxes({ userHost: null, visibility: "public", localOnly: false, channelId: null })) {
+			if (!queue.includes(inbox)) await deliver(user, content, inbox, shared);
 		}
 	}
 }

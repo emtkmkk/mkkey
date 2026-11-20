@@ -129,6 +129,12 @@ export const MFM_TAGS_JP = [
 		exportLeft: "$[unique ",
 		exportRight: "]",
 	},
+	{
+		name: "zip",
+		ja: "圧縮",
+		exportLeft: "$[zip ",
+		exportRight: "]",
+	},
         {
                 name: "morse",
                 ja: "モールス",

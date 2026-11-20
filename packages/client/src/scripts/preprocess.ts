@@ -2,6 +2,7 @@ import * as mfm from "mfm-js";
 import { defaultStore, noteActions } from "@/store";
 import { expandKaTeXMacro } from "@/scripts/katex-macro";
 import { str_to_mr } from "@/scripts/convert-mr";
+import { zipText } from "@/scripts/mfm-zip";
 
 export function preprocess(text: string): string {
 	const parsedKaTeXMacro =
@@ -130,6 +131,12 @@ export function preprocess(text: string): string {
 
                                 node.type = "text";
                                 node.props.text = uniqueText(mfm.toString(node.children), soft);
+                                node.children = undefined;
+                        }
+                        // 繰り返しを記号に置き換え、対応表を先頭に付ける（詳細は mfm-zip.ts）
+                        if (node.type === "fn" && node.props.name === "zip") {
+                                node.type = "text";
+                                node.props.text = zipText(mfm.toString(node.children));
                                 node.children = undefined;
                         }
                         if (

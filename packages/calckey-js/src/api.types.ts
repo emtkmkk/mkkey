@@ -1068,6 +1068,9 @@ export type Endpoints = {
 	// server-info
 	"server-info": { req: NoParams; res: ServerInfo };
 
+	// db-server-info（設定が無い・取得できていないときは null）
+	"db-server-info": { req: NoParams; res: Omit<ServerInfo, "machine"> | null };
+
 	// ck specific
 	"latest-version": { req: NoParams; res: TODO };
 

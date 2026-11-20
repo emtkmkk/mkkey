@@ -126,6 +126,32 @@ export type Source = {
 		dbPollIntervalMs?: number;
 	};
 
+	/**
+	 * DB サーバのメトリクスを取得する設定。
+	 *
+	 * @remarks
+	 * - DB サーバで動いている Prometheus の node_exporter から、master プロセスが定期的に値を読む。
+	 *   読んだ値は「DB サーバーメトリクス」ウィジェットに表示する。
+	 *   {@link ../daemons/db-server-stats.ts} を参照。
+	 * - 未設定なら何もしない（デーモンを起動しない）。
+	 * - `url` はプライベート IP を想定しているので、SSRF 対策のある共通 fetch は通さずに直接取りに行く。
+	 *   そのため、ユーザーの入力から組み立てた値をここに入れてはいけない。
+	 */
+	dbServerMetrics?: {
+		/** node_exporter の URL（例: `http://192.168.0.10:9100/metrics`） */
+		url: string;
+		/** 取得間隔（ミリ秒）。@defaultValue 5000（2000 未満は 2000 にする） */
+		interval?: number;
+		/** CPU の型番。node_exporter では取れないので、表示したい場合に書く */
+		cpuModel?: string;
+		/** 見る NIC。省略すると通信量が最も多いものを自動で選ぶ */
+		networkDevice?: string;
+		/** 見るディスク。省略すると読み書きが最も多いものを自動で選ぶ */
+		diskDevice?: string;
+		/** 容量を見るマウント先。@defaultValue `"/"` */
+		mountpoint?: string;
+	};
+
 	syslog: {
 		host: string;
 		port: number;

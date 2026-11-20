@@ -2198,6 +2198,11 @@ _widgets:
   onlineUsersDetails: "オンラインユーザー（詳細）"
   jobQueue: "ジョブキュー"
   serverMetric: "サーバーメトリクス"
+  dbServerMetric: "DBサーバーメトリクス"
+  _dbServerMetric:
+    unavailable: "DBサーバーの情報を取得できません（未設定、または接続できません）"
+    swap: "swap"
+    load: "負荷平均"
   healthScore: "ヘルススコア"
   _healthScore:
     apiErrors: "API内部エラー率"

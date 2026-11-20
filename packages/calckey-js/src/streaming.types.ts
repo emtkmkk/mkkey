@@ -145,6 +145,19 @@ export type Channels = {
 			};
 		};
 	};
+	/** DB サーバの統計。形は serverStats と同じで、swap と load が増えている */
+	dbServerStats: {
+		params: null;
+		events: {
+			stats: (payload: FIXME) => void;
+		};
+		receives: {
+			requestLog: {
+				id: string | number;
+				length: number;
+			};
+		};
+	};
 };
 
 export type NoteUpdatedEvent =

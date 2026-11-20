@@ -2153,6 +2153,11 @@ _widgets:
   onlineUsers: "Online users"
   jobQueue: "Job Queue"
   serverMetric: "Server metrics"
+  dbServerMetric: "Database server metrics"
+  _dbServerMetric:
+    unavailable: "Database server metrics are unavailable (not configured or unreachable)"
+    swap: "Swap"
+    load: "Load average"
   healthScore: "Health score"
   _healthScore:
     apiErrors: "API server error rate"

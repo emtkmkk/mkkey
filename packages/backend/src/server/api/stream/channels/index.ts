@@ -21,6 +21,7 @@ import spotlightTimeline from "./spotlight-timeline.js";
 import serverStats from "./server-stats.js";
 import queueStats from "./queue-stats.js";
 import healthStats from "./health-stats.js";
+import dbServerStats from "./db-server-stats.js";
 import userList from "./user-list.js";
 import antenna from "./antenna.js";
 import messaging from "./messaging.js";
@@ -41,6 +42,7 @@ export default {
 	serverStats,
 	queueStats,
 	healthStats,
+	dbServerStats,
 	userList,
 	antenna,
 	messaging,

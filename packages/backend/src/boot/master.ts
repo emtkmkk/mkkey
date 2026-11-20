@@ -113,6 +113,12 @@ export async function masterMain() {
 			}),
 		);
 		import("../daemons/janitor.js").then((x) => x.default());
+		// DB を別マシンで動かしていて、node_exporter の設定があるときだけ DB サーバの状態を集める
+		if (config.dbServerMetrics?.url) {
+			import("../daemons/db-server-stats.js").then((x) =>
+				x.default(config.dbServerMetrics),
+			);
+		}
 	}
 }
 

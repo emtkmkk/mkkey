@@ -66,6 +66,10 @@ export default function (app: App) {
 		defineAsyncComponent(() => import("./server-metric/index.vue")),
 	);
 	app.component(
+		"MkwDbServerMetric",
+		defineAsyncComponent(() => import("./db-server-metric.vue")),
+	);
+	app.component(
 		"MkwOnlineUsers",
 		defineAsyncComponent(() => import("./online-users.vue")),
 	);
@@ -137,6 +141,7 @@ export const widgets = [
 	"postForm",
 	"slideshow",
 	"serverMetric",
+	"dbServerMetric",
 	"healthScore",
 	"onlineUsers",
 	"onlineUsersDetails",

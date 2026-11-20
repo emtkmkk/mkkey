@@ -1093,6 +1093,11 @@ const ENDPOINT_DESCRIPTIONS_JA: Record<
 		summary: "パスワードをリセット",
 		description: "トークンを使ってパスワードをリセットします。",
 	},
+	"db-server-info": {
+		summary: "DB サーバー情報を取得",
+		description:
+			"DB サーバーの CPU・メモリ・ディスクの情報を取得します。DB サーバーのメトリクスが設定されていない場合は null を返します。",
+	},
 	"server-info": {
 		summary: "サーバー情報を取得",
 		description: "サーバーのバージョン・稼働情報を取得します。",

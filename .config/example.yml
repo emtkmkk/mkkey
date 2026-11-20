@@ -232,6 +232,18 @@ reservedUsernames: [
 #  relayHosts: ['bsky.network']
 #  publicAccess: false             # true にすると誰でも Bluesky ユーザーを取り込める（false の間は管理者用 API だけ）
 
+# DB サーバのメトリクス（既定: 無効）
+# DB を別のマシンで動かしている場合に、そのマシンの CPU・メモリ・swap・ネットワーク・ディスクを
+# 「DB サーバーメトリクス」ウィジェットに表示する。DB サーバに Prometheus の node_exporter が必要。
+# NB: node_exporter は内部ネットワークだけで待ち受けさせ、ファイアウォールでこのサーバからの接続だけを許可すること。
+#dbServerMetrics:
+#  url: http://192.168.0.10:9100/metrics
+#  interval: 5000          # 取得間隔（ミリ秒、既定 5000、最小 2000）
+#  cpuModel: ''            # CPU の型番（node_exporter では取れないので、表示したければ書く）
+#  networkDevice: eth0     # 見る NIC（省略すると通信量が最も多いものを自動で選ぶ）
+#  diskDevice: vda         # 見るディスク（省略すると読み書きが最も多いものを自動で選ぶ）
+#  mountpoint: /           # 容量を見るマウント先（既定 /）
+
 # Managed hosting settings
 # !!!!!!!!!!
 # >>>>>> NORMAL SELF-HOSTERS, STAY AWAY! <<<<<<

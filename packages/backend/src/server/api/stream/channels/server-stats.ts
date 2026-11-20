@@ -4,7 +4,9 @@
  * サーバ統計ストリーム。サーバ全体の統計情報をリアルタイム配送。
  *
  * @remarks
- * - **ストリーム チャンネル名**: `serverStats`。認証不要。
+ * - **ストリーム チャンネル名**: `serverStats`。ログイン必須。
+ * - CHANGED: 2026-11 から未ログインでは購読できない（以前は誰でも購読できた）。
+ *   未ログインの購読要求は、{@link stream/index} の `connectChannel` で何も返さずに無視される。
  * - serverStats イベントを購読し、サーバ統計を配送する。
  *
  * @see {@link stream/channel} チャンネル基底
@@ -18,7 +20,13 @@ const ev = new Xev();
 export default class extends Channel {
 	public readonly chName = "serverStats";
 	public static shouldShare = true;
-	public static requireCredential = false;
+	/**
+	 * ログイン必須。
+	 *
+	 * @remarks
+	 * サーバーの負荷状況は外部に見せる必要がないため、未ログインでは購読させない。
+	 */
+	public static requireCredential = true;
 
 	constructor(id: string, connection: Channel["connection"]) {
 		super(id, connection);

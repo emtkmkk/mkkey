@@ -4,7 +4,9 @@
  * ヘルス統計ストリーム。ヘルスチェック・稼働状況をリアルタイム配送。
  *
  * @remarks
- * - **ストリーム チャンネル名**: `healthStats`。認証不要。
+ * - **ストリーム チャンネル名**: `healthStats`。ログイン必須。
+ * - CHANGED: 2026-11 から未ログインでは購読できない（以前は誰でも購読できた）。
+ *   未ログインの購読要求は、{@link stream/index} の `connectChannel` で何も返さずに無視される。
  * - healthStats イベントを購読し、ヘルス統計を配送する。
  *
  * @see {@link stream/channel} チャンネル基底
@@ -18,7 +20,13 @@ const ev = new Xev();
 export default class extends Channel {
 	public readonly chName = "healthStats";
 	public static shouldShare = true;
-	public static requireCredential = false;
+	/**
+	 * ログイン必須。
+	 *
+	 * @remarks
+	 * サーバーの負荷状況は外部に見せる必要がないため、未ログインでは購読させない。
+	 */
+	public static requireCredential = true;
 
 	constructor(id: string, connection: Channel["connection"]) {
 		super(id, connection);

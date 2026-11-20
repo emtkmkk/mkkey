@@ -47,7 +47,7 @@ import * as mfm from "mfm-js";
  *
  * @internal
  */
-const MAX_REPLACEMENTS = 7;
+const MAX_REPLACEMENTS = 20;
 
 /**
  * 変換する文字数の上限（見た目の文字数）。
@@ -168,7 +168,7 @@ interface RepeatPick {
  *
  * 1 回ごとに「重ならずに 2 回以上出てくる、いちばん長い部分」の長さを求め、その長さの候補の中から
  * 回数が多いもの → 先に出てくるもの を選ぶ。
- * OPTIMIZE: 毎回 O(n²) で探し直している。3000 文字 × 7 回なら問題ない速さだが、上限を上げるなら接尾辞配列などを検討する。
+ * OPTIMIZE: 毎回 O(n²) で探し直している。3000 文字 × 20 回なら問題ない速さだが、上限を上げるなら接尾辞配列などを検討する。
  *
  * @param segments - text ノードごとの、見た目の 1 文字ずつの配列
  * @param limit - 選ぶ最大の個数

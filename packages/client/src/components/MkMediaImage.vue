@@ -135,10 +135,23 @@ async function show() {
         }
 }
 
+/**
+ * サムネイルのリンクを押したときの既定動作を決める。
+ *
+ * @remarks
+ * 拡大表示（親の MkMediaList）を使うときはリンク移動を止める。
+ * ただし修飾キー付き・中ボタンのクリックは、新しいタブで開くなどのブラウザ動作に任せる
+ * （拡大表示側もこれらは扱わないため、止めると何も起きなくなる）。
+ *
+ * @param ev - クリックイベント
+ * @internal
+ */
 function onAnchorClick(ev: MouseEvent) {
-        if (!defaultStore.state.imageNewTab) {
-                ev.preventDefault();
-        }
+	if (defaultStore.state.imageNewTab) return;
+	if (ev.button !== 0 || ev.ctrlKey || ev.metaKey || ev.altKey || ev.shiftKey) {
+		return;
+	}
+	ev.preventDefault();
 }
 
 // Plugin:register_note_view_interruptor を使って書き換えられる可能性があるためwatchする

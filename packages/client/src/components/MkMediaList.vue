@@ -15,7 +15,7 @@
 			<div
 				ref="gallery"
 				:data-count="gridSlots.length"
-				@click.stop
+				@click.stop="onGalleryClick"
 			>
 				<template v-for="slot in gridSlots" :key="slotKey(slot)">
 					<!-- 欠落添付: ドライブ削除後などで実体が無いスロット -->
@@ -52,7 +52,9 @@
  *
  * @remarks
  * `fileIds` を渡すと、`mediaList` に無い ID は「削除されたファイル」プレースホルダになる。
- * 画像拡大は PhotoSwipe（`imageNewTab` が無効のとき）。初期化失敗や itemData 解決失敗は
+ * 画像拡大は PhotoSwipe（`imageNewTab` が無効のとき）。クリックは PhotoSwipe 標準ではなく
+ * {@link onGalleryClick} で受ける（ブラウザのオフライン誤判定中に開かなくなるのを防ぐため）。
+ * 初期化失敗や itemData 解決失敗は
  * {@link appendErrorLog} に残す（Vue errorHandler 外のため）。
  * 拡大画像が外部メディアプロキシ経由で失敗したときは、別の URL で読み直す
  * （{@link getMediaFallbackUrls}）。
@@ -224,7 +226,8 @@ function initLightbox(): void {
 					alt: media.comment,
 				};
 			}),
-			gallery: gallery.value,
+			// NOTE: `gallery` は渡さない。渡すと PhotoSwipe がクリックを自分で受け、
+			// オフライン判定のときに何もしなくなる。クリックは {@link onGalleryClick} で受けて開く。
 			children: ".image",
 			thumbSelector: ".image",
 			loop: false,
@@ -381,6 +384,38 @@ async function refreshLightbox(): Promise<void> {
 	if (defaultStore.state.imageNewTab) return;
 	await nextTick();
 	initLightbox();
+}
+
+/**
+ * サムネイルのクリックで拡大表示を開く。
+ *
+ * @remarks
+ * PhotoSwipe 標準のクリック処理（`gallery` オプション）は使わず、ここで開く。
+ * 標準の処理は `navigator.onLine === false` のとき、ブラウザのリンク動作に任せて何もしない。
+ * 一方 {@link XImage} は拡大表示に任せるためリンク動作を止めているので、
+ * 「ブラウザがオフラインと誤判定している間（再読み込みしても続き、時間が経つと戻る）は、
+ * 押しても何も起きない」状態になっていた。実際には通信できていることが多いので、判定に関係なく開く。
+ *
+ * - 修飾キー付き・中ボタンのクリックは、新しいタブで開くなどのブラウザ動作に任せる。
+ * - lightbox が無い（`imageNewTab` 有効、初期化失敗）ときは何もしない（リンク動作に任せる）。
+ *
+ * @param ev - gallery 要素で受けたクリック
+ * @internal
+ */
+function onGalleryClick(ev: MouseEvent): void {
+	if (!lightbox) return;
+	if (ev.button !== 0 || ev.ctrlKey || ev.metaKey || ev.altKey || ev.shiftKey) {
+		return;
+	}
+	const container = ev.currentTarget as HTMLElement;
+	// `children` オプション（.image）の中で何番目が押されたか。画像以外なら -1
+	const index = lightbox.getClickedIndex(ev);
+	if (index < 0) return;
+	ev.preventDefault();
+	// clientX/Y が両方 0 ならキーボード操作とみなし、開始位置を渡さない（PhotoSwipe 標準と同じ）
+	const initialPoint =
+		ev.clientX || ev.clientY ? { x: ev.clientX, y: ev.clientY } : undefined;
+	lightbox.loadAndOpen(index, { gallery: container }, initialPoint);
 }
 
 //#endregion

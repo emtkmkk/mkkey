@@ -39,13 +39,32 @@ import { IdentifiableError } from "@/misc/identifiable-error.js";
 
 const logger = new Logger("inbox");
 
+/**
+ * 再送しても結果が変わらないので、再送せずに終わらせる IdentifiableError の ID。
+ *
+ * @remarks
+ * 追加するときは「時間がたっても状態が変わらない」ことを確かめる。
+ * 例: 相手からのリアクション取り消しで、こちらにそのリアクションが無い場合は、何度試しても無いまま。
+ *
+ * @internal
+ */
 const nonRetryableIdentifiableErrorIds = new Set([
 	"639cc3a5-fe68-b071-0c20-413c887054cd", // deleted note reaction
 	"119b8757-2ba5-385e-82cf-7fa4bc73c4d1", // muted reaction rejected
 	"8884c2dd-5795-4ac9-b27e-6a01d38190f9", // duplicated Accept without follow request
+	// 見られない投稿（公開範囲の外）へのリアクション。本番で 3 日に 96 件、毎回 8 回まで再送されていた
+	"68e9d2d1-48bf-42c2-b90a-b20e09fd3d48", // Note not accessible for you.
+	// 存在しないリアクションの取り消し。本番で 3 日に 19 件
+	"60527ec9-b4cb-4a88-a6bd-32d3ad26817d", // not reacted
 ]);
 
-
+/**
+ * inbox の処理で投げられた例外が、再送せずに終わらせてよいものかを判定する。
+ *
+ * @param error - Activity の処理で投げられた例外
+ * @returns 再送しても結果が変わらないなら true
+ * @internal
+ */
 function isNonRetryableInboxError(error: unknown): boolean {
 	if (error instanceof StatusError) return !error.isRetryable;
 

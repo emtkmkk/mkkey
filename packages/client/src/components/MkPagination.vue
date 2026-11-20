@@ -355,6 +355,9 @@ watch([$$(backed), $$(contentEl)], (_current, _previous, onCleanup) => {
 		const remove = (
 			props.pagination.reversed ? onScrollBottom : onScrollTop
 		)(unref(contentEl), executeQueue, TOLERANCE);
+		// 要素がまだ文書に入っていないときは監視を付けず、解除関数も返らない。
+		// そのまま onCleanup で呼ぶと「is not a function」になるので、何もしない。
+		if (!remove) return;
 		scrollRemove = remove;
 		onCleanup(() => {
 			// onBeforeUnmountで既に解除した場合は二重に呼ばない。

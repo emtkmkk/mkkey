@@ -25,8 +25,25 @@ import { UserGroupInvitation } from "./user-group-invitation.js";
 import { AccessToken } from "./access-token.js";
 import { notificationTypes } from "@/types.js";
 
+/**
+ * 通知。
+ *
+ * @remarks
+ * 未読の通知を探す処理（未読の有無・既読化・未読一覧）のため、未読だけを対象にした部分インデックス
+ * `IDX_notification_unread_notifiee`（notifieeId, id）を持つ。未読は全体の数 % しかないので小さく済む。
+ * これが無いと、主キーを新しい順にたどりながら条件に合う行を探し、未読が無いユーザーでは
+ * テーブル全体を読み切っていた（本番で 1 回 1〜2 秒）。
+ *
+ * NB: 以前ここにあった `@Index(["notifieeId", "isRead"])` はマイグレーションが無く、本番には存在しなかった。
+ * 部分インデックスで置き換えている。
+ *
+ * @see migration/1791504000000-notification-unread-index.js
+ * @internal
+ */
 @Entity()
-@Index(["notifieeId", "isRead"])
+@Index("IDX_notification_unread_notifiee", ["notifieeId", "id"], {
+	where: `"isRead" = false`,
+})
 export class Notification {
 	@PrimaryColumn(id())
 	public id: string;

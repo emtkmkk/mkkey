@@ -6,12 +6,18 @@
  * @remarks
  * - **役割**: deliver / inbox キューで遅延中のジョブを、障害の発生元が相手先かローカルか分かるように分類する。
  * - NOTE: ここで remote に分類する証明書エラー（期限切れ・SAN 不一致など）は、相手サーバーの TLS 設定不備として扱う。
+ * - 自分の DB・Redis への接続失敗は、エラーコード（`EHOSTUNREACH` など）が相手先の障害と同じでも local にする。
+ *   2026-11-18 に DB への経路が 20 分切れたとき、inbox の失敗 2,170 件が remote と表示されていた。
+ * - NOTE: 画面に出る数字は、master プロセスの {@link syncDelayedRetryStateFromJobs}（失敗メッセージからの分類）で決まる。
+ *   {@link markDelayedRetry} はジョブを処理した queue ワーカーの中で動くが、その集計は別プロセスなので画面には届かない。
+ *   TODO: queue ワーカー側の集計を master に送るか、markDelayedRetry を廃止して同期だけにする。
  *
  * @see {@link markDelayedRetry} ジョブ失敗時の分類登録
  * @see {@link syncDelayedRetryStateFromJobs} 起動後や定期同期時の分類復元
  * @internal
  */
 import type Bull from "bull";
+import config from "@/config/index.js";
 import { StatusError } from "@/misc/fetch.js";
 
 type QueueDomain = "deliver" | "inbox";
@@ -52,10 +58,32 @@ const stats: DelayedRetryReasonStats = {
 	},
 };
 
+/**
+ * 自分のサーバ（DB・Redis）の接続先。エラーメッセージにこれが含まれていれば local にする。
+ *
+ * @remarks
+ * Node のエラーメッセージは `connect EHOSTUNREACH 192.168.0.197:6432` の形なので、`host:port` で照合する。
+ *
+ * @internal
+ */
+const localEndpoints = [
+	`${config.db.host}:${config.db.port}`,
+	`${config.redis.host}:${config.redis.port}`,
+];
+
+/**
+ * 自分のサーバ側の問題として扱うエラー名。
+ *
+ * @internal
+ */
+const localErrorNames = new Set(["QueryFailedError"]);
+
 const remoteErrorCodes = new Set([
 	"ECONNREFUSED",
 	"ECONNRESET",
 	"ENOTFOUND",
+	"ESERVFAIL",
+	"ENODATA",
 	"EAI_AGAIN",
 	"ETIMEDOUT",
 	"EHOSTUNREACH",
@@ -63,7 +91,16 @@ const remoteErrorCodes = new Set([
 	"ESOCKETTIMEDOUT",
 ]);
 
-const remoteErrorNames = new Set(["TimeoutError"]);
+/**
+ * 相手先の問題として扱うエラー名。
+ *
+ * @remarks
+ * `HostCircuitOpenError` は、相手先が不調なためにサーキットブレーカーで送らずに返したもの
+ * （{@link ../services/instance-health/index.ts}）。
+ *
+ * @internal
+ */
+const remoteErrorNames = new Set(["TimeoutError", "HostCircuitOpenError"]);
 
 /**
  * 相手先サーバーまたは経路の問題として扱うエラーメッセージ片。
@@ -75,6 +112,9 @@ const remoteErrorNames = new Set(["TimeoutError"]);
  */
 const remoteErrorMessagePatterns = [
 	"Promise timed out",
+	// HostCircuitOpenError のメッセージ（再起動後に failedReason から分類するとき用）
+	"circuit open for",
+	"circuit rateLimited for",
 	"maximum redirect reached",
 	"Bad Gateway",
 	"Gateway Time-out",
@@ -94,13 +134,47 @@ const localErrorMessagePatterns = [
 
 const remoteHttpStatusPattern = /\b5\d\d\b/;
 
+/**
+ * メッセージが自分の DB・Redis への接続失敗を示しているか。
+ *
+ * @param message - エラーメッセージ
+ * @returns 自分の DB・Redis の接続先を含んでいれば true
+ * @internal
+ */
+function mentionsLocalEndpoint(message: string): boolean {
+	return localEndpoints.some((endpoint) => message.includes(endpoint));
+}
+
+/**
+ * 例外オブジェクトから遅延リトライ理由を分類する。
+ *
+ * @param error - ジョブで投げられた例外
+ * @returns 分類
+ * @internal
+ */
 function classifyDelayedRetryReason(error: unknown): DelayedRetryReason {
 	if (error instanceof StatusError) {
 		return error.isRetryable ? "remote" : "local";
 	}
 
 	if (typeof error === "object" && error != null) {
-		const anyError = error as { code?: unknown; name?: unknown };
+		const anyError = error as { code?: unknown; name?: unknown; message?: unknown };
+
+		// 自分の DB・Redis への接続失敗は、コードが相手先と同じでも local
+		if (
+			typeof anyError.message === "string" &&
+			mentionsLocalEndpoint(anyError.message)
+		) {
+			return "local";
+		}
+
+		if (
+			typeof anyError.name === "string" &&
+			localErrorNames.has(anyError.name)
+		) {
+			return "local";
+		}
+
 		if (
 			typeof anyError.code === "string" &&
 			remoteErrorCodes.has(anyError.code)
@@ -132,6 +206,13 @@ function classifyDelayedRetryReasonByMessage(
 	message: string | null | undefined,
 ): DelayedRetryReason | null {
 	if (!message) return null;
+
+	// 自分の DB・Redis への接続失敗は、コードが相手先と同じでも local（先に判定する）
+	if (mentionsLocalEndpoint(message)) return "local";
+
+	for (const name of localErrorNames) {
+		if (message.includes(name)) return "local";
+	}
 
 	for (const code of remoteErrorCodes) {
 		if (message.includes(code)) return "remote";
@@ -194,12 +275,15 @@ function tryClassifyByJob(job: Bull.Job): DelayedRetryReason | null {
 	const failedReason =
 		typeof job.failedReason === "string" ? job.failedReason : null;
 	const byReason = classifyDelayedRetryReasonByMessage(failedReason);
-	if (byReason) return byReason;
+	if (byReason && byReason !== "unknown") return byReason;
 
+	// failedReason（メッセージだけ）で分からなくても、スタックの先頭にはエラー名が入っている。
+	// 例: failedReason が `server shutting down` でも、スタックは `QueryFailedError: server shutting down`
 	const stacktraceText = Array.isArray(job.stacktrace)
 		? job.stacktrace.join("\n")
 		: null;
-	return classifyDelayedRetryReasonByMessage(stacktraceText);
+	const byStack = classifyDelayedRetryReasonByMessage(stacktraceText);
+	return byStack && byStack !== "unknown" ? byStack : byReason ?? byStack;
 }
 
 export function markDelayedRetry(

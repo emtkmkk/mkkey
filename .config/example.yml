@@ -157,8 +157,10 @@ reservedUsernames: [
 # inboxJobMaxAttempts: 8
 
 # Job timeout (milliseconds)
-# deliver / noteApDeliver の 1 回あたり実行上限。未指定時は 60000（1分）
-#deliverJobTimeoutMs: 60000
+# deliver / noteApDeliver の 1 回あたり実行上限。
+# 未指定時は deliver が 30000（30秒）、noteApDeliver が 60000（1分）。指定すると両方にその値を使う
+# deliver は、この値の 5 秒前に通信を打ち切り、失敗の種類を判定する（サーキットブレーカー用）
+#deliverJobTimeoutMs: 30000
 # inbox の 1 回あたり実行上限。未指定時は 300000（5分）
 #inboxJobTimeoutMs: 300000
 

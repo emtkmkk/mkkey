@@ -22,21 +22,12 @@ import type { PushNoticePayload } from "@/misc/push-notification-types.js";
 import { clearDelayedRetry, markDelayedRetry } from "./delayed-retry-reason.js";
 import { adaptiveQueueWrap } from "./adaptive-queue-throttle.js";
 
-const DEFAULT_DELIVER_JOB_TIMEOUT_MS = 60 * 1000;
-const DEFAULT_INBOX_JOB_TIMEOUT_MS = 5 * 60 * 1000;
-const MIN_JOB_TIMEOUT_MS = 1000;
-
-/** deliver / noteApDeliver のジョブ timeout（ミリ秒）。未指定・異常値は既定に clamp。 */
-function getDeliverJobTimeoutMs(): number {
-	const ms = config.deliverJobTimeoutMs ?? DEFAULT_DELIVER_JOB_TIMEOUT_MS;
-	return ms >= MIN_JOB_TIMEOUT_MS ? ms : DEFAULT_DELIVER_JOB_TIMEOUT_MS;
-}
-
-/** inbox のジョブ timeout（ミリ秒）。未指定・異常値は既定に clamp。 */
-function getInboxJobTimeoutMs(): number {
-	const ms = config.inboxJobTimeoutMs ?? DEFAULT_INBOX_JOB_TIMEOUT_MS;
-	return ms >= MIN_JOB_TIMEOUT_MS ? ms : DEFAULT_INBOX_JOB_TIMEOUT_MS;
-}
+import {
+	getDeliverJobTimeoutMs,
+	getInboxJobTimeoutMs,
+	getNoteApDeliverJobTimeoutMs,
+} from "./job-timeouts.js";
+import { isHostCircuitOpenError, shouldBypassDeliver } from "@/services/instance-health/index.js";
 import {
 	systemQueue,
 	dbQueue,
@@ -97,6 +88,11 @@ deliverQueue
 	})
 	.on("failed", (job, err) => {
 		markDelayedRetry("deliver", job, err);
+		// サーキットブレーカーで送らずに返したものは想定内なので、warn にしない（ログが大量に出るのを防ぐ）
+		if (isHostCircuitOpenError(err)) {
+			deliverLogger.debug(`skipped(${err}) ${getJobInfo(job)} to=${job.data.to}`);
+			return;
+		}
 		deliverLogger.warn(`failed(${err}) ${getJobInfo(job)} to=${job.data.to}`);
 	})
 	.on("error", (job: any, err: Error) =>
@@ -546,7 +542,7 @@ export function createIndexAllNotesJob(data = {}) {
 export function createNoteApDeliverJob(data: NoteApDeliverJobData) {
 	return noteApDeliverQueue.add(data, {
 		attempts: config.deliverJobMaxAttempts || 12,
-		timeout: getDeliverJobTimeoutMs(),
+		timeout: getNoteApDeliverJobTimeoutMs(),
 		backoff: {
 			type: "apBackoff",
 		},
@@ -587,7 +583,7 @@ export default function () {
 
 	deliverQueue.process(
 		config.deliverJobConcurrency || 128,
-		adaptiveQueueWrap("deliver", processDeliver),
+		adaptiveQueueWrap("deliver", processDeliver, shouldBypassDeliver),
 	);
 	inboxQueue.process(
 		config.inboxJobConcurrency || 16,

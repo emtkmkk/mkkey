@@ -84,7 +84,9 @@ export async function getHtml(
 
 /**
  * 生の Response を取得する（リトライ・Cookie 対応）。
- * @param args - url, method, body, headers, timeout, size
+ * @param args - url, method, body, headers, timeout, size, totalTimeoutMs
+ *   - `totalTimeoutMs`: リクエスト全体を打ち切るまでの時間。省略時は `timeout * 6`（既定 60 秒）。
+ *     配送ジョブはジョブ自体のタイムアウトより先にここで打ち切り、例外を配送処理で受け取れるようにする。
  * @returns 成功時の node-fetch Response。429 かつ Retry-After が 0 以下の場合は Set-Cookie を適用して 1 回だけリトライする。
  * @throws StatusError レスポンスが ok でない場合
  * @internal
@@ -96,13 +98,14 @@ export async function getResponse(args: {
 	headers: Record<string, string>;
 	timeout?: number;
 	size?: number;
+	totalTimeoutMs?: number;
 }) {
 	const timeout = args.timeout || 10 * 1000;
 
 	const controller = new AbortController();
 	setTimeout(() => {
 		controller.abort();
-	}, timeout * 6);
+	}, args.totalTimeoutMs ?? timeout * 6);
 	const bearcaps = args.url.startsWith("bear:?")
 		? parseBearcaps(args.url)
 		: undefined;

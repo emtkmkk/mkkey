@@ -191,12 +191,16 @@ async function invokeProcessor<T>(
  *
  * @param queueName - 統計を取るキュー名（deliver / system 等）
  * @param processor - 元のジョブ処理関数（Promise / コールバック両対応）
+ * @param shouldBypass - true を返したジョブは、待ちを入れず、平均処理時間・エラー率にも数えない。
+ *   deliver では、サーキットブレーカーで送らずに返すジョブに使う。死んだサーバ宛ての失敗が、
+ *   健康なサーバ宛ての配送まで遅くするのを防ぐため（計画 `plans/instance-delivery-health-plan.md`）。
  * @returns Bull 登録用の Promise スタイルプロセッサ
  * @internal
  */
 export function adaptiveQueueWrap<T>(
 	queueName: string,
 	processor: AnyProcessor<T>,
+	shouldBypass?: (job: Bull.Job<T>) => boolean,
 ): PromiseProcessor<T> {
 	if (!throttleConfig.enabled) {
 		// 無効時は元関数をそのまま返す（length > 1 なら Bull が done を渡す）
@@ -204,6 +208,11 @@ export function adaptiveQueueWrap<T>(
 	}
 
 	return async (job: Bull.Job<T>) => {
+		// 素通しするジョブは、待ちも統計の更新もせずに処理だけ行う
+		if (shouldBypass?.(job)) {
+			return await invokeProcessor(processor, job);
+		}
+
 		const state = getState(queueName);
 		const queueDelay = calcQueueDelayMs(state);
 		const delayMs = Math.min(throttleConfig.maxDelayMs, queueDelay + calcDbDelayMs());

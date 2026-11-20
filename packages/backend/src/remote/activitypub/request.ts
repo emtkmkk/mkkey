@@ -17,7 +17,23 @@ import { createSignedPost, createSignedGet } from "./ap-request.js";
 import type { Response } from "node-fetch";
 import type { IObject } from "./type.js";
 
-export default async (user: { id: User["id"] }, url: string, object: any) => {
+/**
+ * 署名付きの POST で Activity を送る（配送）。
+ *
+ * @param user - 署名するローカルユーザー
+ * @param url - 送り先の inbox
+ * @param object - 送る Activity
+ * @param opts - オプション
+ * @param opts.totalTimeoutMs - リクエスト全体を打ち切るまでの時間（省略時は 60 秒）
+ * @throws StatusError 相手が 2xx 以外を返した場合
+ * @internal
+ */
+export default async (
+	user: { id: User["id"] },
+	url: string,
+	object: any,
+	opts: { totalTimeoutMs?: number } = {},
+) => {
 	const body = JSON.stringify(object);
 
 	const keypair = await getUserKeypair(user.id);
@@ -39,6 +55,7 @@ export default async (user: { id: User["id"] }, url: string, object: any) => {
 		method: req.request.method,
 		headers: req.request.headers,
 		body,
+		totalTimeoutMs: opts.totalTimeoutMs,
 	});
 };
 

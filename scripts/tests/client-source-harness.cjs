@@ -41,9 +41,12 @@ function clock() {
   let sequence = 0;
   const timeouts = new Map();
   const intervals = new Map();
-  class ClockDate extends Date { static now() { return now; } }
+  class ClockDate extends Date {
+    constructor(...args) { if (args.length) super(...args); else super(now); }
+    static now() { return now; }
+  }
   return {
-    Date: ClockDate, timeouts, intervals,
+    Date: ClockDate, performance: { now: () => now }, timeouts, intervals,
     setTimeout(fn, delay) { const id = ++sequence; timeouts.set(id, { fn, at: now + delay }); return id; },
     clearTimeout(id) { timeouts.delete(id); },
     setInterval(fn, delay) { const id = ++sequence; intervals.set(id, { fn, delay }); return id; },

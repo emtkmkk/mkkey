@@ -40,6 +40,13 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ * 入力値と前後の装飾を扱う入力欄。
+ * @remarks 装飾の余白はサイズ変更時だけ計測し、放置中の100msポーリングを行わない。
+ * @see {@link useInputDecorations}
+ * @internal
+ */
 import {
 	onMounted,
 	onUnmounted,
@@ -51,7 +58,7 @@ import {
 } from "vue";
 import { debounce } from "throttle-debounce";
 import MkButton from "@/components/MkButton.vue";
-import { useInterval } from "@/scripts/use-interval";
+import { useInputDecorations } from "@/scripts/use-input-decorations";
 import { i18n } from "@/i18n";
 import { Autocomplete } from "@/scripts/autocomplete.js";
 
@@ -144,27 +151,7 @@ watch(v, (newValue) => {
 	invalid.value = inputEl.value.validity.badInput;
 });
 
-// このコンポーネントが作成された時、非表示状態である場合がある
-// 非表示状態だと要素の幅などは0になってしまうので、定期的に計算する
-useInterval(
-	() => {
-		if (prefixEl.value) {
-			if (prefixEl.value.offsetWidth) {
-				inputEl.value.style.paddingLeft = `${prefixEl.value.offsetWidth}px`;
-			}
-		}
-		if (suffixEl.value) {
-			if (suffixEl.value.offsetWidth) {
-				inputEl.value.style.paddingRight = `${suffixEl.value.offsetWidth}px`;
-			}
-		}
-	},
-	100,
-	{
-		immediate: true,
-		afterMounted: true,
-	}
-);
+useInputDecorations(inputEl, prefixEl, suffixEl);
 
 onMounted(() => {
 	nextTick(() => {

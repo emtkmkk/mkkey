@@ -30,7 +30,7 @@
 		"mocha": "pnpm --filter backend run mocha",
 		"test": "pnpm run mocha",
 		"test:local-relay": "node --test scripts/tests/local-relay.test.cjs",
-		"test:client-idle": "node --test scripts/tests/client-idle-performance.test.cjs scripts/tests/client-idle-cleanup.test.cjs",
+		"test:client-idle": "node --test scripts/tests/client-idle-performance.test.cjs scripts/tests/client-idle-cleanup.test.cjs scripts/tests/client-idle-timers.test.cjs",
 		"format": "pnpm rome format packages/**/* --write && pnpm --filter client run format",
 		"clean": "pnpm node ./scripts/clean.js",
 		"clean-all": "pnpm node ./scripts/clean-all.js",

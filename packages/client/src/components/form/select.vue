@@ -37,6 +37,13 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ * 選択値と前後の装飾を扱う選択欄。
+ * @remarks 装飾幅はResizeObserverで更新し、非表示からの復帰も定期測定なしで扱う。
+ * @see {@link useInputDecorations}
+ * @internal
+ */
 import {
 	onMounted,
 	onUnmounted,
@@ -50,7 +57,7 @@ import {
 } from "vue";
 import MkButton from "@/components/MkButton.vue";
 import * as os from "@/os";
-import { useInterval } from "@/scripts/use-interval";
+import { useInputDecorations } from "@/scripts/use-input-decorations";
 import { i18n } from "@/i18n";
 
 const props = defineProps<{
@@ -108,27 +115,7 @@ watch(v, (newValue) => {
 	invalid.value = inputEl.value.validity.badInput;
 });
 
-// このコンポーネントが作成された時、非表示状態である場合がある
-// 非表示状態だと要素の幅などは0になってしまうので、定期的に計算する
-useInterval(
-	() => {
-		if (prefixEl.value) {
-			if (prefixEl.value.offsetWidth) {
-				inputEl.value.style.paddingLeft = `${prefixEl.value.offsetWidth}px`;
-			}
-		}
-		if (suffixEl.value) {
-			if (suffixEl.value.offsetWidth) {
-				inputEl.value.style.paddingRight = `${suffixEl.value.offsetWidth}px`;
-			}
-		}
-	},
-	100,
-	{
-		immediate: true,
-		afterMounted: true,
-	}
-);
+useInputDecorations(inputEl, prefixEl, suffixEl);
 
 onMounted(() => {
 	nextTick(() => {

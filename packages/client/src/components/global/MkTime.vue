@@ -36,8 +36,16 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, onUnmounted } from "vue";
+/**
+ * @packageDocumentation
+ * 相対時刻・絶対時刻・カウントダウンを表示する。
+ * @remarks 更新間隔は表示ごとに保ち、予約は共有する。非表示やキャッシュ退避中は定期更新しない。
+ * @see {@link registerTimeTick}
+ * @internal
+ */
+import { onMounted, onUnmounted, onActivated, onDeactivated } from "vue";
 import { i18n } from "@/i18n";
+import { registerTimeTick } from "@/scripts/shared-time-ticker";
 
 const props = withDefaults(
 	defineProps<{
@@ -171,25 +179,39 @@ const countdownTime = $computed(() => {
 	}:${("00" + ~~(agoAbs % 60)).slice(-2)}`;
 });
 
-let tickId: number;
-let currentInterval: number;
+//#region 共有時計への登録
 
-function tick() {
+/** 有効な表示だけを共有時計へ登録するための解除関数。 @internal */
+let stopTick: (() => void) | null = null;
+
+/**
+ * 実時刻を反映して、従来と同じ更新間隔を返す。
+ * @remarks カウントダウン500ms、直近10秒、1時間以内30秒、それ以外5分を維持する。
+ * @returns 次回更新までのミリ秒
+ * @internal
+ */
+function tick(): number {
 	now = new Date();
-	const nextInterval =
+	return (
 		props.countdown && ago < 0
 			? 500
 			: ago < 60 && ago > -60
 			? 10000
 			: ago < 3600 && ago > -3600
 			? 30000
-			: 300000;
+			: 300000
+	);
+}
 
-	if (currentInterval !== nextInterval) {
-		if (tickId) window.clearInterval(tickId);
-		currentInterval = nextInterval;
-		tickId = window.setInterval(tick, nextInterval);
-	}
+/** 表示の更新を開始する。 @remarks 初回のonActivatedとの二重登録を防ぐ。 @returns なし @internal */
+function startTick(): void {
+	if (stopTick === null) stopTick = registerTimeTick(tick);
+}
+
+/** 表示の更新を止める。 @remarks 復帰時はstartTickで実時刻へ更新する。 @returns なし @internal */
+function pauseTick(): void {
+	stopTick?.();
+	stopTick = null;
 }
 
 if (
@@ -199,11 +221,13 @@ if (
 ) {
 	onMounted(() => {
 		if (props.countdown && ago >= 0) done = true;
-		tick();
+		startTick();
 	});
 
-	onUnmounted(() => {
-		if (tickId) window.clearInterval(tickId);
-	});
+	onActivated(startTick);
+	onDeactivated(pauseTick);
+	onUnmounted(pauseTick);
 }
+
+//#endregion
 </script>

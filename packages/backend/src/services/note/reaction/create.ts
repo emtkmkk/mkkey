@@ -132,6 +132,37 @@ async function getLocalUserMaxReactionsPerAccount(userId: string): Promise<numbe
 		: 1;
 }
 
+/**
+ * リモートの宛先指定投稿へのリモートからのリアクションを、宛先に入っていなくても受け取るかを判定する。
+ *
+ * @remarks
+ * - 背景: fedibird のサークル限定投稿は宛先が公開されないので、mkkey が知っている宛先は mkkey 側の受信者だけになる。
+ *   サークルの他のメンバーのリアクションも mkkey に届くが、宛先として知らないため拒否していた
+ *   （2026-11-20 調査。3 日で 12 件、すべて fedibird.com から）。
+ * - 受け取るのは、**mkkey のユーザーがリアクションした人をフォローしている**場合だけ。
+ *   通常の投稿では、リアクションは「リアクションした人のフォロワーがいるサーバ」に配送される
+ *   （mkkey 側の配送も同じ: {@link buildReactionDeliverManager} の `addFollowersRecipe`）。
+ *   その条件で mkkey に届く相手にそろえ、フォロー関係の無い人からのリアクションは今までどおり受け取らない。
+ * - 公開範囲の判定（`Notes.isVisibleForMe`）自体は変えない。リノートの受け取りなどでも使われており、
+ *   そちらで宛先指定の投稿を見えるものとして扱うと困るため、リアクションに限った例外にする。
+ *
+ * @param user - リアクションしたユーザー
+ * @param note - 対象の投稿
+ * @returns 受け取るなら true
+ * @internal
+ */
+async function isAcceptableRemoteReactionToRemoteSpecifiedNote(
+	user: Pick<User, "id" | "host">,
+	note: Pick<Note, "visibility" | "userHost">,
+): Promise<boolean> {
+	if (note.visibility !== "specified") return false;
+	if (note.userHost == null || user.host == null) return false;
+
+	return await Followings.exist({
+		where: { followeeId: user.id, followerHost: IsNull() },
+	});
+}
+
 export default async (
 	// NOTE: 通知作成時に notifier としてそのまま pack に渡すため、User エンティティ全体を要求する
 	user: User,
@@ -153,7 +184,10 @@ export default async (
 
 	// 公開範囲を確認
 	const visibilityPromise = (async () => {
-		if (!(await Notes.isVisibleForMe(note, user.id))) {
+		if (
+			!(await Notes.isVisibleForMe(note, user.id)) &&
+			!(await isAcceptableRemoteReactionToRemoteSpecifiedNote(user, note))
+		) {
 			throw new IdentifiableError(
 				"68e9d2d1-48bf-42c2-b90a-b20e09fd3d48",
 				"Note not accessible for you.",

@@ -1,23 +1,21 @@
 /**
  * @packageDocumentation
  *
- * 配信をスキップすべきインスタンスの判定。ブロック・サスペンド・無応答（dead）を考慮する。
+ * 配信をスキップすべきインスタンスの判定。ブロックと、配信の停止（手動・閉鎖・自動）を考慮する。
  *
  * @remarks
- * - **役割**: 配信キューで対象ホストを絞り込み、ブロック・dead インスタンスへの送信を避ける。
+ * - **役割**: 配信ジョブを作る前（deliver-manager）と処理する前（deliver）に、送らない相手を除く。
+ * - ブロックは meta、停止中は {@link services/instance-health/suspended-hosts} のメモリキャッシュで判定し、DB は読まない。
+ * - CHANGED（2026-11-21）: 以前は DB の `getRawMany()` の結果（`{ host }` のオブジェクト）をホスト名の文字列と混ぜて返していたため、
+ *   deliver-manager の `includes(host)` が一致せず、配送前の除外が効いていなかった。
  *
  * @see {@link queue/processors/deliver} 配信キュー
  * @internal
  */
-import { Brackets } from "typeorm";
 import { fetchMeta } from "@/misc/fetch-meta.js";
-import { Instances } from "@/models/index.js";
 import type { Instance } from "@/models/entities/instance.js";
-import { DAY } from "@/const.js";
+import { getSuspendedHosts } from "@/services/instance-health/suspended-hosts.js";
 import { shouldBlockInstance } from "./should-block-instance.js";
-
-/** 最終接触からこの日数経過でインスタンスを「無応答」とみなし、配信対象から外す */
-const deadThreshold = 7 * DAY;
 
 /**
  * 配信をスキップすべきホストの一覧を返す。
@@ -28,32 +26,12 @@ const deadThreshold = 7 * DAY;
 export async function skippedInstances(
 	hosts: Instance["host"][],
 ): Promise<Instance["host"][]> {
-	// ブロック済みはメモリにあるので先に判定
 	const meta = await fetchMeta();
-	const shouldSkip = await Promise.all(
+	const suspended = await getSuspendedHosts();
+	const blocked = await Promise.all(
 		hosts.map((host) => shouldBlockInstance(host, meta)),
 	);
-	const skipped = hosts.filter((_, i) => shouldSkip[i]);
-
-	// 全てスキップなら DB アクセスせずに返す
-	if (skipped.length === hosts.length) return hosts;
-
-	const deadTime = new Date(Date.now() - deadThreshold);
-
-	return skipped.concat(
-		await Instances.createQueryBuilder("instance")
-			.where("instance.host in (:...hosts)", {
-				// 既にスキップ済みのホストは再チェックしない（重複も防ぐ）
-				hosts: hosts.filter((host) => !skipped.includes(host)),
-			})
-			.andWhere(
-				new Brackets((qb) => {
-					qb.where("instance.isSuspended");
-				}),
-			)
-			.select("host")
-			.getRawMany(),
-	);
+	return hosts.filter((host, i) => blocked[i] || suspended.has(host));
 }
 
 /**

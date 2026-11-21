@@ -10,13 +10,22 @@
 		<MkSpacer :content-max="800">
 			<XQueue v-if="tab === 'deliver'" domain="deliver" />
 			<XQueue v-else-if="tab === 'inbox'" domain="inbox" />
+			<XDeliveryHealth v-else-if="tab === 'delivery-health'" />
 		</MkSpacer>
 	</MkStickyContainer>
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * コントロールパネルの「ジョブキュー」画面。Deliver / Inbox のキューの様子と、「配送先」タブ（配送先サーバの状態）を出す。
+ *
+ * @internal
+ */
 import { markRaw, onMounted, onBeforeUnmount, nextTick } from "vue";
 import XQueue from "./queue.chart.vue";
+import XDeliveryHealth from "./queue.delivery-health.vue";
 import MkButton from "@/components/MkButton.vue";
 import * as os from "@/os";
 import * as config from "@/config";
@@ -58,6 +67,11 @@ const headerTabs = $computed(() => [
 		key: "inbox",
 		title: "Inbox",
 		icon: "ph-download ph-bold ph-lg",
+	},
+	{
+		key: "delivery-health",
+		title: "配送先",
+		icon: "ph-planet ph-bold ph-lg",
 	},
 ]);
 

@@ -319,5 +319,18 @@ describe("instance-health", () => {
 			assert.strictEqual(cb.wouldSkip("b.example"), false); // 消えた
 			assert.strictEqual(cb.wouldSkip("c.example"), true);
 		});
+
+		it("正常系：forget の場合、できごとを出さずに健康に戻す（長期の停止の解除用）", () => {
+			const cb = new HostCircuitBreaker({ threshold: 1, now: () => now });
+			cb.recordResult("a.example", "1", down);
+			assert.strictEqual(cb.wouldSkip("a.example"), true);
+
+			cb.forget("a.example");
+
+			assert.strictEqual(cb.wouldSkip("a.example"), false);
+			assert.deepStrictEqual(cb.snapshot(), []);
+			// 消したあとの確認の結果は無視される
+			assert.strictEqual(cb.recordProbeResult("a.example", true), null);
+		});
 	});
 });

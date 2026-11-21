@@ -28,6 +28,10 @@ export const InstanceRepository = db.getRepository(Instance).extend({
 			lastCommunicatedAt: instance.lastCommunicatedAt.toISOString(),
 			isNotResponding: instance.isNotResponding,
 			isSuspended: instance.isSuspended,
+			// 停止の理由（suspendedReason）と実行者は、管理者用の履歴 API（admin/federation/health-logs）でだけ返す
+			suspensionState: instance.suspensionState,
+			suspendedAt: instance.suspendedAt?.toISOString() ?? null,
+			notRespondingSince: instance.notRespondingSince?.toISOString() ?? null,
 			isBlocked: await shouldBlockInstance(instance.host),
 			isSilenced: await shouldSilenceInstance(instance.host),
 			softwareName: instance.softwareName,

@@ -4,6 +4,7 @@ import { db } from "@/db/postgre.js";
 import { Announcement } from "./entities/announcement.js";
 import { AnnouncementRead } from "./entities/announcement-read.js";
 import { Instance } from "./entities/instance.js";
+import { InstanceHealthLog } from "./entities/instance-health-log.js";
 import { Poll } from "./entities/poll.js";
 import { PollVote } from "./entities/poll-vote.js";
 import { Meta } from "./entities/meta.js";
@@ -120,6 +121,8 @@ export const Followings = FollowingRepository;
 export const FollowRequests = FollowRequestRepository;
 export const FollowReconfirms = db.getRepository(FollowReconfirm);
 export const Instances = InstanceRepository;
+/** 配送先サーバの状態の変化の履歴（書くのは services/instance-health だけ） */
+export const InstanceHealthLogs = db.getRepository(InstanceHealthLog);
 export const Emojis = EmojiRepository;
 export const EmojiCustomCategories = EmojiCustomCategoryRepository;
 export const EmojiImportRequests = db.getRepository(EmojiImportRequest);

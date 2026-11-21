@@ -675,14 +675,31 @@ export default function () {
 		},
 	);
 
+	// 自動停止中の配送先サーバの生存確認（services/instance-health）。旧 checkSuspendedInstances の置き換え
 	systemQueue.add(
-		"checkSuspendedInstances",
+		"probeInstances",
 		{},
 		{
-			repeat: { cron: "0 4 * * *" },
-			jobId: "check-suspended-instances",
+			repeat: { cron: "*/10 * * * *" },
+			jobId: "probe-instances",
+			removeOnComplete: true,
 		},
 	);
+
+	// CHANGED（2026-11-21）: checkSuspendedInstances を廃止した。Redis に残る repeatable の登録を消す。
+	// 消さないと、処理する関数が無いジョブが毎日 1 件ずつ失敗として溜まる。
+	void (async () => {
+		try {
+			for (const repeatable of await systemQueue.getRepeatableJobs()) {
+				if (repeatable.name === "checkSuspendedInstances") {
+					await systemQueue.removeRepeatableByKey(repeatable.key);
+					systemLogger.info(`Removed obsolete repeatable job: ${repeatable.key}`);
+				}
+			}
+		} catch (err) {
+			systemLogger.warn(`Failed to remove checkSuspendedInstances repeatable jobs: ${err}`);
+		}
+	})();
 
 	/**
 	 * tz 付き repeatable ジョブを登録する。

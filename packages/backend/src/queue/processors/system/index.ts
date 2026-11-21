@@ -8,7 +8,7 @@ import { clean } from "./clean.js";
 import { cleanEmojis } from "./clean-emojis.js";
 import { cleanReactions } from "./clean-reactions.js";
 import { cleanAntennaNotes } from "./clean-antennaNote.js";
-import { checkSuspendedInstances } from "./check-suspended-instances.js";
+import { probeInstances } from "./probe-instances.js";
 import {
 	refreshStatsMvEmoji,
 	refreshStatsMvFederationAndEmojiStats,
@@ -27,7 +27,7 @@ const jobs = {
 	cleanEmojis,
 	cleanReactions,
 	cleanAntennaNotes,
-	checkSuspendedInstances,
+	probeInstances,
 	refreshStatsMvEmoji,
 	refreshStatsMvFederationAndEmojiStats,
 	warnInactiveDeletion,

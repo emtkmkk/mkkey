@@ -7,6 +7,8 @@
  * - **役割**: 配信キューで実行し、リモート inbox へ署名付き POST で Activity を送る。
  * - 送る前にサーキットブレーカー（{@link services/instance-health}）を確認する。不調なサーバ宛ては通信せずに
  *   `HostCircuitOpenError` を投げ、Bull の通常の再送に任せる（再送回数を 1 回使う）。この場合、配送の統計には数えない。
+ * - 不通・閉鎖・応答の記録（長期の状態）も recordDeliverError / recordDeliverSuccess に任せる。ここでは停止状態を直接書かない。
+ * - `instance` 行の最終送信日時などは、ホストごとに 1 分に 1 回だけ書く（{@link shouldWriteStats}）。
  * - 通信はジョブのタイムアウトより少し早く打ち切る（{@link getDeliverRequestTimeoutMs}）。
  *   そうしないと Bull のタイムアウトが先に来て、ここで失敗を受け取れず、ブレーカーで分類できない。
  *
@@ -33,6 +35,7 @@ import {
 	recordDeliverError,
 	recordDeliverSuccess,
 } from "@/services/instance-health/index.js";
+import { shouldWriteStats } from "@/services/instance-health/state.js";
 import { getDeliverRequestTimeoutMs } from "@/queue/job-timeouts.js";
 import type { DeliverJobData } from "@/queue/types.js";
 import type Bull from "bull";
@@ -68,17 +71,20 @@ export default async (job: Bull.Job<DeliverJobData>) => {
 		await request(job.data.user, job.data.to, job.data.content, {
 			totalTimeoutMs: getDeliverRequestTimeoutMs(),
 		});
-		recordDeliverSuccess(puny, job.id);
+		await recordDeliverSuccess(puny, job.id).catch((e) =>
+			logger.warn(`failed to record delivery success of ${puny}: ${e}`),
+		);
 		job.progress(50);
 
-		// 統計を更新
+		// 統計を更新（チャートは毎回、instance 行はホストごとに間引く）
 		registerOrFetchInstanceDoc(host).then((i) => {
-			Instances.update(i.id, {
-				latestRequestSentAt: new Date(),
-				latestStatus: 200,
-				lastCommunicatedAt: new Date(),
-				isNotResponding: false,
-			});
+			if (shouldWriteStats(puny, "sent")) {
+				Instances.update(i.id, {
+					latestRequestSentAt: new Date(),
+					latestStatus: 200,
+					lastCommunicatedAt: new Date(),
+				});
+			}
 
 			fetchInstanceMetadata(i);
 
@@ -93,13 +99,14 @@ export default async (job: Bull.Job<DeliverJobData>) => {
 		// サーキットブレーカーに失敗を伝える（サーバ全体の不調かどうかはここで分類する）
 		await recordDeliverError(puny, job, res);
 
-		// 統計を更新
+		// 統計を更新（チャートは毎回、instance 行はホストごとに間引く）
 		registerOrFetchInstanceDoc(host).then((i) => {
-			Instances.update(i.id, {
-				latestRequestSentAt: new Date(),
-				latestStatus: res instanceof StatusError ? res.statusCode : null,
-				isNotResponding: true,
-			});
+			if (shouldWriteStats(puny, "sent")) {
+				Instances.update(i.id, {
+					latestRequestSentAt: new Date(),
+					latestStatus: res instanceof StatusError ? res.statusCode : null,
+				});
+			}
 
 			instanceChart.requestSent(i.host, false);
 			apRequestChart.deliverFail();
@@ -109,14 +116,7 @@ export default async (job: Bull.Job<DeliverJobData>) => {
 		if (res instanceof StatusError) {
 			// 4xx
 			if (!res.isRetryable) {
-				// 相手が閉鎖していることを明示しているため、配送停止する
-				if (job.data.isSharedInbox && res.statusCode === 410) {
-					registerOrFetchInstanceDoc(host).then((i) => {
-						Instances.update(i.id, {
-							isSuspended: true,
-						});
-					});
-				}
+				// shared inbox の 410（サーバ自体の閉鎖）は、recordDeliverError で閉鎖停止にしている
 				// HTTPステータスコード4xxはクライアントエラーであり、それはつまり
 				// 何回再送しても成功することはないということなのでエラーにはしないでおく
 				return `${res.statusCode} ${res.statusMessage}`;

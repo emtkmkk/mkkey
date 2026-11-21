@@ -33,6 +33,17 @@ export const paramDef = {
 		blocked: { type: "boolean", nullable: true },
 		notResponding: { type: "boolean", nullable: true },
 		suspended: { type: "boolean", nullable: true },
+		/** 停止の種類で絞り込む（手動・閉鎖・自動）。`suspended` と併用できる */
+		suspensionState: {
+			type: "string",
+			nullable: true,
+			enum: [
+				"none",
+				"manuallySuspended",
+				"goneSuspended",
+				"autoSuspendedForNotResponding",
+			],
+		},
 		federating: { type: "boolean", nullable: true },
 		silenced: { type: "boolean", nullable: true },
 		subscribing: { type: "boolean", nullable: true },
@@ -146,6 +157,12 @@ export default define(meta, paramDef, async (ps, me) => {
 		} else {
 			query.andWhere("instance.isSuspended = FALSE");
 		}
+	}
+
+	if (ps.suspensionState) {
+		query.andWhere('instance."suspensionState" = :suspensionState', {
+			suspensionState: ps.suspensionState,
+		});
 	}
 
 	if (typeof ps.federating === "boolean") {

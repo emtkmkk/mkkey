@@ -17,6 +17,21 @@
 					</option>
 					<option value="publishing">{{ i18n.ts.publishing }}</option>
 					<option value="suspended">{{ i18n.ts.suspended }}</option>
+					<option value="autoSuspendedForNotResponding">
+						{{ i18n.ts.suspended }}（{{
+							suspensionStateLabels.autoSuspendedForNotResponding
+						}}）
+					</option>
+					<option value="goneSuspended">
+						{{ i18n.ts.suspended }}（{{
+							suspensionStateLabels.goneSuspended
+						}}）
+					</option>
+					<option value="manuallySuspended">
+						{{ i18n.ts.suspended }}（{{
+							suspensionStateLabels.manuallySuspended
+						}}）
+					</option>
 					<option value="blocked">{{ i18n.ts.blocked }}</option>
 					<option value="silenced">{{ i18n.ts.silenced }}</option>
 					<option value="notResponding">
@@ -105,6 +120,16 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * 連合先サーバの一覧（ホスト・状態で絞り込み、並べ替え）。サーバ一覧ページとコントロールパネルの「連合」で使う。
+ *
+ * @remarks
+ * 配信の停止は、種類（自動・閉鎖・手動）でも絞り込める（API の `suspensionState`）。
+ *
+ * @internal
+ */
 import { computed } from "vue";
 import MkInput from "@/components/form/input.vue";
 import MkSelect from "@/components/form/select.vue";
@@ -112,6 +137,7 @@ import MkPagination from "@/components/MkPagination.vue";
 import MkInstanceCardMini from "@/components/MkInstanceCardMini.vue";
 import FormSplit from "@/components/form/split.vue";
 import { i18n } from "@/i18n";
+import { suspensionStateLabels } from "@/scripts/instance-health";
 
 let host = $ref("");
 let state = $ref("federating");
@@ -131,6 +157,10 @@ const pagination = {
 			? { publishing: true }
 			: state === "suspended"
 			? { suspended: true }
+			: state === "autoSuspendedForNotResponding" ||
+			  state === "goneSuspended" ||
+			  state === "manuallySuspended"
+			? { suspensionState: state }
 			: state === "blocked"
 			? { blocked: true }
 			: state === "silenced"
@@ -141,8 +171,17 @@ const pagination = {
 	})),
 };
 
+/**
+ * ツールチップに出す状態。
+ *
+ * @param instance - サーバ
+ * @returns 状態の表示名
+ */
 function getStatus(instance) {
-	if (instance.isSuspended) return "Suspended";
+	if (instance.isSuspended) {
+		const label = suspensionStateLabels[instance.suspensionState];
+		return label ? `Suspended（${label}）` : "Suspended";
+	}
 	if (instance.isBlocked) return "Blocked";
 	if (instance.isSilenced) return "Silenced";
 	if (instance.isNotResponding) return "Error";

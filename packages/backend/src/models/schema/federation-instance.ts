@@ -82,6 +82,33 @@ export const packedFederationInstanceSchema = {
 			optional: false,
 			nullable: false,
 		},
+		suspensionState: {
+			type: "string",
+			optional: false,
+			nullable: false,
+			enum: [
+				"none",
+				"manuallySuspended",
+				"goneSuspended",
+				"autoSuspendedForNotResponding",
+			],
+			description:
+				"配信の停止状態。manuallySuspended は管理者、goneSuspended はサーバ自体の閉鎖（410）、autoSuspendedForNotResponding は不通が続いたための自動停止。",
+		},
+		suspendedAt: {
+			type: "string",
+			optional: false,
+			nullable: true,
+			format: "date-time",
+			description: "停止した日時。",
+		},
+		notRespondingSince: {
+			type: "string",
+			optional: false,
+			nullable: true,
+			format: "date-time",
+			description: "不通になった時刻。通じていれば null。",
+		},
 		isBlocked: {
 			type: "boolean",
 			optional: false,

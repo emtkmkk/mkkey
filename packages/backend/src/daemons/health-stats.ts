@@ -15,6 +15,7 @@ import { redisClient } from "@/db/redis.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import { resolveRssBytes } from "@/misc/process-rss.js";
 import { calculateHealthScore } from "@/services/health-score.js";
+import { readHealthSnapshot } from "@/services/instance-health/index.js";
 
 type ServerStats = {
 	cpu: number;
@@ -161,6 +162,13 @@ type StatsForDiagnosis = {
 		notRespondingCount: number;
 		deliverDelayed: { remote: number; local: number; unknown: number; pending: number };
 		inboxDelayed: { remote: number; local: number; unknown: number; pending: number };
+		/** 配送のサーキットブレーカー（queue ワーカーの値が届いていなければ null） */
+		deliverBreaker?: {
+			openCircuits: number;
+			skipped24h: number;
+			opened24h: number;
+			adaptiveDelayMs: number;
+		} | null;
 	};
 	longRunningQueryCount: number;
 	longRunningQueries: SlowQuerySample[];
@@ -331,6 +339,13 @@ export default function (options: HealthStatsOptions): void {
 		idleInTransaction: 0,
 	};
 	let federationNotRespondingCount = 0;
+	/** 配送のサーキットブレーカーの状態（{@link readHealthSnapshot}）。届いていなければ null */
+	let federationBreaker: {
+		openCircuits: number;
+		skipped24h: number;
+		opened24h: number;
+		adaptiveDelayMs: number;
+	} | null = null;
 	let workerRestarts: WorkerRestart[] = [];
 	const lastIncidentAtByMetric = new Map<string, number>();
 
@@ -526,6 +541,18 @@ export default function (options: HealthStatsOptions): void {
 			)
 			.catch(() => [{ notRespondingCount: 0 }]);
 		federationNotRespondingCount = Number(rows[0]?.notRespondingCount ?? 0);
+
+		// 配送のサーキットブレーカーの状態（queue ワーカーが Redis に書いたもの）。効果の確認用
+		const snapshot = await readHealthSnapshot().catch(() => null);
+		federationBreaker =
+			snapshot && Date.now() - snapshot.updatedAt < 60 * 1000
+				? {
+						openCircuits: snapshot.openCircuits.length,
+						skipped24h: snapshot.skipped24h,
+						opened24h: snapshot.opened24h,
+						adaptiveDelayMs: snapshot.adaptiveDelayMs,
+				  }
+				: null;
 	};
 
 	const shouldRecordIncident = (metric: string, value: number, threshold: number) => {
@@ -718,6 +745,7 @@ export default function (options: HealthStatsOptions): void {
 
 		const federationStats = {
 			notRespondingCount: federationNotRespondingCount,
+			deliverBreaker: federationBreaker,
 			deliverDelayed: latestQueueStats?.deliver.delayedByReason ?? {
 				remote: 0,
 				local: 0,

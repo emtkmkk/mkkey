@@ -655,6 +655,16 @@ export type Instance = {
 	lastCommunicatedAt: DateString;
 	isNotResponding: boolean;
 	isSuspended: boolean;
+	/** 配信の停止状態（手動・閉鎖・不通による自動） */
+	suspensionState:
+		| "none"
+		| "manuallySuspended"
+		| "goneSuspended"
+		| "autoSuspendedForNotResponding";
+	/** 停止した日時 */
+	suspendedAt: DateString | null;
+	/** 不通になった時刻。通じていれば null */
+	notRespondingSince: DateString | null;
 	softwareName: string | null;
 	softwareVersion: string | null;
 	openRegistrations: boolean | null;

@@ -17,6 +17,7 @@ import type { Page } from "@/models/entities/page.js";
 import type { Packed } from "@/misc/schema.js";
 import type { DriveFileProcessStage } from "@/misc/drive-file-progress.js";
 import type { Webhook } from "@/models/entities/webhook";
+import type { InstanceSuspensionState } from "@/models/entities/instance.js";
 
 /**
  * @packageDocumentation
@@ -80,6 +81,14 @@ export interface InternalStreamTypes {
 	antennaUpdated: Antenna;
 	/** メタキャッシュ無効化（全 worker で fetch-meta を再読込する） */
 	metaCacheInvalidated: undefined;
+	/**
+	 * 配送先サーバの停止状態が変わった（services/instance-health/state.ts が送る）。
+	 * 各 worker は停止中ホストのキャッシュと、そのホストの状態のキャッシュを更新する。
+	 */
+	instanceSuspensionChanged: {
+		host: string;
+		suspensionState: InstanceSuspensionState;
+	};
 }
 
 export interface BroadcastTypes {

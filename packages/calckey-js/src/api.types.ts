@@ -103,6 +103,8 @@ export type Endpoints = {
 	"admin/federation/refresh-remote-instance-metadata": { req: TODO; res: TODO };
 	"admin/federation/remove-all-following": { req: TODO; res: TODO };
 	"admin/federation/update-instance": { req: TODO; res: TODO };
+	"admin/federation/health-logs": { req: TODO; res: TODO };
+	"admin/federation/health-overview": { req: TODO; res: TODO };
 	"admin/moderators/add": { req: TODO; res: TODO };
 	"admin/moderators/remove": { req: TODO; res: TODO };
 	"admin/promo/create": { req: TODO; res: TODO };

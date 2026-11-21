@@ -2116,6 +2116,7 @@ _permissions:
   "read:admin:announcements": "お知らせを見る"
   "read:admin:drive": "全ユーザーのドライブを見る"
   "read:admin:emoji": "カスタム絵文字を見る"
+  "read:admin:federation": "配送先サーバの状態と履歴を見る"
   "read:admin:index-stats": "インデックスの統計を見る"
   "read:admin:meta": "サーバー設定を見る"
   "read:admin:performance": "パフォーマンス記録を見る"

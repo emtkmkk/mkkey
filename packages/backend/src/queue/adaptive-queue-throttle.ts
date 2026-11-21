@@ -113,6 +113,23 @@ const calcDbDelayMs = () => {
 };
 
 /**
+ * キューの 1 件ごとに今かけている待ち時間を返す（画面・統計用）。
+ *
+ * @remarks
+ * このプロセスの値。統計はキューを処理しているプロセス（queue ワーカー）で読むこと。
+ *
+ * @param queueName - キュー名（deliver / inbox など）
+ * @returns 待ち時間（ミリ秒）。無効なら 0
+ * @internal
+ */
+export function getAdaptiveDelayMs(queueName: string): number {
+	if (!throttleConfig.enabled) return 0;
+	const state = states.get(queueName);
+	const queueDelay = state ? calcQueueDelayMs(state) : 0;
+	return Math.min(throttleConfig.maxDelayMs, queueDelay + calcDbDelayMs());
+}
+
+/**
  * DB スロークエリを通知し、以降しばらくキュー処理を遅らせる。
  *
  * @param timeMs - クエリにかかった時間（ms）

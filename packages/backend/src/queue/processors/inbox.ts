@@ -5,6 +5,8 @@
  *
  * @remarks
  * - **役割**: inbox キューで実行。受信した Activity の署名検証・ブロック判定のうえ、perform で種別ごとに処理する。
+ * - 署名の検証が済んだ受信は、送り元のサーバが動いている証拠として健康状態の層に伝える
+ *   （{@link noteHostAlive}。自動停止・閉鎖停止はここで解除される）。
  *
  * @see {@link perform} Activity 処理
  * @see {@link activitypub} inbox 投入元
@@ -36,6 +38,7 @@ import type { UserPublickey } from "@/models/entities/user-publickey.js";
 import { shouldBlockInstance } from "@/misc/should-block-instance.js";
 import { verifySignature } from "@/remote/activitypub/check-fetch.js";
 import { IdentifiableError } from "@/misc/identifiable-error.js";
+import { noteHostAlive, shouldWriteStats } from "@/services/instance-health/state.js";
 
 const logger = new Logger("inbox");
 
@@ -234,13 +237,23 @@ export default async (job: Bull.Job<InboxJobData>): Promise<string> => {
 	}
 	job.progress(25);
 
-	// Update stats
+	// 署名の検証済みの受信 = 相手のサーバが動いている。不通の記録を消し、自動停止・閉鎖停止を解除する（手動停止は解除しない）
+	const senderHost = authUser.user.host;
+	if (senderHost != null) {
+		noteHostAlive(senderHost, "inbox", {
+			activityType: activity.type,
+			activityId: typeof activity.id === "string" ? activity.id : null,
+		}).catch((e) => logger.warn(`failed to record health of ${senderHost}: ${e}`));
+	}
+
+	// 統計を更新（チャートは毎回、instance 行はホストごとに 1 分に 1 回だけ書く）
 	registerOrFetchInstanceDoc(authUser.user.host).then((i) => {
-		Instances.update(i.id, {
-			latestRequestReceivedAt: new Date(),
-			lastCommunicatedAt: new Date(),
-			isNotResponding: false,
-		});
+		if (shouldWriteStats(i.host, "received")) {
+			Instances.update(i.id, {
+				latestRequestReceivedAt: new Date(),
+				lastCommunicatedAt: new Date(),
+			});
+		}
 
 		fetchInstanceMetadata(i);
 

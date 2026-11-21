@@ -83,6 +83,7 @@ export const permissions = [
 	"read:admin:announcements",
 	"read:admin:drive",
 	"read:admin:emoji",
+	"read:admin:federation",
 	"read:admin:index-stats",
 	"read:admin:meta",
 	"read:admin:performance",

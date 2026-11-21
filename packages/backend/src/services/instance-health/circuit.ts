@@ -279,6 +279,19 @@ export class HostCircuitBreaker {
 	}
 
 	/**
+	 * ホストの状態を、できごとを出さずに消す。
+	 *
+	 * @remarks
+	 * 長期の停止が解除されたときに使う。停止中は配送が来ないので、ブレーカーは開いたまま残っている。
+	 * 解除のできごとは長期の状態の側（state.ts）で履歴に残すので、ここでは `closed` を出さない。
+	 *
+	 * @param host - 配送先ホスト
+	 */
+	public forget(host: string): void {
+		this.hosts.delete(host);
+	}
+
+	/**
 	 * 不調中のサーバの一覧を返す（画面・統計用）。
 	 *
 	 * @returns 不調中のサーバ

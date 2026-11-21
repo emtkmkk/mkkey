@@ -36,6 +36,7 @@ import { Notification } from "@/models/entities/notification.js";
 import { Meta } from "@/models/entities/meta.js";
 import { Following } from "@/models/entities/following.js";
 import { Instance } from "@/models/entities/instance.js";
+import { InstanceHealthLog } from "@/models/entities/instance-health-log.js";
 import { Muting } from "@/models/entities/muting.js";
 import { SwSubscription } from "@/models/entities/sw-subscription.js";
 import { Blocking } from "@/models/entities/blocking.js";
@@ -149,6 +150,7 @@ export const entities = [
 	AnnouncementRead,
 	Meta,
 	Instance,
+	InstanceHealthLog,
 	App,
 	AuthSession,
 	AccessToken,

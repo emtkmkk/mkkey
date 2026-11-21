@@ -93,14 +93,62 @@
 						<FormSection v-if="iAmAdmin">
 							<template #label>Moderation</template>
 							<FormSuspense :p="init">
-								<FormSwitch
-									v-model="suspended"
-									class="_formBlock"
-									@update:modelValue="toggleSuspend"
-									>{{
-										i18n.ts.stopActivityDelivery
-									}}</FormSwitch
-								>
+								<div class="_formBlock delivery-state">
+									<MkKeyValue oneline>
+										<template #key>{{
+											i18n.ts.stopActivityDelivery
+										}}</template>
+										<template #value
+											><span
+												v-tooltip="
+													suspensionStateDescriptions[
+														instance.suspensionState
+													]
+												"
+												:class="{
+													stopped:
+														instance.suspensionState !==
+														'none',
+												}"
+												>{{
+													suspensionStateLabels[
+														instance.suspensionState
+													]
+												}}</span
+											><template
+												v-if="instance.suspendedAt"
+											>
+												（<MkTime
+													:time="instance.suspendedAt"
+												/>から）</template
+											></template
+										>
+									</MkKeyValue>
+									<MkKeyValue
+										v-if="instance.notRespondingSince"
+										oneline
+									>
+										<template #key>不通</template>
+										<template #value
+											><MkTime
+												:time="instance.notRespondingSince"
+											/>から</template
+										>
+									</MkKeyValue>
+									<MkButton
+										v-if="instance.suspensionState === 'none'"
+										inline
+										danger
+										@click="suspendDelivery"
+										>配信を停止</MkButton
+									>
+									<MkButton
+										v-else
+										inline
+										@click="unsuspendDelivery"
+										>配信を再開</MkButton
+									>
+								</div>
 								<FormSwitch
 									v-model="isBlocked"
 									class="_formBlock"
@@ -337,12 +385,30 @@
 						<MkObjectView tall :value="instance"> </MkObjectView>
 					</div>
 				</swiper-slide>
+				<swiper-slide v-if="iAmAdmin">
+					<div class="_formRoot">
+						<MkInstanceHealthLogs :host="host" />
+					</div>
+				</swiper-slide>
 			</swiper>
 		</MkSpacer>
 	</MkStickyContainer>
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * 連合先サーバ 1 件の情報ページ（概要・チャート・ユーザー・生データ・履歴）。
+ *
+ * @remarks
+ * - 管理者には、配信の停止状態（手動・閉鎖・自動）と、停止・再開の操作を出す。
+ *   停止状態の書き換えは backend の `services/instance-health/state.ts` が行い、履歴に残る。
+ * - 「履歴」タブは、そのサーバの状態の変化（一時停止・自動停止・解除・手動操作）を新しい順に出す。
+ * - NB: タブ（`tabs`）とスライド（`swiper-slide`）は同じ順で並べること。ずれると別のタブの中身が出る。
+ *
+ * @internal
+ */
 import { watch } from "vue";
 import { Virtual } from "swiper";
 import { Swiper, SwiperSlide } from "swiper/vue";
@@ -356,6 +422,7 @@ import FormSection from "@/components/form/section.vue";
 import MkKeyValue from "@/components/MkKeyValue.vue";
 import MkSelect from "@/components/form/select.vue";
 import FormSwitch from "@/components/form/switch.vue";
+import MkInstanceHealthLogs from "@/components/MkInstanceHealthLogs.vue";
 import * as os from "@/os";
 import number from "@/filters/number";
 import { iAmAdmin } from "@/account";
@@ -368,6 +435,10 @@ import MkPagination from "@/components/MkPagination.vue";
 import "swiper/scss";
 import "swiper/scss/virtual";
 import { getProxiedImageUrlNullable } from "@/scripts/media-proxy";
+import {
+	suspensionStateDescriptions,
+	suspensionStateLabels,
+} from "@/scripts/instance-health";
 
 type AugmentedInstanceMetadata = calckey.entities.DetailedInstanceMetadata & {
 	blockedHosts: string[];
@@ -385,13 +456,13 @@ const props = defineProps<{
 let tabs = ["overview"];
 if (iAmAdmin && !defaultStore.state.hiddenActivityChart) tabs.push("chart");
 if (iAmAdmin) tabs.push("users", "raw");
+if (iAmAdmin) tabs.push("history");
 let tab = $ref(tabs[0]);
 watch($$(tab), () => syncSlide(tabs.indexOf(tab)));
 
 let chartSrc = $ref("instance-requests");
 let meta = $ref<AugmentedInstanceMetadata | null>(null);
 let instance = $ref<AugmentedInstance | null>(null);
-let suspended = $ref(false);
 let isBlocked = $ref(false);
 let isSilenced = $ref(false);
 let iconUrl = $ref(null);
@@ -414,7 +485,6 @@ async function fetch() {
 	instance = (await os.api("federation/show-instance", {
 		host: props.host,
 	})) as AugmentedInstance;
-	suspended = instance.isSuspended;
 	isBlocked = instance.isBlocked;
 	isSilenced = instance.isSilenced;
 	iconUrl = getProxiedImageUrlNullable(instance.iconUrl, "preview");
@@ -453,11 +523,44 @@ async function toggleSilence() {
 	});
 }
 
-async function toggleSuspend(v) {
-	await os.api("admin/federation/update-instance", {
-		host: instance.host,
-		isSuspended: suspended,
+/**
+ * 配信を手動で停止する。理由のメモは履歴とモデレーションログに残る。
+ *
+ * @remarks
+ * 手動停止は自動では解除されない。どの状態（自動停止・閉鎖停止）からでも手動停止にできる。
+ */
+async function suspendDelivery() {
+	if (!instance) return;
+	const { canceled, result } = await os.inputText({
+		title: "配信を停止",
+		text: "手動で停止したサーバは、自動では再開されません。理由のメモ（任意）を入力してください。",
+		placeholder: "例: スパムが続いているため",
 	});
+	if (canceled) return;
+	await os.apiWithDialog("admin/federation/update-instance", {
+		host: instance.host,
+		isSuspended: true,
+		reason: result || null,
+	});
+	await fetch();
+}
+
+/**
+ * 配信を再開する。手動停止・自動停止・閉鎖停止のどれからでも再開できる。
+ */
+async function unsuspendDelivery() {
+	if (!instance) return;
+	const { canceled, result } = await os.inputText({
+		title: "配信を再開",
+		text: "理由のメモ（任意）を入力してください。まだ落ちているサーバは、不通が 3 日続くと自動で停止されます。",
+	});
+	if (canceled) return;
+	await os.apiWithDialog("admin/federation/update-instance", {
+		host: instance.host,
+		isSuspended: false,
+		reason: result || null,
+	});
+	await fetch();
 }
 
 function refreshMetadata() {
@@ -510,6 +613,13 @@ if (iAmAdmin) {
 		}
 	);
 }
+if (iAmAdmin) {
+	theTabs.push({
+		key: "history",
+		title: "履歴",
+		icon: "ph-clock-counter-clockwise ph-bold ph-lg",
+	});
+}
 
 let headerTabs = $computed(() => theTabs);
 
@@ -548,6 +658,17 @@ function syncSlide(index) {
 
 	> .name {
 		word-break: break-all;
+	}
+}
+
+.delivery-state {
+	> * {
+		margin: 0 0 0.75rem 0;
+	}
+
+	.stopped {
+		color: var(--error);
+		font-weight: bold;
 	}
 }
 

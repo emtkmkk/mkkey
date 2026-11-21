@@ -38,7 +38,12 @@
 				<XChart ref="chartWaiting" type="waiting" />
 			</div>
 		</div>
-		<div class="jobs">
+		<div v-if="domain === 'deliver'" class="jobs">
+			<span style="opacity: 0.7"
+				>配送先ごとの遅延中のジョブ数は「配送先」タブに移しました。</span
+			>
+		</div>
+		<div v-else class="jobs">
 			<div v-if="jobs.length > 0">
                                 <div v-for="job in jobs" :key="job[0]">
                                         <MkA
@@ -59,6 +64,16 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * ジョブキュー画面の Deliver / Inbox タブ。キューの件数のグラフと、Inbox の遅延中ジョブのホスト別件数を出す。
+ *
+ * @remarks
+ * deliver の遅延中ジョブのホスト別件数は「配送先」タブ（queue.delivery-health.vue）に移した。
+ *
+ * @internal
+ */
 import { markRaw, onMounted, onUnmounted, ref } from "vue";
 import XChart from "./queue.chart.chart.vue";
 import number from "@/filters/number";
@@ -114,16 +129,12 @@ const onStatsLog = (statsLog) => {
 };
 
 onMounted(() => {
-	os.api(
-		props.domain === "inbox"
-			? "admin/queue/inbox-delayed"
-			: props.domain === "deliver"
-			? "admin/queue/deliver-delayed"
-			: null,
-		{}
-	).then((result) => {
-		jobs.value = result;
-	});
+	// deliver の遅延ジョブのホスト別件数は「配送先」タブ（queue.delivery-health.vue）で出す
+	if (props.domain === "inbox") {
+		os.api("admin/queue/inbox-delayed", {}).then((result) => {
+			jobs.value = result;
+		});
+	}
 
 	connection.on("stats", onStats);
 	connection.on("statsLog", onStatsLog);

@@ -307,7 +307,9 @@ const urlRaw = computed(() => {
 	const urlArr = [];
 	if (customEmoji.value?.url && !defaultStore.state.enableDataSaverMode)
 		urlArr.push(customEmoji.value.url);
-	if (customEmojiName.value && (emojiHost || !props.nofallback)) {
+	// nofallback のときは、他鯖絵文字（ホストあり）だけ /emoji/ 経由で読む。
+	// NB: emojiHost は computed なので .value を見る（以前は付け忘れで常に真になり、nofallback が効いていなかった）
+	if (customEmojiName.value && (emojiHost.value || !props.nofallback)) {
 		const emojiUrl = `/emoji/${emojiFullName.value}.webp`;
 		// 外部プロキシが失敗したときに、別のプロキシ → このサーバの /proxy の順に読み直す
 		urlArr.push(emojiUrl, ...getEmojiFallbackUrls(emojiUrl));

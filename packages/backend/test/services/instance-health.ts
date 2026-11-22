@@ -23,6 +23,14 @@ function statusError(statusCode: number, retryAfter?: string) {
 	});
 }
 
+/** `redirect: "manual"` のときの 3xx の `StatusError` と同じ形の例外を作る。 */
+function redirectError(statusCode: number, location: string, otherSite: boolean) {
+	return Object.assign(statusError(statusCode), {
+		location,
+		redirectedToOtherSite: otherSite,
+	});
+}
+
 /** node-fetch の `FetchError`（system エラー）と同じ形の例外を作る。 */
 function fetchError(code: string, erroredSysCall?: string) {
 	return Object.assign(new Error(`request failed, reason: ${code}`), {
@@ -131,7 +139,48 @@ describe("instance-health", () => {
 		});
 	});
 
+	describe("classifyDeliverError（転送）", () => {
+		it("正常系：別のサイトへの転送の場合、hostDown になり転送先のホストを残す", () => {
+			const r = classifyDeliverError(
+				redirectError(301, "https://expireddomains.com/domain/oran.ski", true),
+				personal,
+			);
+			assert.strictEqual(r.kind, "hostDown");
+			assert.strictEqual(r.label, "redirect to expireddomains.com");
+			assert.strictEqual(r.statusCode, 301);
+		});
+
+		it("正常系：同じサイト内の転送の場合、recipientError になる", () => {
+			const r = classifyDeliverError(
+				redirectError(308, "https://layp.net/", false),
+				shared,
+			);
+			assert.strictEqual(r.kind, "recipientError");
+			assert.strictEqual(r.label, "308");
+		});
+
+		it("境界値：転送先が読めない別サイトの場合も hostDown になる", () => {
+			const r = classifyDeliverError(redirectError(302, "::bad::", true), personal);
+			assert.strictEqual(r.kind, "hostDown");
+			assert.strictEqual(r.label, "redirect to ?");
+		});
+	});
+
 	describe("isProbeAlive", () => {
+		it("正常系：別のサイトへの転送の場合、生きていないとみなす", () => {
+			assert.strictEqual(
+				isProbeAlive(redirectError(301, "https://expireddomains.com/", true)),
+				false,
+			);
+		});
+
+		it("正常系：同じサイト内の転送の場合、生きているとみなす", () => {
+			assert.strictEqual(
+				isProbeAlive(redirectError(301, "https://www.example.com/.well-known/nodeinfo", false)),
+				true,
+			);
+		});
+
 		it("正常系：成功・4xx・500 の場合、生きているとみなす", () => {
 			assert.strictEqual(isProbeAlive(null), true);
 			assert.strictEqual(isProbeAlive(statusError(404)), true);

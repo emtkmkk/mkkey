@@ -25,7 +25,14 @@ import type { IObject } from "./type.js";
  * @param object - 送る Activity
  * @param opts - オプション
  * @param opts.totalTimeoutMs - リクエスト全体を打ち切るまでの時間（省略時は 60 秒）
- * @throws StatusError 相手が 2xx 以外を返した場合
+ * @remarks
+ * CHANGED（2026-11-22）: 転送（3xx）を追わず、StatusError として返すようにした。理由は 2 つ。
+ * - 署名の `Host` ヘッダーが元の宛先のまま転送先に送られるので、転送先では署名が合わず、相手がもう一度転送してくることがある
+ *   （例: `omanke.layp.net/inbox` → `layp.net/` → `layp.net/`）。
+ * - そうして body つき POST が 2 回以上転送されると、node-fetch 3.3.0 が内部で `options_.body` を読んで落ち、
+ *   捕まえられない例外（`Cannot read properties of undefined (reading 'body')`）になる。本番で 1 日 2,000 件ほど出ていた。
+ * 期限切れのドメイン（例: `oran.ski` → `expireddomains.com`）への転送は、サーバ不調として数える（services/instance-health/classify.ts）。
+ * @throws StatusError 相手が 2xx 以外を返した場合（3xx を含む）
  * @internal
  */
 export default async (
@@ -56,6 +63,8 @@ export default async (
 		headers: req.request.headers,
 		body,
 		totalTimeoutMs: opts.totalTimeoutMs,
+		// 転送は追わない。理由は上の @remarks
+		redirect: "manual",
 	});
 };
 

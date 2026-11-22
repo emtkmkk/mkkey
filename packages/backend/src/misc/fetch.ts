@@ -87,6 +87,8 @@ export async function getHtml(
  * @param args - url, method, body, headers, timeout, size, totalTimeoutMs
  *   - `totalTimeoutMs`: リクエスト全体を打ち切るまでの時間。省略時は `timeout * 6`（既定 60 秒）。
  *     配送ジョブはジョブ自体のタイムアウトより先にここで打ち切り、例外を配送処理で受け取れるようにする。
+ *   - `redirect`: `"manual"` にすると転送（3xx）を追わず、`location` と `redirectedToOtherSite` を付けた StatusError を投げる。
+ *     署名つき配送と生存確認で使う（理由は {@link remote/activitypub/request} と services/instance-health/probe.ts）。
  * @returns 成功時の node-fetch Response。429 かつ Retry-After が 0 以下の場合は Set-Cookie を適用して 1 回だけリトライする。
  * @throws StatusError レスポンスが ok でない場合
  * @internal
@@ -99,6 +101,7 @@ export async function getResponse(args: {
 	timeout?: number;
 	size?: number;
 	totalTimeoutMs?: number;
+	redirect?: "follow" | "manual";
 }) {
 	const timeout = args.timeout || 10 * 1000;
 
@@ -143,10 +146,28 @@ export async function getResponse(args: {
 			size: args.size || 10 * 1024 * 1024,
 			agent: getAgentByUrl,
 			signal: controller.signal,
+			redirect: args.redirect ?? "follow",
 		});
 
 		if (res.ok) {
 			return res;
+		}
+
+		// 転送を追わない指定で 3xx が返った場合は、転送先を添えて失敗として返す
+		if (args.redirect === "manual" && res.status >= 300 && res.status < 400) {
+			await res.arrayBuffer().catch(() => undefined);
+			const location = res.headers.get("location") ?? undefined;
+			const err = new StatusError(
+				`${res.status} ${res.statusText}${location ? ` to ${location}` : ""}`,
+				res.status,
+				res.statusText,
+				// 転送は時間を置いても変わらないので再送しない
+				false,
+			);
+			err.location = location;
+			err.redirectedToOtherSite =
+				location != null && !isSameSite(bearcaps?.url ?? args.url, location);
+			throw err;
 		}
 
 		const rawHeaders = (res.headers as unknown as {
@@ -196,6 +217,28 @@ export async function getResponse(args: {
 			undefined,
 			retryAfterHeader ?? undefined,
 		);
+	}
+}
+
+/**
+ * 2 つの URL が同じサイトか（ホストが同じか、一方がもう一方のサブドメインか）。
+ *
+ * @remarks
+ * 例: `omanke.layp.net` と `layp.net` は同じサイト。`oran.ski` と `expireddomains.com` は別のサイト。
+ * 転送先が別のサイトなら、そのドメインではもうサーバが動いていない（期限切れ・売却など）とみなすのに使う。
+ *
+ * @param a - URL
+ * @param b - URL（相対でもよい。a を基準に解決する）
+ * @returns 同じサイトなら true。読めない URL なら false
+ * @internal
+ */
+export function isSameSite(a: string, b: string): boolean {
+	try {
+		const x = new URL(a).hostname.toLowerCase();
+		const y = new URL(b, a).hostname.toLowerCase();
+		return x === y || x.endsWith(`.${y}`) || y.endsWith(`.${x}`);
+	} catch {
+		return false;
 	}
 }
 
@@ -345,6 +388,10 @@ export class StatusError extends Error {
 	public isClientError: boolean;
 	public isRetryable: boolean;
 	public retryAfter?: string;
+	/** 転送（3xx）の転送先。`redirect: "manual"` のときだけ入る */
+	public location?: string;
+	/** 転送先が別のサイト（ホストが同じでも親子のドメインでもない）か。`redirect: "manual"` のときだけ入る */
+	public redirectedToOtherSite?: boolean;
 
 	constructor(
 		message: string,

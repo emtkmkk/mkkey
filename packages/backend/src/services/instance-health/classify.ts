@@ -160,10 +160,16 @@ export function classifyDeliverError(
 		erroredSysCall?: unknown;
 		statusCode?: unknown;
 		retryAfter?: unknown;
+		location?: unknown;
+		redirectedToOtherSite?: unknown;
 	};
 
 	// HTTP の応答があった場合（StatusError）
 	if (e.name === "StatusError" && typeof e.statusCode === "number") {
+		// 転送（3xx。配送と生存確認では追わない）
+		if (e.statusCode >= 300 && e.statusCode < 400) {
+			return classifyRedirect(e.statusCode, e.location, e.redirectedToOtherSite === true);
+		}
 		return classifyStatus(e.statusCode, opts, e.retryAfter);
 	}
 
@@ -243,6 +249,38 @@ export function isProbeAlive(error: unknown): boolean {
 //#endregion 公開関数
 
 //#region 非公開ヘルパー
+
+/**
+ * 転送（3xx）を分類する。
+ *
+ * @remarks
+ * - 別のサイトへの転送は `hostDown`。そのドメインではもうサーバが動いていない（期限切れでドメイン売買サイトへ転送される、など）。
+ *   2026-11-22 に oran.ski / oru.ski（→ expireddomains.com）で、生存確認が転送先の応答を「生きている」と数え、
+ *   一時停止と解除を 1 日 270 回繰り返していた。
+ * - 同じサイト内の転送（例: `omanke.layp.net` → `layp.net`）は、相手のアプリが応答しているので `recipientError`。
+ *
+ * @param status - HTTP ステータス
+ * @param location - 転送先
+ * @param otherSite - 転送先が別のサイトか
+ * @returns 分類の結果
+ * @internal
+ */
+function classifyRedirect(
+	status: number,
+	location: unknown,
+	otherSite: boolean,
+): DeliverOutcome {
+	if (otherSite) {
+		let host = "?";
+		try {
+			host = new URL(String(location)).hostname;
+		} catch {
+			// 読めない転送先はホスト名を出さない
+		}
+		return { kind: "hostDown", label: `redirect to ${host}`, statusCode: status };
+	}
+	return { kind: "recipientError", label: String(status), statusCode: status };
+}
 
 /**
  * HTTP ステータスを分類する。

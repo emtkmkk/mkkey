@@ -2162,6 +2162,12 @@ _auth:
   denied: "アクセスを拒否しました"
   copyAsk: "以下の認証コードをアプリケーションにコピーしてください"
   comment: "トークン識別の為のコメント（20文字まで、任意）"
+  accepted: "アクセスを許可しました"
+  scopeUser: "次のアカウントで許可します"
+  byClickingYouWillBeRedirectedToThisUrl: "許可すると、次のURLへ自動で移動します"
+  pleaseSelectAccount: "連携するアカウントを選んでください"
+  noSavedAccounts: "このブラウザに保存されたアカウントがありません"
+  pleaseLogin: "連携するにはログインしてください"
 _antennaSources:
   all: "全ての投稿"
   homeTimeline: "フォローしているユーザーの投稿"

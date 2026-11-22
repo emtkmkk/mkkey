@@ -2117,6 +2117,13 @@ _auth:
   callback: "Returning to the application"
   denied: "Access denied"
   copyAsk: "Please paste the following authorization code to the application"
+  comment: "Comment to identify this token (optional, up to 20 characters)"
+  accepted: "Access granted"
+  scopeUser: "Authorize as the following account"
+  byClickingYouWillBeRedirectedToThisUrl: "After you accept, you will be redirected to the following URL"
+  pleaseSelectAccount: "Please select the account to authorize"
+  noSavedAccounts: "No accounts are saved in this browser"
+  pleaseLogin: "Please sign in to authorize the application"
 _antennaSources:
   all: "All posts"
   homeTimeline: "Posts from followed users"

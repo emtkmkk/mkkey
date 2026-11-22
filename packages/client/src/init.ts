@@ -457,12 +457,23 @@ const initializeServiceWorkerAndFetchInstanceMeta = async () => {
 	return fetchInstanceMetaPromise;
 };
 
+/**
+ * 外部アプリの許可画面（MiAuth / 旧式の認証）か
+ *
+ * @remarks
+ * 許可画面はサイドバーなどを出さず、全画面の中央にカードを置いて見せるため zen UI で表示する。
+ * ログインしていなくても同じ見た目にする（visitor UI のヘッダーを出さない）。
+ *
+ * @internal
+ */
+const isAuthPage = /^\/(mi)?auth\//.test(location.pathname);
+
 // アプリの初期化
 const initializeApp = async (minimumLoadPromise: Promise<unknown>) => {
 	const waitMsg = i18n.ts._init?.initializingApp ?? "Initializing app...";
 	waitMessages.push(waitMsg);
 	const app = createApp(
-		window.location.search === "?zen"
+		window.location.search === "?zen" || isAuthPage
 			? defineAsyncComponent(() => import("@/ui/zen.vue"))
 			: !$i
 				? defineAsyncComponent(() => import("@/ui/visitor.vue"))

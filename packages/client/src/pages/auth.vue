@@ -1,167 +1,249 @@
 <template>
-	<div v-if="$i && fetching" class="">
-		<MkLoading />
-	</div>
-	<div v-else-if="$i">
-		<XForm
-			v-if="state == 'waiting'"
-			ref="form"
-			class="form"
-			:session="session"
-			@denied="state = 'denied'"
-			@accepted="accepted"
-		/>
-		<div v-if="state == 'denied'" class="denied">
-			<h1>{{ i18n.ts._auth.denied }}</h1>
-		</div>
-		<div v-if="state == 'accepted'" class="accepted">
-			<h1>
-				{{
-					session.app.isAuthorized
-						? i18n.t("already-authorized")
-						: i18n.ts.allowed
-				}}
-			</h1>
-			<p v-if="session.app.callbackUrl && !auth_code">
-				{{ i18n.ts._auth.callback }}<MkEllipsis />
-			</p>
-			<MkKeyValue
-				v-if="session.app.callbackUrl && auth_code"
-				:copy="auth_code"
-			>
+	<MkAuthConfirm
+		ref="authRoot"
+		:name="session?.app.name"
+		:permissions="session?.app.permission ?? []"
+		:manual-waiting="session == null && !loadFailed"
+		@accept="onAccept"
+		@deny="onDeny"
+	>
+		<template #consentAdditionalInfo>
+			<div v-if="redirectPreview" :class="$style.box">
+				<div>{{ i18n.ts._auth.byClickingYouWillBeRedirectedToThisUrl }}</div>
+				<div class="_monospace" :class="$style.url">
+					{{ redirectPreview }}
+				</div>
+			</div>
+		</template>
+		<template #successAdditionalInfo>
+			<MkKeyValue v-if="authCode" :copy="authCode">
 				<template #key>{{ i18n.ts._auth.copyAsk }}</template>
-				<template #value>{{ auth_code }}</template>
+				<template #value>{{ authCode }}</template>
 			</MkKeyValue>
-			<p v-if="!session.app.callbackUrl">
-				{{ i18n.ts._auth.pleaseGoBack }}
-			</p>
-		</div>
-		<div v-if="state == 'fetch-session-error'" class="error">
-			<p>{{ i18n.ts.somethingHappened }}</p>
-		</div>
-	</div>
-	<div v-else class="signin">
-		<MkSignin @login="onLogin" />
-	</div>
+		</template>
+	</MkAuthConfirm>
 </template>
 
-<script lang="ts">
-import { defineComponent } from "vue";
-import XForm from "./auth.form.vue";
-import MkSignin from "@/components/MkSignin.vue";
+<script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * 旧式のアプリ認証（`/auth/:token`）の許可画面
+ *
+ * @remarks
+ * - `auth/session/generate` で作られたセッションを許可する。Mastodon 互換 API の
+ *   `/oauth/authorize` もここへ `?mastodon=true` 付きでリダイレクトしてくる。
+ * - 見た目とアカウントの選択は {@link MkAuthConfirm} に任せ、選ばれたアカウントのトークンで
+ *   `auth/accept` を呼ぶ（ブラウザのログイン状態は変えない）。
+ * - CHANGED: 以前は「このアプリを既に許可済み」なら確認なしで自動的に許可していたが、
+ *   別のアカウントで連携し直せるよう、毎回アカウントを確認してから許可するようにした。
+ *   `auth/accept` は同じアプリ・同じユーザーに既存のトークンがあれば作り直さないので、二度押しても害はない。
+ * - CHANGED: 拒否は画面の表示だけで済ませる。以前は存在しない `auth/deny` を呼んでいて必ず失敗していた。
+ *   セッションは許可されないまま残るだけで、アプリ側にはトークンが渡らない。
+ * - コールバック URL は `javascript:` などの危険なスキームを拒否する（GHSA-cc6r-chgr-8r5m 対策）。
+ *
+ * @public
+ */
+import { computed, onMounted, ref } from "vue";
+import MkAuthConfirm from "@/components/MkAuthConfirm.vue";
 import MkKeyValue from "@/components/MkKeyValue.vue";
 import * as os from "@/os";
-import { login } from "@/account";
 import { i18n } from "@/i18n";
+import { definePageMetadata } from "@/scripts/page-metadata";
 
-export default defineComponent({
-	components: {
-		XForm,
-		MkSignin,
-		MkKeyValue,
-	},
-	props: ["token"],
-	data() {
-		return {
-			state: null,
-			session: null,
-			fetching: true,
-			i18n,
-			auth_code: null,
-		};
-	},
-	mounted() {
-		if (!this.$i) return;
+const props = defineProps<{
+	token: string;
+}>();
 
-		// Fetch session
-		os.api("auth/session/show", {
-			token: this.token,
-		})
-			.then((session) => {
-				this.session = session;
-				this.fetching = false;
+/**
+ * `auth/session/show` の返り値のうち、この画面で使う部分
+ *
+ * @internal
+ */
+type AuthSession = {
+	token: string;
+	app: {
+		id: string;
+		name: string;
+		callbackUrl: string | null;
+		permission: string[];
+	};
+};
 
-				// 既に連携していた場合
-				if (this.session.app.isAuthorized) {
-					os.api("auth/accept", {
-						token: this.session.token,
-					}).then(() => {
-						this.accepted();
-					});
-				} else {
-					this.state = "waiting";
-				}
-			})
-			.catch((error) => {
-				this.state = "fetch-session-error";
-				this.fetching = false;
-			});
-	},
-	methods: {
-		accepted() {
-			this.state = "accepted";
-			const getUrlParams = () =>
-				window.location.search
-					.substring(1)
-					.split("&")
-					.reduce((result, query) => {
-						const [k, v] = query.split("=");
-						result[k] = decodeURI(v);
-						return result;
-					}, {});
-			const isMastodon = !!getUrlParams().mastodon;
-			if (this.session.app.callbackUrl && isMastodon) {
-				const callbackUrl = new URL(this.session.app.callbackUrl);
-				// GHSA-cc6r-chgr-8r5m 対策: 非 Mastodon 分岐と同様に、
-				// javascript: 等の危険なスキームのコールバック URL を拒否する
-				// （location.href への代入で XSS に繋がるため）。
-				if (
-					[
-						"javascript:",
-						"file:",
-						"data:",
-						"mailto:",
-						"tel:",
-					].includes(callbackUrl.protocol)
-				)
-					throw new Error("invalid url");
-				callbackUrl.searchParams.append("code", this.session.token);
-				if (!!getUrlParams().state)
-					callbackUrl.searchParams.append(
-						"state",
-						getUrlParams().state
-					);
-				location.href = callbackUrl.toString();
-			} else if (this.session.app.callbackUrl) {
-				const url = new URL(this.session.app.callbackUrl);
-				if (
-					[
-						"javascript:",
-						"file:",
-						"data:",
-						"mailto:",
-						"tel:",
-					].includes(url.protocol)
-				)
-					throw new Error("invalid url");
-				if (
-					this.session.app.callbackUrl === "urn:ietf:wg:oauth:2.0:oob"
-				) {
-					this.auth_code = this.session.token;
-				} else {
-					location.href = `${this.session.app.callbackUrl}?token=${
-						this.session.token
-					}&code=${this.session.token}&state=${
-						getUrlParams().state || ""
-					}`;
-				}
-			}
-		},
-		onLogin(res) {
-			login(res.i);
-		},
-	},
+/** 遷移を許さないコールバック URL のスキーム */
+const BLOCKED_PROTOCOLS = [
+	"javascript:",
+	"file:",
+	"data:",
+	"mailto:",
+	"tel:",
+	"vbscript:",
+];
+
+/** 認証コードを画面に表示して手で貼ってもらう方式のコールバック */
+const OOB_CALLBACK = "urn:ietf:wg:oauth:2.0:oob";
+
+const authRoot = ref<InstanceType<typeof MkAuthConfirm> | null>(null);
+const session = ref<AuthSession | null>(null);
+/** OOB 方式のときに表示する認証コード */
+const authCode = ref<string | null>(null);
+/** セッションの取得に失敗したか（読み込み中の表示を外すため） */
+const loadFailed = ref(false);
+
+//#region URL パラメータ
+
+/**
+ * 現在の URL のクエリを読み取る
+ *
+ * @remarks
+ * NOTE: `URLSearchParams` は `+` を空白に変えてしまうため、`state` をそのまま返すよう
+ * 以前の実装（`decodeURI` で読む）を保っている。
+ *
+ * @internal
+ */
+function getUrlParams(): Record<string, string> {
+	return window.location.search
+		.substring(1)
+		.split("&")
+		.filter((q) => q.length > 0)
+		.reduce((result, q) => {
+			const [k, v] = q.split("=");
+			result[k] = decodeURI(v ?? "");
+			return result;
+		}, {} as Record<string, string>);
+}
+
+const isMastodon = !!getUrlParams().mastodon;
+
+//#endregion
+
+//#region コールバック
+
+/**
+ * コールバック URL を検査して返す（無い・OOB・不正なときは null）
+ *
+ * @internal
+ */
+function getSafeCallbackUrl(): URL | null {
+	const callbackUrl = session.value?.app.callbackUrl;
+	if (!callbackUrl || callbackUrl === OOB_CALLBACK) return null;
+	try {
+		const url = new URL(callbackUrl);
+		return BLOCKED_PROTOCOLS.includes(url.protocol) ? null : url;
+	} catch {
+		return null;
+	}
+}
+
+/** 確認画面に出す移動先（クエリを付ける前の URL） */
+const redirectPreview = computed(() => getSafeCallbackUrl()?.toString() ?? null);
+
+/**
+ * 許可したあと、アプリへ戻す
+ *
+ * @remarks
+ * - Mastodon 互換: `code` と `state` を付けてリダイレクトする。
+ * - OOB: 認証コードを画面に表示する（Mastodon 互換でも同じ）。
+ * - それ以外: `token` / `code` / `state` を付けてリダイレクトする（以前からの形式を維持）。
+ *
+ * @internal
+ */
+function accepted(): void {
+	const s = session.value;
+	if (s == null) return;
+
+	// NOTE: Mastodon 互換でも OOB ならコードを表示する（リダイレクト先が無いため）
+	if (s.app.callbackUrl === OOB_CALLBACK) {
+		authCode.value = s.token;
+		authRoot.value?.showUI("success");
+		return;
+	}
+
+	const url = getSafeCallbackUrl();
+	if (url == null) {
+		// コールバックが無い（または不正な）ときは、アプリに戻ってもらう案内だけ出す
+		authRoot.value?.showUI("success");
+		return;
+	}
+
+	const params = getUrlParams();
+	authRoot.value?.showUI("redirecting");
+	if (isMastodon) {
+		url.searchParams.append("code", s.token);
+		if (params.state) url.searchParams.append("state", params.state);
+		location.href = url.toString();
+	} else {
+		location.href = `${s.app.callbackUrl}?token=${s.token}&code=${
+			s.token
+		}&state=${params.state || ""}`;
+	}
+}
+
+//#endregion
+
+//#region 操作
+
+/**
+ * 選ばれたアカウントでセッションを許可する
+ *
+ * @param token - 許可に使うアカウントのトークン
+ * @internal
+ */
+async function onAccept(token: string): Promise<void> {
+	if (session.value == null) return;
+	try {
+		await os.api("auth/accept", { token: session.value.token }, token);
+	} catch {
+		// NOTE: 失敗理由は os.api がトーストで表示済み
+		authRoot.value?.showUI("failed");
+		return;
+	}
+	accepted();
+}
+
+function onDeny(): void {
+	authRoot.value?.showUI("denied");
+}
+
+//#endregion
+
+onMounted(async () => {
+	try {
+		session.value = (await os.api(
+			"auth/session/show",
+			{ token: props.token },
+			undefined,
+			true,
+		)) as AuthSession;
+	} catch {
+		loadFailed.value = true;
+		authRoot.value?.showUI("failed");
+	}
+});
+
+definePageMetadata({
+	title: i18n.ts.permission,
+	icon: "ph-app-window ph-bold ph-lg",
 });
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" module>
+.box {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	padding: 14px 16px;
+	border-radius: var(--radius);
+	background: var(--bg);
+	font-size: 0.95em;
+}
+
+.url {
+	padding: 10px 12px;
+	border-radius: var(--radius);
+	background: var(--panel);
+	font-size: 0.85em;
+	overflow-x: auto;
+	white-space: nowrap;
+}
+</style>

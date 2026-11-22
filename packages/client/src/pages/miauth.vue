@@ -1,67 +1,50 @@
 <template>
-	<MkSpacer :content-max="800">
-		<div v-if="$i">
-			<div v-if="state == 'waiting'" class="waiting _section">
-				<div class="_content">
-					<MkLoading />
+	<MkAuthConfirm
+		ref="authRoot"
+		:name="name"
+		:icon="icon || undefined"
+		:permissions="_permissions"
+		@accept="onAccept"
+		@deny="onDeny"
+	>
+		<template #consentAdditionalInfo>
+			<div v-if="safeCallback" :class="$style.box">
+				<div>{{ i18n.ts._auth.byClickingYouWillBeRedirectedToThisUrl }}</div>
+				<div class="_monospace" :class="$style.url">
+					{{ safeCallback }}
 				</div>
 			</div>
-			<div v-if="state == 'denied'" class="denied _section">
-				<div class="_content">
-					<p>{{ i18n.ts._auth.denied }}</p>
-				</div>
-			</div>
-			<div v-else-if="state == 'accepted'" class="accepted _section">
-				<div class="_content">
-					<p v-if="callback">
-						{{ i18n.ts._auth.callback }}<MkEllipsis />
-					</p>
-					<p v-else>{{ i18n.ts._auth.pleaseGoBack }}</p>
-				</div>
-			</div>
-			<div v-else class="_section">
-				<div v-if="name" class="_title">
-					{{ i18n.t("_auth.shareAccess", { name: name }) }}
-				</div>
-				<div v-else class="_title">
-					{{ i18n.ts._auth.shareAccessAsk }}
-				</div>
-				<div class="_content">
-					<p>{{ i18n.ts._auth.permissionAsk }}</p>
-					<ul>
-						<li v-for="p in _permissions" :key="p">
-							{{ i18n.t(`_permissions.${p}`) }}
-						</li>
-					</ul>
-				</div>
-				<div class="_comment">
-					<p>{{ i18n.ts._auth.comment }}</p>
-					<FormInput v-model="comment" class="_formBlock" />
-				</div>
-				<div class="_footer">
-					<MkButton inline @click="deny">{{
-						i18n.ts.cancel
-					}}</MkButton>
-					<MkButton inline primary @click="accept">{{
-						i18n.ts.accept
-					}}</MkButton>
-				</div>
-			</div>
-		</div>
-		<div v-else class="signin">
-			<MkSignin @login="onLogin" />
-		</div>
-	</MkSpacer>
+			<FormInput v-model="comment">
+				<template #label>{{ i18n.ts._auth.comment }}</template>
+			</FormInput>
+		</template>
+	</MkAuthConfirm>
 </template>
 
 <script lang="ts" setup>
-import MkSignin from "@/components/MkSignin.vue";
-import MkButton from "@/components/MkButton.vue";
+/**
+ * @packageDocumentation
+ *
+ * MiAuth（`/miauth/:session`）の許可画面
+ *
+ * @remarks
+ * - 見た目と「どのアカウントで許可するか」の選択は {@link MkAuthConfirm} に任せ、
+ *   このページは MiAuth のパラメータの解釈と `miauth/gen-token` の呼び出しだけを行う。
+ * - NOTE: トークンは、選ばれたアカウントのトークンで発行する（ブラウザのログイン状態は変えない）。
+ * - mkkey 独自: トークン識別用のコメント（20 文字まで）をアプリ名の後ろに付けて保存する。
+ *   設定 → API の連携アプリ一覧で見分けるため。
+ * - コールバック URL は `javascript:` などの危険なスキームを拒否する（XSS 対策）。
+ *   不正な URL は確認画面にも表示しない。
+ *
+ * @public
+ */
+import { computed, ref } from "vue";
+import MkAuthConfirm from "@/components/MkAuthConfirm.vue";
 import FormInput from "@/components/form/input.vue";
 import * as os from "@/os";
-import { $i, login } from "@/account";
 import { appendQuery, query } from "@/scripts/url";
 import { i18n } from "@/i18n";
+import { definePageMetadata } from "@/scripts/page-metadata";
 
 const props = defineProps<{
 	session: string;
@@ -71,6 +54,16 @@ const props = defineProps<{
 	permission?: string; // コンマ区切り
 }>();
 
+/** 遷移を許さないコールバック URL のスキーム */
+const BLOCKED_PROTOCOLS = [
+	"javascript:",
+	"file:",
+	"data:",
+	"mailto:",
+	"tel:",
+	"vbscript:",
+];
+
 const _permissions = (props.permission ?? "")
 	.split(",")
 	.map((permission) => permission.trim())
@@ -78,43 +71,95 @@ const _permissions = (props.permission ?? "")
 
 const appName = props.name?.trim() || "MiAuth";
 
-let state = $ref<string | null>(null);
-let comment = $ref("");
+/**
+ * 遷移してよいコールバック URL（無い・不正なときは null）
+ *
+ * @internal
+ */
+const safeCallback = computed((): string | null => {
+	if (!props.callback) return null;
+	try {
+		const url = new URL(props.callback);
+		return BLOCKED_PROTOCOLS.includes(url.protocol) ? null : props.callback;
+	} catch {
+		return null;
+	}
+});
 
-async function accept(): Promise<void> {
-	state = "waiting";
-	await os.api("miauth/gen-token", {
-		session: props.session,
-		name: `${appName}${comment ? ` (${comment.slice(0, 20)})` : ""}`,
-		iconUrl: props.icon,
-		permission: _permissions,
-	});
+const authRoot = ref<InstanceType<typeof MkAuthConfirm> | null>(null);
+const comment = ref("");
 
-	state = "accepted";
-	if (props.callback) {
-		const cbUrl = new URL(props.callback);
-		if (
-			["javascript:", "file:", "data:", "mailto:", "tel:"].includes(
-				cbUrl.protocol
-			)
-		)
-			throw new Error("invalid url");
+/**
+ * 選ばれたアカウントでトークンを発行し、アプリへ戻す
+ *
+ * @param token - 許可に使うアカウントのトークン（{@link MkAuthConfirm} から渡される）
+ * @internal
+ */
+async function onAccept(token: string): Promise<void> {
+	const trimmedComment = comment.value.trim().slice(0, 20);
+	try {
+		await os.api(
+			"miauth/gen-token",
+			{
+				session: props.session,
+				name: `${appName}${trimmedComment ? ` (${trimmedComment})` : ""}`,
+				iconUrl: props.icon,
+				permission: _permissions,
+			},
+			token,
+		);
+	} catch {
+		// NOTE: 失敗理由は os.api がトーストで表示済み
+		authRoot.value?.showUI("failed");
+		return;
+	}
+
+	if (props.callback && safeCallback.value == null) {
+		// 不正なコールバックには移動しない（トークン自体は発行済み）
+		authRoot.value?.showUI("success");
+		return;
+	}
+
+	if (safeCallback.value) {
+		authRoot.value?.showUI("redirecting");
 		location.href = appendQuery(
-			props.callback,
+			safeCallback.value,
 			query({
 				session: props.session,
-			})
+			}),
 		);
+	} else {
+		authRoot.value?.showUI("success");
 	}
 }
 
-function deny(): void {
-	state = "denied";
+function onDeny(): void {
+	authRoot.value?.showUI("denied");
 }
 
-function onLogin(res): void {
-	login(res.i);
-}
+definePageMetadata({
+	title: "MiAuth",
+	icon: "ph-app-window ph-bold ph-lg",
+});
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" module>
+.box {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	padding: 14px 16px;
+	border-radius: var(--radius);
+	background: var(--bg);
+	font-size: 0.95em;
+}
+
+.url {
+	padding: 10px 12px;
+	border-radius: var(--radius);
+	background: var(--panel);
+	font-size: 0.85em;
+	overflow-x: auto;
+	white-space: nowrap;
+}
+</style>

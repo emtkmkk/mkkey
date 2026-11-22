@@ -1,6 +1,6 @@
 import type Koa from "koa";
-import * as speakeasy from "speakeasy";
 import signin from "../common/signin.js";
+import { verifyTotpOnce } from "@/misc/verify-totp-once.js";
 import config from "@/config/index.js";
 import {
 	Users,
@@ -291,12 +291,11 @@ export default async (ctx: Koa.Context) => {
 			return;
 		}
 
-		const verified = (speakeasy as any).totp.verify({
-			secret: profile.twoFactorSecret,
-			encoding: "base32",
-			token,
-			window: 2,
-		});
+		// 一度使ったコードは通さない（verifyTotpOnce の説明を参照）。
+		// 秘密鍵が無い状態は 2 段階認証が壊れているので、コードの確認に進まず失敗にする
+		const verified =
+			profile.twoFactorSecret != null &&
+			(await verifyTotpOnce(user.id, profile.twoFactorSecret, token));
 
 		if (verified) {
 			signin(ctx, user);

@@ -5,8 +5,16 @@
  * 返却リストは usageVisibility とモチーフでフィルタする。キャッシュは従来どおり 1 キーで取得し、フィルタはメモリ側で実施。
  * ライセンス・モチーフ等の追加パラメータは falsy ならフィールドごと返さない。リモート絵文字では値があってもそれらのフィールドは返さない。
  * 応答は in-memory で 5 分間キャッシュし、絵文字の DB 読み取りは getStatsDataSource で行う（集計用プールが有効な場合）。
+ * リモート絵文字の一覧は全員共通で 1 つだけ作ってキャッシュし（`getRemoteEmojiBase`）、利用者ごとの応答では
+ * 同名のローカル絵文字を `Set` で除くだけにしている。以前は利用者ごとに全件を作り直し、名前の照合も配列の
+ * `includes` で「ローカル数 × リモート数」回比べていた（最適化監査 A-7 の一部）。
+ * OPTIMIZE: ローカル絵文字の pack も利用者ごとに行っている。pack 済みの一覧を共通で持つ余地がある（A-7 の残り）。
  */
 import { fromStoredCopyPermission } from "@/misc/copy-permission.js";
+import {
+	isEmojiCopyDeniedHost,
+	isRemoteEmojiCopyDenied,
+} from "@/misc/emoji-copy-policy.js";
 import { IsNull, Not } from "typeorm";
 import config from "@/config/index.js";
 import { getStatsDataSource } from "@/db/postgre.js";
@@ -44,8 +52,6 @@ function stripRemoteEmojiFields(obj: Record<string, unknown>): Record<string, un
 type RemoteEmojiRow = { name: string; host: string | null; sensitive: boolean; copyPermission: string | null };
 
 /** リモート絵文字の pack 用に必要な最小プロパティ（MV または Emoji のどちらからも取得可能） */
-type RemoteEmojiForPack = { name: string; host: string | null; sensitive?: boolean };
-
 async function fetchRemoteEmojisFromMv(): Promise<RemoteEmojiRow[] | null> {
 	try {
 		const ds = getStatsDataSource();
@@ -56,6 +62,81 @@ async function fetchRemoteEmojisFromMv(): Promise<RemoteEmojiRow[] | null> {
 	} catch {
 		return null;
 	}
+}
+
+/** リモート絵文字一覧の範囲。plus はコピー許可のもの、all はコピー拒否以外すべて */
+type RemoteEmojiMode = "plus" | "all";
+
+/** 応答に載せるリモート絵文字の最小形 */
+type PackedRemoteEmoji = { n: string; h: string | null; s?: true };
+
+/**
+ * 全員共通のリモート絵文字一覧（最小形）のキャッシュ。
+ *
+ * @remarks
+ * リモート絵文字の一覧は利用者によって変わらない（変わるのは「同名のローカル絵文字を除く」部分だけ）。
+ * 以前は応答キャッシュのキーに利用者 ID が入っていたため、利用者ごとに全件を読み直して作り直し、
+ * 同じ中身の大きな配列を利用者の数だけメモリに持っていた。ここで 1 つにまとめ、利用者ごとの応答は
+ * この配列の要素を共有する（配列そのものは利用者ごとに作るが、要素は作り直さない）。
+ * TTL は応答キャッシュと同じ。
+ *
+ * @internal
+ */
+const remoteEmojiBaseCache = new Cache<PackedRemoteEmoji[]>(
+	EMOJI_RESPONSE_CACHE_TTL_MS,
+	{ maxEntries: 2 },
+);
+
+/**
+ * 全員共通のリモート絵文字一覧（最小形）を返す
+ *
+ * @remarks
+ * - 禁止ホスト、ホスト名が 50 文字以上のものは除く。
+ * - plus: コピー許可（allow）のものだけ。all: コピー拒否（deny）以外、名前が 100 文字未満のもの。
+ * - 集計用のマテリアライズドビューが読めればそれを使い、読めなければ emoji テーブルから読む。
+ *
+ * @param mode - 一覧の範囲
+ * @returns 名前順のリモート絵文字（呼び出し側で書き換えないこと）
+ * @internal
+ */
+async function getRemoteEmojiBase(
+	mode: RemoteEmojiMode,
+): Promise<PackedRemoteEmoji[]> {
+	return await remoteEmojiBaseCache.fetch(mode, async () => {
+		const rows: RemoteEmojiRow[] =
+			(await fetchRemoteEmojisFromMv()) ??
+			(await getStatsDataSource()
+				.getRepository(Emoji)
+				.find({
+					select: ["name", "host", "sensitive", "copyPermission"],
+					where: {
+						host: Not(IsNull()),
+						oldEmoji: false,
+					},
+					order: {
+						name: "ASC",
+					},
+					cache: {
+						id: "meta_all_emojis",
+						milliseconds: 3600000, // 1 hour
+					},
+				}));
+
+		return rows
+			.filter((x) => {
+				if (isEmojiCopyDeniedHost(x.host)) return false;
+				if ((x.host?.length ?? 0) >= 50) return false;
+				const permission = fromStoredCopyPermission(x.copyPermission);
+				return mode === "plus"
+					? permission === "allow"
+					: permission !== "deny" && (x.name?.length ?? 0) < 100;
+			})
+			.map((e) => ({
+				n: e.name,
+				h: e.host ?? null,
+				...(e.sensitive ? { s: true as const } : {}),
+			}));
+	});
 }
 
 /** 一覧に含めるか（usageVisibility とモチーフ）。ローカル絵文字用。 */
@@ -215,10 +296,7 @@ export default define(meta, paramDef, async (ps, me) => {
 						if (!includeEmojiInList(emoji, me, followeeIds)) return null;
 					} else {
 						if (
-							["voskey.icalo.net", "9ineverse.com", "mogeko.monster"].includes(
-								emoji.host,
-							) ||
-							fromStoredCopyPermission(emoji.copyPermission) === "deny" ||
+							isRemoteEmojiCopyDenied(emoji) ||
 							emoji.category?.startsWith("!")
 						) {
 							return null;
@@ -311,106 +389,26 @@ export default define(meta, paramDef, async (ps, me) => {
 			});
 		}
 
-		const emojiNames = emojis.map((x) => x.name);
-
-		let remoteEmojis: RemoteEmojiForPack[] | undefined;
-
-		let remoteEmojiMode: string | undefined;
-
-		if ((ps as { remoteEmojis?: string }).remoteEmojis === "mini" || (ps as { plusEmojis?: boolean }).plusEmojis) {
-			const mvRows = await fetchRemoteEmojisFromMv();
-			if (mvRows) {
-				remoteEmojis = mvRows
-					.filter(
-						(x) =>
-							!emojiNames.includes(x.name) &&
-							!["voskey.icalo.net", "9ineverse.com", "mogeko.monster"].includes(
-								x.host ?? "",
-							) &&
-							(x.host?.length ?? 0) < 50 &&
-							fromStoredCopyPermission(x.copyPermission) === "allow",
-					);
-			} else {
-				remoteEmojis = (
-					await EmojiRepo.find({
-						where: {
-							host: Not(IsNull()),
-							oldEmoji: false,
-						},
-						order: {
-							name: "ASC",
-						},
-						cache: {
-							id: "meta_all_emojis",
-							milliseconds: 3600000, // 1 hour
-						},
-					})
-				).filter(
-					(x) =>
-						!emojiNames.includes(x.name) &&
-						!["voskey.icalo.net", "9ineverse.com", "mogeko.monster"].includes(
-							x.host ?? "",
-						) &&
-						(x.host?.length ?? 0) < 50 &&
-						fromStoredCopyPermission(x.copyPermission) === "allow",
-				);
-			}
-
-			remoteEmojiMode = "plus";
-		} else if ((ps as { remoteEmojis?: string }).remoteEmojis === "all" || (ps as { allEmojis?: boolean }).allEmojis) {
-			const mvRows = await fetchRemoteEmojisFromMv();
-			if (mvRows) {
-				remoteEmojis = mvRows
-					.filter(
-						(x) =>
-							!emojiNames.includes(x.name) &&
-							!["voskey.icalo.net", "9ineverse.com", "mogeko.monster"].includes(
-								x.host ?? "",
-							) &&
-							(x.name?.length ?? 0) < 100 &&
-							(x.host?.length ?? 0) < 50 &&
-							fromStoredCopyPermission(x.copyPermission) !== "deny",
-					);
-			} else {
-				remoteEmojis = (
-					await EmojiRepo.find({
-						where: {
-							host: Not(IsNull()),
-							oldEmoji: false,
-						},
-						order: {
-							name: "ASC",
-						},
-						cache: {
-							id: "meta_all_emojis",
-							milliseconds: 3600000, // 1 hour
-						},
-					})
-				).filter(
-					(x) =>
-						!emojiNames.includes(x.name) &&
-						!["voskey.icalo.net", "9ineverse.com", "mogeko.monster"].includes(
-							x.host ?? "",
-						) &&
-						(x.name?.length ?? 0) < 100 &&
-						(x.host?.length ?? 0) < 50 &&
-						fromStoredCopyPermission(x.copyPermission) !== "deny",
-				);
-			}
-
-			remoteEmojiMode = "all";
-		}
+		const remoteEmojiMode: RemoteEmojiMode | undefined =
+			(ps as { remoteEmojis?: string }).remoteEmojis === "mini" ||
+			(ps as { plusEmojis?: boolean }).plusEmojis
+				? "plus"
+				: (ps as { remoteEmojis?: string }).remoteEmojis === "all" ||
+					  (ps as { allEmojis?: boolean }).allEmojis
+					? "all"
+					: undefined;
 
 		const packedLocal = await Emojis.packMany(emojis);
-		/** リモート絵文字は n(name), h(host), s(sensitive, true のときのみ) の最小形で返す */
-		const packedRemote =
-			remoteEmojiMode && remoteEmojis && me
-				? remoteEmojis.map((e) => ({
-						n: e.name,
-						h: e.host ?? null,
-						...(e.sensitive ? { s: true as const } : {}),
-				  }))
-				: undefined;
+		/**
+		 * リモート絵文字は n(name), h(host), s(sensitive, true のときのみ) の最小形で返す。
+		 * 全員共通の一覧（{@link getRemoteEmojiBase}）から、この利用者に見えるローカル絵文字と同名のものだけ除く
+		 */
+		let packedRemote: PackedRemoteEmoji[] | undefined;
+		if (remoteEmojiMode && me) {
+			const localNames = new Set(emojis.map((x) => x.name));
+			const base = await getRemoteEmojiBase(remoteEmojiMode);
+			packedRemote = base.filter((x) => !localNames.has(x.n));
+		}
 
 		return {
 			emojiUpdatedAt: await emojiUpdatedAtPromise,

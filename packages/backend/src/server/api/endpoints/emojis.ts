@@ -8,6 +8,8 @@
  * リモート絵文字の一覧は全員共通で 1 つだけ作ってキャッシュし（`getRemoteEmojiBase`）、利用者ごとの応答では
  * 同名のローカル絵文字を `Set` で除くだけにしている。以前は利用者ごとに全件を作り直し、名前の照合も配列の
  * `includes` で「ローカル数 × リモート数」回比べていた（最適化監査 A-7 の一部）。
+ * `remoteEmojiFormat: "grouped"` を付けると、他鯖絵文字をホストごとにまとめた形（`remoteEmojiGroups`）で返す。
+ * 付けない古いクライアントには従来の形（`allEmojis`）で返す。
  * OPTIMIZE: ローカル絵文字の pack も利用者ごとに行っている。pack 済みの一覧を共通で持つ余地がある（A-7 の残り）。
  */
 import { fromStoredCopyPermission } from "@/misc/copy-permission.js";
@@ -139,6 +141,51 @@ async function getRemoteEmojiBase(
 	});
 }
 
+/**
+ * ホストごとにまとめた他鯖絵文字一覧（`remoteEmojiFormat: "grouped"` の応答）
+ *
+ * @remarks
+ * 形は `{ ホスト: "名前1 名前2 !センシティブな名前 …" }`。名前は空白区切りで、先頭の `!` はセンシティブの印。
+ * 名前は `\w` だけなので空白と `!` は混ざらない。
+ * 1 件ごとに `{"n":…,"h":…}` を書く形より、ホスト名を 1 回だけ書けばよい分小さい（本番で約 11.7MB → 約 4MB）。
+ * ローカル絵文字と同名のものは除かない（利用者ごとに違うので、クライアントで除く）。
+ * そのため応答は全員で同じ 1 つのオブジェクトを共有できる。
+ *
+ * @internal
+ */
+type GroupedRemoteEmojis = { groups: Record<string, string>; count: number };
+
+/** {@link getRemoteEmojiGroups} のキャッシュ（mode → 一覧）。TTL は応答キャッシュと同じ */
+const remoteEmojiGroupsCache = new Cache<GroupedRemoteEmojis>(
+	EMOJI_RESPONSE_CACHE_TTL_MS,
+	{ maxEntries: 2 },
+);
+
+/**
+ * ホストごとにまとめた他鯖絵文字一覧を返す
+ *
+ * @param mode - 一覧の範囲
+ * @returns まとめた一覧と件数（呼び出し側で書き換えないこと）
+ * @internal
+ */
+async function getRemoteEmojiGroups(
+	mode: RemoteEmojiMode,
+): Promise<GroupedRemoteEmojis> {
+	return await remoteEmojiGroupsCache.fetch(mode, async () => {
+		const base = await getRemoteEmojiBase(mode);
+		const lists = new Map<string, string[]>();
+		for (const e of base) {
+			if (e.h == null) continue;
+			const list = lists.get(e.h) ?? [];
+			list.push(e.s ? `!${e.n}` : e.n);
+			lists.set(e.h, list);
+		}
+		const groups: Record<string, string> = {};
+		for (const [host, list] of lists) groups[host] = list.join(" ");
+		return { groups, count: base.length };
+	});
+}
+
 /** 一覧に含めるか（usageVisibility とモチーフ）。ローカル絵文字用。 */
 function includeEmojiInList(
 	emoji: Emoji,
@@ -262,7 +309,7 @@ export default define(meta, paramDef, async (ps, me) => {
 		Boolean((item as { value?: unknown } | null)?.value);
 	const cacheKey = allEmojisPath
 		? `emojis:all:${me!.id}`
-		: `emojis:${me?.id ?? "anon"}:${(ps as { createdAtDesc?: boolean })?.createdAtDesc ?? false}:${(ps as { remoteEmojis?: string })?.remoteEmojis ?? ""}:${(ps as { plusEmojis?: boolean })?.plusEmojis ?? false}:${(ps as { allEmojis?: boolean })?.allEmojis ?? false}`;
+		: `emojis:${me?.id ?? "anon"}:${(ps as { createdAtDesc?: boolean })?.createdAtDesc ?? false}:${(ps as { remoteEmojis?: string })?.remoteEmojis ?? ""}:${(ps as { plusEmojis?: boolean })?.plusEmojis ?? false}:${(ps as { allEmojis?: boolean })?.allEmojis ?? false}:${(ps as { remoteEmojiFormat?: string })?.remoteEmojiFormat ?? ""}`;
 
 	// NOTE: 応答は分岐ごとに形が異なる（リモート絵文字の圧縮形式などを含む）ため、キャッシュは Record で持ち、
 	// 契約である res スキーマの型として返す
@@ -404,10 +451,17 @@ export default define(meta, paramDef, async (ps, me) => {
 		 * 全員共通の一覧（{@link getRemoteEmojiBase}）から、この利用者に見えるローカル絵文字と同名のものだけ除く
 		 */
 		let packedRemote: PackedRemoteEmoji[] | undefined;
+		let groupedRemote: GroupedRemoteEmojis | undefined;
 		if (remoteEmojiMode && me) {
-			const localNames = new Set(emojis.map((x) => x.name));
-			const base = await getRemoteEmojiBase(remoteEmojiMode);
-			packedRemote = base.filter((x) => !localNames.has(x.n));
+			if ((ps as { remoteEmojiFormat?: string }).remoteEmojiFormat === "grouped") {
+				// ホストごとの形。同名のローカル絵文字はクライアントで除く
+				groupedRemote = await getRemoteEmojiGroups(remoteEmojiMode);
+			} else {
+				// 従来の形（古いクライアント向け）
+				const localNames = new Set(emojis.map((x) => x.name));
+				const base = await getRemoteEmojiBase(remoteEmojiMode);
+				packedRemote = base.filter((x) => !localNames.has(x.n));
+			}
 		}
 
 		return {
@@ -419,6 +473,14 @@ export default define(meta, paramDef, async (ps, me) => {
 						remoteEmojiMode: remoteEmojiMode,
 						remoteEmojiCount: packedRemote.length,
 						allEmojis: packedRemote,
+				  }
+				: {}),
+			...(groupedRemote
+				? {
+						emojiFetchDate: new Date(),
+						remoteEmojiMode: remoteEmojiMode,
+						remoteEmojiCount: groupedRemote.count,
+						remoteEmojiGroups: groupedRemote.groups,
 				  }
 				: {}),
 		};

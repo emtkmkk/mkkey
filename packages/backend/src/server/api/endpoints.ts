@@ -191,6 +191,8 @@ import * as ep___emoji_add_request_reject from "./endpoints/emoji-add-request/re
 import * as ep___emoji_add_request_show from "./endpoints/emoji-add-request/show.js";
 import * as ep___emojis from "./endpoints/emojis.js";
 import * as ep___emojis_latest from "./endpoints/emojis/latest.js";
+import * as ep___emojis_searchRemote from "./endpoints/emojis/search-remote.js";
+import * as ep___emojis_remoteExists from "./endpoints/emojis/remote-exists.js";
 import * as ep___emoji_stats from "./endpoints/emoji-stats.js";
 import * as ep___endpoint from "./endpoints/endpoint.js";
 import * as ep___endpoints from "./endpoints/endpoints.js";
@@ -632,6 +634,8 @@ const eps = [
 	["emoji-add-request/show", ep___emoji_add_request_show],
         ["emojis", ep___emojis],
         ["emojis/latest", ep___emojis_latest],
+        ["emojis/search-remote", ep___emojis_searchRemote],
+        ["emojis/remote-exists", ep___emojis_remoteExists],
         ["emoji-stats", ep___emoji_stats],
 	["endpoint", ep___endpoint],
 	["endpoints", ep___endpoints],

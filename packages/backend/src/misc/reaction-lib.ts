@@ -9,7 +9,7 @@
  * @see {@link models/entities/note-reaction} ノートリアクション
  * @internal
  */
-import { fromStoredCopyPermission } from "./copy-permission.js";
+import { isRemoteEmojiCopyDenied } from "./emoji-copy-policy.js";
 import {
         emojiRegex,
         unicodeEmojiRegexAtStartToEnd,
@@ -40,12 +40,6 @@ export async function getFallbackReaction() {
 	return meta.defaultReaction;
 }
 
-const apFallbackReactionHosts = [
-	"voskey.icalo.net",
-	"9ineverse.com",
-	"mogeko.monster",
-];
-
 export async function resolveApReaction(
 	reaction: string,
 	emoji?: {
@@ -54,11 +48,8 @@ export async function resolveApReaction(
 		copyPermission?: string | null;
 	} | null,
 ): Promise<string> {
-	if (
-		emoji?.host &&
-		(apFallbackReactionHosts.includes(emoji.host) ||
-			fromStoredCopyPermission(emoji.copyPermission) === "deny")
-	) {
+	// 禁止ホストやコピー拒否の絵文字は、相手に送らず既定のリアクションに置き換える
+	if (emoji != null && isRemoteEmojiCopyDenied(emoji)) {
 		return await getFallbackReaction();
 	}
 

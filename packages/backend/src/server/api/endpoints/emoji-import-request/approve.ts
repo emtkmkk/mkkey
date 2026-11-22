@@ -5,6 +5,7 @@
  *
  * @remarks
  * - Fedibird 互換項目とコピー元のカテゴリ（orgCategory）も admin/emoji/copy と同じく引き継ぐ。
+ * - 禁止ホスト・ライセンスでコピー拒否の絵文字は承認しない（承認の時点のライセンスで判定する）。
  * - 審査待ちのほか、却下済みの申請も承認できる（判断の取り消し）。遷移表は `@/misc/emoji-request-state.js`。
  * - 状態の書き換えと絵文字の登録は 1 つのトランザクションで行い、状態を先に書き換える。
  *   二重に承認ボタンが押されても、絵文字は 1 つしか登録されない（負けた方は alreadyProcessed）。
@@ -19,6 +20,7 @@ import {
 	Emojis,
 } from "@/models/index.js";
 import { genId } from "@/misc/gen-id.js";
+import { isRemoteEmojiCopyDenied } from "@/misc/emoji-copy-policy.js";
 import { notifyEmojiRequestRequester } from "@/services/emoji-request-notification.js";
 import { buildCopiedEmojiExtraFields } from "@/misc/emoji-fedibird.js";
 import { ApiError } from "../../error.js";
@@ -63,6 +65,11 @@ export const meta = {
 			code: "NO_SUCH_EMOJI",
 			id: "b1c2d3e4-no-such-emoji",
 		},
+		copyDenied: {
+			message: "この絵文字は持ち主のサーバーがコピーを許可していないため、承認できません。",
+			code: "EMOJI_COPY_DENIED",
+			id: "a5786c03-9fb7-4dd4-acb7-56a5b9395708",
+		},
 	},
 	res: {
 		type: "object",
@@ -99,6 +106,11 @@ export default define(meta, paramDef, async (ps, me) => {
 	});
 	if (!emoji) {
 		throw new ApiError(meta.errors.noSuchEmoji);
+	}
+
+	// 申請した後にライセンスが変わってコピー拒否になっていることもあるので、承認の時点でも確かめる
+	if (isRemoteEmojiCopyDenied(emoji)) {
+		throw new ApiError(meta.errors.copyDenied);
 	}
 
 	const localSameName = await Emojis.findOneBy({

@@ -1,10 +1,18 @@
 /**
  * 絵文字インポート申請一覧を取得する（管理者・モデレーター向け）。status でフィルタ可能。
  *
+ * @remarks
+ * 審査のときに一覧で判断できるよう、申請された元の絵文字のライセンス（`source`）も付けて返す。
+ * 元の絵文字が掃除などで消えている場合は `source: null`。
+ * `source.copyDenied` が true の申請は承認できない（approve が copyDenied で断る）。
+ *
  * @public
  */
+import { In } from "typeorm";
 import define from "../../define.js";
-import { EmojiImportRequests } from "@/models/index.js";
+import { EmojiImportRequests, Emojis } from "@/models/index.js";
+import { fromStoredCopyPermission } from "@/misc/copy-permission.js";
+import { isRemoteEmojiCopyDenied } from "@/misc/emoji-copy-policy.js";
 
 export const meta = {
 	tags: ["emoji-import-request", "admin"],
@@ -64,25 +72,47 @@ export default define(meta, paramDef, async (ps, me) => {
 	const counts: Record<string, number> = {};
 	for (const row of countRows) counts[row.status] = Number(row.count);
 
-	const items = requests.map((r) => ({
-		id: r.id,
-		emojiName: r.emojiName,
-		emojiHost: r.emojiHost,
-		requesterId: r.requesterId,
-		requester: r.requester
-			? {
-					id: r.requester.id,
-					username: r.requester.username,
-					host: r.requester.host,
-			  }
-			: null,
-		status: r.status,
-		reason: r.reason,
-		processedById: r.processedById,
-		importedEmojiId: r.importedEmojiId,
-		createdAt: r.createdAt.toISOString(),
-		processedAt: r.processedAt?.toISOString() ?? null,
-	}));
+	// 申請された元の絵文字を 1 回のクエリでまとめて引く（名前で絞り、ホストは後で照合する）
+	const sourceEmojis =
+		requests.length > 0
+			? await Emojis.find({
+					select: ["name", "host", "copyPermission", "licenseName"],
+					where: { name: In([...new Set(requests.map((r) => r.emojiName))]) },
+			  })
+			: [];
+	const sourceByKey = new Map(
+		sourceEmojis.map((e) => [`${e.name}@${e.host ?? ""}`, e]),
+	);
+
+	const items = requests.map((r) => {
+		const source = sourceByKey.get(`${r.emojiName}@${r.emojiHost}`);
+		return {
+			id: r.id,
+			emojiName: r.emojiName,
+			emojiHost: r.emojiHost,
+			requesterId: r.requesterId,
+			requester: r.requester
+				? {
+						id: r.requester.id,
+						username: r.requester.username,
+						host: r.requester.host,
+				  }
+				: null,
+			status: r.status,
+			reason: r.reason,
+			processedById: r.processedById,
+			importedEmojiId: r.importedEmojiId,
+			createdAt: r.createdAt.toISOString(),
+			processedAt: r.processedAt?.toISOString() ?? null,
+			source: source
+				? {
+						copyPermission: fromStoredCopyPermission(source.copyPermission),
+						licenseName: source.licenseName ?? null,
+						copyDenied: isRemoteEmojiCopyDenied(source),
+				  }
+				: null,
+		};
+	});
 
 	return { items, counts };
 });

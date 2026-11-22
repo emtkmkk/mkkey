@@ -6,6 +6,7 @@
  * @remarks
  * - **API パス**: `admin/emoji/copy`（POST `/api/admin/emoji/copy` で呼び出し）
  * - 認証必須・モデレーター権限必須。コピー元は isBasedOnUrl に URI を指定。
+ * - 禁止ホスト・ライセンスでコピー拒否（copyPermission = deny）の絵文字はコピーしない。
  * - 補足情報（license）には「Copy to 〇〇」を格納。モチーフ情報は引き継がず、usageVisibility は常に private で新規作成（emojiAdded は送信しない）。
  * - Fedibird 互換項目（表示名・読み・関連リンク・著作権表示・クレジット・参考情報）は引き継ぎ、コピー元のカテゴリはホスト名を外して orgCategory に入れる。
  *
@@ -16,6 +17,7 @@ import { IsNull } from "typeorm";
 import define from "../../../define.js";
 import { Emojis } from "@/models/index.js";
 import { genId } from "@/misc/gen-id.js";
+import { isRemoteEmojiCopyDenied } from "@/misc/emoji-copy-policy.js";
 import { buildCopiedEmojiExtraFields } from "@/misc/emoji-fedibird.js";
 import { ApiError } from "../../../error.js";
 import type { DriveFile } from "@/models/entities/drive-file.js";
@@ -40,6 +42,11 @@ export const meta = {
 			message: "Already Registered.",
 			code: "ALREADY_REGISTERED",
 			id: "e2785b66-dca3-4087-9cac-ad17432b63f1",
+		},
+		copyDenied: {
+			message: "この絵文字は持ち主のサーバーがコピーを許可していないため、コピーできません。",
+			code: "EMOJI_COPY_DENIED",
+			id: "ae83b34b-2bd9-4b71-bfaf-2d9a61a248d9",
 		},
 	},
 
@@ -78,6 +85,11 @@ export default define(meta, paramDef, async (ps, me) => {
 
 	if (emoji == null) {
 		throw new ApiError(meta.errors.noSuchEmoji);
+	}
+
+	// 禁止ホスト・ライセンスでコピー拒否の絵文字はコピーしない
+	if (isRemoteEmojiCopyDenied(emoji)) {
+		throw new ApiError(meta.errors.copyDenied);
 	}
 
 	// リモート絵文字を取り込むための API なので、ローカル絵文字は対象外

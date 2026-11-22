@@ -1,6 +1,7 @@
 /**
  * 絵文字インポート申請を作成する（ユーザー向け）。
  * 1日10回制限（UTC 0:00リセット）。否認リスト・同一名で pending があれば拒否。
+ * 禁止ホスト・ライセンスでコピー拒否の絵文字も拒否する（{@link isRemoteEmojiCopyDenied}）。
  * 申請作成時に管理者（isAdmin）にのみ通知する（モデレーターには送らない）。通知の種類は emojiRequest（押すと審査画面のこの申請が開く）。
  *
  * @public
@@ -12,6 +13,7 @@ import { genId } from "@/misc/gen-id.js";
 import { notifyEmojiRequestReviewers } from "@/services/emoji-request-notification.js";
 import { ApiError } from "../../error.js";
 import { toPuny } from "@/misc/convert-host.js";
+import { isRemoteEmojiCopyDenied } from "@/misc/emoji-copy-policy.js";
 
 const DAILY_LIMIT = 10;
 
@@ -49,6 +51,11 @@ export const meta = {
 			message: "本日の申請回数の上限に達しました。",
 			code: "DAILY_LIMIT_EXCEEDED",
 			id: "a1b2c3d4-daily-limit",
+		},
+		copyDenied: {
+			message: "この絵文字は持ち主のサーバーがコピーを許可していないため、申請できません。",
+			code: "EMOJI_COPY_DENIED",
+			id: "50917558-be94-4818-85b3-0290cefe09f6",
 		},
 	},
 	res: {
@@ -110,6 +117,11 @@ export default define(meta, paramDef, async (ps, me) => {
 			code: "NO_SUCH_EMOJI",
 			id: "a1b2c3d4-no-such-emoji",
 		});
+	}
+
+	// 禁止ホスト・コピー拒否の絵文字は申請を受け付けない（承認できないものを審査に回さない）
+	if (isRemoteEmojiCopyDenied(remoteEmoji)) {
+		throw new ApiError(meta.errors.copyDenied);
 	}
 
 	const request = await EmojiImportRequests.insert({

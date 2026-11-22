@@ -25,13 +25,18 @@
 						@{{ r.requester.username }}{{ r.requester.host ? `@${r.requester.host}` : "" }}
 					</MkA>
 					<span :class="$style.sub">{{ formatRequestDate(r.createdAt) }}</span>
+					<span v-if="r.source" :class="$style.sub">
+						ライセンス：{{ r.source.licenseName || "記載なし" }} ／ コピー：{{ copyPermissionLabel(r.source.copyPermission) }}
+					</span>
+					<span v-else :class="$style.sub">元の絵文字が見つかりません（消えた可能性があります）</span>
+					<p v-if="r.source?.copyDenied" :class="$style.denied">持ち主のサーバーがコピーを許可していないため、承認できません。</p>
 					<p v-if="r.status === 'rejected' && r.reason" :class="$style.reason">{{ r.reason }}</p>
 					<div :class="$style.actions">
 						<template v-if="r.status === 'pending'">
-							<MkButton primary inline @click="approve(r)">承認</MkButton>
+							<MkButton primary inline :disabled="r.source?.copyDenied" @click="approve(r)">承認</MkButton>
 							<MkButton danger inline @click="reject(r)">見送る</MkButton>
 						</template>
-						<MkButton v-else-if="r.status === 'rejected'" primary inline @click="approve(r)">改めて承認</MkButton>
+						<MkButton v-else-if="r.status === 'rejected'" primary inline :disabled="r.source?.copyDenied" @click="approve(r)">改めて承認</MkButton>
 						<MkButton inline @click="openDetail(r)">絵文字の詳細</MkButton>
 					</div>
 				</div>
@@ -86,7 +91,34 @@ type AdminImportRequest = {
 	status: "pending" | "approved" | "rejected";
 	reason: string | null;
 	createdAt: string;
+	/** 申請された元の絵文字のライセンス。元の絵文字が消えていれば null */
+	source: {
+		copyPermission: string;
+		licenseName: string | null;
+		/** 禁止ホストかコピー拒否。true なら承認できない */
+		copyDenied: boolean;
+	} | null;
 };
+
+/**
+ * コピー許可の値を審査画面向けの短い言葉にする
+ *
+ * @param value - copyPermission（allow / deny / conditional / none）
+ * @returns 表示用の言葉
+ * @internal
+ */
+function copyPermissionLabel(value: string): string {
+	switch (value) {
+		case "allow":
+			return "許可";
+		case "deny":
+			return "拒否";
+		case "conditional":
+			return "条件付き";
+		default:
+			return "記載なし";
+	}
+}
 
 const statusFilter = ref<"pending" | "rejected">("pending");
 const items = ref<AdminImportRequest[]>([]);
@@ -252,6 +284,11 @@ function openDetail(r: AdminImportRequest): void {
 .reason {
 	margin: 4px 0 0;
 	white-space: pre-wrap;
+}
+
+.denied {
+	margin: 4px 0 0;
+	color: var(--error);
 }
 
 .actions {

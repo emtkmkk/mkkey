@@ -11,6 +11,7 @@
  *
  * 本文・CW の `$[mc]`（マクドナルドの短縮名）は、投稿者の設定で置き換えてから出す（`misc/mc-short-name.ts`）。
  *
+ * 他鯖絵文字（:name@host:）の入った投稿は、`@host` を取って CW を付けて出す（{@link stripRemoteEmojiForFederation}）。
  *
  * @internal
  */
@@ -128,35 +129,17 @@ export default async function renderNote(
 
 	const files = await getPromisedFiles(note.fileIds);
 
-	if (
-		/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/.test(note.cw ?? "") ||
-		/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/.test(note.text ?? "")
-	) {
-		// 他鯖絵文字が入っている場合、外部には@以下をトリミングして配信する
-		if (note.cw)
-			note.cw = note.cw?.replaceAll(
-				/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/gi,
-				":$1:",
-			);
-		if (note.text)
-			note.text = note.text?.replaceAll(
-				/:([a-z0-9_+-]+)(@[a-z0-9_+-.]*):/gi,
-				":$1:",
-			);
-		if (note.emojis)
-			note.emojis = note.emojis?.map((x) =>
-				x.replaceAll(/^([a-z0-9_+-]+)(@[a-z0-9_+-.]*)$/gi, "$1"),
-			);
-		if (note.cw && !note.cw.includes("投稿に連合先表示不可の絵文字") && !note.cw.includes("投稿にリモート表示不可の絵文字")) {
-			note.cw = "投稿に連合先表示不可の絵文字が含まれます " + note.cw;
-		} else {
-			note.cw = "投稿に連合先表示不可の絵文字が含まれます";
-		}
-	}
+	// 他鯖絵文字（:name@host:）の入った投稿は、相手では表示できないので @ 以下を取って CW を付けて送る。
+	// NB: 渡された note は呼び出し元でも使われる（配送のたびに何度も render される）ので書き換えない。
+	// 以前は note.cw を直接書き換えていたため、2 回目以降の render で CW が定型文だけに置き換わっていた
+	const remoteEmojiStripped = stripRemoteEmojiForFederation(note);
+	const noteCw = remoteEmojiStripped.cw;
+	const noteText = remoteEmojiStripped.text;
+	const noteEmojis = remoteEmojiStripped.emojis;
 
 	// $[mc]（マクドナルドの短縮名）は、リモートへは投稿者の設定で置き換えてから出す
 	const mcShortName = await getAuthorMcShortName(note);
-	let text = applyMcShortName(note.text ?? "", mcShortName);
+	let text = applyMcShortName(noteText ?? "", mcShortName);
 	let poll: Poll | null = null;
 
 	if (note.hasPoll) {
@@ -178,17 +161,19 @@ export default async function renderNote(
 	}
 
 	const summary =
-		note.cw === ""
+		noteCw === ""
 			? String.fromCharCode(0x200b)
-			: applyMcShortName(note.cw, mcShortName);
+			: applyMcShortName(noteCw, mcShortName);
 
 	const content = toHtml(
 		Object.assign({}, note, {
 			text: apText,
+			cw: noteCw,
+			emojis: noteEmojis,
 		}),
 	);
 
-	const emojis = await getEmojis(note.emojis);
+	const emojis = await getEmojis(noteEmojis);
 	const apemojis = emojis.map((emoji) => renderEmoji(emoji));
 
 	const tag = [...hashtagTags, ...mentionTags, ...apemojis];
@@ -199,6 +184,8 @@ export default async function renderNote(
 			content: toHtml(
 				Object.assign({}, note, {
 					text: text,
+					cw: noteCw,
+					emojis: noteEmojis,
 				}),
 			),
 			[poll.expiresAt && poll.expiresAt < new Date() ? "closed" : "endTime"]:
@@ -242,13 +229,60 @@ export default async function renderNote(
 		cc,
 		inReplyTo,
 		attachment: files.map(renderDocument),
-		sensitive: note.cw != null || files.some((file) => file.isSensitive),
+		sensitive: noteCw != null || files.some((file) => file.isSensitive),
 		tag,
 		references: await getReferences(note),
 		...asPoll,
 		...asTalk,
 		// バブル相手には元のローカル範囲を伝える。一般のリモートは既存の to/cc を使う。
 		_mk_localVisibility: getLocalVisibilityHint(note),
+	};
+}
+
+/** 本文中の他鯖絵文字（:name@host:）。名前は大文字も含む（Mastodon 系の :BlobCat: など） */
+const REMOTE_EMOJI_IN_TEXT = /:([a-z0-9_+-]+)@[a-z0-9_+.-]*:/gi;
+
+/** 他鯖絵文字を含む投稿に付ける CW の定型文 */
+const REMOTE_EMOJI_CW = "投稿に連合先表示不可の絵文字が含まれます";
+
+/**
+ * 他鯖絵文字を、連合先に出せる形にした CW・本文・絵文字名を返す
+ *
+ * @remarks
+ * - 他鯖絵文字（:name@host:）が CW か本文にあれば、`@host` を取り除き、CW の先頭に定型文を付ける。
+ *   相手は `name@host` の絵文字を持っていないので、少なくとも見た目が崩れていることを CW で知らせる。
+ * - 利用者が書いた CW は残す（定型文の後ろに続ける）。CW が無ければ定型文だけにする。
+ * - 渡された note は書き換えない（新しい値を返す）。
+ * - 古い定型文「投稿にリモート表示不可の絵文字」が既に入っている CW には付け足さない（後方互換）。
+ *
+ * @param note - ローカルノート
+ * @returns 送る CW・本文・絵文字名。他鯖絵文字が無ければ note の値そのまま
+ * @internal
+ */
+function stripRemoteEmojiForFederation(
+	note: Pick<Note, "cw" | "text" | "emojis">,
+): { cw: string | null; text: string | null; emojis: string[] } {
+	const hasRemoteEmoji = (value: string | null | undefined) =>
+		value != null && new RegExp(REMOTE_EMOJI_IN_TEXT.source, "i").test(value);
+	if (!hasRemoteEmoji(note.cw) && !hasRemoteEmoji(note.text)) {
+		return { cw: note.cw, text: note.text, emojis: note.emojis };
+	}
+
+	const strip = (value: string | null) =>
+		value?.replaceAll(REMOTE_EMOJI_IN_TEXT, ":$1:") ?? value;
+	const strippedCw = strip(note.cw);
+	const cw =
+		strippedCw == null || strippedCw === ""
+			? REMOTE_EMOJI_CW
+			: strippedCw.includes(REMOTE_EMOJI_CW) ||
+				  strippedCw.includes("投稿にリモート表示不可の絵文字")
+				? strippedCw
+				: `${REMOTE_EMOJI_CW} ${strippedCw}`;
+
+	return {
+		cw,
+		text: strip(note.text),
+		emojis: (note.emojis ?? []).map((x) => x.replace(/@.*$/, "")),
 	};
 }
 

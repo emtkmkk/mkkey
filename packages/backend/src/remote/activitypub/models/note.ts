@@ -77,6 +77,9 @@ import { In } from "typeorm";
 import { DB_MAX_IMAGE_COMMENT_LENGTH } from "@/misc/hard-limits.js";
 import { truncate } from "@/misc/truncate.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
+import { Cache } from "@/misc/cache.js";
+import { CACHE_MAX_SMALL } from "@/misc/cache-limits.js";
+import type { Instance } from "@/models/entities/instance.js";
 import { shouldSkipIngestForDormantFollowersOnly } from "../dormant-follower-check.js";
 
 const logger = apLogger;
@@ -100,6 +103,69 @@ type RemoteEmojiInfo = {
 	roleIdsThatCanBeUsedThisEmojiAsReaction?: string[];
 	roleIdsThatCanNotBeUsedThisEmojiAsReaction?: string[];
 };
+
+/** Pleroma 系の `/api/v1/pleroma/emoji` の応答（絵文字名 → 情報） */
+type PleromaEmojiList = Record<string, { tags: string[] }>;
+
+/** Pleroma 系の `/api/v1/pleroma/emoji/pack?name=` の応答（使う項目だけ） */
+type PleromaEmojiPack = {
+	pack: {
+		"can-download"?: boolean;
+		"share-flies"?: boolean;
+		license?: string;
+		description?: string;
+		homepage?: string;
+		"fallback-src"?: string;
+	};
+	files_count?: number;
+};
+
+/** Pleroma 系の絵文字一覧・pack 情報を持っておく時間（ミリ秒） */
+const PLEROMA_EMOJI_CACHE_TTL_MS = 10 * 60 * 1000;
+
+/**
+ * Pleroma 系サーバーの絵文字一覧（ホスト → 一覧）
+ *
+ * @remarks
+ * 一覧は数千件になることがあり、以前は絵文字 1 個ごとに全件を取りに行っていた（20 個並んだ投稿なら 20 回）。
+ * 取得に失敗したときはキャッシュしない（次の絵文字で取り直す）。
+ *
+ * @internal
+ */
+const pleromaEmojiListCache = new Cache<PleromaEmojiList>(
+	PLEROMA_EMOJI_CACHE_TTL_MS,
+	{ maxEntries: 32 },
+);
+
+/**
+ * Pleroma 系サーバーの pack 情報（`ホスト pack名` → 情報）
+ *
+ * @internal
+ */
+const pleromaEmojiPackCache = new Cache<PleromaEmojiPack>(
+	PLEROMA_EMOJI_CACHE_TTL_MS,
+	{ maxEntries: CACHE_MAX_SMALL },
+);
+
+/**
+ * インスタンスが Pleroma 系（Pleroma / Akkoma）か
+ *
+ * @remarks
+ * nodeinfo のソフトウェア名で見分ける。名前が分からない古い行のために、以前の見分け方
+ * （1 人あたりのリアクション上限が 128）も残している。
+ *
+ * @param instance - インスタンス（記録が無ければ null）
+ * @returns Pleroma 系なら true
+ * @internal
+ */
+function isPleromaInstance(
+	instance: Pick<Instance, "softwareName" | "maxReactionsPerAccount"> | null,
+): boolean {
+	if (instance == null) return false;
+	const software = instance.softwareName?.toLowerCase();
+	if (software === "pleroma" || software === "akkoma") return true;
+	return software == null && instance.maxReactionsPerAccount === 128;
+}
 
 export function validateNote(object: any, uri: string) {
 	const expectHost = extractDbHost(uri);
@@ -729,6 +795,13 @@ export async function extractEmojis(
 
 	const eomjiTags = toArray(tags).filter(isEmoji);
 
+	// 送り主が Pleroma 系か。必要になったときに 1 回だけ調べ、同じ投稿の絵文字どうしで使い回す
+	let pleromaHostPromise: Promise<boolean> | null = null;
+	const isPleromaHost = () =>
+		(pleromaHostPromise ??= Instances.findOneBy({ host }).then((instance) =>
+			isPleromaInstance(instance),
+		));
+
 	return await Promise.all(
 		eomjiTags.map(async (tag) => {
 			let name = tag.name!.replace(/^:/, "").replace(/:$/, "");
@@ -814,11 +887,9 @@ export async function extractEmojis(
 				) {
 					emojiInfoFlg = true;
 
-					const instance = await Instances.findOneBy({ host: host });
-
 					// 未知のインスタンス（レコードが無い）の場合は Misskey 系として扱う
-					if (instance?.maxReactionsPerAccount !== 128) {
-						const apiurl = `https://${host}/api/emoji?name=${name}`;
+					if (!(await isPleromaHost())) {
+						const apiurl = `https://${host}/api/emoji?name=${encodeURIComponent(name)}`;
 
 						try {
 							emojiInfo = (await getJson(
@@ -834,34 +905,32 @@ export async function extractEmojis(
 
 						try {
 							// Pleroma 系の /api/v1/pleroma/emoji は「絵文字名 → 情報」の形で返る
+							// 絵文字ごとに全件を取りに行かないよう、ホストごとに少しの間だけ持っておく
 							const emojiJson = (
-								(await getJson(
-									apiurl,
-									"application/json, */*",
-									5000,
-								)) as Record<string, { tags: string[] }>
+								await pleromaEmojiListCache.fetch(host, async () =>
+									(await getJson(
+										apiurl,
+										"application/json, */*",
+										5000,
+									)) as PleromaEmojiList,
+								)
 							)[name];
 
 							const pack = emojiJson.tags
 								.filter((x) => x.startsWith("pack:"))?.[0]
 								?.replace("pack:", "");
 							if (pack) {
-								const apiurl = `https://${host}/api/v1/pleroma/emoji/pack?name=${pack}`;
-								const packJson = (await getJson(
-									apiurl,
-									"application/json, */*",
-									5000,
-								)) as {
-									pack: {
-										"can-download"?: boolean;
-										"share-flies"?: boolean;
-										license?: string;
-										description?: string;
-										homepage?: string;
-										"fallback-src"?: string;
-									};
-									files_count?: number;
-								};
+								const apiurl = `https://${host}/api/v1/pleroma/emoji/pack?name=${encodeURIComponent(pack)}`;
+								// 同じ pack の絵文字が 1 つの投稿に並ぶことが多いので、pack 情報もホスト + pack 名で持っておく
+								const packJson = await pleromaEmojiPackCache.fetch(
+									`${host} ${pack}`,
+									async () =>
+										(await getJson(
+											apiurl,
+											"application/json, */*",
+											5000,
+										)) as PleromaEmojiPack,
+								);
 								licenseData.copyPermission = licenseData.copyPermission
 									? licenseData.copyPermission
 									: packJson.pack["can-download"] &&

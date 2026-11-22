@@ -2589,7 +2589,14 @@ async function post() {
 
 	if (!props.renote && !quoteId && referencesFlg && referenceIds?.length === 1) {
 		try {
-			const note = await os.api("notes/show", { noteId: referenceIds[0] });
+			// NOTE: 引用への切り替え確認のための下調べ。参照先が消えていても投稿はそのまま続けるので、
+			// 見つからないときはトーストを出さない
+			const note = await os.api(
+				"notes/show",
+				{ noteId: referenceIds[0] },
+				undefined,
+				["NO_SUCH_NOTE"],
+			);
 			if (note.userId === $i.id) {
 				const { canceled } = await os.yesno({
 					type: "info",

@@ -67,10 +67,16 @@ export const loadDeck = async () => {
 	let deck;
 
 	try {
-		deck = await api("i/registry/get", {
-			scope: ["client", "deck", "profiles"],
-			key: deckStore.state.profile,
-		});
+		// NOTE: 新しいプロファイルはまだ保存されていないため NO_SUCH_KEY が返るのが正常。トーストは出さない
+		deck = await api(
+			"i/registry/get",
+			{
+				scope: ["client", "deck", "profiles"],
+				key: deckStore.state.profile,
+			},
+			undefined,
+			["NO_SUCH_KEY"],
+		);
 	} catch (err) {
 		if (err.code === "NO_SUCH_KEY") {
 			// 後方互換性のため

@@ -15,10 +15,16 @@ export async function fetchThemes(): Promise<void> {
 	if ($i == null) return;
 
 	try {
-		const themes = await api("i/registry/get", {
-			scope: ["client"],
-			key: "themes",
-		});
+		// NOTE: テーマを一度も保存していないユーザーでは NO_SUCH_KEY が返るのが正常なので、トーストを出さない
+		const themes = await api(
+			"i/registry/get",
+			{
+				scope: ["client"],
+				key: "themes",
+			},
+			undefined,
+			["NO_SUCH_KEY"],
+		);
 		localStorage.setItem(lsCacheKey, JSON.stringify(themes));
 	} catch (err) {
 		if (err.code === "NO_SUCH_KEY") return;

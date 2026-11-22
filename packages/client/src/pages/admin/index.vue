@@ -424,7 +424,10 @@ async function lookupNote() {
 		"notes/show",
 		q.startsWith("http://") || q.startsWith("https://")
 			? { url: q.trim() }
-			: { noteId: q.trim() }
+			: { noteId: q.trim() },
+		undefined,
+		// 見つからないときは下でダイアログを出すので、トーストと二重にしない
+		["NO_SUCH_NOTE"],
 	)
 		.then((note) => {
 			os.pageWindow(`/notes/${note.id}`);

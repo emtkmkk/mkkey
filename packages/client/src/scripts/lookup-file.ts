@@ -12,6 +12,9 @@ export async function lookupFile() {
 		q.startsWith("http://") || q.startsWith("https://")
 			? { url: q.trim() }
 			: { fileId: q.trim() },
+		undefined,
+		// 見つからないときは下でダイアログを出すので、トーストと二重にしない
+		["NO_SUCH_FILE"],
 	)
 		.then((file) => {
 			os.pageWindow(`/admin/file/${file.id}`);

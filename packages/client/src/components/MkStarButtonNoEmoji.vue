@@ -83,7 +83,14 @@ const isFavorited = ref(false);
 async function fetchFavoritedState(): Promise<void> {
 	if (!$i || defaultStore.state.favButtonReaction !== "favorite") return;
 	try {
-		const state = await os.api("notes/state", { noteId: props.note.id });
+		// NOTE: タイムラインのノートごとに裏で呼ばれるため、失敗をトーストにすると
+		// 同じエラーが件数分並んでしまう。失敗しても見た目が変わるだけなので出さない
+		const state = await os.api(
+			"notes/state",
+			{ noteId: props.note.id },
+			undefined,
+			true,
+		);
 		isFavorited.value = state.isFavorited;
 	} catch {
 		// 取得失敗時は見た目上のみ非お気に入り扱い（実際の状態には影響しない）

@@ -60,11 +60,83 @@ const apiClient = new Misskey.api.APIClient({
 	origin: url,
 });
 
+//#region API 呼び出し
+
+/**
+ * API エラー時のトースト表示をどう抑えるかの指定
+ *
+ * @remarks
+ * - `false`（既定）: すべてのエラーをトーストで知らせる
+ * - `true`: どのエラーでもトーストを出さない（呼び出し側が自前で知らせる場合）
+ * - エラーコードの配列: そのコードのエラーだけトーストを出さない
+ *
+ * NOTE: 「キーが無ければ既定値を使う」のように、特定のエラーが返ることを前提にした呼び出しでは、
+ * `true` ではなくコードの配列を使う。想定外のエラー（サーバー負荷など）は引き続きトーストで気付けるようにするため。
+ *
+ * @example
+ * ```ts
+ * await os.api("i/registry/get", { scope: ["client"], key: "themes" }, undefined, ["NO_SUCH_KEY"]);
+ * ```
+ * @public
+ */
+export type ApiErrorToastSuppression = boolean | readonly string[];
+
+/**
+ * {@link api} / {@link apiGet} の型
+ *
+ * @remarks
+ * calckey-js の `request` と同じ型推論（エンドポイントごとの引数・戻り値）を保ったまま、
+ * 4 番目の引数 {@link ApiErrorToastSuppression} を受け取れるようにしたもの。
+ *
+ * @internal
+ */
+type ApiRequest = <
+	E extends keyof Misskey.Endpoints,
+	P extends Misskey.Endpoints[E]["req"],
+>(
+	endpoint: E,
+	params?: P,
+	credential?: string | null | undefined,
+	suppressToast?: ApiErrorToastSuppression,
+) => ReturnType<typeof apiClient.request<E, P>>;
+
+/**
+ * API エラーをトーストで知らせるかを判定する
+ *
+ * @param suppressToast - 呼び出し側の抑止指定
+ * @param error - API が返したエラー本体（`body.error`）
+ * @returns トーストを出すなら `true`
+ * @internal
+ */
+function shouldToastApiError(
+	suppressToast: ApiErrorToastSuppression,
+	error: { code?: string } | undefined,
+): boolean {
+	if (typeof suppressToast === "boolean") return !suppressToast;
+	// コード指定のときは、指定外のエラーだけ知らせる
+	return !(error?.code != null && suppressToast.includes(error.code));
+}
+
+/**
+ * API を POST で呼び出す
+ *
+ * @remarks
+ * 失敗時は既定でトーストを出し、エラーログ（IndexedDB）にも記録する。
+ * トーストを出したくない場合は `suppressToast` を指定する（{@link ApiErrorToastSuppression}）。
+ * NOTE: トーストを抑止したエラーはエラーログにも記録されない（トースト表示と記録が同じ経路のため）。
+ *
+ * @param endpoint - エンドポイント名、または完全な URL
+ * @param data - リクエスト本文
+ * @param token - 使うトークン（省略時はログイン中のアカウント）
+ * @param suppressToast - エラー時のトースト抑止指定
+ * @returns API の応答
+ * @public
+ */
 export const api = ((
 	endpoint: string,
 	data: Record<string, any> = {},
 	token?: string | null | undefined,
-	suppressToast = false,
+	suppressToast: ApiErrorToastSuppression = false,
 ) => {
 	if (endpoint === "notes/create") {
 		data = ensureNotesCreateIdempotencyKey(data);
@@ -113,7 +185,7 @@ export const api = ((
 				} else if (res.status === 204) {
 					resolve();
 				} else {
-					if (!suppressToast) {
+					if (shouldToastApiError(suppressToast, body?.error)) {
 						errortoast(res, body, endpoint, data);
 					}
 					reject(body.error);
@@ -125,13 +197,26 @@ export const api = ((
 	promise.then(onFinally, onFinally);
 
 	return promise;
-}) as typeof apiClient.request;
+}) as ApiRequest;
 
+/**
+ * API を GET で呼び出す（キャッシュ可能なエンドポイント向け）
+ *
+ * @remarks
+ * エラー時の扱いは {@link api} と同じ。
+ *
+ * @param endpoint - エンドポイント名
+ * @param data - クエリパラメータ
+ * @param token - 使うトークン（省略時はログイン中のアカウント）
+ * @param suppressToast - エラー時のトースト抑止指定
+ * @returns API の応答
+ * @public
+ */
 export const apiGet = ((
 	endpoint: string,
 	data: Record<string, any> = {},
 	token?: string | null | undefined,
-	suppressToast = false,
+	suppressToast: ApiErrorToastSuppression = false,
 ) => {
 	pendingApiRequestsCount.value++;
 
@@ -164,7 +249,7 @@ export const apiGet = ((
 				} else if (res.status === 204) {
 					resolve();
 				} else {
-					if (!suppressToast) {
+					if (shouldToastApiError(suppressToast, body?.error)) {
 						errortoast(res, body, endpoint, data);
 					}
 					reject(body.error);
@@ -176,7 +261,7 @@ export const apiGet = ((
 	promise.then(onFinally, onFinally);
 
 	return promise;
-}) as typeof apiClient.request;
+}) as ApiRequest;
 
 export const apiWithDialog = ((
 	endpoint: string,
@@ -194,7 +279,7 @@ export const apiWithDialog = ((
 	return promise;
 }) as typeof api;
 
-
+//#endregion
 
 export type apiData = {
 	id?: string;
@@ -202,7 +287,7 @@ export type apiData = {
 	endpoint: string;
 	data?: Record<string, any>;
 	token?: string | null | undefined;
-	suppressToast?: boolean;
+	suppressToast?: ApiErrorToastSuppression;
 	comment?: string;
 	draftData?: any;
 }
@@ -227,7 +312,7 @@ export const queueApi = (
 	endpoint: string,
 	data: Record<string, any> = {},
 	token?: string | null | undefined,
-	suppressToast = false,
+	suppressToast: ApiErrorToastSuppression = false,
 	comment?: string | undefined,
 	draftData?: any,
 ): Promise<any> => {

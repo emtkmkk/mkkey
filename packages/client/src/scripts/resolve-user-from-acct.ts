@@ -21,7 +21,14 @@ export async function resolveUserFromAcct(
 	const normalizedAcct = normalizeAcct(acct);
 	const cached = userIdCache.get(normalizedAcct);
 	if (cached != null && Date.now() - cached.cachedAt <= CACHE_TTL_MS) {
-		return await os.api("users/show", { userId: cached.userId }).catch(async () => {
+		// NOTE: キャッシュした ID が古い（削除・再作成など）と失敗するが、そのときは acct で引き直すので
+		// ここではトーストを出さない。本当に失敗していれば引き直しの側でトーストが出る。
+		return await os.api(
+			"users/show",
+			{ userId: cached.userId },
+			undefined,
+			true,
+		).catch(async () => {
 			userIdCache.delete(normalizedAcct);
 			const user = await os.api("users/show", Acct.parse(acct));
 			userIdCache.set(normalizedAcct, {

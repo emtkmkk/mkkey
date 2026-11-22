@@ -12,6 +12,7 @@ import { $i } from "@/account";
 import { get, set } from "./scripts/idb-proxy";
 import { defaultStore } from "./store";
 import { preloadFolloweeIdsIfNeeded } from "@/scripts/emoji-motif-follow-cache";
+import { setRemoteEmojiDictionary } from "@/scripts/remote-emoji-dictionary";
 
 // TODO: 他のタブと永続化されたstateを同期
 
@@ -51,22 +52,30 @@ stream.on("emojiDeleted", (emojiData) => {
 });
 
 /**
- * リモート絵文字の短縮形 { n, h, s? } を { name, host, sensitive? } に展開する。
- * キー 'n' が存在する場合は短縮形とみなし、それ以外は従来形式としてそのまま返す（後方互換）。
+ * 辞書の生データとして instance に直接は入れない項目
+ *
+ * @remarks
+ * 他鯖絵文字の辞書は数十万件あるので reactive な instance に入れず、
+ * {@link setRemoteEmojiDictionary} で markRaw にした配列だけを `instance.allEmojis` に置く。
  *
  * @internal
  */
-function normalizeRemoteEmoji(
-	item: { n?: string; h?: string | null; name?: string } & Record<string, unknown>,
-): Record<string, unknown> {
-	if ("n" in item) {
-		return {
-			name: item.n,
-			host: item.h ?? null,
-			...(item.s === true ? { sensitive: true } : {}),
-		};
+const REMOTE_DICTIONARY_RAW_KEYS = new Set(["allEmojis", "remoteEmojiGroups"]);
+
+/**
+ * 他鯖絵文字の辞書（サーバーの応答か、端末に保存した形）を instance に反映する
+ *
+ * @param data - `remoteEmojiMode` などと、`remoteEmojiGroups` か `allEmojis` を持つオブジェクト
+ * @returns なし
+ * @internal
+ */
+function applyRemoteEmojiData(data: Record<string, unknown>): void {
+	for (const [k, v] of Object.entries(data)) {
+		if (REMOTE_DICTIONARY_RAW_KEYS.has(k)) continue;
+		instance[k] = v;
 	}
-	return item as Record<string, unknown>;
+	const entries = setRemoteEmojiDictionary(data);
+	instance.allEmojis = entries ?? undefined;
 }
 
 /**
@@ -77,6 +86,7 @@ function normalizeRemoteEmoji(
  * 以前は `emojis/latest` の応答を待ってから読んでいたため、その間に描画された絵文字が
  * 一覧に無い扱い（`/emoji/名前.webp` 経由）になり、一覧が入ると URL が変わって画像を読み直していた（監査 E-3）。
  * リモート絵文字は、既に取得済み（`instance.remoteEmojiMode` がある）なら上書きしない。
+ * 他鯖絵文字の辞書を取らない設定（`remoteEmojisFetch: "none"`）のときは、他鯖絵文字の辞書は読まない。
  *
  * @returns なし
  * @public
@@ -96,18 +106,12 @@ export async function loadCachedEmojis() {
 		instance.emojiFetchDate = cachedEmojiData.emojiFetchDate;
 	}
 
-	if (!instance.remoteEmojiMode) {
+	// 他鯖絵文字の辞書を取らない設定なら読まない（古い辞書が残っていても使わない。消すのは initializeEmoji）
+	if (!instance.remoteEmojiMode && defaultStore.state.remoteEmojisFetch !== "none") {
 		const remoteEmoji = await get("remoteEmojiData");
 
 		if (remoteEmoji) {
-			for (const [k, v] of Object.entries(remoteEmoji)) {
-				instance[k] = v;
-			}
-			if (remoteEmoji.allEmojis) {
-				instance.allEmojis = (remoteEmoji.allEmojis as unknown[]).map(
-					(e) => normalizeRemoteEmoji(e as Parameters<typeof normalizeRemoteEmoji>[0]),
-				);
-			}
+			applyRemoteEmojiData(remoteEmoji as Record<string, unknown>);
 		}
 	}
 }
@@ -282,16 +286,21 @@ async function fetchRemoteEmoji(
         const meta = await requestEmojis(
                 {
                         remoteEmojis: remoteEmojisMode,
+                        // ホストごとにまとめた小さい形で受け取る（古いサーバーなら allEmojis で返ってくる）
+                        remoteEmojiFormat: "grouped",
                 },
                 options,
         );
 
         if (cacheRemoteEmojiData) {
+                // 端末にもホストごとの形のまま保存する（1 件ずつの形より小さい）
                 const remoteEmojiData = {
                         emojiFetchDate: meta.emojiFetchDate,
                         remoteEmojiMode: meta.remoteEmojiMode,
                         remoteEmojiCount: meta.remoteEmojiCount,
-                        allEmojis: meta.allEmojis,
+                        ...(meta.remoteEmojiGroups
+                                ? { remoteEmojiGroups: meta.remoteEmojiGroups }
+                                : { allEmojis: meta.allEmojis }),
                         emojiUpdatedAt: meta.emojiUpdatedAt,
                 };
 
@@ -314,14 +323,7 @@ async function fetchRemoteEmoji(
                 toast("ストレージの容量不足のため、絵文字のキャッシュを保存できませんでした。");
         }
 
-        for (const [k, v] of Object.entries(meta)) {
-                instance[k] = v;
-        }
-        if (meta.allEmojis) {
-                instance.allEmojis = (meta.allEmojis as unknown[]).map(
-                        (e) => normalizeRemoteEmoji(e as Parameters<typeof normalizeRemoteEmoji>[0]),
-                );
-        }
+        applyRemoteEmojiData(meta as Record<string, unknown>);
 	void preloadFolloweeIdsIfNeeded($i?.id, instance.emojis);
 }
 

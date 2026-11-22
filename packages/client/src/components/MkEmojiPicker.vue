@@ -18,19 +18,9 @@
 			/>
 			<div ref="emojis" class="emojis">
 				<section class="result">
-					<div v-if="!allCustomEmojis && q && q.includes('@')">
+					<div v-if="!canRemoteSearch && q && q.includes('@')">
 						<header class="_acrylic">
-							{{
-								props.asReactionPicker ||
-								$store.state.showRemoteEmojiPostForm
-									? "他サーバー絵文字の辞書データがありません。 "
-									: "@（他鯖絵文字検索）はリアクション時のみ使用可能です。"
-							}}
-							<a
-								v-if="(props.asReactionPicker || $store.state.showRemoteEmojiPostForm) && $store.state.remoteEmojisFetch !== 'none'"
-                                                                @click.stop="refetchEmoji(true)"
-								>{{ i18n.ts.refetch + "？" }}</a
-							>
+							@（他鯖絵文字検索）はリアクション時のみ使用可能です。
 						</header>
 					</div>
 					<div v-else>
@@ -41,7 +31,11 @@
 							{{
 								`${
 									q.includes("@")
-										? remoteEmojiMode === "all"
+										? remoteSearchSource === "server"
+											? "他サーバー絵文字検索(サーバー) "
+											: remoteSearchSource === "mixed"
+											? "他サーバー絵文字検索(ミニ+サーバー) "
+											: remoteEmojiMode === "all"
 											? "他サーバー絵文字検索 "
 											: "他サーバー絵文字検索(ミニ) "
 										: "検索結果 "
@@ -65,7 +59,7 @@
 									? "検索中……"
 									: "入力待機中……"
 							}${
-									allCustomEmojis && !q.includes("@")
+									canRemoteSearch && !q.includes("@")
 										? " (@で他サーバー絵文字検索)"
 										: ""
 								}
@@ -1170,6 +1164,10 @@
  * @remarks
  * 「最近追加された」は usageVisibility が public または user（許可ユーザ）の絵文字のみ表示。
  * 検索ではタグに加えて読み（ruby）も照合する（{@link getEmojiSearchWords}）。
+ * `@` を付けた他鯖絵文字検索は {@link searchRemoteEmojis} に任せる。端末に辞書があればそれで、
+ * 無ければサーバーで探す（非同期。後から始めた検索があれば前の結果は捨てる）。
+ * CHANGED（2026-11-22）: 以前は辞書が無いと「辞書データがありません」と出して検索できず、
+ * `@` を初めて打ったときに辞書の取得設定を「全部」に切り替えていた。どちらもやめた。
  */
 import { ref, unref, computed, watch, onMounted, onBeforeUnmount, nextTick } from "vue";
 import * as Misskey from "calckey-js";
@@ -1182,6 +1180,8 @@ import {
 import { getStaticImageUrl } from "@/scripts/get-static-image-url";
 import Ripple from "@/components/MkRipple.vue";
 import * as os from "@/os";
+import { searchRemoteEmojis } from "@/scripts/remote-emoji-search";
+import { ensureRemoteEmojiIndex } from "@/scripts/remote-emoji-dictionary";
 import { isTouchUsing } from "@/scripts/touch";
 import { deviceKind } from "@/scripts/device-kind";
 import { formatRoomaji, kanaToHira, jaToRoomaji } from "@/scripts/convert-jp";
@@ -1408,18 +1408,15 @@ const customEmojiCategories = computed(() =>
 		(c) => emojisForGeneralListing.value.filter((e) => e.category === c).length > 9,
 	),
 );
-let allCustomEmojis = computed(() =>
-	props.asReactionPicker || defaultStore.state.showRemoteEmojiPostForm
-		? instance.allEmojis
-		: undefined
-);
 const remoteEmojiMode = computed(() => instance.remoteEmojiMode);
-const emojiStr = computed(() =>
-	(props.asReactionPicker || defaultStore.state.showRemoteEmojiPostForm) &&
-	unref(allCustomEmojis)
-		? unref(allCustomEmojis).map((x) => `:${x.name}@${x.host}:`)
-		: undefined
+/** @ を付けた他鯖絵文字検索が使えるか（リアクション時、または投稿フォームで他鯖絵文字を使う設定のとき） */
+const canRemoteSearch = computed(
+	() => props.asReactionPicker || defaultStore.state.showRemoteEmojiPostForm,
 );
+/** 直近の他鯖絵文字検索をどこで探したか（見出しの表示用） */
+const remoteSearchSource = ref<"local" | "server" | "mixed" | null>(null);
+/** 検索の世代。後から始めた検索があれば、前の他鯖絵文字検索の結果は捨てる */
+let searchGeneration = 0;
 const recentlyPopularReactions = computed(
 	() => instance.recentlyPopularReactions
 );
@@ -1479,12 +1476,8 @@ let debounceTimer;
 watch(q, (nQ, oQ) => {
         clearTimeout(debounceTimer);
 
-        if (nQ?.includes("@") && defaultStore.isDefault("remoteEmojisFetch")) {
-                void (async () => {
-                        await defaultStore.set("remoteEmojisFetch", "all");
-                        await refetchEmoji();
-                })();
-        }
+        // NB: 以前は @ を初めて打ったときに辞書の取得設定を「全部」に切り替えていた。
+        // 辞書が無くてもサーバーで検索できるようになったので切り替えない（6 時間ごと数 MB の取得が勝手に始まらないように）
 
         waitingFlg.value = true;
 
@@ -1532,6 +1525,7 @@ watch(q, (nQ, oQ) => {
 });
 
 function emojiSearch(nQ, oQ) {
+	const generation = ++searchGeneration;
 	if (
 		!defaultStore.state.enableInstanceEmojiSearch &&
 		nQ.includes("@") &&
@@ -1562,15 +1556,14 @@ function emojiSearch(nQ, oQ) {
 		searchHost = /@(\S+?):?$/.exec(q.value)?.[1];
 	}
 
-	const isAllSearch = !!unref(allCustomEmojis) && q.value.includes("@");
+	const isAllSearch = canRemoteSearch.value && q.value.includes("@");
 	const newQ = kanaToHira(formatRoomaji(q.value.replace(/@\S*$|:/g, "")));
 	const roomajiQ = formatRoomaji(
 		jaToRoomaji(q.value.replace(/@\S*$|:/g, ""))
 	);
-	const allEmojis = unref(allCustomEmojis);
 
 	const shouldSkipEmoji = (emoji) => {
-		return searchHost && !emoji.host.includes(searchHost);
+		return searchHost && !emoji.host?.includes(searchHost);
 	};
 
 	/** 検索クエリと名前 or エイリアスが完全一致するか（searchExactOnly 用）。 */
@@ -1706,34 +1699,21 @@ function emojiSearch(nQ, oQ) {
 		const emojis = unref(customEmojis);
 		const matches = new Set<Misskey.entities.CustomEmoji>();
 
-		// 設定で無効にされている場合は即終了
-		if (isAllSearch && defaultStore.state.disableAllIncludesSearch)
-			return matches;
-
 		if (newQ.includes(" ")) {
 			// AND検索
-			if (isAllSearch) {
-				nameSearch(allEmojis, roomajiQ.split(" "), matches, max);
-			} else {
-				andSearch(emojis, roomajiQ.split(" "), matches, max, shouldAddCustomAnd);
-				if (matches.size >= max) return matches;
-				andSearch(emojis, newQ.split(" "), matches, max, shouldAddCustomAnd);
-			}
+			andSearch(emojis, roomajiQ.split(" "), matches, max, shouldAddCustomAnd);
+			if (matches.size >= max) return matches;
+			andSearch(emojis, newQ.split(" "), matches, max, shouldAddCustomAnd);
 		} else {
-			if (isAllSearch) {
-				nameSearch(allEmojis, roomajiQ, matches, max);
-			} else {
-				nameSearch(emojis, roomajiQ, matches, max, undefined, shouldAddCustomPartial);
-				if (matches.size >= max) return matches;
-				aliasSearch(emojis, newQ, matches, max, undefined, shouldAddCustomPartial);
-			}
+			nameSearch(emojis, roomajiQ, matches, max, undefined, shouldAddCustomPartial);
+			if (matches.size >= max) return matches;
+			aliasSearch(emojis, newQ, matches, max, undefined, shouldAddCustomPartial);
 		}
 		return matches;
 	};
 	const searchCustomStart = () => {
 		const max = 99;
 		const emojis = unref(customEmojis);
-		const allEmojis = unref(allCustomEmojis);
 		const matches = new Set<Misskey.entities.CustomEmoji>();
 		const beforeSort = new Set<{
 			emoji: Misskey.entities.CustomEmoji | UnicodeEmojiDef;
@@ -1744,20 +1724,14 @@ function emojiSearch(nQ, oQ) {
 			// AND検索
 			return matches;
 		}
-			if (isAllSearch) {
-				nameSearch(allEmojis, roomajiQ, beforeSort, max, true);
-			} else {
-				const exactMatch = emojiMap.value.get(
-					roomajiQ
-				);
-				if (exactMatch)
-					beforeSort.add({
-						emoji: exactMatch,
-						key: formatRoomaji(exactMatch.name),
-					});
-				nameSearch(emojis, roomajiQ, beforeSort, max, true, shouldAddCustomPartial);
-				aliasSearch(emojis, newQ, beforeSort, max, true, shouldAddCustomPartial);
-			}
+		const exactMatch = emojiMap.value.get(roomajiQ);
+		if (exactMatch)
+			beforeSort.add({
+				emoji: exactMatch,
+				key: formatRoomaji(exactMatch.name),
+			});
+		nameSearch(emojis, roomajiQ, beforeSort, max, true, shouldAddCustomPartial);
+		aliasSearch(emojis, newQ, beforeSort, max, true, shouldAddCustomPartial);
 
 		return new Set(
 			Array.from(beforeSort)
@@ -1818,6 +1792,48 @@ function emojiSearch(nQ, oQ) {
 				.map((x) => x.emoji)
 		);
 	};
+
+	if (isAllSearch) {
+		// 他鯖絵文字検索。端末の辞書があればそれで、無ければサーバーで探す（remote-emoji-search.ts）
+		searchResultUnicode.value = [];
+		searchResultUnicodeStart.value = [];
+		const aliasQueries = [
+			...new Set(
+				[q.value.replace(/@\S*$|:/g, "").trim(), newQ.trim()].filter(
+					(x) => x !== "" && !x.includes(" "),
+				),
+			),
+		];
+		searchRemoteEmojis({
+			keywords: newQ.includes(" ")
+				? roomajiQ.split(" ").filter((x) => x !== "")
+				: [roomajiQ],
+			aliasQueries,
+			host: searchHost,
+		})
+			.then((res) => {
+				if (generation !== searchGeneration) return;
+				searchResultCustomStart.value = res.start;
+				// 設定で部分一致を出さないようにしている場合は前方一致だけ
+				searchResultCustom.value = defaultStore.state.disableAllIncludesSearch
+					? []
+					: res.partial;
+				remoteSearchSource.value = res.source;
+			})
+			.catch((err: unknown) => {
+				if (generation !== searchGeneration) return;
+				searchResultCustomStart.value = [];
+				searchResultCustom.value = [];
+				os.toast(
+					(err as { message?: string })?.message ??
+						"他サーバー絵文字の検索に失敗しました",
+				);
+			})
+			.finally(() => {
+				if (generation === searchGeneration) searchingFlg.value = false;
+			});
+		return;
+	}
 
 	searchResultCustom.value = Array.from(searchCustom());
 	searchResultCustomStart.value = Array.from(searchCustomStart());
@@ -2045,6 +2061,11 @@ async function refetchEmoji(showQueue = false) {
 
 onMounted(() => {
        focus();
+       // 他鯖絵文字の辞書があれば、検索用の索引を先に作り始めておく（最初の @ 検索で待たないように）。
+       // ピッカーが開ききってから始めるよう少し遅らせる
+       if (canRemoteSearch.value) {
+               setTimeout(() => void ensureRemoteEmojiIndex(), 300);
+       }
        if (defaultStore.state.enableEmojiPickerOrder) {
                safeReorderSections();
        }

@@ -1,36 +1,82 @@
-const formatRoomajiCache = new Map();
-const kanaHiraCache = new Map();
-const roomajiToJaCache = new Map();
-const jaToRoomajiCache = new Map();
+/**
+ * @packageDocumentation
+ *
+ * 絵文字検索用の文字の変換（ローマ字のゆれの吸収・かなとローマ字の相互変換）。
+ *
+ * @remarks
+ * 変換結果は種類ごとに Map でキャッシュする。
+ * CHANGED（2026-11-22）: 以前はキャッシュに上限が無く、他鯖絵文字を検索すると辞書の名前（本番で 27 万件）の
+ * 変換結果がタブを閉じるまで残っていた。{@link MAX_CACHE_ENTRIES} を超えたら空にする。
+ * 他鯖絵文字の辞書の索引は、キャッシュを通さない {@link formatRoomajiUncached} で作る。
+ *
+ * @internal
+ */
 
+/** 変換結果のキャッシュ 1 つあたりの上限。超えたら空にして作り直す（よく使う語はすぐ戻る） */
+const MAX_CACHE_ENTRIES = 20000;
+
+const formatRoomajiCache = new Map<string, string>();
+const kanaHiraCache = new Map<string, string>();
+const roomajiToJaCache = new Map<string, string>();
+const jaToRoomajiCache = new Map<string, string>();
+
+/**
+ * キャッシュから値を引き、無ければ作って入れる
+ *
+ * @param cache - キャッシュ
+ * @param key - キー
+ * @param make - 値を作る関数
+ * @returns 値
+ * @internal
+ */
+function cached(
+	cache: Map<string, string>,
+	key: string,
+	make: (key: string) => string,
+): string {
+	const hit = cache.get(key);
+	if (hit !== undefined) return hit;
+	if (cache.size >= MAX_CACHE_ENTRIES) cache.clear();
+	const value = make(key);
+	cache.set(key, value);
+	return value;
+}
+
+/**
+ * 絵文字名や検索語の、ローマ字の書き方のゆれをそろえる（キャッシュあり）
+ *
+ * @param str - 文字列
+ * @returns そろえた文字列（小文字）
+ * @internal
+ */
 export function formatRoomaji(str: string): string {
-	const _str = str.toLowerCase();
-	if (!formatRoomajiCache.has(_str)) {
-		formatRoomajiCache.set(_str, format_roomaji(_str));
-	}
-	return formatRoomajiCache.get(_str);
+	return cached(formatRoomajiCache, str.toLowerCase(), format_roomaji);
+}
+
+/**
+ * {@link formatRoomaji} と同じ変換をキャッシュを通さずに行う
+ *
+ * @remarks
+ * 他鯖絵文字の辞書（数十万件）の索引を作るときに使う。キャッシュに入れると検索語のキャッシュを押し流すため。
+ *
+ * @param str - 文字列
+ * @returns そろえた文字列（小文字）
+ * @internal
+ */
+export function formatRoomajiUncached(str: string): string {
+	return format_roomaji(str.toLowerCase());
 }
 
 export function kanaToHira(str: string): string {
-	if (!kanaHiraCache.has(str)) {
-		kanaHiraCache.set(str, kana_to_hira(str));
-	}
-	return kanaHiraCache.get(str);
+	return cached(kanaHiraCache, str, kana_to_hira);
 }
 
 export function roomajiToJa(str: string): string {
-	const _str = str.toLowerCase();
-	if (!roomajiToJaCache.has(_str)) {
-		roomajiToJaCache.set(_str, roomaji_to_ja(_str));
-	}
-	return roomajiToJaCache.get(_str);
+	return cached(roomajiToJaCache, str.toLowerCase(), roomaji_to_ja);
 }
 
 export function jaToRoomaji(str: string): string {
-	if (!jaToRoomajiCache.has(str)) {
-		jaToRoomajiCache.set(str, ja_to_roomaji(str));
-	}
-	return jaToRoomajiCache.get(str);
+	return cached(jaToRoomajiCache, str, ja_to_roomaji);
 }
 
 export function roomaji_to_ja(str: string): string {
@@ -224,6 +270,10 @@ export function ja_to_roomaji(str: string): string {
 function format_roomaji(roomaji: string): string {
 	// 絵文字の突き合わせにのみ使うため同じ物として扱われれば
 	// それで良いのでafterの方が正しいぞという意味ではないです
+	// WARNING: サーバーの他鯖絵文字検索は、同じ変換を SQL 関数 mk_emoji_search_key で行う
+	// （packages/backend/migration/1795760000000-remote-emoji-search-index.js）。
+	// 変換表や順番を変えたら、新しいマイグレーションで関数とインデックスも作り直すこと。
+	// ずれると、端末の辞書では見つかる絵文字がサーバー検索で見つからなくなる。
 
 	// 変換前が2文字
 	const replaceDataBefore2 = [

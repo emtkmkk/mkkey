@@ -602,6 +602,7 @@
 				<option value="none">
 					{{ i18n.ts._remoteEmojisFetchForPc.none }}
 				</option>
+				<template #caption>{{ i18n.ts.remoteEmojisFetchDescription }}</template>
 			</FormSelect>
 			<FormSelect data-setting-key="remoteEmojisFetch" v-else v-model="remoteEmojisFetch" class="_formBlock">
 				<template #label
@@ -625,6 +626,7 @@
 				<option value="always">
 					{{ i18n.ts._remoteEmojisFetch.always }}
 				</option>
+				<template #caption>{{ i18n.ts.remoteEmojisFetchDescription }}</template>
 			</FormSelect>
 
 			<FormSwitch data-setting-key="mastodonOnetapFavorite" v-model="mastodonOnetapFavorite" class="_formBlock">
@@ -845,6 +847,7 @@ import { deepClone } from "@/scripts/clone";
 import { unisonReload } from "@/scripts/unison-reload";
 import { useIsMobile } from "@/scripts/use-is-mobile";
 import { instance } from "@/instance";
+import { isRemoteEmojiStillThere } from "@/scripts/remote-emoji-search";
 import { $i } from "@/account";
 import FormLink from "@/components/form/link.vue";
 import * as config from "@/config";
@@ -1051,15 +1054,15 @@ const showReactionMenuContext = $computed(
 	defaultStore.makeGetterSetter("showReactionMenuContext")
 );
 let customEmojis = computed(() => instance.emojis);
-let allCustomEmojis = computed(() => instance.allEmojis);
+/**
+ * ローカル絵文字の `:name:` の集合
+ *
+ * @remarks
+ * 以前は配列を作って `includes` で探していた（デッキの絵文字ごとに全件を見ていた）。
+ */
 let emojiStr = computed(() =>
 	unref(customEmojis)
-		? unref(customEmojis).map((x) => `:${x.name}:`)
-		: undefined
-);
-let remoteEmojiStr = computed(() =>
-	unref(allCustomEmojis)
-		? unref(allCustomEmojis).map((x) => `:${x.name}@${x.host}:`)
+		? new Set(unref(customEmojis).map((x) => `:${x.name}:`))
 		: undefined
 );
 const enableInstanceEmojiSearch = $computed(
@@ -1113,7 +1116,29 @@ function save() {
 	defaultStore.set("reactions5", reactions5);
 }
 
-function remove(reaction, ev: MouseEvent) {
+/**
+ * デッキの絵文字を押したときのメニューを開く
+ *
+ * @remarks
+ * 他鯖絵文字で、同じ名前のローカル絵文字があるときは「ローカル絵文字に変換」を出す。
+ * ただし他鯖絵文字がまだある（{@link isRemoteEmojiStillThere}）なら出さない。
+ * 端末に辞書が無ければサーバーに問い合わせるので、メニューが開くまで少し待つことがある。
+ * 問い合わせに失敗したときは「まだある」とみなして出さない。
+ *
+ * @param reaction - デッキの絵文字（`:name:` / `:name@host:` / Unicode 絵文字）
+ * @param ev - クリックのイベント
+ * @returns なし
+ * @internal
+ */
+async function remove(reaction, ev: MouseEvent) {
+	// await の後では currentTarget が消えるので先に取っておく
+	const src = ev.currentTarget ?? ev.target;
+	const localSameName = reaction.replace(/@(\S+)$/, ":");
+	const remoteKey = reaction.replace(/^:|:$/g, "");
+	const canConvertToLocal =
+		reaction.includes("@") &&
+		!!unref(emojiStr)?.has(localSameName) &&
+		!(await isRemoteEmojiStillThere(remoteKey));
 	os.popupMenu(
 		[
 			{
@@ -1129,7 +1154,7 @@ function remove(reaction, ev: MouseEvent) {
 				  }
 				: undefined,
 			!reaction.includes("@") &&
-			!unref(emojiStr)?.includes(reaction) &&
+			!unref(emojiStr)?.has(reaction) &&
 			unref(customEmojis).some((x) =>
 				x.aliases?.some(
 					(y) => /^\w+$/.test(y) && y === reaction.replaceAll(":", "")
@@ -1196,9 +1221,7 @@ function remove(reaction, ev: MouseEvent) {
 						},
 				  }
 				: undefined,
-			reaction.includes("@") &&
-			!unref(remoteEmojiStr)?.includes(reaction) &&
-			unref(emojiStr)?.includes(reaction.replace(/@(\S+)$/, ":"))
+			canConvertToLocal
 				? {
 						text: i18n.ts.convertToLocalEmoji,
 						action: () => {
@@ -1287,7 +1310,7 @@ function remove(reaction, ev: MouseEvent) {
 				},
 			},
 		].filter((x) => x !== undefined),
-		ev.currentTarget ?? ev.target
+		src
 	);
 }
 

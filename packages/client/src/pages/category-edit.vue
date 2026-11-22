@@ -221,6 +221,7 @@ import { definePageMetadata } from "@/scripts/page-metadata";
 import FormRadios from "@/components/form/radios.vue";
 import { $i } from "@/account";
 import { instance } from "@/instance";
+import { isRemoteEmojiStillThere } from "@/scripts/remote-emoji-search";
 import { defaultStore } from "@/store";
 import * as config from "@/config";
 import type { MenuLabel } from "@/types/menu";
@@ -251,15 +252,10 @@ let contents = $ref<string[]>([]);
 let code = $ref<string>();
 let copyDeckType = $ref("1");
 const customEmojis = $computed(() => instance.emojis);
-const allCustomEmojis = $computed(() => instance.allEmojis);
+/** ローカル絵文字の `:name:` の集合（以前は配列の includes で 1 件ずつ探していた） */
 const emojiStr = $computed(() =>
 	customEmojis
-		? customEmojis.map((x) => `:${x.name}:`)
-		: undefined
-);
-const remoteEmojiStr = $computed(() =>
-	allCustomEmojis
-		? allCustomEmojis.map((x) => `:${x.name}@${x.host}:`)
+		? new Set(customEmojis.map((x) => `:${x.name}:`))
 		: undefined
 );
 
@@ -334,7 +330,7 @@ const jsonImport = () => {
 				}
 				const emojiName = x.split("@")?.[0]?.replaceAll(":", "");
 				const emojiHost = x.split("@")?.[1]?.replaceAll(":", "");
-				if (emojiStr?.includes(x) || emojiHost === config.host) {
+				if (emojiStr?.has(x) || emojiHost === config.host) {
 					if (!deck.includes(`:${emojiName}:`)) {
 						deck.push(`:${emojiName}:`);
 					}
@@ -367,7 +363,25 @@ function deleteReac(reaction) {
 		contents = contents.filter((x) => x !== reaction);
 	}
 
-function remove(reaction, ev: MouseEvent) {
+/**
+ * カテゴリの絵文字を押したときのメニューを開く
+ *
+ * @remarks
+ * 他鯖絵文字で、同じ名前のローカル絵文字があり、他鯖絵文字がもう無いときは「ローカル絵文字に変換」を出す
+ * （{@link isRemoteEmojiStillThere}。端末に辞書が無ければサーバーに問い合わせる）。
+ *
+ * @param reaction - カテゴリの絵文字
+ * @param ev - クリックのイベント
+ * @returns なし
+ * @internal
+ */
+async function remove(reaction, ev: MouseEvent) {
+	// await の後では currentTarget が消えるので先に取っておく
+	const src = ev.currentTarget ?? ev.target;
+	const canConvertToLocal =
+		reaction.includes("@") &&
+		!!emojiStr?.has(reaction.replace(/@(\S+)$/, ":")) &&
+		!(await isRemoteEmojiStillThere(reaction));
 	os.popupMenu(
 		[
 			{
@@ -383,7 +397,7 @@ function remove(reaction, ev: MouseEvent) {
 				  } as MenuLabel
 				: undefined,
 			!reaction.includes("@") &&
-			!emojiStr?.includes(reaction) &&
+			!emojiStr?.has(reaction) &&
 			customEmojis.some((x) =>
 				x.aliases?.some(
 					(y) => /^\w+$/.test(y) && y === reaction.replaceAll(":", "")
@@ -405,9 +419,7 @@ function remove(reaction, ev: MouseEvent) {
 						},
 				  }
 				: undefined,
-			reaction.includes("@") &&
-			!remoteEmojiStr?.includes(reaction) &&
-			emojiStr?.includes(reaction.replace(/@(\S+)$/, ":"))
+			canConvertToLocal
 				? {
 						text: i18n.ts.convertToLocalEmoji,
 						action: () => {
@@ -422,7 +434,7 @@ function remove(reaction, ev: MouseEvent) {
 				},
 			},
 		].filter((x) => x !== undefined),
-		ev.currentTarget ?? ev.target
+		src
 	);
 }
 

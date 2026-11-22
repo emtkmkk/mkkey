@@ -69,26 +69,33 @@ function normalizeRemoteEmoji(
 	return item as Record<string, unknown>;
 }
 
-export async function emojiLoad() {
-        const cachedEmojiData = await get("emojiData");
+/**
+ * 端末に保存してある絵文字一覧（ローカル・リモート）を instance に読み込む
+ *
+ * @remarks
+ * IndexedDB を読むだけで通信しないので、起動直後に最初に呼ぶ（{@link initializeEmoji}）。
+ * 以前は `emojis/latest` の応答を待ってから読んでいたため、その間に描画された絵文字が
+ * 一覧に無い扱い（`/emoji/名前.webp` 経由）になり、一覧が入ると URL が変わって画像を読み直していた（監査 E-3）。
+ * リモート絵文字は、既に取得済み（`instance.remoteEmojiMode` がある）なら上書きしない。
+ *
+ * @returns なし
+ * @public
+ */
+export async function loadCachedEmojis() {
+	const cachedEmojiData = await get("emojiData");
 
-        if (cachedEmojiData?.emojis) {
-                instance.emojis = cachedEmojiData.emojis as typeof instance.emojis;
-        }
+	if (cachedEmojiData?.emojis) {
+		instance.emojis = cachedEmojiData.emojis as typeof instance.emojis;
+	}
 
-        if (cachedEmojiData?.emojiUpdatedAt) {
-                instance.emojiUpdatedAt = cachedEmojiData.emojiUpdatedAt;
-        }
+	if (cachedEmojiData?.emojiUpdatedAt) {
+		instance.emojiUpdatedAt = cachedEmojiData.emojiUpdatedAt;
+	}
 
-        if (cachedEmojiData?.emojiFetchDate) {
-                instance.emojiFetchDate = cachedEmojiData.emojiFetchDate;
-        }
-	void preloadFolloweeIdsIfNeeded($i?.id, instance.emojis);
+	if (cachedEmojiData?.emojiFetchDate) {
+		instance.emojiFetchDate = cachedEmojiData.emojiFetchDate;
+	}
 
-        if (!localStorage.getItem("followCategoriesTime") || Date.now() - localStorage.getItem("followCategoriesTime") > 60 * 60 * 1000) {
-                await fetchCustomCategory()
-
-        }
 	if (!instance.remoteEmojiMode) {
 		const remoteEmoji = await get("remoteEmojiData");
 
@@ -102,6 +109,24 @@ export async function emojiLoad() {
 				);
 			}
 		}
+	}
+}
+
+/**
+ * 端末に保存してある絵文字一覧を読み込み、モチーフ判定用のフォロー一覧とフォロー中のカテゴリも用意する
+ *
+ * @remarks
+ * フォロー中のカテゴリは 1 時間に 1 回だけ取り直す（通信あり）。
+ *
+ * @returns なし
+ * @public
+ */
+export async function emojiLoad() {
+	await loadCachedEmojis();
+	void preloadFolloweeIdsIfNeeded($i?.id, instance.emojis);
+
+	if (!localStorage.getItem("followCategoriesTime") || Date.now() - localStorage.getItem("followCategoriesTime") > 60 * 60 * 1000) {
+		await fetchCustomCategory();
 	}
 }
 

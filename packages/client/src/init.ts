@@ -50,6 +50,7 @@ import {
 } from "@/css-snippet";
 import {
 	emojiLoad,
+	loadCachedEmojis,
 	fetchInstance,
 	fetchEmoji,
 	fetchEmojiStats,
@@ -799,6 +800,10 @@ const initializeCssSnippets = () => {
 };
 
 const initializeEmoji = async () => {
+        // 端末に保存してある一覧を先に入れる。通信（emojis/latest など）を待つ間に描画された絵文字が
+        // 一覧に無い扱いになり、後から画像を読み直すのを防ぐ
+        await loadCachedEmojis();
+
         fetchEmojiStats(defaultStore.state.enableDataSaverMode ? 31 : 120);
 
         const [remoteEmojiData, cachedEmojiData, emojiFetchAttemptDateRaw, lastFetchModeMaxRaw] =

@@ -28,6 +28,10 @@ import { KoaAdapter } from "@bull-board/koa";
 import { In, IsNull, Not, MoreThan } from "typeorm";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import { fromStoredCopyPermission } from "@/misc/copy-permission.js";
+import { isEmojiCopyDeniedHost } from "@/misc/emoji-copy-policy.js";
+import { Cache } from "@/misc/cache.js";
+import { CACHE_MAX_USER } from "@/misc/cache-limits.js";
+import type { Emoji } from "@/models/entities/emoji.js";
 import config from "@/config/index.js";
 import { getLocalNotesCount } from "@/services/note/local-notes-count-cache.js";
 import {
@@ -454,8 +458,28 @@ const jsonFeed: Router.Middleware = async (ctx) => {
 	}
 };
 
+/**
+ * `/emoji/*.webp` で引いた絵文字のキャッシュ（`名前 ホスト` → 絵文字。無いものは null）
+ *
+ * @remarks
+ * タイムラインを開くたびに表示中の絵文字の数だけ呼ばれるので、毎回 DB を引かないようにする。
+ * 管理者が絵文字を非公開・コピー拒否にしても、最大でこの時間は前の状態で返る。
+ *
+ * @internal
+ */
+const emojiRedirectCache = new Cache<Emoji | null>(5 * 60 * 1000, {
+	maxEntries: CACHE_MAX_USER,
+});
+
+/** 見つかった絵文字の転送の Cache-Control。画像が更新されたとき、1 時間で新しい転送先に切り替わるようにする */
+const EMOJI_REDIRECT_CACHE_CONTROL =
+	"public, max-age=3600, stale-while-revalidate=86400";
+
+/** 見つからない・出せない絵文字の Cache-Control。後から取り込まれた絵文字がすぐ出るよう短くする */
+const EMOJI_NOT_FOUND_CACHE_CONTROL = "public, max-age=600";
+
 router.get("/emoji/:path(.*)", async (ctx) => {
-	ctx.set("Cache-Control", "public, max-age=86400");
+	ctx.set("Cache-Control", EMOJI_NOT_FOUND_CACHE_CONTROL);
 
 	if (!ctx.params.path.match(/^[a-zA-Z0-9\-_@\.]+?\.webp$/)) {
 		ctx.status = 404;
@@ -464,12 +488,17 @@ router.get("/emoji/:path(.*)", async (ctx) => {
 
 	const name = ctx.params.path.split("@")[0].replace(/\.webp$/i, "");
 	const host = ctx.params.path.split("@")[1]?.replace(/\.webp$/i, "");
+	// `@.` is the spec of ReactionService.decodeReaction
+	const queryHost = host == null || host === "." ? null : host;
 
-	const emoji = await Emojis.findOneBy({
-		// `@.` is the spec of ReactionService.decodeReaction
-		host: host == null || host === "." ? IsNull() : host,
-		name: name,
-	});
+	const emoji = await emojiRedirectCache.fetch(
+		`${name} ${queryHost ?? ""}`,
+		async () =>
+			(await Emojis.findOneBy({
+				host: queryHost ?? IsNull(),
+				name: name,
+			})) ?? null,
+	);
 
 	ctx.set(
 		"Content-Security-Policy",
@@ -485,8 +514,9 @@ router.get("/emoji/:path(.*)", async (ctx) => {
 		return;
 	}
 
+	// NB: ローカル絵文字でも copyPermission = deny なら出さない（従来の挙動。リモートと同じ判定に寄せていない）
 	const ngEmoji =
-		["voskey.icalo.net", "9ineverse.com", "mogeko.monster"].includes(emoji.host ?? config.host) ||
+		isEmojiCopyDeniedHost(emoji.host) ||
 		fromStoredCopyPermission(emoji.copyPermission) === "deny" ||
 		getEffectiveUsageVisibility(emoji) === "private";
 
@@ -523,7 +553,10 @@ router.get("/emoji/:path(.*)", async (ctx) => {
 		url.searchParams.set("emoji", "1");
 		if ("static" in ctx.query) url.searchParams.set("static", "1");
 	}
-	ctx.status = 301;
+	// CHANGED: 以前は 301 + 1 日キャッシュだったため、相手の絵文字の画像が変わっても 1 日は古い画像の
+	// URL へ転送され続けた。転送先は画像の URL を含むので、一時的な転送（302）にして短めにキャッシュする
+	ctx.set("Cache-Control", EMOJI_REDIRECT_CACHE_CONTROL);
+	ctx.status = 302;
 	ctx.redirect(url.toString());
 });
 

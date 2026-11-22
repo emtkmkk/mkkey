@@ -309,8 +309,9 @@ export async function createPerson(
 	});
 
 	const tags = extractApHashtags(person.tag)
-		.map((tag) => normalizeForSearch(tag))
-		.splice(0, 32);
+		// GHSA-qvv8-c4p9-h5xv 対策: 正規化は重いので、先に 32 個へ絞ってから行う
+		.splice(0, 32)
+		.map((tag) => normalizeForSearch(tag));
 
 	const isBot = getApType(object) !== "Person";
 
@@ -569,8 +570,9 @@ export async function updatePerson(
 	});
 
 	const tags = extractApHashtags(person.tag)
-		.map((tag) => normalizeForSearch(tag))
-		.splice(0, 32);
+		// GHSA-qvv8-c4p9-h5xv 対策: 正規化は重いので、先に 32 個へ絞ってから行う
+		.splice(0, 32)
+		.map((tag) => normalizeForSearch(tag));
 
 	const bday = person["vcard:bday"]?.match(/^\d{4}-\d{2}-\d{2}/);
 

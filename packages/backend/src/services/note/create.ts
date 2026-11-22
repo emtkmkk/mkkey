@@ -1609,7 +1609,8 @@ export async function index(note: Note): Promise<void> {
 			index: config.elasticsearch.index || "misskey_note",
 			id: note.id.toString(),
 			body: {
-				text: normalizeForSearch(note.text),
+				// NOTE: 本文はタグではないので normalizeForSearch（長さ上限あり）を通さず、従来どおり全体を正規化する
+				text: note.text.normalize("NFKC").toLowerCase(),
 				userId: note.userId,
 				userHost: note.userHost,
 			},

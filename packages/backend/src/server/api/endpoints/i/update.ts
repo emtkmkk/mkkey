@@ -516,8 +516,9 @@ export default define(meta, paramDef, async (ps, _user, token) => {
 		const tokens = mfm.parse(_newDescription);
 		emojis = emojis.concat(extractCustomEmojisFromMfm(tokens!));
 		tags = extractHashtags(tokens!)
-			.map((tag) => normalizeForSearch(tag))
-			.splice(0, 32);
+			// GHSA-qvv8-c4p9-h5xv 対策: 正規化は重いので、先に 32 個へ絞ってから行う
+			.splice(0, 32)
+			.map((tag) => normalizeForSearch(tag));
 	}
 
 	if (newLocation != null) {

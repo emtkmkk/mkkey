@@ -486,19 +486,26 @@ defineExpose({
 }
 
 // 画面の中央にカードを置く（zen UI で全画面表示される前提）
+// NB: 列幅を minmax(0, 480px) にしておかないと、折り返さない長いコールバック URL などに
+// 列が引っ張られ、スマホでカードが画面より広がってページごと横にはみ出す。
 .container {
 	min-height: calc(var(--vh, 1vh) * 100);
 	padding: 32px 16px calc(env(safe-area-inset-bottom, 0px) + 32px);
 	box-sizing: border-box;
 	display: grid;
-	place-items: center;
+	grid-template-columns: minmax(0, 480px);
+	justify-content: center;
+	align-items: center;
 	background: var(--bg);
+
+	@media (max-width: 500px) {
+		padding: 16px 12px calc(env(safe-area-inset-bottom, 0px) + 16px);
+	}
 }
 
 .card {
 	position: relative;
-	width: 100%;
-	max-width: 480px;
+	min-width: 0;
 	border-radius: var(--radius);
 	background: var(--panel);
 	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
@@ -523,6 +530,10 @@ defineExpose({
 	gap: 20px;
 	box-sizing: border-box;
 	padding: 40px 24px 32px;
+
+	@media (max-width: 500px) {
+		padding: 32px 16px 24px;
+	}
 }
 
 .header {
@@ -602,6 +613,7 @@ defineExpose({
 
 .labelWithAction {
 	display: flex;
+	flex-wrap: wrap;
 	justify-content: space-between;
 	align-items: center;
 	gap: 8px;

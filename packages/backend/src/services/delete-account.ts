@@ -6,6 +6,8 @@
  * @remarks
  * - **役割**: アカウント削除 API から呼ばれ、フォロワー通知・ソフト削除・削除ジョブ登録を行う。
  * - `followedAccountWasDeleted` は `isDeleted` 更新前に送り、通知 pack 時の表示名置換を避ける。
+ * - フォロー申請の取り消し（Undo / Reject）は Delete より先に配送の列に並べる。
+ *   削除ジョブでももう一度取り消すので、ここで失敗しても削除は続ける。
  *
  * @see {@link queue/processors/db/delete-account} アカウント削除キュー
  * @internal
@@ -16,6 +18,7 @@ import { createDeleteAccountJob } from "@/queue/index.js";
 import { publishInternalEvent, publishUserEvent } from "./stream.js";
 import { doPostSuspend } from "./suspend-user.js";
 import { notifyFollowersAccountWasDeleted } from "./notify-followers-account-was-deleted.js";
+import { cancelFollowRequestsOfDeletedUser } from "./following/requests/cancel-for-deleted-user.js";
 
 /**
  * 削除済みアカウントの資格情報を失効させ、認証キャッシュを無効化する。
@@ -55,6 +58,11 @@ export async function deleteAccount(user: {
 	host: string | null;
 }): Promise<void> {
 	const target = await Users.findOneByOrFail({ id: user.id });
+
+	// Delete より先にフォロー申請の Undo / Reject を配送の列に並べる。
+	// 相手のサーバーが削除済みユーザーからの取り消しを無視する作りでも、先に届けば処理されるため。
+	// NOTE: 失敗しても削除は止めない（削除ジョブでもう一度取り消す）
+	await cancelFollowRequestsOfDeletedUser(target).catch(() => {});
 
 	// 物理削除する前にDelete activityを送信する
 	await doPostSuspend(user).catch((e) => {});

@@ -10,6 +10,11 @@
  * - 削除ユーザーをフォローしていたローカルユーザーへの `followedAccountWasDeleted` は
  *   `isDeleted` 更新前に API 側で送る（{@link notifyFollowersAccountWasDeleted}）。
  *   相互フォローでもフォロー先削除通知だけとし、フォロー解除通知は重ねない。
+ * - 削除ユーザーが出した・受けたフォロー申請は、承認しても意味がないため最初に取り消す
+ *   （{@link cancelFollowRequestsOfDeletedUser}）。ローカルの削除では Delete 送信前に
+ *   API 側で取り消し済みなので、ここは念のための掃除になる。リモートの削除はここだけを通る。
+ *   `receiveFollowRequest` 通知は申請に CASCADE で紐づくので、申請と一緒に消える。
+ *   それ以外の通知（リアクション等）は意味が残るため消さない。
  *
  * @see {@link server/api/endpoints/i/delete-account} アカウント削除 API
  * @internal
@@ -33,6 +38,7 @@ import { buildGuidanceEmail, sendEmail } from "@/services/send-email.js";
 import deleteFollowing from "@/services/following/delete.js";
 import { createNotification } from "@/services/create-notification.js";
 import { getUser } from "@/server/api/common/getters.js";
+import { cancelFollowRequestsOfDeletedUser } from "@/services/following/requests/cancel-for-deleted-user.js";
 
 const logger = queueLogger.createSubLogger("delete-account");
 
@@ -59,6 +65,15 @@ export async function deleteAccount(
 	const followedDeletedNotified = new Set<string>(
 		job.data.followedDeletedNotifiedIds ?? [],
 	);
+
+	// NOTE: 失敗しても後続の削除処理は続ける（申請が残るだけで実害は小さい）
+	try {
+		const deleted = await cancelFollowRequestsOfDeletedUser(user);
+		if (deleted) logger.succ(`All of follow requests deleted (${deleted})`);
+	} catch (err) {
+		logger.error(err as Error);
+		job.log(`error - Failed to delete follow requests: ${String(err)}`);
+	}
 
 	try {
 		let tryCount = 0;

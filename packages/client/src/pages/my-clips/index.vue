@@ -47,6 +47,8 @@ import { definePageMetadata } from "@/scripts/page-metadata";
 const pagination = {
 	endpoint: "clips/list" as const,
 	limit: 10,
+	// この API はページ送りに対応していない（件数分か全件を返すだけ）
+	noPaging: true,
 };
 
 const pagingComponent = $ref<InstanceType<typeof MkPagination>>();

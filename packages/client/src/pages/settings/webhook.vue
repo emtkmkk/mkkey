@@ -80,6 +80,8 @@ const showMkkeySettingTips = $computed(
 const pagination = {
 	endpoint: "i/webhooks/list" as const,
 	limit: 10,
+	// この API はページ送りに対応していない（件数分か全件を返すだけ）
+	noPaging: true,
 };
 
 const headerActions = $computed(() => []);

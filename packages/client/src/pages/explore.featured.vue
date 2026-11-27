@@ -57,7 +57,8 @@ const paginationForCombined = {
 const paginationForPoll = {
 	endpoint: "notes/polls/recommendation" as const,
 	limit: 10,
-	offsetMode: false,
+	// notes/polls/recommendation は offset で送る（以前は false で、同じ投票を読み続けていた）
+	offsetMode: true,
 };
 
 let tab = $ref($i != null ? "combined" : "local");

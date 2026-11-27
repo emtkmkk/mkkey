@@ -64,11 +64,15 @@ const joined = ref("joined");
 const ownedPagination = {
 	endpoint: "users/groups/owned" as const,
 	limit: 10,
+	// この API はページ送りに対応していない（件数分か全件を返すだけ）
+	noPaging: true,
 };
 
 const joinedPagination = {
 	endpoint: "users/groups/joined" as const,
 	limit: 10,
+	// この API はページ送りに対応していない（件数分か全件を返すだけ）
+	noPaging: true,
 };
 
 const headerActions = $computed(() => [

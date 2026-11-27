@@ -166,10 +166,14 @@ const recentPostsPagination = {
 const featuredPostsPagination = {
 	endpoint: "gallery/featured" as const,
 	limit: 5,
+	// この API はページ送りに対応していない（件数分か全件を返すだけ）
+	noPaging: true,
 };
 const popularPostsPagination = {
 	endpoint: "gallery/popular" as const,
 	limit: 5,
+	// この API はページ送りに対応していない（件数分か全件を返すだけ）
+	noPaging: true,
 };
 const myPostsPagination = {
 	endpoint: "i/gallery/posts" as const,

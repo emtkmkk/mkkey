@@ -54,6 +54,8 @@ const pagingComponent = $ref<InstanceType<typeof MkPagination>>();
 const pagination = {
 	endpoint: "users/lists/list" as const,
 	limit: 10,
+	// この API はページ送りに対応していない（件数分か全件を返すだけ）
+	noPaging: true,
 };
 
 async function create() {

@@ -122,6 +122,8 @@ watch(
 const featuredPagesPagination = {
 	endpoint: "pages/featured" as const,
 	limit: 20,
+	// この API はページ送りに対応していない（件数分か全件を返すだけ）
+	noPaging: true,
 };
 const likedPagesPagination = {
 	endpoint: "i/page-likes" as const,

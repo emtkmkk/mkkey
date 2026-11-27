@@ -62,6 +62,8 @@ import { definePageMetadata } from "@/scripts/page-metadata";
 const pagination = {
 	endpoint: "antennas/list" as const,
 	limit: 250,
+	// この API はページ送りに対応していない（件数分か全件を返すだけ）
+	noPaging: true,
 	params: { mkkey: true },
 };
 

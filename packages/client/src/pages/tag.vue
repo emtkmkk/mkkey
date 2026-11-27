@@ -74,6 +74,8 @@ const allnotesPagination = {
 
 const usersPagination = {
 	endpoint: "users/search" as const,
+	// users/search は untilId に対応せず offset で送る
+	offsetMode: true,
 	limit: 10,
 	params: computed(() => ({
 		query: `#${props.tag}`,

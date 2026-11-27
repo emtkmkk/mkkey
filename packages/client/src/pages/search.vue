@@ -106,6 +106,8 @@ const medianotesPagination = {
 const usersPagination = {
 	endpoint: "users/search" as const,
 	limit: 10,
+	// users/search は untilId に対応せず offset で送る
+	offsetMode: true,
 	params: computed(() => ({
 		query: props.query,
 		origin: "combined",

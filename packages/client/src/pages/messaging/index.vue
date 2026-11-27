@@ -151,14 +151,19 @@ definePageMetadata({
 
 const dmsPagination = {
 	endpoint: "messaging/history" as const,
-	limit: 15,
+	// ページ送りが無いので、以前の「もっと見る」1 回分に近い 30 件をまとめて出す
+	limit: 30,
+	// この API はページ送りに対応していない（件数分か全件を返すだけ）
+	noPaging: true,
 	params: {
 		group: false,
 	},
 };
 const groupsPagination = {
 	endpoint: "messaging/history" as const,
-	limit: 5,
+	limit: 10,
+	// この API はページ送りに対応していない（件数分か全件を返すだけ）
+	noPaging: true,
 	params: {
 		group: true,
 	},

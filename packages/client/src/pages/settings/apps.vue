@@ -66,6 +66,8 @@ const list = ref<any>(null);
 const pagination = {
 	endpoint: "i/apps" as const,
 	limit: 100,
+	// この API はページ送りに対応していない（件数分か全件を返すだけ）
+	noPaging: true,
 	params: {
 		sort: "+lastUsedAt",
 	},

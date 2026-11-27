@@ -170,6 +170,8 @@ watch(
 const tagUsers = $computed(() => ({
 	endpoint: "hashtags/users" as const,
 	limit: 30,
+	// この API はページ送りに対応していない（件数分か全件を返すだけ）
+	noPaging: true,
 	params: {
 		tag: props.tag,
 		origin: "combined",
@@ -177,7 +179,11 @@ const tagUsers = $computed(() => ({
 	},
 }));
 
-const pinnedUsers = { endpoint: "pinned-users" };
+const pinnedUsers = {
+	endpoint: "pinned-users",
+	// この API はページ送りに対応していない（全件を返すだけ）
+	noPaging: true,
+};
 const popularUsers = {
 	endpoint: "users",
 	limit: 30,

@@ -2,14 +2,7 @@ import type Koa from "koa";
 import signin from "../common/signin.js";
 import { verifyTotpOnce } from "@/misc/verify-totp-once.js";
 import config from "@/config/index.js";
-import {
-	Users,
-	Signins,
-	UserProfiles,
-	UserSecurityKeys,
-	AttestationChallenges,
-	PasskeyLoginChallenges,
-} from "@/models/index.js";
+import { Users, Signins, UserProfiles } from "@/models/index.js";
 import type { ILocalUser } from "@/models/entities/user.js";
 import type { Signin } from "@/models/entities/signin.js";
 import { genId } from "@/misc/gen-id.js";
@@ -18,8 +11,12 @@ import {
 	hashPassword,
 	isOldAlgorithm,
 } from "@/misc/password.js";
-import { verifyLogin, hash } from "../2fa.js";
-import { randomBytes } from "node:crypto";
+import {
+	findSecurityKeyForAssertion,
+	isSecurityKeyAssertion,
+	issueSecurityKeyChallenge,
+	verifySecurityKeyAssertion,
+} from "../common/security-key-assertion.js";
 import { IsNull } from "typeorm";
 import { limiter } from "../limiter.js";
 import { getIpHash } from "@/misc/get-ip-hash.js";
@@ -80,21 +77,9 @@ export default async (ctx: Koa.Context) => {
 		);
 	}
 
-	const passkeyAuth =
-		typeof body.credentialId === "string" &&
-		typeof body.authenticatorData === "string" &&
-		typeof body.clientDataJSON === "string" &&
-		typeof body.signature === "string";
-
-	if (passkeyAuth && typeof body.challengeId === "string") {
-		const clientDataJSON = Buffer.from(body.clientDataJSON, "hex");
-		const clientData = JSON.parse(clientDataJSON.toString("utf-8"));
-		const keyId = Buffer.from(
-			body.credentialId.replace(/-/g, "+").replace(/_/g, "/"),
-			"base64",
-		).toString("hex");
-
-		const securityKey = await UserSecurityKeys.findOneBy({ id: keyId });
+	// セキュリティキーで答えるログイン（確かめる処理は common/security-key-assertion.ts と共通）
+	if (isSecurityKeyAssertion(body)) {
+		const securityKey = await findSecurityKeyForAssertion(body);
 
 		if (!securityKey) {
 			await fail(undefined, 403, {
@@ -130,83 +115,11 @@ export default async (ctx: Koa.Context) => {
 			return;
 		}
 
-		if (body.userHandle != null) {
-			if (typeof body.userHandle !== "string") {
-				await fail(user.id, 400, {
-					id: "93b86c4b-72f9-40eb-9815-798928603d1e",
-				});
-				return;
-			}
-
-			const userHandle = Buffer.from(body.userHandle, "hex").toString("utf-8");
-
-			if (userHandle !== user.id) {
-				await fail(user.id, 403, {
-					id: "93b86c4b-72f9-40eb-9815-798928603d1e",
-				});
-				return;
-			}
-		}
-
-		const challengeHash = hash(Buffer.from(clientData.challenge, "utf-8")).toString("hex");
-
-		const userChallenge = await AttestationChallenges.findOneBy({
-			userId: user.id,
-			id: body.challengeId,
-			registrationChallenge: false,
-			challenge: challengeHash,
-		});
-
-		const globalChallenge = await PasskeyLoginChallenges.findOneBy({
-			id: body.challengeId,
-			challenge: challengeHash,
-		});
-
-		if (!userChallenge && !globalChallenge) {
-			await fail(user.id, 403, {
-				id: "2715a88a-2125-4013-932f-aa6fe72792da",
-			});
+		const failure = await verifySecurityKeyAssertion(securityKey, body, user.id);
+		if (failure) {
+			await fail(user.id, failure.status, { id: failure.id });
 			return;
 		}
-
-		await AttestationChallenges.delete({ userId: user.id, id: body.challengeId });
-		await PasskeyLoginChallenges.delete({ id: body.challengeId });
-
-		const createdAt = userChallenge?.createdAt ?? globalChallenge?.createdAt;
-		if (!createdAt || new Date().getTime() - createdAt.getTime() >= 5 * 60 * 1000) {
-			await fail(user.id, 403, {
-				id: "2715a88a-2125-4013-932f-aa6fe72792da",
-			});
-			return;
-		}
-
-		const verificationResult = verifyLogin({
-			publicKey: Buffer.from(securityKey.publicKey, "hex"),
-			authenticatorData: Buffer.from(body.authenticatorData, "hex"),
-			clientDataJSON,
-			clientData,
-			signature: Buffer.from(body.signature, "hex"),
-			challenge: (userChallenge?.challenge ?? globalChallenge!.challenge),
-			requireUserVerification: false,
-		});
-
-		if (!verificationResult.isValid) {
-			await fail(user.id, 403, {
-				id: "93b86c4b-72f9-40eb-9815-798928603d1e",
-			});
-			return;
-		}
-
-		if (securityKey.signCount > 0 && verificationResult.signCount <= securityKey.signCount) {
-			await fail(user.id, 403, {
-				id: "93b86c4b-72f9-40eb-9815-798928603d1e",
-			});
-			return;
-		}
-
-		securityKey.lastUsed = new Date();
-		securityKey.signCount = verificationResult.signCount;
-		await UserSecurityKeys.save(securityKey);
 
 		signin(ctx, user);
 		return;
@@ -315,37 +228,15 @@ export default async (ctx: Koa.Context) => {
 		return;
 	}
 
-	const keys = await UserSecurityKeys.findBy({ userId: user.id });
+	const issued = await issueSecurityKeyChallenge(user.id);
 
-	if (keys.length === 0) {
+	if (issued == null) {
 		await fail(user.id, 403, {
 			id: "f27fd449-9af4-4841-9249-1f989b9fa4a4",
 		});
 		return;
 	}
 
-	const challenge = randomBytes(32)
-		.toString("base64")
-		.replace(/=/g, "")
-		.replace(/\+/g, "-")
-		.replace(/\//g, "_");
-
-	const challengeId = genId();
-
-	await AttestationChallenges.insert({
-		userId: user.id,
-		id: challengeId,
-		challenge: hash(Buffer.from(challenge, "utf-8")).toString("hex"),
-		createdAt: new Date(),
-		registrationChallenge: false,
-	});
-
-	ctx.body = {
-		challenge,
-		challengeId,
-		securityKeys: keys.map((key) => ({
-			id: key.id,
-		})),
-	};
+	ctx.body = issued;
 	ctx.status = 200;
 };

@@ -190,6 +190,7 @@ import MkInput from "@/components/form/input.vue";
 import MkInfo from "@/components/MkInfo.vue";
 import { apiUrl, host as configHost } from "@/config";
 import { byteify, hexify } from "@/scripts/2fa";
+import { getSecurityKeyAssertion } from "@/scripts/security-key-assertion";
 import * as os from "@/os";
 import { login } from "@/account";
 import { instance } from "@/instance";
@@ -299,36 +300,19 @@ function onLogin(res) {
 function queryKey() {
 	totpErrorMessage = "";
 	queryingKey = true;
-	return navigator.credentials
-		.get({
-			publicKey: {
-				challenge: byteify(challengeData.challenge, "base64"),
-				allowCredentials: challengeData.securityKeys.map((key) => ({
-					id: byteify(key.id, "hex"),
-					type: "public-key",
-					transports: ["usb", "nfc", "ble", "internal"],
-				})),
-				timeout: 60 * 1000,
-				userVerification: "preferred",
-			},
-		})
+	// キーで答える処理は、アカウント削除の予約と共通（scripts/security-key-assertion.ts）
+	return getSecurityKeyAssertion(challengeData)
 		.catch(() => {
 			queryingKey = false;
 			signing = false;
 			totpErrorMessage = i18n.ts.loginFailed;
 			return Promise.reject(null);
 		})
-		.then((credential) => {
+		.then((assertion) => {
 			queryingKey = false;
 			signing = true;
 			return os.api("signin", {
-				signature: hexify(credential.response.signature),
-				authenticatorData: hexify(
-					credential.response.authenticatorData
-				),
-				clientDataJSON: hexify(credential.response.clientDataJSON),
-				credentialId: credential.id,
-				challengeId: challengeData.challengeId,
+				...assertion,
 				"hcaptcha-response": hCaptchaResponse,
 				"g-recaptcha-response": reCaptchaResponse,
 			});

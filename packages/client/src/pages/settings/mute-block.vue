@@ -31,18 +31,27 @@
 			</MkPagination>
 		</div>
 		<div v-if="tab === 'block'">
-			<MkPagination :pagination="blockingPagination" class="blocking">
+			<MkPagination
+				ref="blockingPaginationEl"
+				:pagination="blockingPagination"
+				class="blocking"
+			>
 				<template #empty
 					><FormInfo>{{ i18n.ts.noUsers }}</FormInfo></template
 				>
 				<template #default="{ items }">
-					<FormLink
+					<div
 						v-for="block in items"
 						:key="block.id"
-						:to="userPage(block.blockee)"
+						class="block-row _formBlock"
 					>
-						<MkAcct :user="block.blockee" />
-					</FormLink>
+						<FormLink :to="userPage(block.blockee)" class="user">
+							<MkAcct :user="block.blockee" />
+						</FormLink>
+						<MkButton inline @click="unblock(block)">
+							{{ i18n.ts.unblock }}
+						</MkButton>
+					</div>
 				</template>
 			</MkPagination>
 		</div>
@@ -86,6 +95,8 @@ type PackedMuting = {
 
 let tab = $ref("mute");
 let mutingPaginationEl = $ref<InstanceType<typeof MkPagination>>();
+/** ブロック一覧（解除後の読み直しに使う） */
+let blockingPaginationEl = $ref<InstanceType<typeof MkPagination>>();
 
 const mutingPagination = {
 	endpoint: "mute/list" as const,
@@ -129,6 +140,28 @@ async function editMute(mute: PackedMuting): Promise<void> {
 	if (updated != null) mutingPaginationEl?.reload();
 }
 
+/**
+ * 一覧の行からブロックを解除し、一覧を読み直す。
+ *
+ * @param block - 解除するブロック関係
+ * @returns 解除して一覧を読み直した時点で解決する Promise
+ *
+ * @remarks
+ * 以前は解除するのにプロフィールを開く必要があり、プロフィールを開けない削除済みの人は
+ * ブロックを解除できなかった。
+ *
+ * @internal
+ */
+async function unblock(block: { blockee: { id: string } }): Promise<void> {
+	const { canceled } = await os.confirm({
+		type: "warning",
+		text: i18n.ts.unblockConfirm,
+	});
+	if (canceled) return;
+	await os.apiWithDialog("blocking/delete", { userId: block.blockee.id });
+	blockingPaginationEl?.reload();
+}
+
 const headerActions = $computed(() => []);
 
 const headerTabs = $computed(() => []);
@@ -140,6 +173,17 @@ definePageMetadata({
 </script>
 
 <style lang="scss" scoped>
+.block-row {
+	display: flex;
+	align-items: center;
+	gap: 8px 12px;
+
+	.user {
+		flex: 1;
+		min-width: 0;
+	}
+}
+
 .mute-row {
 	display: grid;
 	grid-template-columns: minmax(0, 1fr) auto;

@@ -102,6 +102,7 @@ import { AtprotoRecordMap } from "@/models/entities/atproto-record-map.js";
 import { AtprotoRepoSeq } from "@/models/entities/atproto-repo-seq.js";
 import { AtprotoBlob } from "@/models/entities/atproto-blob.js";
 import { AtprotoActor } from "@/models/entities/atproto-actor.js";
+import { AccountDeletionSchedule } from "@/models/entities/account-deletion-schedule.js";
 
 import { entities as charts } from "@/services/chart/entities.js";
 import { envOption } from "../env.js";
@@ -204,6 +205,7 @@ export const entities = [
 	AtprotoRepoSeq,
 	AtprotoBlob,
 	AtprotoActor,
+	AccountDeletionSchedule,
 	Hashtag,
 	SwSubscription,
 	AbuseUserReport,

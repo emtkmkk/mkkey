@@ -16,6 +16,7 @@ import {
 import { warnInactiveDeletion } from "./warn-inactive-deletion.js";
 import { sendUnreadSummaryEmail } from "./unread-summary-email.js";
 import { broadcastPushNotice } from "./broadcast-push-notice.js";
+import { executeScheduledAccountDeletions } from "./execute-scheduled-account-deletions.js";
 
 
 const jobs = {
@@ -33,6 +34,7 @@ const jobs = {
 	warnInactiveDeletion,
 	sendUnreadSummaryEmail,
 	broadcastPushNotice,
+	executeScheduledAccountDeletions,
 } as Record<
 	string,
 	| Bull.ProcessCallbackFunction<Record<string, unknown>>

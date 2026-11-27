@@ -741,6 +741,28 @@ export default function () {
 		tz: "Asia/Tokyo",
 	});
 
+	// 予約されたアカウント削除の実行（1日1回・JST 2時）。
+	// NB: 時刻を変えるときは misc/account-deletion-schedule.ts の ACCOUNT_DELETION_HOUR_JST も合わせる
+	addTzAwareRepeatableJob(
+		"executeScheduledAccountDeletions",
+		"execute-scheduled-account-deletions",
+		{
+			cron: "0 2 * * *",
+			tz: "Asia/Tokyo",
+		},
+	);
+	// 2 時にサーバーが止まっていた分を拾うため、起動時にも 1 回確かめる（予定日時を過ぎたものだけを消す）
+	systemQueue.add(
+		"executeScheduledAccountDeletions",
+		{},
+		{
+			delay: 60 * 1000,
+			jobId: "execute-scheduled-account-deletions-on-startup",
+			removeOnComplete: true,
+			removeOnFail: true,
+		},
+	);
+
 	// 未読通知サマリーメール（1日1回・JST 12時。休眠警告と時間帯を分けて SMTP 負荷を分散）
 	addTzAwareRepeatableJob("sendUnreadSummaryEmail", "unread-summary-email", {
 		cron: "0 12 * * *",

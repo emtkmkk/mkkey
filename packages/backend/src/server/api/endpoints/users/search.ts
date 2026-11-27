@@ -252,7 +252,7 @@ async function searchByNameThenProfile(
 // #region 共通の条件
 
 /**
- * 検索の土台になるクエリ（アバター・バナー付き、最近動きのある凍結されていないユーザー）を作る。
+ * 検索の土台になるクエリ（アバター・バナー付き、最近動きのある、凍結も削除もされていないユーザー）を作る。
  *
  * @param activeThreshold - これより前から更新の無いユーザーは除く
  * @param origin - local / remote / combined
@@ -275,7 +275,9 @@ function baseUserQuery(
 				);
 			}),
 		)
-		.andWhere("user.isSuspended = FALSE");
+		.andWhere("user.isSuspended = FALSE")
+		// 削除済みは名前が「🗑」になるだけで行が残っているので、検索に出さない
+		.andWhere("user.isDeleted = FALSE");
 
 	if (origin === "local") {
 		query.andWhere("user.host IS NULL");

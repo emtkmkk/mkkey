@@ -55,7 +55,10 @@ export default define(meta, paramDef, async (ps, me) => {
 		.leftJoinAndSelect("user.banner", "banner")
 		.where(":tag <@ user.tags", {
 			tag: [normalizeForSearch(ps.tag)],
-		});
+		})
+		// 凍結・削除済みのユーザーは出さない（削除済みは名前が「🗑」で出てしまう）
+		.andWhere("user.isSuspended = FALSE")
+		.andWhere("user.isDeleted = FALSE");
 
 	const recent = new Date(Date.now() - 1000 * 60 * 60 * 24 * 5);
 

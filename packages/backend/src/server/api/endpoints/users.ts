@@ -65,6 +65,9 @@ export default define(meta, paramDef, async (ps, me) => {
 		.leftJoinAndSelect("user.avatar", "avatar")
 		.leftJoinAndSelect("user.banner", "banner");
 	query.where("user.isExplorable = TRUE");
+	// 凍結・削除済みのユーザーは出さない（プロフィールは開けず、削除済みは名前が「🗑」で出てしまう）
+	query.andWhere("user.isSuspended = FALSE");
+	query.andWhere("user.isDeleted = FALSE");
 
 	switch (ps.state) {
 		case "admin":

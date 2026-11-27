@@ -61,7 +61,7 @@ export default define(meta, paramDef, async (ps, me) => {
 				} else {
 					query.setParameter("meId", me.id);
 				}
-                                query.andWhere("user.isSuspended = FALSE")
+                                query.andWhere("user.isSuspended = FALSE AND user.isDeleted = FALSE")
 				if (ps.localOnly) {
 					query.andWhere("user.host IS NULL");
 				}
@@ -105,7 +105,7 @@ export default define(meta, paramDef, async (ps, me) => {
 					} else {
 						otherQuery.setParameter("meId", me.id);
 					}
-					otherQuery.andWhere("user.isSuspended = FALSE");
+					otherQuery.andWhere("user.isSuspended = FALSE AND user.isDeleted = FALSE");
 					if (ps.localOnly) {
 						otherQuery.andWhere("user.host IS NULL");
 					}
@@ -135,7 +135,7 @@ export default define(meta, paramDef, async (ps, me) => {
 				.leftJoinAndSelect("user.avatar", "avatar")
 				.leftJoinAndSelect("user.banner", "banner")
 				.addSelect("user.usernameLower")
-				.where("user.isSuspended = FALSE")
+				.where("user.isSuspended = FALSE AND user.isDeleted = FALSE")
 				if (ps.localOnly) {
 					query.andWhere("user.host IS NULL");
 				}

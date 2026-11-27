@@ -554,34 +554,15 @@ const fetchMore = async (): Promise<void> => {
 				if (i === 10) item._shouldInsertAd_ = true;
 			}
 		}
-		const itemIdArray = items.value?.map((x) => x.id);
-		if (
+		const hasNext =
 			res.length >
 			(props.pagination.offsetMode || props.pagination.reversed
 				? SECOND_FETCH_LIMIT
-				: 0)
-		) {
-			if (res.length > SECOND_FETCH_LIMIT) res.pop();
-			// 既に取得してる項目に重複項目があれば取り除く
-			// TODO : 重いかも
-			const resFiltered = res.filter(
-				(x) => !itemIdArray.includes(x.id)
-			);
-			items.value = props.pagination.reversed
-				? [...resFiltered].reverse().concat(items.value)
-				: items.value.concat(resFiltered);
-			// NOTE: 取得件数がしきい値を超えた時点で「まだ続きがある」ことは確定しているため、
-			// 既存アイテムとの重複除去の有無に関わらず more は常に true にする
-			more.value = true;
-		} else {
-			const resFiltered = res.filter(
-				(x) => !itemIdArray.includes(x.id)
-			);
-			items.value = props.pagination.reversed
-				? [...resFiltered].reverse().concat(items.value)
-				: items.value.concat(resFiltered);
-			more.value = false;
-		}
+				: 0);
+		if (res.length > SECOND_FETCH_LIMIT) res.pop();
+		const added = mergeFetchedItems(res);
+		// 新しい項目が 1 件も無ければ、続きを読んでも同じ結果しか来ないので止める
+		more.value = hasNext && added > 0;
 		offset.value += res.length;
 		if (res[0]?.createdAt)
 			defaultStore.set("lastBackedDate", {
@@ -604,6 +585,27 @@ const fetchMore = async (): Promise<void> => {
 		finishLoadingMore(generation, outcome);
 	}
 };
+
+/**
+ * 続きとして読み込んだ項目のうち、まだ一覧に無いものだけを足す。
+ *
+ * @param res - API から届いた項目（並びは API の返した順）
+ * @returns 新しく足した件数
+ *
+ * @remarks
+ * - reversed のときは逆順にして先頭へ、そうでないときは末尾へ足す（fetchMore / fetchMoreAhead 共通）。
+ * - 戻り値が 0 のときは「続きを読んでも進まない」ことを表す。呼び出し側は more を false にし、
+ *   untilId / sinceId を無視する API で同じ結果を読み続ける無限ループを防ぐ。
+ * - 以前は `Array.includes` で 1 件ずつ探していたが、件数が増えると重いので Set にした。
+ */
+function mergeFetchedItems(res: Item[]): number {
+	const existingIds = new Set(items.value.map((x) => x.id));
+	const fresh = res.filter((x) => !existingIds.has(x.id));
+	items.value = props.pagination.reversed
+		? [...fresh].reverse().concat(items.value)
+		: items.value.concat(fresh);
+	return fresh.length;
+}
 
 /**
  * 続きの読み込みを終え、状態を ready か moreError に戻す。
@@ -664,23 +666,15 @@ const fetchMoreAhead = async (): Promise<void> => {
 		});
 		// 待っている間に init がやり直された。古い条件の結果なので足さない
 		if (generation !== loadGeneration) return;
-		if (
+		const hasNext =
 			res.length >
 			(props.pagination.offsetMode || props.pagination.reversed
 				? SECOND_FETCH_LIMIT
-				: 0)
-		) {
-			if (res.length > SECOND_FETCH_LIMIT) res.pop();
-			items.value = props.pagination.reversed
-				? [...res].reverse().concat(items.value)
-				: items.value.concat(res);
-			more.value = true;
-		} else {
-			items.value = props.pagination.reversed
-				? [...res].reverse().concat(items.value)
-				: items.value.concat(res);
-			more.value = false;
-		}
+				: 0);
+		if (res.length > SECOND_FETCH_LIMIT) res.pop();
+		// 以前はここで重複を除いておらず、sinceId を無視する API だと同じ項目が何度も足されていた
+		const added = mergeFetchedItems(res);
+		more.value = hasNext && added > 0;
 		offset.value += res.length;
 		ctAutoReload.value = true;
 		if (timerId) clearTimeout(timerId);

@@ -17,16 +17,16 @@
 						<div
 							v-for="req in items"
 							:key="req.id"
-							class="user _panel"
+							class="request _panel"
 						>
-							<MkAvatar
-								class="avatar"
-								:user="req.follower"
-								:show-indicator="true"
-								disableLink
-							/>
-							<div class="body">
-								<div class="name">
+							<div class="head">
+								<MkAvatar
+									class="avatar"
+									:user="req.follower"
+									:show-indicator="true"
+									disableLink
+								/>
+								<div class="who">
 									<MkA
 										v-user-preview="req.follower.id"
 										class="name"
@@ -36,44 +36,114 @@
 									<p class="acct">
 										@{{ acct(req.follower) }}
 									</p>
+									<div
+										v-if="
+											req.follower.isFollowing ||
+											req.follower.isBot
+										"
+										class="badges"
+									>
+										<span
+											v-if="req.follower.isFollowing"
+											class="badge following"
+											><i
+												class="ph-check-circle ph-bold"
+											></i>
+											{{ i18n.ts.youFollowThisUser }}</span
+										>
+										<span
+											v-if="req.follower.isBot"
+											class="badge"
+											><i class="ph-robot ph-bold"></i>
+											Bot</span
+										>
+									</div>
 								</div>
 								<div
-									v-if="req.follower.description"
-									class="description"
-									:title="req.follower.description"
+									class="requested"
+									:title="i18n.ts.followRequestedAt"
 								>
-									<Mfm
-										:text="req.follower.description"
-										:is-note="false"
-										:author="req.follower"
-										:i="$i"
-										:custom-emojis="req.follower.emojis"
-										:plain="true"
-										:nowrap="true"
-									/>
+									<i class="ph-clock ph-bold"></i>
+									<MkTime :time="req.createdAt" />
 								</div>
-								<div class="actions">
-									<button
-										class="_button"
-										@click="accept(req.follower)"
-									>
-										<i class="ph-check ph-bold ph-lg"></i>
-									</button>
-									<button
-										class="_button"
-										@click="reject(req.follower)"
-									>
-										<i class="ph-x ph-bold ph-lg"></i>
-									</button>
-									<button
-										class="_button"
-										@click="ignore(req.follower)"
-									>
-										<i
-											class="ph-bell-slash ph-bold ph-lg"
-										></i>
-									</button>
+							</div>
+
+							<MkInstanceTicker
+								v-if="req.follower.instance"
+								class="ticker"
+								:instance="req.follower.instance"
+							/>
+
+							<div class="description">
+								<Mfm
+									v-if="req.follower.description"
+									:text="req.follower.description"
+									:is-note="false"
+									:author="req.follower"
+									:i="$i"
+									:custom-emojis="req.follower.emojis"
+									:plain="true"
+								/>
+								<span v-else class="empty">{{
+									i18n.ts.noAccountDescription
+								}}</span>
+							</div>
+
+							<dl class="stats">
+								<div>
+									<dt>{{ i18n.ts.registeredDate }}</dt>
+									<dd>
+										<MkTime
+											:time="req.follower.createdAt"
+											mode="absolute"
+											date-only
+										/>
+									</dd>
 								</div>
+								<div>
+									<dt>{{ i18n.ts.notes }}</dt>
+									<dd>{{ formatCount(req.follower.notesCount) }}</dd>
+								</div>
+								<div>
+									<dt>{{ i18n.ts.following }}</dt>
+									<dd>
+										{{ formatCount(req.follower.followingCount) }}
+									</dd>
+								</div>
+								<div>
+									<dt>{{ i18n.ts.followers }}</dt>
+									<dd>
+										{{ formatCount(req.follower.followersCount) }}
+									</dd>
+								</div>
+							</dl>
+
+							<div class="actions">
+								<MkButton
+									inline
+									rounded
+									primary
+									@click="accept(req.follower)"
+								>
+									<i class="ph-check ph-bold"></i>
+									{{ i18n.ts.accept }}
+								</MkButton>
+								<MkButton
+									inline
+									rounded
+									@click="reject(req.follower)"
+								>
+									<i class="ph-x ph-bold"></i>
+									{{ i18n.ts.reject }}
+								</MkButton>
+								<MkButton
+									inline
+									rounded
+									@click="ignore(req.follower)"
+								>
+									<i class="ph-bell-slash ph-bold"></i>
+									{{ i18n.ts.ignore }}
+								</MkButton>
 							</div>
 						</div>
 					</div>
@@ -84,20 +154,67 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * 受けたフォロー申請の一覧ページ。
+ *
+ * @remarks
+ * - 許可するかを判断しやすいよう、申請日時・自己紹介・登録日・投稿数・フォロー数・
+ *   フォロワー数・「自分がフォロー中か」を出す。申請者は API が詳細版で返す。
+ * - フォロー数・フォロワー数は、相手が非公開にしていると数値でなく "N/A" が返るので「-」と出す。
+ * - 新しい申請から順に 10 件ずつページ送りする（API 側で sinceId / untilId に対応済み）。
+ * - NB: リモートのユーザーの「登録日」は、このサーバーが初めてそのユーザーを知った日。
+ *   相手のサーバーでの本当の登録日ではない（ユーザーページの表示と同じ）。
+ *
+ * @see {@link server/api/endpoints/following/requests/list} 申請一覧 API
+ * @internal
+ */
 import { ref, computed } from "vue";
 import MkPagination from "@/components/MkPagination.vue";
+import MkButton from "@/components/MkButton.vue";
+import MkInstanceTicker from "@/components/MkInstanceTicker.vue";
 import { userPage, acct } from "@/filters/user";
 import * as os from "@/os";
 import { i18n } from "@/i18n";
 import { definePageMetadata } from "@/scripts/page-metadata";
 
+/**
+ * 一覧の再読み込みに使うページ送り部品への参照。
+ *
+ * @internal
+ */
 const paginationComponent = ref<InstanceType<typeof MkPagination>>();
 
+/**
+ * 申請一覧の取得設定。
+ *
+ * @internal
+ */
 const pagination = {
 	endpoint: "following/requests/list" as const,
 	limit: 10,
 };
 
+/**
+ * 件数を表示用の文字にする。
+ *
+ * @param value - API が返した件数（非公開なら "N/A" などの文字が来る）
+ * @returns 3 桁区切りの数字か、数でなければ「-」
+ *
+ * @internal
+ */
+function formatCount(value: unknown): string {
+	return typeof value === "number" ? value.toLocaleString() : "-";
+}
+
+/**
+ * 申請を許可する。
+ *
+ * @param user - 申請してきたユーザー
+ * @returns 確認ダイアログと API 呼び出しの完了
+ * @internal
+ */
 async function accept(user) {
 	const { canceled } = await os.confirm({
 		type: "question",
@@ -111,6 +228,13 @@ async function accept(user) {
 	});
 }
 
+/**
+ * 申請を拒否する。
+ *
+ * @param user - 申請してきたユーザー
+ * @returns 確認ダイアログと API 呼び出しの完了
+ * @internal
+ */
 async function reject(user) {
 	const { canceled } = await os.confirm({
 		type: "warning",
@@ -124,6 +248,13 @@ async function reject(user) {
 	});
 }
 
+/**
+ * 以降この相手からの申請を無視する（follow 範囲のミュート）。
+ *
+ * @param user - 申請してきたユーザー
+ * @returns 確認ダイアログと API 呼び出しの完了
+ * @internal
+ */
 async function ignore(user) {
 	const { canceled } = await os.confirm({
 		type: "warning",
@@ -151,31 +282,31 @@ definePageMetadata(
 
 <style lang="scss" scoped>
 .mk-follow-requests {
-	> .user {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+
+	> .request {
 		display: flex;
-		padding: 1rem;
-		margin: 0.625rem 0 auto;
+		flex-direction: column;
+		gap: 0.75rem;
+		padding: 1rem 1.25rem;
 
-		> .avatar {
-			display: block;
-			flex-shrink: 0;
-			margin: 0 0.75rem 0 0;
-			width: 2.625rem;
-			height: 2.625rem;
-			border-radius: 0.5rem;
-		}
-
-		> .body {
+		> .head {
 			display: flex;
-			width: calc(100% - 3.375rem);
-			position: relative;
+			align-items: flex-start;
+			gap: 0.75rem;
 
-			> .name {
-				width: 45%;
+			> .avatar {
+				flex-shrink: 0;
+				width: 3rem;
+				height: 3rem;
+				border-radius: 0.5rem;
+			}
 
-				@media (max-width: 31.25rem) {
-					width: 100%;
-				}
+			> .who {
+				flex: 1;
+				min-width: 0;
 
 				> .name,
 				> .acct {
@@ -188,43 +319,109 @@ definePageMetadata(
 
 				> .name {
 					font-size: 1rem;
+					font-weight: bold;
 					line-height: 1.5rem;
 				}
 
 				> .acct {
-					font-size: 0.9375rem;
-					line-height: 1rem;
+					font-size: 0.875rem;
+					line-height: 1.25rem;
 					opacity: 0.7;
 				}
+
+				> .badges {
+					display: flex;
+					flex-wrap: wrap;
+					gap: 0.375rem;
+					margin-top: 0.375rem;
+
+					> .badge {
+						font-size: 0.75rem;
+						line-height: 1.25rem;
+						padding: 0 0.5rem;
+						border-radius: 999px;
+						background: var(--buttonBg);
+
+						&.following {
+							color: var(--accent);
+						}
+					}
+				}
 			}
 
-			> .description {
-				width: 55%;
-				line-height: 2.625rem;
-				white-space: nowrap;
-				overflow: hidden;
-				text-overflow: ellipsis;
+			> .requested {
+				flex-shrink: 0;
+				font-size: 0.8125rem;
+				line-height: 1.5rem;
 				opacity: 0.7;
-				font-size: 0.875rem;
-				padding-right: 2.5rem;
-				padding-left: 0.5rem;
-				box-sizing: border-box;
+				white-space: nowrap;
 
-				@media (max-width: 31.25rem) {
-					display: none;
+				> i {
+					margin-right: 0.25rem;
 				}
 			}
+		}
 
-			> .actions {
-				position: absolute;
-				top: 0;
-				bottom: 0;
-				right: 0;
-				margin: auto 0;
+		> .ticker {
+			align-self: flex-start;
+			max-width: 100%;
+		}
 
-				> button {
-					padding: 0.75rem;
+		> .description {
+			font-size: 0.875rem;
+			line-height: 1.5;
+			// 長い自己紹介で一覧が縦に伸びすぎないよう 3 行で切る
+			display: -webkit-box;
+			-webkit-box-orient: vertical;
+			-webkit-line-clamp: 3;
+			overflow: hidden;
+			overflow-wrap: anywhere;
+
+			> .empty {
+				opacity: 0.5;
+			}
+		}
+
+		> .stats {
+			display: grid;
+			grid-template-columns: repeat(4, 1fr);
+			gap: 0.5rem;
+			margin: 0;
+			padding: 0.625rem 0;
+			border-top: solid 0.5px var(--divider);
+			border-bottom: solid 0.5px var(--divider);
+
+			@media (max-width: 31.25rem) {
+				grid-template-columns: repeat(2, 1fr);
+			}
+
+			> div {
+				text-align: center;
+				min-width: 0;
+
+				> dt {
+					font-size: 0.75rem;
+					opacity: 0.7;
 				}
+
+				> dd {
+					margin: 0;
+					font-weight: bold;
+					white-space: nowrap;
+					overflow: hidden;
+					text-overflow: ellipsis;
+				}
+			}
+		}
+
+		> .actions {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: flex-end;
+			gap: 0.5rem;
+
+			i {
+				margin-right: 0.25rem;
 			}
 		}
 	}

@@ -606,9 +606,19 @@ export type NoteFavorite = {
 	note: Note;
 };
 
+/**
+ * 受けたフォロー申請（`following/requests/list` の 1 件）。
+ *
+ * @remarks
+ * - `follower` は許可するかを判断できるよう詳細版で返る。
+ * - `createdAt` は申請された日時。
+ *
+ * @public
+ */
 export type FollowRequest = {
 	id: ID;
-	follower: User;
+	createdAt: DateString;
+	follower: UserDetailed;
 	followee: User;
 };
 

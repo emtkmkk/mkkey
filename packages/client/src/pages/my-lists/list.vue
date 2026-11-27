@@ -38,13 +38,18 @@
 									class="user _panel"
 								>
 									<MkAvatar
+										v-if="!user.unavailable"
 										:user="user"
 										class="avatar"
 										:show-indicator="true"
 									/>
-									<div class="body">
+									<div v-if="!user.unavailable" class="body">
 										<MkUserName :user="user" class="name" />
 										<MkAcct :user="user" class="acct" />
+									</div>
+									<div v-else class="body unavailable">
+										<span class="name">{{ i18n.ts.unavailableMember }}</span>
+										<span class="acct">{{ user.id }}</span>
 									</div>
 									<div class="action">
 										<button
@@ -65,12 +70,25 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * リストのメンバー一覧と編集のページ。
+ *
+ * @remarks
+ * - メンバーの情報は `users/show` で取る。削除済み・凍結中で取れなかったメンバーは
+ *   「削除されたか、表示できないユーザー」として ID だけを出し、外せるようにする
+ *   （{@link withUnavailableMembers}）。以前は画面に出ず、外す方法が無かった。
+ *
+ * @internal
+ */
 import { computed, watch } from "vue";
 import MkButton from "@/components/MkButton.vue";
 import * as os from "@/os";
 import { mainRouter } from "@/router";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { i18n } from "@/i18n";
+import { withUnavailableMembers } from "@/scripts/unavailable-members";
 
 const props = defineProps<{
 	listId: string;
@@ -87,7 +105,8 @@ function fetchList() {
 		os.api("users/show", {
 			userIds: list.userIds,
 		}).then((_users) => {
-			users = _users;
+			// 削除済み・凍結中で取れなかったメンバーも、外せるように行として残す
+			users = withUnavailableMembers(list.userIds, _users);
 		});
 	});
 }

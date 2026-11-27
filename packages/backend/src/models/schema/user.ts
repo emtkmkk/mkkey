@@ -102,6 +102,12 @@ export const packedUserLiteSchema = {
 			optional: false,
 			description: "一時利用停止（false も常に送る）。",
 		},
+		isDeleted: {
+			type: "boolean",
+			nullable: false,
+			optional: true,
+			description: "削除済み（論理削除）か。簡易版では true のときだけ送る。",
+		},
 		emojis: {
 			type: "array",
 			nullable: false,

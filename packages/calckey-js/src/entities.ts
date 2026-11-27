@@ -58,6 +58,8 @@ export type UserLite = {
 	};
 	isModerationWarning: boolean;
 	isUsagePaused: boolean;
+	/** 削除済み（論理削除）か。true のときだけ送られる */
+	isDeleted?: boolean;
 };
 
 /**

@@ -1157,6 +1157,9 @@ FROM "user" u WHERE u."id" = $1`,
 			// API 省略規則の例外: 常に boolean で送る
 			isModerationWarning: user.isModerationWarning === true,
 			isUsagePaused: user.isUsagePaused === true,
+			// 削除済み（論理削除）か。画面がリンク・フォローボタン・プレビューを出し分けるのに使う。
+			// 以前は自分自身の情報にしか無く、ほかの人は名前が「🗑」になることでしか分からなかった
+			isDeleted: isDeleted || falsy,
 			notesCount: user.notesCount,
 			instance: user.host
 				? userInstanceCache
@@ -1182,11 +1185,14 @@ FROM "user" u WHERE u."id" = $1`,
 						)
 				: undefined,
 			emojis: populateEmojis(user.emojis, user.host),
-                        onlineStatus: await this.getOnlineStatus(
-                                user,
-                                meId,
-                                relation ?? undefined,
-                        ),
+                        // 削除済みの人は、最後に動いた時刻が新しくても「オンライン」と出さない
+                        onlineStatus: isDeleted
+                                ? "unknown"
+                                : await this.getOnlineStatus(
+                                        user,
+                                        meId,
+                                        relation ?? undefined,
+                                  ),
 			patron: user.host
 				? undefined
 				: (user.driveCapacityOverrideMb ?? DEFAULT_DRIVE_SIZE / MB) >

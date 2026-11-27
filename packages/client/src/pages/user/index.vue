@@ -22,6 +22,14 @@
 					<XGallery v-else-if="tab === 'gallery'" :user="user" />
 					<XCategories v-else-if="tab === 'category'" :user="user" />
 				</div>
+				<div v-else-if="notFound" class="_fullinfo">
+					<img
+						src="/static-assets/badges/info.png"
+						class="_ghost"
+						alt="Info"
+					/>
+					<div>{{ i18n.ts.userDeletedOrNotFound }}</div>
+				</div>
 				<MkError v-else-if="error" @retry="fetchUser()" />
 				<MkLoading v-else />
 			</transition>
@@ -30,6 +38,17 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * ユーザーページ（`/@名前` や `/@名前@ホスト`）。
+ *
+ * @remarks
+ * ユーザーが見つからないとき（削除済み・凍結中・存在しない）は、「問題が発生しました」と再試行ボタンではなく、
+ * 「削除されたか、見つかりません」とだけ出す。再試行しても結果は変わらないため。
+ *
+ * @internal
+ */
 import { defineAsyncComponent, computed, watch } from "vue";
 import calcAge from "s-age";
 import type * as misskey from "calckey-js";
@@ -66,6 +85,13 @@ const router = useRouter();
 let tab = $ref(props.page);
 let user = $ref<null | misskey.entities.UserDetailed>(null);
 let error = $ref(null);
+/**
+ * ユーザーが見つからなかった（削除済み・凍結中・存在しない）。
+ *
+ * @remarks
+ * 再試行しても結果は変わらないので、「問題が発生しました」と再試行ボタンではなく、その旨だけを出す。
+ */
+let notFound = $computed(() => error?.code === "NO_SUCH_USER");
 
 function userSearch() {
 	search(undefined, user?.id);

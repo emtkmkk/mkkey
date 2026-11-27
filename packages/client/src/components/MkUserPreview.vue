@@ -112,6 +112,9 @@
 					mini
 				/>
 			</div>
+			<div v-else-if="notFound" class="not-found">
+				{{ i18n.ts.userDeletedOrNotFound }}
+			</div>
 			<div v-else>
 				<MkLoading />
 			</div>
@@ -120,6 +123,18 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * アイコンや名前にマウスを乗せたときに出る、ユーザーのプレビュー（小窓）。
+ *
+ * @remarks
+ * - `q` がユーザー ID か `@名前@ホスト` なら `users/show` で取る。
+ * - 削除済み・凍結中などで取れなかったときは、その旨を出す。以前は失敗を受け止めておらず、
+ *   読み込み中の表示がずっと回り続けていた。
+ *
+ * @internal
+ */
 import { computed, onMounted } from "vue";
 import * as Acct from "calckey-js/built/acct";
 import type * as misskey from "calckey-js";
@@ -145,6 +160,8 @@ const emit = defineEmits<{
 
 const zIndex = os.claimZIndex("middle");
 let user = $ref<misskey.entities.UserDetailed | null>(null);
+/** `users/show` で取れなかった（削除済み・凍結中・存在しないなど） */
+let notFound = $ref(false);
 let top = $ref(0);
 let left = $ref(0);
 
@@ -177,13 +194,17 @@ onMounted(() => {
 			return;
 		}
 
-		os.api("users/show", query).then((res) => {
-			if (!props.showing) return;
-			user = res;
-			isLong =
-				user.description.split("\n").length > 9 ||
-				user.description.length > 400;
-		});
+		os.api("users/show", query)
+			.then((res) => {
+				if (!props.showing) return;
+				user = res;
+				isLong =
+					user.description.split("\n").length > 9 ||
+					user.description.length > 400;
+			})
+			.catch(() => {
+				notFound = true;
+			});
 	}
 
 	const rect = props.source.getBoundingClientRect();
@@ -197,6 +218,12 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
+.not-found {
+	padding: 16px;
+	text-align: center;
+	opacity: 0.7;
+}
+
 .popup-enter-active,
 .popup-leave-active {
 	transition: opacity 0.3s, transform 0.3s !important;

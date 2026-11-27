@@ -357,7 +357,7 @@ async function sendScheduledEmail(user: ILocalUser, scheduledAt: Date): Promise<
 		greeting: "plain",
 		paragraphs: [
 			`ご利用のアカウント（@${user.username}）の削除の予約を受け付けました。`,
-			`${formatJstDateTime(scheduledAt)}（日本時間）ごろに削除されます。`,
+			`${formatJstDateTime(scheduledAt)}（日本時間）ごろに削除される予定です。`,
 			"削除されるまでの間は、予約の解除のほかは操作できません。",
 			"予約を解除する場合は、{serverName}にログインして「予約を解除」を押してください。",
 		],

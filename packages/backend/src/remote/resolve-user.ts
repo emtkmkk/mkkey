@@ -19,7 +19,12 @@ import type { User, IRemoteUser } from "@/models/entities/user.js";
 import { Users } from "@/models/index.js";
 import { toPuny } from "@/misc/convert-host.js";
 import webFinger from "./webfinger.js";
-import { createPerson, updatePerson } from "./activitypub/models/person.js";
+import {
+	createPerson,
+	updatePerson,
+	validateActor,
+} from "./activitypub/models/person.js";
+import { freeAcct, isSameActor } from "./activitypub/models/acct-collision.js";
 import Resolver from "./activitypub/resolver.js";
 import {
 	buildResolveUserInflightKey,
@@ -33,6 +38,19 @@ const logger = remoteLogger.createSubLogger("resolve-user");
 
 /** リモートユーザー情報の再取得間隔（24 時間） */
 const RESYNC_INTERVAL_MS = 1000 * 60 * 60 * 24;
+
+/**
+ * 削除済み（論理削除）のリモートユーザーの再取得間隔（30 日）。
+ *
+ * @remarks
+ * - 削除済みの人は相手のサーバーで消えていることがほとんどで、取りに行っても 410 Gone などで失敗する。
+ *   メンションの解決などで名前を引かれるたびに 1 日 1 回問い合わせていた（本番で 30 日に約 5,000 人）。
+ * - まったく取り直さないと、相手が復活したときや、同じ名前が新しい URI に付け替わったときに気づけないので、
+ *   間隔を延ばすだけにする。受信があったときの復活は inbox 側（reviveDeletedActor）が 1 日 1 回確かめる。
+ *
+ * @internal
+ */
+const DELETED_RESYNC_INTERVAL_MS = 1000 * 60 * 60 * 24 * 30;
 
 /**
  * リモートユーザを username@host から解決する。
@@ -123,9 +141,12 @@ async function resolveRemoteUser(
 	}
 
 	// ユーザー情報が古い場合は WebFinger からやり直して返す
+	const resyncInterval = user.isDeleted
+		? DELETED_RESYNC_INTERVAL_MS
+		: RESYNC_INTERVAL_MS;
 	if (
 		user.lastFetchedAt == null ||
-		Date.now() - user.lastFetchedAt.getTime() > RESYNC_INTERVAL_MS
+		Date.now() - user.lastFetchedAt.getTime() > resyncInterval
 	) {
 		// 接続できないインスタンスへの多重試行を防ぐため、試行前に lastFetchedAt を更新する
 		await Users.update(user.id, {
@@ -148,6 +169,17 @@ async function resolveRemoteUser(
 			const uri = new URL(self.href);
 			if (uri.hostname !== host) {
 				throw new Error("Invalid uri");
+			}
+
+			// CHANGED: 以前は確かめずに付け直していた。別の人がその名前を取った場合（相手のサーバーの作り直しなど）に、
+			// 前の人の投稿やフォロー関係が別の人のものになってしまうため、同じ人だと確かめられたときだけ付け直す
+			const person = validateActor(personObject, self.href);
+			if (!(await isSameActor(user, person))) {
+				logger.info(
+					`uri missmatch is not the same actor, freeing ${acctLower} from ${user.uri}`,
+				);
+				await freeAcct(user, usernameLower);
+				return await createPerson(self.href, resolver);
 			}
 
 			await Users.update(

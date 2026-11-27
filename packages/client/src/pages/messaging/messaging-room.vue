@@ -8,6 +8,14 @@
 		<div class="_content mk-messaging-room">
 			<MkSpacer :content-max="800">
 				<div class="body">
+					<div v-if="notFound" class="_fullinfo">
+						<img
+							src="/static-assets/badges/info.png"
+							class="_ghost"
+							alt="Info"
+						/>
+						<div>{{ i18n.ts.userDeletedOrNotFound }}</div>
+					</div>
 					<MkPagination
 						v-if="pagination"
 						ref="pagingComponent"
@@ -47,7 +55,7 @@
 						</template>
 					</MkPagination>
 				</div>
-				<footer>
+				<footer v-if="!notFound">
 					<div v-if="typers.length > 0" class="typers">
 						<I18n
 							:src="i18n.ts.typingUsers"
@@ -101,6 +109,19 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * @packageDocumentation
+ *
+ * メッセージ（チャット）の画面。相手のユーザーかグループとのやり取りを表示し、送る。
+ *
+ * @remarks
+ * - 相手のユーザーが取れないとき（削除済み・凍結中・存在しない）は、その旨を出して送信欄を隠す。
+ *   以前は取得の失敗で先に進まず、画面が止まったままだった。
+ * - TODO: 相手が削除済みでも過去のやり取りを読めるようにする。メッセージの取得には相手の ID が要るが、
+ *   `users/show` が削除済みの人を返さないため、今は取れない。
+ *
+ * @internal
+ */
 import { computed, watch, onMounted, nextTick, onBeforeUnmount } from "vue";
 import * as Misskey from "calckey-js";
 import * as Acct from "calckey-js/built/acct";
@@ -131,6 +152,14 @@ let formEl = $ref<InstanceType<typeof XForm>>();
 let pagingComponent = $ref<InstanceType<typeof MkPagination>>();
 
 let fetching = $ref(true);
+/**
+ * 相手のユーザーが取れなかった（削除済み・凍結中・存在しない）。
+ *
+ * @remarks
+ * 以前は `users/show` の失敗で先に進まず、画面が止まったままだった。
+ * NOTE: メッセージの取得には相手の ID が要るので、取れなかったときは過去のやり取りも出せない。
+ */
+let notFound = $ref(false);
 let user: Misskey.entities.UserDetailed | null = $ref(null);
 let group: Misskey.entities.UserGroup | null = $ref(null);
 let typers: Misskey.entities.User[] = $ref([]);
@@ -153,10 +182,21 @@ async function fetch() {
 
 	if (props.userAcct) {
 		const acct = Acct.parse(props.userAcct);
-		user = await os.api("users/show", {
-			username: acct.username,
-			host: acct.host || undefined,
-		});
+		notFound = false;
+		try {
+			user = await os.api("users/show", {
+				username: acct.username,
+				host: acct.host || undefined,
+			});
+		} catch {
+			// 前の相手の接続は watch で閉じてあるので、使わないよう空にしておく
+			connection = null;
+			user = null;
+			pagination = null;
+			notFound = true;
+			fetching = false;
+			return;
+		}
 		group = null;
 
 		pagination = {

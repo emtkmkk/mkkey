@@ -8,6 +8,9 @@
  * - 署名の検証が済んだ受信は、送り元のサーバが動いている証拠として健康状態の層に伝える
  *   （{@link noteHostAlive}。自動停止・閉鎖停止はここで解除される）。
  *
+ * - 削除済み（論理削除）の人からの受信は、相手のサーバーでまだ存在すると確かめられたときだけ処理する
+ *   （{@link reviveDeletedActor}）。公開鍵が DB に残っているので、署名の検証だけでは弾けないため。
+ *
  * @see {@link perform} Activity 処理
  * @see {@link activitypub} inbox 投入元
  * @internal
@@ -18,7 +21,7 @@ import httpSignature from "@peertube/http-signature";
 import perform from "@/remote/activitypub/perform.js";
 import Logger from "@/services/logger.js";
 import { registerOrFetchInstanceDoc } from "@/services/register-or-fetch-instance-doc.js";
-import { Instances } from "@/models/index.js";
+import { Instances, Users } from "@/models/index.js";
 import {
 	apRequestChart,
 	federationChart,
@@ -30,7 +33,7 @@ import { getApId } from "@/remote/activitypub/type.js";
 import { fetchInstanceMetadata } from "@/services/fetch-instance-metadata.js";
 import type { InboxJobData } from "../types.js";
 import DbResolver from "@/remote/activitypub/db-resolver.js";
-import { resolvePerson } from "@/remote/activitypub/models/person.js";
+import { resolvePerson, updatePerson } from "@/remote/activitypub/models/person.js";
 import { LdSignature } from "@/remote/activitypub/misc/ld-signature.js";
 import { StatusError } from "@/misc/fetch.js";
 import type { CacheableRemoteUser } from "@/models/entities/user.js";
@@ -263,6 +266,15 @@ export default async (job: Bull.Job<InboxJobData>): Promise<string> => {
 	});
 	job.progress(50);
 
+	// 削除済みの人からの受信は、相手のサーバーで本当にまだ存在すると確かめられたときだけ処理する
+	if (authUser.user.isDeleted) {
+		const revived = await reviveDeletedActor(authUser.user);
+		if (revived == null) {
+			return `skip: actor is deleted ${authUser.user.uri}`;
+		}
+		authUser.user = revived;
+	}
+
 	// アクティビティを処理
 	try {
 		await perform(authUser.user, activity, job.data.user?.id);
@@ -279,3 +291,59 @@ export default async (job: Bull.Job<InboxJobData>): Promise<string> => {
 	job.progress(100);
 	return "ok";
 };
+
+/**
+ * 削除済みの人を取り直す間隔（ミリ秒）。
+ *
+ * @internal
+ */
+const REVIVE_CHECK_INTERVAL_MS = 1000 * 60 * 60 * 24;
+
+/**
+ * 削除済みのリモートの人を取り直し、相手のサーバーでまだ存在すれば復活させる。
+ *
+ * @param user - 削除済みのリモートユーザー
+ * @returns 復活したユーザー。存在を確かめられなかったときは null（届いたものは捨てる）
+ *
+ * @remarks
+ * - 論理削除に変える前は、削除した人の行が無いので受信のたびに相手へ取りに行き、
+ *   410 Gone などで失敗して終わっていた。それと同じ結果になるよう、取り直しに成功したときだけ処理する。
+ * - 復活は {@link updatePerson} が `isDeleted: false` を書くことで起きる。届いた Update の中身では復活させず、
+ *   必ず相手のサーバーから取り直す（Delete の前に送られた Update が後から届いても、復活しないようにするため）。
+ * - 取り直しは 1 人につき 1 日 1 回まで。消えた相手へ受信のたびに問い合わせないよう、
+ *   取りに行く前に `lastFetchedAt` を進める。
+ *
+ * @internal
+ */
+async function reviveDeletedActor(
+	user: CacheableRemoteUser,
+): Promise<CacheableRemoteUser | null> {
+	const current = await Users.findOneBy({ id: user.id });
+	if (current == null || !current.isDeleted) {
+		// 別の受信が先に復活させていれば、それを使う
+		return (current as CacheableRemoteUser | null) ?? null;
+	}
+
+	// 取り直す先が無いか、最近取り直したばかりなら、確かめずに捨てる
+	if (
+		current.uri == null ||
+		(current.lastFetchedAt != null &&
+			Date.now() - current.lastFetchedAt.getTime() < REVIVE_CHECK_INTERVAL_MS)
+	) {
+		return null;
+	}
+	await Users.update(user.id, { lastFetchedAt: new Date() });
+
+	try {
+		// hint を渡さず、相手のサーバーから取り直す
+		await updatePerson(current.uri);
+	} catch (e) {
+		logger.debug(`deleted actor is still gone: ${user.uri} ${e}`);
+		return null;
+	}
+
+	const revived = await Users.findOneBy({ id: user.id });
+	if (revived == null || revived.isDeleted) return null;
+	logger.info(`revived deleted actor: ${user.uri}`);
+	return revived as CacheableRemoteUser;
+}

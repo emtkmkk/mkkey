@@ -648,6 +648,9 @@ export async function updatePerson(
 		movedToUri: person.movedTo || null,
 		alsoKnownAs: person.alsoKnownAs || null,
 		isExplorable: !!person.discoverable,
+		// NB: 取り直しに成功した = 相手のサーバーでまだ存在するので、削除済みなら復活させる。
+		// 削除済みの人から届いた Update はここまで来ない（受信の時点で捨て、取り直したときだけ通す。
+		// queue/processors/inbox.ts の reviveDeletedActor）
 		isDeleted: false,
 	} as Partial<User>;
 

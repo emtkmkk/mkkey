@@ -102,14 +102,22 @@ export async function deleteAccount(
 						deleteCount += 1;
 					}
 					tryCount = 0;
-				} catch {}
+				} catch (err) {
+					// NOTE: 以前は黙って握り潰していたため、消せずに残ったフォロー関係の原因が追えなかった。
+					// 失敗した行は次の周でも取り直され、100 周続けて進まなければあきらめる
+					logger.warn(`Failed to delete following ($follower) ${x.id}: ${err}`);
+					job.log(`warn - Failed to delete following ($follower) ${x.id}: ${String(err)}`);
+				}
 			}
 			tryCount += 1;
 			job.progress(25 + (+(deleteCount / total * 25).toFixed(1)))
 		}
 		job.progress(50)
 		if (deleteCount) logger.succ(`All of followers deleted (${deleteCount})`);
-	} catch {}
+	} catch (err) {
+		logger.error(err as Error);
+		job.log(`error - Failed to delete followers: ${String(err)}`);
+	}
 
 	{
 		let deleteCount = 0;
@@ -256,13 +264,21 @@ export async function deleteAccount(
 						deleteCount += 1;
 					}
 					tryCount = 0;
-				} catch {}
+				} catch (err) {
+					// NOTE: 以前は黙って握り潰していたため、消せずに残ったフォロー関係の原因が追えなかった。
+					// 失敗した行は次の周でも取り直され、100 周続けて進まなければあきらめる
+					logger.warn(`Failed to delete following ($followee) ${x.id}: ${err}`);
+					job.log(`warn - Failed to delete following ($followee) ${x.id}: ${String(err)}`);
+				}
 			}
 			tryCount += 1;
 			job.progress(+(deleteCount / total * 25).toFixed(1))
 		}
 		if (deleteCount) logger.succ(`All of followees deleted (${deleteCount})`);
-	} catch {}
+	} catch (err) {
+		logger.error(err as Error);
+		job.log(`error - Failed to delete followees: ${String(err)}`);
+	}
 
 	job.progress(99.9)
 

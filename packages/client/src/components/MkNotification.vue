@@ -373,7 +373,9 @@
 				>{{ i18n.ts.youGotNewFollower }}
 				<div
 					v-if="
-						full && (!notification.firstRead || notification.isPrepend)
+						full &&
+						!notification.user?.isDeleted &&
+						(!notification.firstRead || notification.isPrepend)
 					"
 				>
 					<MkFollowButton
@@ -475,6 +477,9 @@
  * 絵文字申請（emojiRequest）の通知は、本文を押すとその申請のページ（サーバーが返す emojiRequest.url）を開く。
  * 管理者宛ては申請者のアイコン・名前を出すので、見出し（例「絵文字の追加申請がありました」）を本文の上に出す。
  * 右下の小さなアイコンは、どちらも絵文字申請のマーク。
+ *
+ * 「フォローされました」の通知でも、相手が削除済み（`user.isDeleted`）ならフォローボタンを出さない。
+ * 削除済みの人へのフォローは API が「存在しない」として断るので、押してもエラーになるだけのため。
  *
  * @internal
  */

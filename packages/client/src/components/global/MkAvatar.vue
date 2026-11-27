@@ -1,7 +1,7 @@
 <template>
 	<span
-		v-if="disableLink"
-		v-user-preview="disablePreview ? undefined : user.id"
+		v-if="disableLink || user.isDeleted"
+		v-user-preview="disablePreview || user.isDeleted ? undefined : user.id"
 		class="eiwwqkts _noSelect"
 		:class="{
 			cat: allowCat && user.isCat,
@@ -90,6 +90,9 @@
  * すべて失敗したら代わりの画像を表示する。
  *
  * クリックで拡大するときは、いま表示できている URL を開く。
+ *
+ * 削除済み（`user.isDeleted`）の人は、リンクにもプレビューにもしない。
+ * プロフィールは「見つからない」になるので、押しても行き先が無いため。
  *
  * @see {@link ../../scripts/media-proxy-fallback.ts}
  * @public

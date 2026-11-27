@@ -235,14 +235,14 @@ export default define(meta, paramDef, async (ps, user) => {
         }
 
         const query = makePaginationQuery(baseQuery, ps.sinceId, ps.untilId);
-        query.orderBy("file.userId", "ASC");
+        // フォルダを 1 つに決めて絞るか（指定フォルダ、または種類・日付の絞り込みが無いときのルート）
+        const folderFixed = !!ps.folderId || (!ps.type && !ps.fromDate && !ps.untilDate);
 
         if (ps.folderId) {
                 query.andWhere("file.folderId = :folderId", { folderId: ps.folderId });
-        } else if (!ps.type && !ps.fromDate && !ps.untilDate) {
+        } else if (folderFixed) {
                 query.andWhere("file.folderId IS NULL");
         }
-        query.addOrderBy("file.folderId", "ASC");
 
         if (ps.type) {
                 if (ps.type.endsWith("/*")) {
@@ -252,7 +252,6 @@ export default define(meta, paramDef, async (ps, user) => {
                 } else {
                         query.andWhere("file.type = :type", { type: ps.type });
                 }
-                query.addOrderBy("file.type", "ASC");
         }
 
         if (ps.fromDate) {
@@ -272,7 +271,25 @@ export default define(meta, paramDef, async (ps, user) => {
                         });
                 }
         }
-        query.addOrderBy("file.id", "DESC");
+
+        // untilId / sinceId で送るので、並び順は必ず ID 順にする（sinceId だけのときは古い順）
+        const direction = ps.sinceId && !ps.untilId ? "ASC" : "DESC";
+        if (folderFixed) {
+                // NB: userId・folderId は 1 つの値に決まっているので、先に並べても ID 順と同じになる。
+                // 以前からの並べ方をそのまま残している（ルートでは外しても速かったが、
+                // ファイルの多いフォルダで主キーを逆順にたどる遅いやり方にならないかは確かめていない）。
+                query
+                        .orderBy("file.userId", "ASC")
+                        .addOrderBy("file.folderId", "ASC")
+                        .addOrderBy("file.id", direction);
+        } else {
+                // HACK: 種類・日付で絞るとき（自動フォルダ）は、ID を文字列の式に変えて並べる。
+                // そのまま id で並べると、DB が主キーを逆順にたどる遅いやり方を選ぶ（本番で 17.8 秒、2026-11-27 実測）。
+                // 式にすると userId のインデックスで絞ってから並べ替えるようになる（0.04 秒）。並び順は id と同じ。
+                // 以前は folderId・type を先に並べてこれを避けていたが、それだと ID 順にならず、
+                // 続きの読み込み（untilId）でファイルが抜けたり重複したりしていた。
+                query.addSelect("file.id || ''", "file_sort_id").orderBy("file_sort_id", direction);
+        }
 
         const files = await query.take(ps.limit).getMany();
 

@@ -241,6 +241,11 @@ import * as ep___i_apps from "./endpoints/i/apps.js";
 import * as ep___i_authorizedApps from "./endpoints/i/authorized-apps.js";
 import * as ep___i_changePassword from "./endpoints/i/change-password.js";
 import * as ep___i_deleteAccount from "./endpoints/i/delete-account.js";
+import * as ep___i_accountDeletion_show from "./endpoints/i/account-deletion/show.js";
+import * as ep___i_accountDeletion_keyChallenge from "./endpoints/i/account-deletion/key-challenge.js";
+import * as ep___i_accountDeletion_request from "./endpoints/i/account-deletion/request.js";
+import * as ep___i_accountDeletion_cancel from "./endpoints/i/account-deletion/cancel.js";
+import * as ep___admin_accountDeletion_cancel from "./endpoints/admin/account-deletion/cancel.js";
 import * as ep___i_exportBlocking from "./endpoints/i/export-blocking.js";
 import * as ep___i_exportFollowing from "./endpoints/i/export-following.js";
 import * as ep___i_exportMute from "./endpoints/i/export-mute.js";
@@ -686,6 +691,11 @@ const eps = [
 	["i/authorized-apps", ep___i_authorizedApps],
 	["i/change-password", ep___i_changePassword],
 	["i/delete-account", ep___i_deleteAccount],
+	["i/account-deletion/show", ep___i_accountDeletion_show],
+	["i/account-deletion/key-challenge", ep___i_accountDeletion_keyChallenge],
+	["i/account-deletion/request", ep___i_accountDeletion_request],
+	["i/account-deletion/cancel", ep___i_accountDeletion_cancel],
+	["admin/account-deletion/cancel", ep___admin_accountDeletion_cancel],
 	["i/export-blocking", ep___i_exportBlocking],
 	["i/export-following", ep___i_exportFollowing],
 	["i/export-mute", ep___i_exportMute],

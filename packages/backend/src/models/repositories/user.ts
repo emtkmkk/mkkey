@@ -78,6 +78,7 @@ import {
 	UserSecurityKeys,
 	UserMemos,
 	EmojiCustomCategories,
+	AccountDeletionSchedules,
 } from "../index.js";
 import type { Instance } from "../entities/instance.js";
 import type { UserProfile } from "../entities/user-profile.js";
@@ -942,6 +943,12 @@ FROM "user" u WHERE u."id" = $1`,
 		const meDetailedVolatile = opts.detail && isMe
 			? await this.getMeDetailedVolatile(user.id)
 			: null;
+		// アカウント削除の予約（本人にだけ見せる）。画面は予約中なら専用画面を出す。
+		// NOTE: サービス（services/account-deletion-schedule.ts）を読み込むと循環しやすいので、表を主キーで直接引く
+		const accountDeletionSchedule =
+			opts.detail && isMe && user.host == null
+				? await AccountDeletionSchedules.findOneBy({ userId: user.id })
+				: null;
 		const pins =
 			opts.detail && "pins" in (hints ?? {})
 				? (hints!.pins ?? [])
@@ -1398,6 +1405,8 @@ FROM "user" u WHERE u."id" = $1`,
 						preventAiLearning: profile!.preventAiLearning,
 						isRemoteExplorable: user.isRemoteExplorable,
 						isDeleted: user.isDeleted,
+						accountDeletionScheduledAt:
+							accountDeletionSchedule?.scheduledAt?.toISOString() ?? null,
 						hideOnlineStatus: user.hideOnlineStatus,
 						hasUnreadSpecifiedNotes: meDetailedVolatile!.hasUnreadSpecifiedNotes,
 						hasUnreadMentions: meDetailedVolatile!.hasUnreadMentions,

@@ -51,8 +51,28 @@ type NoParams = Record<string, never>;
 
 type ShowUserReq = { username: string; host?: string } | { userId: User["id"] };
 
+/**
+ * アカウント削除の予約の本人確認（ログインと同じ。パスワードレスの人はセキュリティキーだけ）。
+ *
+ * @public
+ */
+export type AccountDeletionRequest = {
+	password?: string;
+	/** 2 段階認証のワンタイムコード */
+	token?: string | null;
+	/** セキュリティキーの答え */
+	credential?: {
+		signature: string;
+		authenticatorData: string;
+		clientDataJSON: string;
+		credentialId: string;
+		challengeId: string;
+	} | null;
+};
+
 export type Endpoints = {
 	// admin
+	"admin/account-deletion/cancel": { req: { userId: User["id"] }; res: null };
 	"admin/abuse-user-reports": { req: TODO; res: TODO };
 	"admin/delete-all-files-of-a-user": {
 		req: { userId: User["id"] };
@@ -655,7 +675,30 @@ export type Endpoints = {
 	"i/apps": { req: TODO; res: TODO };
 	"i/authorized-apps": { req: TODO; res: TODO };
 	"i/change-password": { req: TODO; res: TODO };
-	"i/delete-account": { req: { password: string }; res: null };
+	// アカウント削除の予約。i/delete-account は i/account-deletion/request と同じ
+	"i/delete-account": {
+		req: AccountDeletionRequest;
+		res: { scheduledAt: DateString };
+	};
+	"i/account-deletion/show": {
+		req: NoParams;
+		res: {
+			scheduledAt: DateString | null;
+			requestedAt: DateString | null;
+			reRequestableAt: DateString | null;
+			scheduledAtIfRequestedNow: DateString;
+			reRequestableAtIfCanceledNow: DateString | null;
+		};
+	};
+	"i/account-deletion/key-challenge": {
+		req: NoParams;
+		res: { challenge: string; challengeId: string; securityKeys: { id: string }[] };
+	};
+	"i/account-deletion/request": {
+		req: AccountDeletionRequest;
+		res: { scheduledAt: DateString };
+	};
+	"i/account-deletion/cancel": { req: NoParams; res: { reRequestableAt: DateString } };
 	"i/export-blocking": { req: TODO; res: TODO };
 	"i/export-following": { req: TODO; res: TODO };
 	"i/export-mute": { req: TODO; res: TODO };

@@ -26,6 +26,7 @@ import MainStreamConnection from "./stream/index.js";
 import authenticate from "./authenticate.js";
 import { isModerationWarningAckPending } from "@/misc/moderation-warning-ack.js";
 import { tryHandleSubscribeRepos } from "../atproto/subscribe-repos.js";
+import { isAccountDeletionScheduled } from "@/services/account-deletion-schedule.js";
 
 export const initializeStreamingServer = (server: http.Server) => {
 	// WebSocket サーバ初期化
@@ -55,6 +56,12 @@ export const initializeStreamingServer = (server: http.Server) => {
 
 		if (user?.isSuspended || user?.isUsagePaused || user?.isDeleted) {
 			request.reject(400);
+			return;
+		}
+
+		// アカウント削除を予約中の人はつながせない（予約中は取り消し以外は何もできない決まり）
+		if (user != null && (await isAccountDeletionScheduled(user.id))) {
+			request.reject(403);
 			return;
 		}
 

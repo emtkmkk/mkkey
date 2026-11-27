@@ -34,6 +34,11 @@ import type { InstanceSuspensionState } from "@/models/entities/instance.js";
 
 //#region ストリーム型ボディ定義
 export interface InternalStreamTypes {
+	/**
+	 * アカウント削除の予約の状態が変わった（予約・取り消し・削除）。
+	 * 受け取ったプロセスは、予約中の人の一覧を捨てて読み直す（services/account-deletion-schedule.ts）。
+	 */
+	accountDeletionScheduleUpdated: Record<string, never>;
 	userChangeSuspendedState: {
 		id: User["id"];
 		isSuspended: User["isSuspended"];

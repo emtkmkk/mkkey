@@ -29,6 +29,7 @@ import { ApiError } from "./error.js";
 import { apiLogger } from "./logger.js";
 import { fetchMeta } from "@/misc/fetch-meta.js";
 import { isModerationWarningAckPending } from "@/misc/moderation-warning-ack.js";
+import { isAccountDeletionScheduled } from "@/services/account-deletion-schedule.js";
 
 const ev = new Xev();
 
@@ -68,6 +69,27 @@ const MODERATION_WARNING_ACK_ENDPOINT_ALLOWLIST = new Set([
 	"i/registry/scopes",
 	// UI 用ユーザー解決（アイコン非表示リストの補完）
 	"users/show",
+]);
+
+/**
+ * アカウント削除を予約中でも呼べる API。
+ *
+ * @remarks
+ * - 予約中は、予約の取り消し以外は何もできない決まり。画面は「削除予約中」の専用画面だけを出す。
+ * - その画面を出すのに要る「起動に必要な読み取り」（モデレーション警告の確認待ちと同じもの）と、
+ *   予約の状態の表示・取り消し、ログアウトのときの通知の登録解除だけを通す。
+ * - WARNING: 取り消しに要るもの（`i/account-deletion/show`・`i/account-deletion/cancel`）を外すと、
+ *   予約した人が自分で取り消せなくなる。外さないこと。
+ *
+ * @internal
+ */
+const ACCOUNT_DELETION_SCHEDULED_ENDPOINT_ALLOWLIST = new Set([
+	...[...MODERATION_WARNING_ACK_ENDPOINT_ALLOWLIST].filter(
+		(name) => name !== "i/ack-moderation-warning",
+	),
+	"i/account-deletion/show",
+	"i/account-deletion/cancel",
+	"sw/unregister",
 ]);
 
 export default async (
@@ -153,6 +175,21 @@ export default async (
 			message: "アカウントが削除されています。",
 			code: "YOUR_ACCOUNT_DELETED",
 			id: "b8f1a6c2-3d47-4e59-9a0b-2c7e5d4f8a13",
+			httpStatusCode: 403,
+		});
+	}
+
+	// アカウント削除を予約中の人は、予約の取り消しなど決まった API しか使えない
+	if (
+		user != null &&
+		user.host == null &&
+		!ACCOUNT_DELETION_SCHEDULED_ENDPOINT_ALLOWLIST.has(ep.name) &&
+		(await isAccountDeletionScheduled(user.id))
+	) {
+		throw new ApiError({
+			message: "アカウントの削除を予約しています。予約を解除するまで操作できません。",
+			code: "YOUR_ACCOUNT_DELETION_SCHEDULED",
+			id: "5d1f2c7e-8a34-4b9e-a6c1-3e7f0b2d9c48",
 			httpStatusCode: 403,
 		});
 	}

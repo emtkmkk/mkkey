@@ -163,6 +163,8 @@ export type MeDetailed = UserDetailed & {
 	injectFeaturedNote: boolean;
 	integrations: Record<string, any>;
 	isDeleted: boolean;
+	/** アカウント削除の予約の予定日時。予約していなければ null */
+	accountDeletionScheduledAt: DateString | null;
 	isExplorable: boolean;
 	mutedWords: string[][];
 	mutingNotificationTypes: string[];

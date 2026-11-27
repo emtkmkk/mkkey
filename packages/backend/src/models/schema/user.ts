@@ -670,6 +670,13 @@ export const packedMeDetailedOnlySchema = {
 			nullable: false,
 			optional: false,
 		},
+		accountDeletionScheduledAt: {
+			type: "string",
+			format: "date-time",
+			nullable: true,
+			optional: false,
+			description: "アカウント削除の予約の予定日時。予約していなければ null。",
+		},
 		hideOnlineStatus: {
 			type: "boolean",
 			nullable: false,

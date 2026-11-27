@@ -1,47 +1,16 @@
 /**
  * @packageDocumentation
  *
- * 認証ユーザー自身のアカウントを削除する API エンドポイント。
+ * 自分のアカウントの削除を予約する API エンドポイント（互換のための名前）。
  *
  * @remarks
  * - **API パス**: `i/delete-account`（POST `/api/i/delete-account` で呼び出し）
- * - 認証必須。パスワード確認後、自分のアカウント削除ジョブを投入する。
+ * - CHANGED: すぐに削除するのではなく、`i/account-deletion/request` と同じく予約する。
+ *   以前は処理の先頭で止めてあり（`if (true || …) return;`）、何もしていなかった。
+ *   削除は日本時間 2:00 の定期ジョブが予定日時に行う。
+ * - 中身は `i/account-deletion/request` をそのまま使う（本人確認・エラーも同じ）。
  *
- * @see {@link define} エンドポイント登録
+ * @see {@link endpoints/i/account-deletion/request} 予約の API
  * @internal
  */
-import { UserProfiles, Users } from "@/models/index.js";
-import { deleteAccount } from "@/services/delete-account.js";
-import define from "../../define.js";
-import { comparePassword } from "@/misc/password.js";
-
-export const meta = {
-	requireCredential: true,
-
-	secure: true,
-} as const;
-
-export const paramDef = {
-	type: "object",
-	properties: {
-		password: { type: "string" },
-	},
-	required: ["password"],
-} as const;
-
-export default define(meta, paramDef, async (ps, user) => {
-	const profile = await UserProfiles.findOneByOrFail({ userId: user.id });
-	const userDetailed = await Users.findOneByOrFail({ id: user.id });
-	if (true || userDetailed.isDeleted) {
-		return;
-	}
-
-	// パスワードを照合する
-	const same = await comparePassword(ps.password, profile.password!);
-
-	if (!same) {
-		throw new Error("incorrect password");
-	}
-
-	await deleteAccount(user);
-});
+export { meta, paramDef, default } from "./account-deletion/request.js";

@@ -1,4 +1,9 @@
-import { Signins, UserProfiles, Users } from "@/models/index.js";
+import {
+	AccountDeletionSchedules,
+	Signins,
+	UserProfiles,
+	Users,
+} from "@/models/index.js";
 import define from "../../define.js";
 
 export const meta = {
@@ -58,8 +63,18 @@ export default define(meta, paramDef, async (ps, me) => {
 	});
 
 	const signins = await Signins.findBy({ userId: user.id });
+	// アカウント削除の予約（管理者だけに見せる。予約中なら予定日時、取り消し後なら最後に取り消した日時）
+	const deletionSchedule = await AccountDeletionSchedules.findOneBy({ userId: user.id });
 
 	return {
+		accountDeletion: deletionSchedule
+			? {
+					scheduledAt: deletionSchedule.scheduledAt?.toISOString() ?? null,
+					requestedAt: deletionSchedule.requestedAt.toISOString(),
+					canceledAt: deletionSchedule.canceledAt?.toISOString() ?? null,
+					executedAt: deletionSchedule.executedAt?.toISOString() ?? null,
+			  }
+			: null,
 		email: profile.email,
 		emailVerified: profile.emailVerified,
 		followedMessage: profile.followedMessage,

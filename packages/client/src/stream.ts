@@ -16,7 +16,8 @@ import { url } from "@/config";
 export const stream = markRaw(
 	new Misskey.Stream(
 		url,
-		$i
+		// アカウント削除を予約中はサーバーが断るので、トークンを付けずにつなぐ（断られて延々つなぎ直さないため）
+		$i && !$i.accountDeletionScheduledAt
 			? {
 					token: $i.token,
 			  }

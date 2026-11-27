@@ -250,6 +250,13 @@
 							{{ i18n.ts.sendModMail }}</FormButton
 						>
 						<FormButton
+							v-if="$i.isAdmin && info?.accountDeletion?.scheduledAt"
+							inline
+							@click="cancelAccountDeletionSchedule"
+							><i class="ph-arrow-counter-clockwise ph-bold ph-lg"></i>
+							{{ i18n.ts._accountDelete.adminCancelSchedule }}</FormButton
+						>
+						<FormButton
 							v-if="$i.isAdmin"
 							inline
 							danger
@@ -258,6 +265,16 @@
 							{{ i18n.ts.deleteAccount }}</FormButton
 						>
 					</div>
+					<MkInfo
+						v-if="$i.isAdmin && info?.accountDeletion?.scheduledAt"
+						warn
+						class="_formBlock"
+						>{{
+							i18n.t("_accountDelete.adminScheduled", {
+								date: formatJstDateTime(info.accountDeletion.scheduledAt),
+							})
+						}}</MkInfo
+					>
 					<FormTextarea
 						v-model="moderationNote"
 						manual-save
@@ -395,6 +412,7 @@ import { url } from "@/config";
 import { userPage, acct } from "@/filters/user";
 import { definePageMetadata } from "@/scripts/page-metadata";
 import { i18n } from "@/i18n";
+import { formatJstDateTime } from "@/scripts/account-deletion";
 import { iAmAdmin, iAmModerator } from "@/account";
 import { instance } from "@/instance";
 import { defaultStore } from "@/store";
@@ -657,6 +675,24 @@ async function applyDriveCapacityOverride() {
 			text: err.toString(),
 		});
 	}
+}
+
+/**
+ * このユーザーのアカウント削除の予約を取り消す（管理者のみ）。
+ *
+ * @remarks
+ * 本人が取り消したときと同じく、次の 20:00（日本時間）まで再び予約できなくなり、管理者全員に通知される。
+ *
+ * @internal
+ */
+async function cancelAccountDeletionSchedule() {
+	const { canceled } = await os.confirm({
+		type: "warning",
+		text: i18n.ts._accountDelete.adminCancelConfirm,
+	});
+	if (canceled) return;
+	await os.apiWithDialog("admin/account-deletion/cancel", { userId: user.id });
+	refreshUser();
 }
 
 async function deleteAccount() {

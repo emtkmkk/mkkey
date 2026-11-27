@@ -386,7 +386,13 @@ const fetchUserAccount = async () => {
 		// 有効と判定済み。バックグラウンドで /i を呼び updateAccount + isDeleted アラート
 		fetchAccount(token)
 			.then(async (account) => {
+				// 別の端末で予約・解除していると、保存してある情報と食い違う。そのときは画面を選び直す
+				const wasScheduled = $i?.accountDeletionScheduledAt != null;
 				updateAccount(account);
+				if (wasScheduled !== (account.accountDeletionScheduledAt != null)) {
+					location.reload();
+					return;
+				}
 				if (account.isDeleted) {
 					alert({
 						type: "warning",
@@ -478,6 +484,9 @@ const initializeApp = async (minimumLoadPromise: Promise<unknown>) => {
 			? defineAsyncComponent(() => import("@/ui/zen.vue"))
 			: !$i
 				? defineAsyncComponent(() => import("@/ui/visitor.vue"))
+				// アカウント削除を予約中なら、いつもの画面の代わりに専用画面だけを出す（予約中は解除のほか何もできない）
+				: $i.accountDeletionScheduledAt
+					? defineAsyncComponent(() => import("@/ui/account-deletion-scheduled.vue"))
 				: ui === "deck" && location.pathname === "/"
 					? defineAsyncComponent(() => import("@/ui/deck.vue"))
 					: ui === "classic"

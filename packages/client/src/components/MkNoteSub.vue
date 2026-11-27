@@ -142,13 +142,11 @@
 	<div v-else class="muted" @click="muted.muted = false">
 		<I18n :src="softMuteReasonI18nSrc(muted.what)" tag="small">
 			<template #name>
-				<MkA
-					v-user-preview="note.userId"
+				<MkUserLink :user="note.user"
 					class="name"
-					:to="userPage(note.user)"
 				>
 					<MkUserName :user="note.user" />
-				</MkA>
+				</MkUserLink>
 			</template>
 			<template #reason>
 				{{ muted.matched.join(", ") }}
@@ -179,7 +177,6 @@ import MkNoteFooter from "@/components/MkNoteFooter.vue";
 import { getWordSoftMute } from "@/scripts/check-word-mute";
 import { notePage } from "@/filters/note";
 import { useRouter } from "@/router";
-import { userPage } from "@/filters/user";
 import { $i } from "@/account";
 import { i18n } from "@/i18n";
 import { useNoteCapture } from "@/scripts/use-note-capture";

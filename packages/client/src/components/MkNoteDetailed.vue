@@ -43,13 +43,11 @@
 	<div v-else class="_tlPanel muted" @click="muted.muted = false">
 		<I18n :src="softMuteReasonI18nSrc(muted.what)" tag="small">
 			<template #name>
-				<MkA
-					v-user-preview="note.userId"
+				<MkUserLink :user="note.user"
 					class="name"
-					:to="userPage(note.user)"
 				>
 					<MkUserName :user="note.user" maxlength="10" />
-				</MkA>
+				</MkUserLink>
 			</template>
 			<template #reason>
 				{{ muted.matched.join(", ") }}
@@ -77,7 +75,6 @@ import type * as misskey from "calckey-js";
 import MkNote from "@/components/MkNote.vue";
 import MkNoteSub from "@/components/MkNoteSub.vue";
 import { getWordSoftMute } from "@/scripts/check-word-mute";
-import { userPage } from "@/filters/user";
 import { notePage } from "@/filters/note";
 import * as os from "@/os";
 import { defaultStore, noteViewInterruptors } from "@/store";

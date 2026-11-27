@@ -70,10 +70,8 @@
 				<i v-if="!pinned" class="ph-repeat ph-bold ph-lg"></i>
 				<I18n v-if="!pinned" :src="i18n.ts.renotedBy" tag="span">
 					<template #user>
-						<MkA
-							v-user-preview="note.userId"
+						<MkUserLink :user="note.user"
 							class="name"
-							:to="userPage(note.user)"
 							@click.stop
 						>
 							<MkUserName
@@ -85,7 +83,7 @@
 								"
 								:altIcon="note.user.instance?.iconUrl"
 							/>
-						</MkA>
+						</MkUserLink>
 					</template>
 				</I18n>
 				<div class="info">
@@ -222,21 +220,17 @@
 			"
 		>
 			{{ isRecentRenote ? "最近表示したRT : " : "既に反応済のRT : " }}
-			<MkA
-				v-user-preview="note.userId"
+			<MkUserLink :user="note.user"
 				class="name"
-				:to="userPage(note.user)"
 			>
 				<MkUserName :user="note.user" maxlength="8" />
-			</MkA>
+			</MkUserLink>
 			{{ " がRT " }}
-			<MkA
-				v-user-preview="appearNote.userId"
+			<MkUserLink :user="appearNote.user"
 				class="name"
-				:to="userPage(appearNote.user)"
 			>
 				<MkUserName :user="appearNote.user" maxlength="8" />
-			</MkA>
+			</MkUserLink>
 			{{ " の投稿" }}
 		</div>
 		<div
@@ -262,13 +256,11 @@
 	>
 		<I18n :src="softMuteReasonI18nSrc(muted.what)" tag="small">
 			<template #name>
-				<MkA
-					v-user-preview="note.userId"
+				<MkUserLink :user="note.user"
 					class="name"
-					:to="userPage(note.user)"
 				>
 					<MkUserName :user="note.user" maxlength="8" />
-				</MkA>
+				</MkUserLink>
 			</template>
 			<template #reason>
 				{{
@@ -290,13 +282,11 @@
 	>
 		<I18n :src="softMuteReasonI18nSrc(muted.what)" tag="small">
 			<template #name>
-				<MkA
-					v-user-preview="note.userId"
+				<MkUserLink :user="note.user"
 					class="name"
-					:to="userPage(note.user)"
 				>
 					<MkUserName :user="note.user" maxlength="8" />
-				</MkA>
+				</MkUserLink>
 			</template>
 			<template #reason>
 				{{
@@ -347,7 +337,6 @@ import MkVisibility from "@/components/MkVisibility.vue";
 import { focusPrev, focusNext } from "@/scripts/focus";
 import { getWordSoftMute } from "@/scripts/check-word-mute";
 import { useRouter } from "@/router";
-import { userPage } from "@/filters/user";
 import * as os from "@/os";
 import { defaultStore, noteViewInterruptors } from "@/store";
 import { $i } from "@/account";

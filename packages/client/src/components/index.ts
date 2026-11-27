@@ -4,6 +4,7 @@ import Mfm from "./global/MkMisskeyFlavoredMarkdown.vue";
 import MkA from "./global/MkA.vue";
 import MkAcct from "./global/MkAcct.vue";
 import MkAvatar from "./global/MkAvatar.vue";
+import MkUserLink from "./global/MkUserLink.vue";
 import MkEmoji from "./global/MkEmoji.vue";
 import MkUserName from "./global/MkUserName.vue";
 import MkEllipsis from "./global/MkEllipsis.vue";
@@ -25,6 +26,7 @@ export default function (app: App) {
 	app.component("MkA", MkA);
 	app.component("MkAcct", MkAcct);
 	app.component("MkAvatar", MkAvatar);
+	app.component("MkUserLink", MkUserLink);
 	app.component("MkEmoji", MkEmoji);
 	app.component("MkUserName", MkUserName);
 	app.component("MkEllipsis", MkEllipsis);
@@ -46,6 +48,7 @@ declare module "@vue/runtime-core" {
 		MkA: typeof MkA;
 		MkAcct: typeof MkAcct;
 		MkAvatar: typeof MkAvatar;
+		MkUserLink: typeof MkUserLink;
 		MkEmoji: typeof MkEmoji;
 		MkUserName: typeof MkUserName;
 		MkEllipsis: typeof MkEllipsis;

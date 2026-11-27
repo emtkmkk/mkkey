@@ -174,27 +174,23 @@
 				<span v-if="notification.type === 'pollEnded'">{{
 					i18n.ts._notification.pollEnded
 				}}</span>
-				<MkA
+				<MkUserLink :user="notification.user"
 					v-else-if="
 						notification.user &&
 						notification.type === 'followedAccountWasDeleted'
 					"
-					v-user-preview="notification.user.id"
 					class="name"
-					:to="userPage(notification.user)"
 					>{{
 						i18n.t("_notification.followedAccountWasDeleted", {
 							name: notificationUserName(notification),
 						})
-					}}</MkA
+					}}</MkUserLink
 				>
-				<MkA
+				<MkUserLink :user="notification.user"
 					v-else-if="notification.user"
-					v-user-preview="notification.user.id"
 					class="name"
-					:to="userPage(notification.user)"
 					><MkUserName :user="notification.user"
-				/></MkA>
+				/></MkUserLink>
 				<span v-else>{{ notification.header }}</span>
 				<MkTime
 					v-if="withTime"
@@ -480,6 +476,7 @@
  *
  * 「フォローされました」の通知でも、相手が削除済み（`user.isDeleted`）ならフォローボタンを出さない。
  * 削除済みの人へのフォローは API が「存在しない」として断るので、押してもエラーになるだけのため。
+ * 相手の名前も、削除済みならリンクにしない（{@link MkUserLink}）。
  *
  * @internal
  */
@@ -491,7 +488,6 @@ import MkFollowButton from "@/components/MkFollowButton.vue";
 import XReactionTooltip from "@/components/MkReactionTooltip.vue";
 import { getNoteSummary } from "@/scripts/get-note-summary";
 import { notePage } from "@/filters/note";
-import { userPage } from "@/filters/user";
 import { i18n } from "@/i18n";
 import * as os from "@/os";
 import { stream } from "@/stream";

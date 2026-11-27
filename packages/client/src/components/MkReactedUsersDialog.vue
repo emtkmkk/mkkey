@@ -49,13 +49,12 @@
 							}}</span>
 						</button>
 					</div>
-					<MkA
+					<MkUserLink :user="user" :preview="false"
 						v-for="user in users"
 						:key="user.id"
-						:to="userPage(user)"
 					>
 						<MkUserCardMini :user="user" :with-chart="false" />
-					</MkA>
+					</MkUserLink>
 				</template>
 			</div>
 			<div v-else>
@@ -71,7 +70,6 @@ import * as misskey from "calckey-js";
 import MkModalWindow from "@/components/MkModalWindow.vue";
 import MkReactionIcon from "@/components/MkReactionIcon.vue";
 import MkUserCardMini from "@/components/MkUserCardMini.vue";
-import { userPage } from "@/filters/user";
 import { i18n } from "@/i18n";
 import * as os from "@/os";
 import { defaultStore } from "@/store";

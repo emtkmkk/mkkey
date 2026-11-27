@@ -2,10 +2,8 @@
 	<header class="kkwtjztg">
 		<div class="user-info">
 			<div>
-				<MkA
-					v-user-preview="note.user.id"
+				<MkUserLink :user="note.user"
 					class="name"
-					:to="userPage(note.user)"
 					@click.stop
 				>
 					<MkUserName :user="note.user" class="mkusername">
@@ -24,7 +22,7 @@
 							></MkEmoji
 						></span>
 					</MkUserName>
-				</MkA>
+				</MkUserLink>
 				<div
 					class="username"
 					:class="{ warnAcct: note.user.isModerationWarning }"
@@ -103,7 +101,6 @@ import { defaultStore, noteViewInterruptors } from "@/store";
 import MkVisibility from "@/components/MkVisibility.vue";
 import MkInstanceTicker from "@/components/MkInstanceTicker.vue";
 import { notePage } from "@/filters/note";
-import { userPage } from "@/filters/user";
 import { i18n } from "@/i18n";
 
 const props = defineProps<{

@@ -19,7 +19,10 @@
 						:key="mute.id"
 						class="mute-row _formBlock"
 					>
-						<FormLink :to="userPage(mute.mutee)" class="user">
+						<div v-if="mute.mutee.isDeleted" class="user deleted">
+							<MkAcct :user="mute.mutee" />
+						</div>
+						<FormLink v-else :to="userPage(mute.mutee)" class="user">
 							<MkAcct :user="mute.mutee" />
 						</FormLink>
 						<div class="scopes">{{ formatMuteScopes(mute.muteTypes) }}</div>
@@ -45,7 +48,10 @@
 						:key="block.id"
 						class="block-row _formBlock"
 					>
-						<FormLink :to="userPage(block.blockee)" class="user">
+						<div v-if="block.blockee.isDeleted" class="user deleted">
+							<MkAcct :user="block.blockee" />
+						</div>
+						<FormLink v-else :to="userPage(block.blockee)" class="user">
 							<MkAcct :user="block.blockee" />
 						</FormLink>
 						<MkButton inline @click="unblock(block)">
@@ -173,6 +179,11 @@ definePageMetadata({
 </script>
 
 <style lang="scss" scoped>
+// 削除済みの人はプロフィールへのリンクにしない（開いても「削除されたか、見つかりません」になるため）
+.user.deleted {
+	opacity: 0.7;
+}
+
 .block-row {
 	display: flex;
 	align-items: center;

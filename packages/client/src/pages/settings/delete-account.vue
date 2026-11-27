@@ -6,11 +6,15 @@
 		<FormInfo v-if="$i" warn class="_formBlock" style="white-space: pre-wrap;">{{
 			i18n.t("_accountDelete.warn", {name: $i.username, note: $i.notesCount?.toLocaleString(), follower: $i.followersCount?.toLocaleString()})
 		}}</FormInfo>
-		<FormInfo v-if="state" class="_formBlock" style="white-space: pre-wrap;">{{
-			i18n.t("_accountDelete.scheduleInfo", {
-				date: formatJstDateTime(state.scheduledAtIfRequestedNow),
-			})
-		}}</FormInfo>
+		<FormInfo v-if="state" class="_formBlock schedule-info">
+			<I18n :src="i18n.ts._accountDelete.scheduleInfo" text-tag="span">
+				<template #date>
+					<span class="nowrap">{{
+						formatJstDateTime(state.scheduledAtIfRequestedNow)
+					}}</span>
+				</template>
+			</I18n>
+		</FormInfo>
 		<FormInfo class="_formBlock">{{
 			i18n.ts._accountDelete.duringSchedule
 		}}</FormInfo>
@@ -193,6 +197,7 @@ async function requestDeletion() {
 
 const headerActions = $computed(() => []);
 
+
 const headerTabs = $computed(() => []);
 
 definePageMetadata({
@@ -200,3 +205,14 @@ definePageMetadata({
 	icon: "ph-warning ph-bold ph-lg",
 });
 </script>
+
+<style lang="scss" scoped>
+// 予定日時は途中で折り返さない（「2026年11月28日 2:00 JST」がばらばらに折り返されて読みにくかったため）
+.schedule-info .nowrap {
+	white-space: nowrap;
+}
+
+.schedule-info {
+	word-break: auto-phrase;
+}
+</style>

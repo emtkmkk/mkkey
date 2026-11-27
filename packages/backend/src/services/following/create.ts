@@ -269,6 +269,15 @@ export default async function (
 		Users.findOneByOrFail({ id: _followee.id }),
 	]);
 
+	// 削除済み（論理削除）の人とは新しくフォロー関係を作らない。
+	// API は getUserForRelation で先に弾くが、フォローのインポートや受信など API 以外の経路もここを通るため
+	if (follower.isDeleted || followee.isDeleted) {
+		throw new IdentifiableError(
+			"0c1d6a2e-7b3f-4e58-9a41-5d2c8f6e3b70",
+			"deleted users cannot follow or be followed",
+		);
+	}
+
 	// Bluesky ユーザーが mkkey のユーザーをフォローすることは無い（Bluesky 側のフォローは取り込まない）
 	if (isBlueskyUser(follower)) {
 		throw new IdentifiableError(

@@ -14,7 +14,7 @@ import { pushUserToUserList } from "@/services/user-list/push.js";
 import { UserLists, UserListJoinings, Blockings } from "@/models/index.js";
 import define from "../../../define.js";
 import { ApiError } from "../../../error.js";
-import { getUser } from "../../../common/getters.js";
+import { getUserForRelation } from "../../../common/getters.js";
 
 export const meta = {
 	tags: ["lists", "users"],
@@ -74,7 +74,7 @@ export default define(meta, paramDef, async (ps, me) => {
 	}
 
 	// ユーザーを取得する
-	const user = await getUser(ps.userId).catch((e) => {
+	const user = await getUserForRelation(ps.userId).catch((e) => {
 		if (e.id === "15348ddd-432d-49c2-8a5a-8069753becff")
 			throw new ApiError(meta.errors.noSuchUser);
 		throw e;

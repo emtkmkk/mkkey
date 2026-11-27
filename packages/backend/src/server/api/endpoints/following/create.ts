@@ -17,7 +17,7 @@
 import create from "@/services/following/create.js";
 import define from "../../define.js";
 import { ApiError } from "../../error.js";
-import { getUser } from "../../common/getters.js";
+import { getUserForRelation } from "../../common/getters.js";
 import { AtprotoIdentities, Followings, Users } from "@/models/index.js";
 import { IdentifiableError } from "@/misc/identifiable-error.js";
 import { HOUR } from "@/const.js";
@@ -129,7 +129,7 @@ export default define(meta, paramDef, async (ps, user) => {
 	}
 
 	// フォロー先を取得する
-	const followee = await getUser(ps.userId).catch((e) => {
+	const followee = await getUserForRelation(ps.userId).catch((e) => {
 		if (e.id === "15348ddd-432d-49c2-8a5a-8069753becff")
 			throw new ApiError(meta.errors.noSuchUser);
 		throw e;

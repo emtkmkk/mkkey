@@ -40,6 +40,7 @@ import { normalizeForSearch } from "@/misc/normalize-for-search.js";
 import { truncate } from "@/misc/truncate.js";
 import { StatusError, getResponse } from "@/misc/fetch.js";
 import { appendMisskeyIoSkebFieldIfNeeded } from "./misskey-io-skeb-fields.js";
+import { resolveAcctCollision } from "./acct-collision.js";
 import { uriPersonCache } from "@/services/user-cache.js";
 import { publishInternalEvent } from "@/services/stream.js";
 import { db } from "@/db/postgre.js";
@@ -71,8 +72,11 @@ const summaryLength = 8192;
  * 取得したオブジェクトを検証し Actor に変換する
  * @param x 取得したオブジェクト
  * @param uri 取得対象 URI
+ * @returns 検証済みの Actor
+ * @throws Error Actor として正しくないとき
+ * @internal
  */
-function validateActor(x: IObject, uri: string): IActor {
+export function validateActor(x: IObject, uri: string): IActor {
 	const expectHost = toPuny(new URL(uri).hostname);
 
 	if (x == null) {
@@ -272,10 +276,23 @@ export async function fetchPerson(
 
 /**
  * Person を作成する。
+ *
+ * @param uri - アクターの URI
+ * @param resolver - 取得に使う Resolver（省略時は新しく作る）
+ * @param retriedAfterFreeingAcct - 内部用。同じ名前の古い行を空けたあとのやり直しなら true（やり直しは 1 回だけ）
+ * @returns 作成した（または既にあった）ユーザー
+ * @throws Error 同じ `@名前@ホスト` の別の人が既にいて、付け直しも名前を空けることもできなかったとき（"already registered"）
+ *
+ * @remarks
+ * 同じ名前で URI が違う人とぶつかったときは {@link resolveAcctCollision} で、
+ * 同じ人なら古い行の URI を付け直し、別の人かもしれなければ古い行の名前を空けて登録し直す。
+ *
+ * @internal
  */
 export async function createPerson(
 	uri: string,
 	resolver?: Resolver,
+	retriedAfterFreeingAcct = false,
 ): Promise<User> {
 	if (typeof uri !== "string") throw new Error("uri is not string");
 
@@ -442,6 +459,20 @@ export async function createPerson(
 			if (u) {
 				user = u as IRemoteUser;
 			} else {
+				// 同じ @名前@ホスト で URI が違う古い行とぶつかった
+				const outcome = retriedAfterFreeingAcct
+					? "none"
+					: await resolveAcctCollision(person, host);
+				// NB: repointed は person.id があるときだけ返る（resolveAcctCollision が確かめている）
+				if (outcome === "repointed" && person.id) {
+					// 同じ人なので、付け直した古い行を新しい内容で更新して返す
+					await updatePerson(person.id, resolver, object);
+					return await Users.findOneByOrFail({ uri: person.id });
+				}
+				if (outcome === "freed") {
+					// 古い行の名前を空けたので、新しい行として登録し直す
+					return await createPerson(uri, resolver, true);
+				}
 				throw new Error("already registered");
 			}
 		} else {

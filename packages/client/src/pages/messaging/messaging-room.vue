@@ -117,8 +117,9 @@
  * @remarks
  * - 相手のユーザーが取れないとき（削除済み・凍結中・存在しない）は、その旨を出して送信欄を隠す。
  *   以前は取得の失敗で先に進まず、画面が止まったままだった。
- * - TODO: 相手が削除済みでも過去のやり取りを読めるようにする。メッセージの取得には相手の ID が要るが、
- *   `users/show` が削除済みの人を返さないため、今は取れない。
+ * - 相手が削除済みでも、メッセージ一覧から開いたときは過去のやり取りを読める。
+ *   メッセージの取得には相手の ID が要るが、`users/show` は削除済みの人を返さないので、
+ *   一覧が URL に `?userId=` を付けて渡す（MkChatPreview の roomLink）。
  *
  * @internal
  */
@@ -145,6 +146,8 @@ import { definePageMetadata } from "@/scripts/page-metadata";
 const props = defineProps<{
 	userAcct?: string;
 	groupId?: string;
+	/** 相手が削除済みのとき、メッセージ一覧から渡される相手の ID */
+	userId?: string;
 }>();
 
 let rootEl = $ref<HTMLDivElement>();
@@ -192,8 +195,20 @@ async function fetch() {
 			// 前の相手の接続は watch で閉じてあるので、使わないよう空にしておく
 			connection = null;
 			user = null;
-			pagination = null;
 			notFound = true;
+			// 一覧から相手の ID が渡されていれば、送ることはできないが過去のやり取りは読めるようにする
+			// （messaging/messages は削除済みの相手でも ID で引ける）
+			pagination = props.userId
+				? {
+						endpoint: "messaging/messages",
+						limit: 20,
+						params: {
+							userId: props.userId,
+						},
+						reversed: true,
+						pageEl: $$(rootEl).value,
+				  }
+				: null;
 			fetching = false;
 			return;
 		}

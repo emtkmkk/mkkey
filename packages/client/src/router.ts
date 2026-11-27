@@ -759,6 +759,10 @@ export const routes = [
 		path: "/my/messaging/:userAcct",
 		component: page(() => import("./pages/messaging/messaging-room.vue")),
 		loginRequired: true,
+		// 相手が削除済みのとき、一覧から相手の ID が渡される（過去のやり取りを読むため）
+		query: {
+			userId: "userId",
+		},
 	},
 	{
 		path: "/my/messaging/group/:groupId",

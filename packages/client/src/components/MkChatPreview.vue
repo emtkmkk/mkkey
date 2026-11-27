@@ -8,13 +8,7 @@
 				? message.reads.includes($i?.id)
 				: message.isRead,
 		}"
-		:to="
-			message.groupId
-				? `/my/messaging/group/${message.groupId}`
-				: `/my/messaging/${getAcct(
-						isMe(message) ? message.recipient : message.user
-				  )}`
-		"
+		:to="roomLink(message)"
 	>
 		<div class="message _block">
 			<MkAvatar
@@ -73,6 +67,25 @@ const getAcct = Acct.toString;
 const props = defineProps<{
 	message: Record<string, any>;
 }>();
+
+/**
+ * メッセージの画面へのリンクを作る。
+ *
+ * @param message - 一覧の 1 件（相手とのやり取りの最新のメッセージ）
+ * @returns グループならグループの画面、そうでなければ相手との画面の URL
+ *
+ * @remarks
+ * 相手が削除済みなら `?userId=` を付ける。メッセージの画面は `@名前@ホスト` から `users/show` で相手を引くが、
+ * 削除済みの人は返らないため。ID があれば、過去のやり取りだけは読める。
+ *
+ * @internal
+ */
+function roomLink(message): string {
+	if (message.groupId) return `/my/messaging/group/${message.groupId}`;
+	const partner = isMe(message) ? message.recipient : message.user;
+	const base = `/my/messaging/${getAcct(partner)}`;
+	return partner?.isDeleted ? `${base}?userId=${partner.id}` : base;
+}
 
 function isMe(message): boolean {
 	return message.userId === $i?.id;

@@ -36,6 +36,31 @@
 									<p class="acct">
 										@{{ acct(req.follower) }}
 									</p>
+									<div class="meta">
+										<span
+											v-if="req.follower.instance"
+											class="instance"
+											:title="req.follower.instance.host"
+										>
+											<img
+												v-if="instanceIcon(req.follower.instance)"
+												class="instance-icon"
+												:src="instanceIcon(req.follower.instance)"
+												alt=""
+											/>
+											<span class="instance-name">{{
+												req.follower.instance.name ||
+												req.follower.instance.host
+											}}</span>
+										</span>
+										<span
+											class="requested"
+											:title="i18n.ts.followRequestedAt"
+										>
+											<i class="ph-clock ph-bold"></i>
+											<MkTime :time="req.createdAt" />
+										</span>
+									</div>
 									<div
 										v-if="
 											req.follower.isFollowing ||
@@ -59,20 +84,7 @@
 										>
 									</div>
 								</div>
-								<div
-									class="requested"
-									:title="i18n.ts.followRequestedAt"
-								>
-									<i class="ph-clock ph-bold"></i>
-									<MkTime :time="req.createdAt" />
-								</div>
 							</div>
-
-							<MkInstanceTicker
-								v-if="req.follower.instance"
-								class="ticker"
-								:instance="req.follower.instance"
-							/>
 
 							<div class="description">
 								<Mfm
@@ -164,6 +176,10 @@
  *   フォロワー数・「自分がフォロー中か」を出す。申請者は API が詳細版で返す。
  * - フォロー数・フォロワー数は、相手が非公開にしていると数値でなく "N/A" が返るので「-」と出す。
  * - 新しい申請から順に 10 件ずつページ送りする（API 側で sinceId / untilId に対応済み）。
+ * - 申請日時とサーバー（アイコンと名前）は、名前の下の行にまとめる。以前は申請日時を右の列に、
+ *   サーバーを MkInstanceTicker で別の行に出していたが、スマホの幅だと名前が窮屈になり、
+ *   MkInstanceTicker はこの場所ではサーバー名を隠す作りなので、アイコンだけが 1 行に出ていた。
+ * - スマホの幅では、3 つのボタンを同じ幅で 1 行に並べる（右寄せのまま折り返すと 2 つと 1 つに分かれるため）。
  * - NB: リモートのユーザーの「登録日」は、このサーバーが初めてそのユーザーを知った日。
  *   相手のサーバーでの本当の登録日ではない（ユーザーページの表示と同じ）。
  *
@@ -173,7 +189,7 @@
 import { ref, computed } from "vue";
 import MkPagination from "@/components/MkPagination.vue";
 import MkButton from "@/components/MkButton.vue";
-import MkInstanceTicker from "@/components/MkInstanceTicker.vue";
+import { getProxiedImageUrlNullable } from "@/scripts/media-proxy";
 import { userPage, acct } from "@/filters/user";
 import * as os from "@/os";
 import { i18n } from "@/i18n";
@@ -195,6 +211,24 @@ const pagination = {
 	endpoint: "following/requests/list" as const,
 	limit: 10,
 };
+
+/**
+ * 申請者のサーバーのアイコン（ファビコンを優先）を、メディアプロキシ経由の URL にする。
+ *
+ * @param instance - 申請者のサーバーの情報
+ * @returns 画像の URL。無ければ null
+ *
+ * @internal
+ */
+function instanceIcon(instance: {
+	faviconUrl?: string | null;
+	iconUrl?: string | null;
+}): string | null {
+	return getProxiedImageUrlNullable(
+		instance.faviconUrl ?? instance.iconUrl,
+		"preview",
+	);
+}
 
 /**
  * 件数を表示用の文字にする。
@@ -329,6 +363,49 @@ definePageMetadata(
 					opacity: 0.7;
 				}
 
+				// サーバーと申請日時の行。狭いときはサーバー名を省略し、申請日時は必ず見せる
+				> .meta {
+					display: flex;
+					align-items: center;
+					gap: 0.25rem 0.75rem;
+					margin-top: 0.25rem;
+					font-size: 0.8125rem;
+					line-height: 1.25rem;
+					min-width: 0;
+
+					> .instance {
+						display: inline-flex;
+						align-items: center;
+						gap: 0.25rem;
+						min-width: 0;
+						opacity: 0.8;
+
+						> .instance-icon {
+							flex-shrink: 0;
+							width: 1em;
+							height: 1em;
+							border-radius: 0.2rem;
+							object-fit: contain;
+						}
+
+						> .instance-name {
+							white-space: nowrap;
+							overflow: hidden;
+							text-overflow: ellipsis;
+						}
+					}
+
+					> .requested {
+						flex-shrink: 0;
+						white-space: nowrap;
+						opacity: 0.7;
+
+						> i {
+							margin-right: 0.25rem;
+						}
+					}
+				}
+
 				> .badges {
 					display: flex;
 					flex-wrap: wrap;
@@ -349,22 +426,6 @@ definePageMetadata(
 				}
 			}
 
-			> .requested {
-				flex-shrink: 0;
-				font-size: 0.8125rem;
-				line-height: 1.5rem;
-				opacity: 0.7;
-				white-space: nowrap;
-
-				> i {
-					margin-right: 0.25rem;
-				}
-			}
-		}
-
-		> .ticker {
-			align-self: flex-start;
-			max-width: 100%;
 		}
 
 		> .description {
@@ -419,6 +480,21 @@ definePageMetadata(
 			flex-wrap: wrap;
 			justify-content: flex-end;
 			gap: 0.5rem;
+
+			// スマホの幅では 3 つを同じ幅で 1 行に並べる
+			@media (max-width: 31.25rem) {
+				display: grid;
+				grid-template-columns: repeat(3, 1fr);
+
+				> * {
+					min-width: 0;
+					padding-left: 0.5rem;
+					padding-right: 0.5rem;
+					white-space: nowrap;
+					overflow: hidden;
+					text-overflow: ellipsis;
+				}
+			}
 
 			i {
 				margin-right: 0.25rem;
